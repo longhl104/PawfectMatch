@@ -1,5 +1,19 @@
 <div class="registration-container">
   <div class="registration-header">
+    <button type="button" class="back-btn" (click)="goBack()">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        height="20"
+        viewBox="0 -960 960 960"
+        width="20"
+      >
+        <path
+          d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"
+        />
+      </svg>
+      Back to Choice
+    </button>
+
     <h1>Join as an Adopter</h1>
     <p>Find your perfect companion and give a pet a loving home</p>
   </div>
@@ -175,7 +189,7 @@
         </div>
       </div>
 
-      <!-- City/Suburb -->
+      <!-- City/Suburb and Postcode -->
       <div class="form-row">
         <div class="form-group">
           <label for="location">City / Suburb *</label>
@@ -185,7 +199,6 @@
             formControlName="location"
             placeholder="e.g., Sydney, Melbourne, Brisbane"
             [class.error]="isFieldInvalid('location')"
-            [disabled]="!registrationForm.get('state')?.value"
           />
           <div class="help-text" *ngIf="!registrationForm.get('state')?.value">
             Please select a state first
@@ -207,7 +220,6 @@
             formControlName="postcode"
             placeholder="e.g., 2000"
             [class.error]="isFieldInvalid('postcode')"
-            [disabled]="!registrationForm.get('state')?.value"
             maxlength="4"
           />
           <div class="error-message" *ngIf="isFieldInvalid('postcode')">

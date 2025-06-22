@@ -8,7 +8,11 @@
 
 .registration-header {
   @extend .page-header;
-  @extend .white-text;
+  color: white; /* Use direct color instead of @extend for better control */
+
+  .back-btn {
+    @extend .back-btn;
+  }
 }
 
 .registration-card {

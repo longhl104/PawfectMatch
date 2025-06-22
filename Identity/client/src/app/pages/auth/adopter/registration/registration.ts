@@ -41,7 +41,8 @@ export class Registration {
         ],
         confirmPassword: ['', [Validators.required]],
         phoneNumber: ['', [this.australianPhoneValidator]],
-        state: ['', [Validators.required]], // Add state field
+        state: ['', [Validators.required]],
+        // Start both location and postcode as disabled
         location: [{ value: '', disabled: true }, [Validators.required]],
         postcode: [
           { value: '', disabled: true },
@@ -77,11 +78,13 @@ export class Registration {
       const postcodeControl = form.get('postcode');
 
       if (stateValue) {
+        // Enable both controls when state is selected
         locationControl?.enable();
         postcodeControl?.enable();
         this.updateLocationPlaceholder(stateValue);
         this.updatePostcodePlaceholder(stateValue);
       } else {
+        // Disable and clear both controls when no state is selected
         locationControl?.disable();
         postcodeControl?.disable();
         locationControl?.setValue('');
@@ -89,9 +92,12 @@ export class Registration {
       }
     });
 
-    // Validate postcode when state or postcode changes
+    // Validate postcode when it changes
     form.get('postcode')?.valueChanges.subscribe(() => {
-      form.get('postcode')?.updateValueAndValidity({ emitEvent: false });
+      const postcodeControl = form.get('postcode');
+      if (postcodeControl?.enabled) {
+        postcodeControl.updateValueAndValidity({ emitEvent: false });
+      }
     });
 
     return form;
@@ -288,5 +294,9 @@ export class Registration {
         this.registrationForm.get(key)?.markAsTouched();
       });
     }
+  }
+
+  goBack(): void {
+    this.router.navigate(['/auth/choice']);
   }
 }
