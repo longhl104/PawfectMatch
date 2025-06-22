@@ -10,6 +10,7 @@ export const authRoutes: Routes = [
   {
     path: 'choice',
     component: Choice,
+    title: 'Choose Registration Type',
   },
   {
     path: 'adopter',

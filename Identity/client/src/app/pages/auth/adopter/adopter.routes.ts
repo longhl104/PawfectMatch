@@ -10,5 +10,6 @@ export const adopterRoutes: Routes = [
     path: 'register',
     loadComponent: () =>
       import('./registration/registration').then((m) => m.Registration),
+    title: 'Adopter Registration',
   },
 ];
