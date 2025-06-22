@@ -41,6 +41,7 @@ export class Registration {
         ],
         confirmPassword: ['', [Validators.required]],
         phoneNumber: ['', [this.australianPhoneValidator]],
+        state: ['', [Validators.required]], // Add state field
         location: ['', [Validators.required]],
         bio: [''],
         agreeToTerms: [false, [Validators.requiredTrue]],

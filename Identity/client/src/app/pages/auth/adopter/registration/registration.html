@@ -150,6 +150,31 @@
         </div>
       </div>
 
+      <!-- Australian State -->
+      <div class="form-group">
+        <label for="state">State *</label>
+        <select
+          id="state"
+          formControlName="state"
+          [class.error]="isFieldInvalid('state')"
+        >
+          <option value="" disabled>Select your state</option>
+          <option value="NSW">New South Wales (NSW)</option>
+          <option value="VIC">Victoria (VIC)</option>
+          <option value="QLD">Queensland (QLD)</option>
+          <option value="WA">Western Australia (WA)</option>
+          <option value="SA">South Australia (SA)</option>
+          <option value="TAS">Tasmania (TAS)</option>
+          <option value="ACT">Australian Capital Territory (ACT)</option>
+          <option value="NT">Northern Territory (NT)</option>
+        </select>
+        <div class="error-message" *ngIf="isFieldInvalid('state')">
+          <span *ngIf="registrationForm.get('state')?.errors?.['required']">
+            Please select your state
+          </span>
+        </div>
+      </div>
+
       <!-- City/Suburb -->
       <div class="form-group">
         <label for="location">City / Suburb *</label>
