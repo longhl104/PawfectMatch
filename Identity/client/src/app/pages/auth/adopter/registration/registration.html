@@ -184,7 +184,11 @@
           formControlName="location"
           placeholder="e.g., Sydney, Melbourne, Brisbane"
           [class.error]="isFieldInvalid('location')"
+          [disabled]="!registrationForm.get('state')?.value"
         />
+        <div class="help-text" *ngIf="!registrationForm.get('state')?.value">
+          Please select a state first
+        </div>
         <div class="error-message" *ngIf="isFieldInvalid('location')">
           <span *ngIf="registrationForm.get('location')?.errors?.['required']">
             Location is required

@@ -42,7 +42,7 @@ export class Registration {
         confirmPassword: ['', [Validators.required]],
         phoneNumber: ['', [this.australianPhoneValidator]],
         state: ['', [Validators.required]], // Add state field
-        location: ['', [Validators.required]],
+        location: [{ value: '', disabled: true }, [Validators.required]],
         bio: [''],
         agreeToTerms: [false, [Validators.requiredTrue]],
       },
@@ -63,7 +63,42 @@ export class Registration {
       confirmPasswordControl?.updateValueAndValidity({ emitEvent: false });
     });
 
+    // Enable/disable location field based on state selection
+    form.get('state')?.valueChanges.subscribe((stateValue) => {
+      const locationControl = form.get('location');
+      if (stateValue) {
+        locationControl?.enable();
+        // Update placeholder based on selected state
+        this.updateLocationPlaceholder(stateValue);
+      } else {
+        locationControl?.disable();
+        locationControl?.setValue('');
+      }
+    });
+
     return form;
+  }
+
+  // Update location placeholder based on selected state
+  private updateLocationPlaceholder(state: string): void {
+    const locationInput = document.getElementById(
+      'location'
+    ) as HTMLInputElement;
+    if (locationInput) {
+      const placeholders: { [key: string]: string } = {
+        NSW: 'e.g., Sydney, Newcastle, Wollongong',
+        VIC: 'e.g., Melbourne, Geelong, Ballarat',
+        QLD: 'e.g., Brisbane, Gold Coast, Cairns',
+        WA: 'e.g., Perth, Fremantle, Bunbury',
+        SA: 'e.g., Adelaide, Mount Gambier, Whyalla',
+        TAS: 'e.g., Hobart, Launceston, Burnie',
+        ACT: 'e.g., Canberra, Tuggeranong, Belconnen',
+        NT: 'e.g., Darwin, Alice Springs, Katherine',
+      };
+
+      locationInput.placeholder =
+        placeholders[state] || 'Enter your city or suburb';
+    }
   }
 
   // Custom validator for strong password

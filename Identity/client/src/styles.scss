@@ -275,10 +275,16 @@ body {
     font-style: italic;
   }
 
+  .help-text {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    margin-top: 0.25rem;
+    font-style: italic;
+  }
+
   input,
   textarea,
   select {
-    /* Add select to the styling */
     width: 100%;
     padding: 0.75rem;
     border: 2px solid var(--color-border-light);
@@ -301,6 +307,17 @@ body {
       &:focus {
         border-color: var(--color-error-600);
         box-shadow: 0 0 0 3px var(--focus-ring-error);
+      }
+    }
+
+    &:disabled {
+      background-color: var(--color-background-muted);
+      color: var(--color-text-muted);
+      cursor: not-allowed;
+      border-color: var(--color-border-light);
+
+      &::placeholder {
+        color: var(--color-text-muted);
       }
     }
 
