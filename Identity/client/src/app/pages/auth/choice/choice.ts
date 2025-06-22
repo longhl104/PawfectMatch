@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-choice',
@@ -8,12 +8,14 @@ import { Router } from '@angular/router';
   styleUrl: './choice.scss',
 })
 export class Choice {
-  constructor(private router: Router) {}
+  constructor(private router: Router, private route: ActivatedRoute) {}
 
   selectAdopter(): void {
     // Navigate to adopter registration page
     // You can pass data through route state or query params
-    this.router.navigate(['/register/adopter']);
+    this.router.navigate(['adopter', 'register'], {
+      relativeTo: this.route.parent,
+    });
   }
 
   selectShelter(): void {

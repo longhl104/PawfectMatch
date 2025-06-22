@@ -11,4 +11,9 @@ export const authRoutes: Routes = [
     path: 'choice',
     component: Choice,
   },
+  {
+    path: 'adopter',
+    loadChildren: () =>
+      import('./adopter/adopter.routes').then((m) => m.adopterRoutes),
+  },
 ];
