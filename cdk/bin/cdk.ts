@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib';
-import { SharedStack, IdentityStack } from '../lib';
+import { SharedStack, IdentityStack, EnvironmentStack } from '../lib';
 
 const app = new cdk.App();
 
@@ -33,23 +33,39 @@ if (!environments[stage as keyof typeof environments]) {
 }
 
 const env = environments[stage as keyof typeof environments];
-// Create Shared Stack (one per account)
 
+// Create Shared Stack (one per account)
 const sharedStack = new SharedStack(app, 'PawfectMatch-Shared', {
   env,
   stackName: 'pawfectmatch-shared',
 });
 
-// Create Identity Stack (one per environment)
+// Create Environment Stack (one per stage)
+const environmentStack = new EnvironmentStack(
+  app,
+  `PawfectMatch-Environment-${stage}`,
+  {
+    env,
+    stackName: `pawfectmatch-environment-${stage}`,
+    stage,
+    sharedStack, // Pass the shared stack reference
+  }
+);
+
+// Create Identity Stack
 const identityStack = new IdentityStack(app, `PawfectMatch-Identity-${stage}`, {
   env,
   stage,
   sharedStack,
+  environmentStack,
   stackName: `pawfectmatch-identity-${stage}`,
 });
 
 // Add dependency
+environmentStack.addDependency(sharedStack);
+
 identityStack.addDependency(sharedStack);
+identityStack.addDependency(environmentStack);
 
 // Add tags to all stacks
 cdk.Tags.of(app).add('Project', 'PawfectMatch');
