@@ -73,7 +73,6 @@ body {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 
   &:hover {
-    transform: translateY(-4px);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
   }
 }
@@ -115,5 +114,225 @@ body {
     color: #667eea;
     width: 48px;
     height: 48px;
+  }
+}
+
+/* Form Styles */
+.form-group {
+  margin-bottom: 1.5rem;
+
+  label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #2d3748;
+    font-size: 0.9rem;
+  }
+
+  .optional {
+    font-weight: 400;
+    color: #718096;
+    font-style: italic;
+  }
+
+  input,
+  textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    box-sizing: border-box;
+
+    &:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    &.error {
+      border-color: #e53e3e;
+
+      &:focus {
+        border-color: #e53e3e;
+        box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+      }
+    }
+
+    &::placeholder {
+      color: #a0aec0;
+    }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 100px;
+    font-family: inherit;
+  }
+}
+
+/* Password Input with Toggle */
+.password-input {
+  position: relative;
+
+  .password-toggle {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #718096;
+    padding: 0;
+
+    &:hover {
+      color: #4a5568;
+    }
+
+    svg {
+      fill: currentColor;
+    }
+  }
+}
+
+/* Custom Checkbox Styles */
+.checkbox-group {
+  .checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    cursor: pointer;
+    font-size: 0.9rem;
+    line-height: 1.4;
+
+    input[type="checkbox"] {
+      opacity: 0;
+      position: absolute;
+      width: 0;
+      height: 0;
+
+      &:checked + .checkmark {
+        background-color: #667eea;
+        border-color: #667eea;
+
+        &::after {
+          display: block;
+        }
+      }
+
+      &.error + .checkmark {
+        border-color: #e53e3e;
+      }
+    }
+
+    .checkmark {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #e2e8f0;
+      border-radius: 4px;
+      margin-right: 0.75rem;
+      margin-top: 2px;
+      position: relative;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+
+      &::after {
+        content: "";
+        position: absolute;
+        display: none;
+        left: 4px;
+        top: 1px;
+        width: 4px;
+        height: 8px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+      }
+    }
+
+    a {
+      color: #667eea;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+/* Form Validation and Utility */
+.error-message {
+  color: #e53e3e;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.char-count {
+  font-size: 0.8rem;
+  color: #718096;
+  text-align: right;
+  margin-top: 0.25rem;
+}
+
+/* Page Footer Link Section */
+.page-footer-link {
+  text-align: center;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+
+  p {
+    margin: 0;
+    color: #718096;
+    font-size: 0.9rem;
+  }
+
+  a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+/* Update existing .page-header to be more flexible */
+.page-header {
+  text-align: center;
+  margin-bottom: 2rem;
+
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin: 0;
+  }
+
+  /* White text variant for dark backgrounds */
+  &.white-text {
+    color: white;
+  }
+
+  /* Dark text variant for light backgrounds */
+  &.dark-text {
+    color: #2d3748;
+  }
+
+  @media (max-width: 768px) {
+    h1 {
+      font-size: 1.8rem;
+    }
   }
 }

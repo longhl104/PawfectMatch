@@ -31,6 +31,10 @@
 
 .choice-card {
   @extend .card;
+
+  &:hover {
+    transform: translateY(-5px);
+  }
 }
 
 .choice-icon {

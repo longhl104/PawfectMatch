@@ -1,0 +1,71 @@
+@use "styles" as *;
+
+.registration-container {
+  @extend .full-height-container;
+  @extend .gradient-bg-primary;
+  padding: 1rem;
+}
+
+.registration-header {
+  @extend .page-header;
+  @extend .white-text;
+}
+
+.registration-card {
+  @extend .card;
+  max-width: 500px;
+  width: 100%;
+  text-align: left;
+  padding: 2rem;
+
+  .form-group {
+    @extend .form-group;
+  }
+
+  .password-input {
+    @extend .password-input;
+  }
+
+  .checkbox-group {
+    @extend .checkbox-group;
+  }
+
+  .error-message {
+    @extend .error-message;
+  }
+
+  .char-count {
+    @extend .char-count;
+  }
+}
+
+.submit-btn {
+  @extend .btn-base;
+  @extend .btn-success;
+  margin-top: 1rem;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+
+    &:hover {
+      transform: none;
+      box-shadow: none;
+    }
+  }
+}
+
+.login-link {
+  @extend .page-footer-link;
+}
+
+@media (max-width: 768px) {
+  .registration-container {
+    padding: 0.5rem;
+  }
+
+  .registration-card {
+    padding: 1.5rem;
+  }
+}
