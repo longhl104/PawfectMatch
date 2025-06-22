@@ -176,23 +176,55 @@
       </div>
 
       <!-- City/Suburb -->
-      <div class="form-group">
-        <label for="location">City / Suburb *</label>
-        <input
-          type="text"
-          id="location"
-          formControlName="location"
-          placeholder="e.g., Sydney, Melbourne, Brisbane"
-          [class.error]="isFieldInvalid('location')"
-          [disabled]="!registrationForm.get('state')?.value"
-        />
-        <div class="help-text" *ngIf="!registrationForm.get('state')?.value">
-          Please select a state first
+      <div class="form-row">
+        <div class="form-group">
+          <label for="location">City / Suburb *</label>
+          <input
+            type="text"
+            id="location"
+            formControlName="location"
+            placeholder="e.g., Sydney, Melbourne, Brisbane"
+            [class.error]="isFieldInvalid('location')"
+            [disabled]="!registrationForm.get('state')?.value"
+          />
+          <div class="help-text" *ngIf="!registrationForm.get('state')?.value">
+            Please select a state first
+          </div>
+          <div class="error-message" *ngIf="isFieldInvalid('location')">
+            <span
+              *ngIf="registrationForm.get('location')?.errors?.['required']"
+            >
+              Location is required
+            </span>
+          </div>
         </div>
-        <div class="error-message" *ngIf="isFieldInvalid('location')">
-          <span *ngIf="registrationForm.get('location')?.errors?.['required']">
-            Location is required
-          </span>
+
+        <div class="form-group">
+          <label for="postcode">Postcode *</label>
+          <input
+            type="text"
+            id="postcode"
+            formControlName="postcode"
+            placeholder="e.g., 2000"
+            [class.error]="isFieldInvalid('postcode')"
+            [disabled]="!registrationForm.get('state')?.value"
+            maxlength="4"
+          />
+          <div class="error-message" *ngIf="isFieldInvalid('postcode')">
+            <span
+              *ngIf="registrationForm.get('postcode')?.errors?.['required']"
+            >
+              Postcode is required
+            </span>
+            <span *ngIf="registrationForm.get('postcode')?.errors?.['pattern']">
+              Please enter a valid 4-digit postcode
+            </span>
+            <span
+              *ngIf="registrationForm.get('postcode')?.errors?.['invalidStatePostcode']"
+            >
+              Postcode doesn't match selected state
+            </span>
+          </div>
         </div>
       </div>
 

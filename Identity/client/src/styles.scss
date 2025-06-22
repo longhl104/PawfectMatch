@@ -256,6 +256,17 @@ body {
     height: 48px;
   }
 }
+/* Form Row for side-by-side fields */
+.form-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
 
 /* Form Styles */
 .form-group {

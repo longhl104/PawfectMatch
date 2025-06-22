@@ -43,6 +43,14 @@ export class Registration {
         phoneNumber: ['', [this.australianPhoneValidator]],
         state: ['', [Validators.required]], // Add state field
         location: [{ value: '', disabled: true }, [Validators.required]],
+        postcode: [
+          { value: '', disabled: true },
+          [
+            Validators.required,
+            Validators.pattern(/^\d{4}$/),
+            this.postcodeStateValidator(),
+          ],
+        ],
         bio: [''],
         agreeToTerms: [false, [Validators.requiredTrue]],
       },
@@ -63,20 +71,85 @@ export class Registration {
       confirmPasswordControl?.updateValueAndValidity({ emitEvent: false });
     });
 
-    // Enable/disable location field based on state selection
+    // Enable/disable location and postcode fields based on state selection
     form.get('state')?.valueChanges.subscribe((stateValue) => {
       const locationControl = form.get('location');
+      const postcodeControl = form.get('postcode');
+
       if (stateValue) {
         locationControl?.enable();
-        // Update placeholder based on selected state
+        postcodeControl?.enable();
         this.updateLocationPlaceholder(stateValue);
+        this.updatePostcodePlaceholder(stateValue);
       } else {
         locationControl?.disable();
+        postcodeControl?.disable();
         locationControl?.setValue('');
+        postcodeControl?.setValue('');
       }
     });
 
+    // Validate postcode when state or postcode changes
+    form.get('postcode')?.valueChanges.subscribe(() => {
+      form.get('postcode')?.updateValueAndValidity({ emitEvent: false });
+    });
+
     return form;
+  }
+
+  // Custom validator for postcode based on state
+  private postcodeStateValidator() {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const postcode = control.value;
+      const state = control.parent?.get('state')?.value;
+
+      if (!postcode || !state) return null;
+
+      // Australian postcode ranges by state
+      const postcodeRanges: { [key: string]: (code: number) => boolean } = {
+        NSW: (code) =>
+          (code >= 1000 && code <= 1999) || (code >= 2000 && code <= 2999),
+        ACT: (code) =>
+          (code >= 200 && code <= 299) ||
+          (code >= 2600 && code <= 2699) ||
+          (code >= 2900 && code <= 2920),
+        VIC: (code) =>
+          (code >= 3000 && code <= 3999) || (code >= 8000 && code <= 8999),
+        QLD: (code) =>
+          (code >= 4000 && code <= 4999) || (code >= 9000 && code <= 9999),
+        SA: (code) => code >= 5000 && code <= 5999,
+        WA: (code) =>
+          (code >= 6000 && code <= 6797) || (code >= 6800 && code <= 6999),
+        TAS: (code) => code >= 7000 && code <= 7999,
+        NT: (code) => code >= 800 && code <= 999,
+      };
+
+      const postcodeNum = parseInt(postcode, 10);
+      const isValidRange = postcodeRanges[state]?.(postcodeNum);
+
+      return isValidRange ? null : { invalidStatePostcode: true };
+    };
+  }
+
+  // Update postcode placeholder based on selected state
+  private updatePostcodePlaceholder(state: string): void {
+    const postcodeInput = document.getElementById(
+      'postcode'
+    ) as HTMLInputElement;
+    if (postcodeInput) {
+      const placeholders: { [key: string]: string } = {
+        NSW: 'e.g., 2000, 2300, 2500',
+        VIC: 'e.g., 3000, 3220, 3350',
+        QLD: 'e.g., 4000, 4217, 4870',
+        WA: 'e.g., 6000, 6160, 6230',
+        SA: 'e.g., 5000, 5290, 5600',
+        TAS: 'e.g., 7000, 7250, 6450',
+        ACT: 'e.g., 2600, 2900, 2614',
+        NT: 'e.g., 0800, 0870, 0850',
+      };
+
+      postcodeInput.placeholder = placeholders[state] || 'Enter postcode';
+    }
   }
 
   // Update location placeholder based on selected state
@@ -185,7 +258,13 @@ export class Registration {
         // Remove confirmPassword from the data to be sent
         const { confirmPassword, ...registrationData } = formData;
 
-        console.log('Registration data:', registrationData);
+        // Combine location and postcode for full address identification
+        const fullLocation = `${registrationData.location}, ${registrationData.state} ${registrationData.postcode}`;
+
+        console.log('Registration data:', {
+          ...registrationData,
+          fullLocation,
+        });
 
         // TODO: Call registration service
         // await this.authService.registerAdopter(registrationData);
