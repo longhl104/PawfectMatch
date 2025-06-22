@@ -1,23 +1,56 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib';
-import { CdkStack } from '../lib/cdk-stack';
+import { SharedStack, IdentityStack } from '../lib';
 
 const app = new cdk.App();
-new CdkStack(app, 'CdkStack', {
-  /* If you don't specify 'env', this stack will be environment-agnostic.
-   * Account/Region-dependent features and context lookups will not work,
-   * but a single synthesized template can be deployed anywhere. */
 
-  /* Uncomment the next line to specialize this stack for the AWS Account
-   * and Region that are implied by the current CLI configuration. */
-  env: {
-    account: process.env.CDK_DEFAULT_ACCOUNT,
+// Environment configuration
+const environments = {
+  development: {
+    account: process.env.CDK_DEFAULT_ACCOUNT, // Account A
     region: process.env.CDK_DEFAULT_REGION,
   },
+  production: {
+    account: process.env.CDK_PRODUCTION_ACCOUNT, // Account B
+    region: process.env.CDK_DEFAULT_REGION,
+  },
+};
 
-  /* Uncomment the next line if you know exactly what Account and Region you
-   * want to deploy the stack to. */
-  // env: { account: '123456789012', region: 'us-east-1' },
+const stage = process.env.CDK_STAGE;
+if (!stage) {
+  throw new Error(
+    'CDK_STAGE environment variable is not set. Please set it to "development" or "production".'
+  );
+}
 
-  /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
+// Validate environment
+if (!environments[stage as keyof typeof environments]) {
+  throw new Error(
+    `Invalid stage: ${stage}. Must be one of: ${Object.keys(environments).join(
+      ', '
+    )}`
+  );
+}
+
+const env = environments[stage as keyof typeof environments];
+// Create Shared Stack (one per account)
+
+const sharedStack = new SharedStack(app, 'PawfectMatch-Shared', {
+  env,
+  stackName: 'pawfectmatch-shared',
 });
+
+// Create Identity Stack (one per environment)
+const identityStack = new IdentityStack(app, `PawfectMatch-Identity-${stage}`, {
+  env,
+  stage,
+  sharedStack,
+  stackName: `pawfectmatch-identity-${stage}`,
+});
+
+// Add dependency
+identityStack.addDependency(sharedStack);
+
+// Add tags to all stacks
+cdk.Tags.of(app).add('Project', 'PawfectMatch');
+cdk.Tags.of(app).add('Stage', stage);
