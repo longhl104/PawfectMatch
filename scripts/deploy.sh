@@ -132,16 +132,6 @@ deploy_cdk() {
 	print_info "Showing deployment diff..."
 	cdk diff --all --profile $AWS_PROFILE || true
 
-	# Ask for confirmation
-	echo
-	read -p "Do you want to proceed with the deployment? (y/N): " -n 1 -r
-	echo
-	if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-		print_warning "Deployment cancelled by user"
-		cd ../scripts
-		exit 0
-	fi
-
 	# Deploy all stacks
 	print_info "Deploying all CDK stacks..."
 	if cdk deploy --all --require-approval never --profile $AWS_PROFILE; then
@@ -155,34 +145,85 @@ deploy_cdk() {
 	fi
 }
 
-# Function to get RDS endpoint from CDK outputs
-get_rds_endpoint() {
-	print_info "Retrieving RDS endpoint from CDK outputs..."
+# Function to get database connection details from CDK outputs
+get_database_details() {
+	print_info "Retrieving database connection details from CDK outputs..."
 
-	# Get stack outputs - use the correct stack name format from CDK
-	local stack_name="PawfectMatch-Environment-${ENVIRONMENT}"
+	local stack_name="pawfectmatch-environment-${ENVIRONMENT}"
+
+	# Get database endpoint
 	local endpoint=$(aws cloudformation describe-stacks \
 		--stack-name $stack_name \
 		--profile $AWS_PROFILE \
 		--query 'Stacks[0].Outputs[?OutputKey==`DatabaseEndpoint`].OutputValue' \
 		--output text 2>/dev/null)
 
-	if [ -n "$endpoint" ] && [ "$endpoint" != "None" ]; then
-		echo $endpoint
-	else
-		print_warning "Could not retrieve RDS endpoint from CDK outputs"
-		echo ""
+	# Get database name
+	local db_name=$(aws cloudformation describe-stacks \
+		--stack-name $stack_name \
+		--profile $AWS_PROFILE \
+		--query 'Stacks[0].Outputs[?OutputKey==`DatabaseName`].OutputValue' \
+		--output text 2>/dev/null)
+
+	# Get database username
+	local db_user=$(aws cloudformation describe-stacks \
+		--stack-name $stack_name \
+		--profile $AWS_PROFILE \
+		--query 'Stacks[0].Outputs[?OutputKey==`DatabaseUsername`].OutputValue' \
+		--output text 2>/dev/null)
+
+	# Get database password from AWS Secrets Manager
+	local secret_name=$(aws cloudformation describe-stacks \
+		--stack-name $stack_name \
+		--profile $AWS_PROFILE \
+		--query 'Stacks[0].Outputs[?OutputKey==`DatabaseSecretName`].OutputValue' \
+		--output text 2>/dev/null)
+
+	local db_password=""
+	if [ -n "$secret_name" ] && [ "$secret_name" != "None" ]; then
+		db_password=$(aws secretsmanager get-secret-value \
+			--secret-id $secret_name \
+			--profile $AWS_PROFILE \
+			--query 'SecretString' \
+			--output text 2>/dev/null | jq -r '.password' 2>/dev/null)
 	fi
+
+	# Set defaults if values are empty or "None"
+	endpoint=${endpoint:-""}
+	db_name=${db_name:-"pawfectmatch"}
+	db_user=${db_user:-"postgres"}
+
+	if [ -z "$endpoint" ] || [ "$endpoint" = "None" ]; then
+		print_error "Could not retrieve database endpoint from CDK outputs"
+		return 1
+	fi
+
+	if [ -z "$db_password" ] || [ "$db_password" = "None" ]; then
+		print_error "Could not retrieve database password from AWS Secrets Manager"
+		return 1
+	fi
+
+	# Export variables for use in other functions
+	export DB_ENDPOINT=$endpoint
+	export DB_NAME=$db_name
+	export DB_USER=$db_user
+	export DB_PASSWORD=$db_password
+
+	print_success "Database connection details retrieved successfully"
+	print_info "Endpoint: $DB_ENDPOINT"
+	print_info "Database: $DB_NAME"
+	print_info "Username: $DB_USER"
+
+	return 0
 }
 
 # Function to install PostGIS extension
 install_postgis() {
 	print_info "Installing PostGIS extension..."
 
-	local rds_endpoint=$(get_rds_endpoint)
-
-	if [ -z "$rds_endpoint" ]; then
-		print_warning "RDS endpoint not available. Skipping PostGIS installation."
+	# Get database connection details automatically
+	if ! get_database_details; then
+		print_warning "Could not retrieve database connection details. Skipping PostGIS installation."
 		print_info "You can manually install PostGIS later using:"
 		print_info "psql -h <RDS_ENDPOINT> -U <USERNAME> -d <DATABASE> -c 'CREATE EXTENSION IF NOT EXISTS postgis;'"
 		return 0
@@ -198,28 +239,11 @@ install_postgis() {
 		return 1
 	fi
 
-	# Prompt for database connection details
-	echo
-	print_info "PostGIS installation requires database connection details."
-	read -p "Database name [pawfectmatch]: " db_name
-	db_name=${db_name:-pawfectmatch}
-
-	read -p "Database username [postgres]: " db_user
-	db_user=${db_user:-postgres}
-
-	read -s -p "Database password: " db_password
-	echo
-
-	if [ -z "$db_password" ]; then
-		print_error "Database password is required"
-		return 1
-	fi
-
 	# Set password for psql
-	export PGPASSWORD=$db_password
+	export PGPASSWORD=$DB_PASSWORD
 
 	print_info "Connecting to database and installing PostGIS..."
-	if psql -h $rds_endpoint -U $db_user -d $db_name -f $postgis_script; then
+	if psql -h $DB_ENDPOINT -U $DB_USER -d $DB_NAME -f $postgis_script; then
 		print_success "PostGIS installed successfully"
 	else
 		print_error "Failed to install PostGIS"
@@ -228,14 +252,14 @@ install_postgis() {
 
 	# Clean up
 	rm -f $postgis_script
-	unset PGPASSWORD
+	unset PGPASSWORD DB_ENDPOINT DB_NAME DB_USER DB_PASSWORD
 }
 
 # Function to display stack outputs
 show_outputs() {
 	print_info "Displaying stack outputs..."
 
-	local stack_name="PawfectMatch-Environment-${ENVIRONMENT}"
+	local stack_name="pawfectmatch-environment-${ENVIRONMENT}"
 	aws cloudformation describe-stacks \
 		--stack-name $stack_name \
 		--profile $AWS_PROFILE \
