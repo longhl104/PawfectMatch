@@ -18,3 +18,7 @@ insert_final_newline = false
 
 [*.md]
 trim_trailing_whitespace = false
+
+[*.sh]
+indent_style = tab
+indent_size = 4
