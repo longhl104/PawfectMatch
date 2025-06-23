@@ -1,6 +1,8 @@
 import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as rds from 'aws-cdk-lib/aws-rds';
+import * as iam from 'aws-cdk-lib/aws-iam';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 import { SharedStack } from './shared-stack';
 import { StageType } from './utils';
@@ -113,6 +115,72 @@ export class EnvironmentStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'VpcId', {
       value: this.vpc.vpcId,
       description: 'VPC ID',
+    });
+
+    // Create Lambda execution role
+    const lambdaRole = new iam.Role(this, 'PostGISLambdaRole', {
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+      managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName(
+          'service-role/AWSLambdaVPCAccessExecutionRole'
+        ),
+      ],
+    });
+
+    // Grant Lambda access to read secrets
+    this.database.secret?.grantRead(lambdaRole);
+
+    // Create Lambda function for PostGIS installation
+    new lambda.Function(this, 'PostGISInstaller', {
+      runtime: lambda.Runtime.PYTHON_3_9,
+      handler: 'index.handler',
+      role: lambdaRole,
+      vpc: this.vpc,
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
+      },
+      securityGroups: [dbSecurityGroup],
+      code: lambda.Code.fromInline(`
+import json
+import psycopg2
+import boto3
+
+def handler(event, context):
+    # Get database credentials from Secrets Manager
+    secrets_client = boto3.client('secretsmanager')
+    secret_value = secrets_client.get_secret_value(SecretId='${this.database.secret?.secretArn}')
+    secret = json.loads(secret_value['SecretString'])
+
+    try:
+        # Connect to database
+        conn = psycopg2.connect(
+            host='${this.database.instanceEndpoint.hostname}',
+            database='pawfectmatch',
+            user=secret['username'],
+            password=secret['password']
+        )
+
+        cursor = conn.cursor()
+
+        # Install PostGIS extensions
+        cursor.execute("CREATE EXTENSION IF NOT EXISTS postgis;")
+        cursor.execute("CREATE EXTENSION IF NOT EXISTS postgis_topology;")
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return {
+            'statusCode': 200,
+            'body': json.dumps('PostGIS installed successfully')
+        }
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'body': json.dumps(f'Error: {str(e)}')
+        }
+      `),
+      timeout: cdk.Duration.minutes(5),
     });
   }
 }
