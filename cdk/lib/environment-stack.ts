@@ -75,10 +75,10 @@ export class EnvironmentStack extends cdk.Stack {
       engine: rds.DatabaseInstanceEngine.postgres({
         version: rds.PostgresEngineVersion.VER_17_5,
       }),
-      instanceType:
-        stage === 'production'
-          ? ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MEDIUM)
-          : ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MICRO),
+      instanceType: ec2.InstanceType.of(
+        ec2.InstanceClass.T3,
+        ec2.InstanceSize.MICRO
+      ),
       vpc: this.vpc,
       subnetGroup: dbSubnetGroup,
       securityGroups: [dbSecurityGroup],
