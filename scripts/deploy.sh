@@ -118,6 +118,45 @@ build_project() {
 	fi
 }
 
+# Function to build .NET Lambda functions
+build_lambda_functions() {
+	print_info "Building .NET Lambda functions..."
+
+	# Change to Environment directory
+	cd ../Environment
+
+	# Find all Lambda function directories
+	local lambda_dirs=$(find . -name "*.csproj" -type f | xargs dirname | sort -u)
+
+	if [ -z "$lambda_dirs" ]; then
+		print_warning "No .NET Lambda functions found"
+		cd ../scripts
+		return 0
+	fi
+
+	# Build each Lambda function
+    for lambda_dir in $lambda_dirs; do
+        print_info "Building Lambda function in: $lambda_dir"
+
+        cd "$lambda_dir"
+
+        # Restore packages and build
+        if dotnet restore && dotnet lambda package; then
+            print_success "Built Lambda function: $lambda_dir"
+        else
+            print_error "Failed to build Lambda function: $lambda_dir"
+            cd ../../scripts
+            exit 1
+        fi
+
+        # Return to Environment directory for next iteration
+        cd - > /dev/null  # Go back to the previous directory (Environment)
+    done
+
+	print_success "All .NET Lambda functions built successfully"
+	cd ../scripts
+}
+
 # Function to deploy CDK stacks
 deploy_cdk() {
 	print_info "Starting CDK deployment for environment: $ENVIRONMENT"
@@ -294,6 +333,7 @@ main() {
 
 	# Build and deploy
 	build_project
+	build_lambda_functions
 
 	if deploy_cdk; then
 		print_success "CDK deployment completed successfully!"

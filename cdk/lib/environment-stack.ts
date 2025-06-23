@@ -145,9 +145,6 @@ export class EnvironmentStack extends cdk.Stack {
       ),
       timeout: cdk.Duration.minutes(5),
       memorySize: 512,
-      environment: {
-        AWS_LAMBDA_EXEC_WRAPPER: '/opt/bootstrap',
-      },
     });
 
     // Create a custom resource provider to handle PostGIS installation
