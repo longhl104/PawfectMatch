@@ -173,11 +173,7 @@ get_database_details() {
 		--output text 2>/dev/null)
 
 	# Get database password from AWS Secrets Manager
-	local secret_name=$(aws cloudformation describe-stacks \
-		--stack-name $stack_name \
-		--profile $AWS_PROFILE \
-		--query 'Stacks[0].Outputs[?OutputKey==`DatabaseSecretName`].OutputValue' \
-		--output text 2>/dev/null)
+	local secret_name="pawfectmatch-db-credentials-${ENVIRONMENT}"
 
 	local db_password=""
 	if [ -n "$secret_name" ] && [ "$secret_name" != "None" ]; then
@@ -191,7 +187,7 @@ get_database_details() {
 	# Set defaults if values are empty or "None"
 	endpoint=${endpoint:-""}
 	db_name=${db_name:-"pawfectmatch"}
-	db_user=${db_user:-"postgres"}
+	db_user=${db_user:-"dbadmin"}
 
 	if [ -z "$endpoint" ] || [ "$endpoint" = "None" ]; then
 		print_error "Could not retrieve database endpoint from CDK outputs"
