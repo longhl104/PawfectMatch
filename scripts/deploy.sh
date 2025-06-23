@@ -304,8 +304,6 @@ main() {
 		# Install PostGIS
 		echo
 
-		install_postgis
-
 		echo
 		print_success "Deployment completed successfully!"
 	else
