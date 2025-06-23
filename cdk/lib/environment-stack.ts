@@ -131,56 +131,52 @@ export class EnvironmentStack extends cdk.Stack {
     this.database.secret?.grantRead(lambdaRole);
 
     // Create Lambda function for PostGIS installation
-    new lambda.Function(this, 'PostGISInstaller', {
-      runtime: lambda.Runtime.PYTHON_3_9,
-      handler: 'index.handler',
+    const postGisInstaller = new lambda.Function(this, 'PostGISInstaller', {
+      runtime: lambda.Runtime.DOTNET_8,
+      handler: 'PostGisInstaller::PostGisInstaller.Function::FunctionHandler',
       role: lambdaRole,
       vpc: this.vpc,
       vpcSubnets: {
         subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
       },
       securityGroups: [dbSecurityGroup],
-      code: lambda.Code.fromInline(`
-import json
-import psycopg2
-import boto3
-
-def handler(event, context):
-    # Get database credentials from Secrets Manager
-    secrets_client = boto3.client('secretsmanager')
-    secret_value = secrets_client.get_secret_value(SecretId='${this.database.secret?.secretArn}')
-    secret = json.loads(secret_value['SecretString'])
-
-    try:
-        # Connect to database
-        conn = psycopg2.connect(
-            host='${this.database.instanceEndpoint.hostname}',
-            database='pawfectmatch',
-            user=secret['username'],
-            password=secret['password']
-        )
-
-        cursor = conn.cursor()
-
-        # Install PostGIS extensions
-        cursor.execute("CREATE EXTENSION IF NOT EXISTS postgis;")
-        cursor.execute("CREATE EXTENSION IF NOT EXISTS postgis_topology;")
-
-        conn.commit()
-        cursor.close()
-        conn.close()
-
-        return {
-            'statusCode': 200,
-            'body': json.dumps('PostGIS installed successfully')
-        }
-    except Exception as e:
-        return {
-            'statusCode': 500,
-            'body': json.dumps(f'Error: {str(e)}')
-        }
-      `),
+      code: lambda.Code.fromAsset(
+        '../Environment/Lambdas/PostGisInstaller/src/PostGisInstaller/bin/Release/net8.0/publish'
+      ),
       timeout: cdk.Duration.minutes(5),
+      memorySize: 512,
+      environment: {
+        AWS_LAMBDA_EXEC_WRAPPER: '/opt/bootstrap',
+      },
     });
+
+    // Create a custom resource provider to handle PostGIS installation
+    const postGisProvider = new cdk.custom_resources.Provider(
+      this,
+      'PostGISProvider',
+      {
+        onEventHandler: postGisInstaller,
+        logRetention: cdk.aws_logs.RetentionDays.ONE_WEEK,
+      }
+    );
+
+    // Create custom resource to trigger PostGIS installation
+    const postGisCustomResource = new cdk.CustomResource(
+      this,
+      'PostGISCustomResource',
+      {
+        serviceToken: postGisProvider.serviceToken,
+        properties: {
+          DatabaseHost: this.database.instanceEndpoint.hostname,
+          DatabaseName: 'pawfectmatch',
+          SecretArn: this.database.secret?.secretArn || '',
+          // Add a timestamp to force updates when needed
+          Timestamp: Date.now().toString(),
+        },
+      }
+    );
+
+    // Ensure the custom resource runs after the database is created
+    postGisCustomResource.node.addDependency(this.database);
   }
 }
