@@ -3,10 +3,11 @@ import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import { Construct } from 'constructs';
 import { PawfectMatchStackProps } from './utils';
+import { BaseStack } from './base-stack';
 
 export interface IdentityStackProps extends PawfectMatchStackProps {}
 
-export class IdentityStack extends cdk.Stack {
+export class IdentityStack extends BaseStack {
   public readonly userPool: cognito.UserPool;
   public readonly userPoolClient: cognito.UserPoolClient;
   public readonly api: apigateway.RestApi;

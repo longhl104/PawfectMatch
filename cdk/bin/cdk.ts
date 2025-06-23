@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib';
 import { SharedStack, IdentityStack, EnvironmentStack } from '../lib';
+import { StageType } from '../lib/utils';
 
 const app = new cdk.App();
 
@@ -16,12 +17,7 @@ const environments = {
   },
 };
 
-const stage = process.env.CDK_STAGE;
-if (!stage) {
-  throw new Error(
-    'CDK_STAGE environment variable is not set. Please set it to "development" or "production".'
-  );
-}
+const stage = process.env.CDK_STAGE as StageType;
 
 // Validate environment
 if (!environments[stage as keyof typeof environments]) {
