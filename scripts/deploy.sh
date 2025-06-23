@@ -189,17 +189,14 @@ install_postgis() {
 	fi
 
 	# Create PostGIS installation script
-	local postgis_script="/tmp/install_postgis.sql"
-	cat >$postgis_script <<EOF
--- Install PostGIS extension
-CREATE EXTENSION IF NOT EXISTS postgis;
-CREATE EXTENSION IF NOT EXISTS postgis_topology;
-CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
-CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder;
+	local postgis_script="./install_postgis.sql"
 
--- Verify installation
-SELECT PostGIS_version();
-EOF
+	# Check if the PostGIS installation script exists
+	if [ ! -f "$postgis_script" ]; then
+		print_error "PostGIS installation script not found: $postgis_script"
+		print_info "Please create the file with the necessary PostGIS installation commands."
+		return 1
+	fi
 
 	# Prompt for database connection details
 	echo
