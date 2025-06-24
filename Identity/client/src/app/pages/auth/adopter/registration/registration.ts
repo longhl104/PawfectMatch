@@ -30,7 +30,7 @@ declare const google: any;
   templateUrl: './registration.html',
   styleUrl: './registration.scss',
 })
-export class Registration implements OnInit {
+export class Registration {
   @ViewChild('addressInput', { static: false }) addressInputRef!: ElementRef;
 
   registrationForm: FormGroup;
@@ -48,9 +48,7 @@ export class Registration implements OnInit {
     private googleMapsService: GoogleMapsService
   ) {
     this.registrationForm = this.createForm();
-  }
 
-  ngOnInit() {
     afterNextRender(async () => {
       try {
         await this.googleMapsService.loadGoogleMaps();
