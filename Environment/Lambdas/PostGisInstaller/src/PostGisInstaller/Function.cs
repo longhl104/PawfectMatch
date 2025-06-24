@@ -44,7 +44,7 @@ public class Function
             StackId = input.StackId,
             RequestId = input.RequestId,
             LogicalResourceId = input.LogicalResourceId,
-            Data = new Dictionary<string, object>()
+            Data = []
         };
 
         try
