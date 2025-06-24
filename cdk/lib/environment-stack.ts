@@ -13,7 +13,7 @@ export interface EnvironmentStackProps extends cdk.StackProps {
 
 export class EnvironmentStack extends cdk.Stack {
   public readonly vpc: ec2.Vpc;
-  public readonly api: apigateway.RestApi;
+  private readonly api: apigateway.RestApi;
 
   constructor(scope: Construct, id: string, props: EnvironmentStackProps) {
     super(scope, id, props);
@@ -102,6 +102,10 @@ export class EnvironmentStack extends cdk.Stack {
     // Export API Gateway for other stacks to use
     this.exportValue(this.api.restApiId, {
       name: `${stage}ApiGatewayId`,
+    });
+
+    this.exportValue(this.api.root.resourceId, {
+      name: `${stage}ApiGatewayRootResourceId`,
     });
 
     this.exportValue(this.api.url, {

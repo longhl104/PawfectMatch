@@ -8,6 +8,9 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
+ROOT_DIR=$(dirname "$(pwd)")
+
+echo "Root directory: $ROOT_DIR"
 
 # Function to print colored output
 print_info() {
@@ -105,15 +108,15 @@ build_project() {
 	print_info "Building CDK project..."
 
 	# Change to CDK directory
-	cd ../cdk
+	cd "$ROOT_DIR/cdk"
 
 	if npm run build; then
 		print_success "Build completed successfully"
-		# Return to original directory
-		cd ../scripts
+		# Return to scripts directory
+		cd "$ROOT_DIR/scripts"
 	else
 		print_error "Build failed"
-		cd ../scripts
+		cd "$ROOT_DIR/scripts"
 		exit 1
 	fi
 }
@@ -122,39 +125,36 @@ build_project() {
 build_lambda_functions() {
 	print_info "Building .NET Lambda functions..."
 
-	# Change to Environment directory
-	cd ../Environment
+	# Change to root directory of the project
+	cd "$ROOT_DIR"
 
 	# Find all Lambda function directories
-	local lambda_dirs=$(find . -name "*.csproj" -type f | xargs dirname | sort -u)
+	local lambda_dirs=$(find . -name "*.csproj" -type f -not -path "./cdk/*" | xargs dirname | sort -u)
 
 	if [ -z "$lambda_dirs" ]; then
 		print_warning "No .NET Lambda functions found"
-		cd ../scripts
+		cd "$ROOT_DIR/scripts"
 		return 0
 	fi
 
 	# Build each Lambda function
-    for lambda_dir in $lambda_dirs; do
-        print_info "Building Lambda function in: $lambda_dir"
+	for lambda_dir in $lambda_dirs; do
+		print_info "Building Lambda function in: $lambda_dir"
 
-        cd "$lambda_dir"
+		cd "$ROOT_DIR/$lambda_dir"
 
-        # Restore packages and build
-        if dotnet restore && dotnet lambda package; then
-            print_success "Built Lambda function: $lambda_dir"
-        else
-            print_error "Failed to build Lambda function: $lambda_dir"
-            cd ../../scripts
-            exit 1
-        fi
-
-        # Return to Environment directory for next iteration
-        cd - > /dev/null  # Go back to the previous directory (Environment)
-    done
+		# Restore packages and build
+		if dotnet restore && dotnet lambda package; then
+			print_success "Built Lambda function: $lambda_dir"
+		else
+			print_error "Failed to build Lambda function: $lambda_dir"
+			cd "$ROOT_DIR/scripts"
+			exit 1
+		fi
+	done
 
 	print_success "All .NET Lambda functions built successfully"
-	cd ../scripts
+	cd "$ROOT_DIR/scripts"
 }
 
 # Function to deploy CDK stacks
@@ -162,7 +162,7 @@ deploy_cdk() {
 	print_info "Starting CDK deployment for environment: $ENVIRONMENT"
 
 	# Change to CDK directory
-	cd ../cdk
+	cd "$ROOT_DIR/cdk"
 
 	# Set CDK stage environment variable
 	export CDK_STAGE=$ENVIRONMENT
@@ -175,119 +175,13 @@ deploy_cdk() {
 	print_info "Deploying all CDK stacks..."
 	if cdk deploy --all --require-approval never --profile $AWS_PROFILE; then
 		print_success "CDK deployment completed successfully"
-		cd ../scripts
+		cd "$ROOT_DIR/scripts"
 		return 0
 	else
 		print_error "CDK deployment failed"
-		cd ../scripts
+		cd "$ROOT_DIR/scripts"
 		return 1
 	fi
-}
-
-# Function to get database connection details from CDK outputs
-get_database_details() {
-	print_info "Retrieving database connection details from CDK outputs..."
-
-	local stack_name="pawfectmatch-environment-${ENVIRONMENT}"
-
-	# Get database endpoint
-	local endpoint=$(aws cloudformation describe-stacks \
-		--stack-name $stack_name \
-		--profile $AWS_PROFILE \
-		--query 'Stacks[0].Outputs[?OutputKey==`DatabaseEndpoint`].OutputValue' \
-		--output text 2>/dev/null)
-
-	# Get database name
-	local db_name=$(aws cloudformation describe-stacks \
-		--stack-name $stack_name \
-		--profile $AWS_PROFILE \
-		--query 'Stacks[0].Outputs[?OutputKey==`DatabaseName`].OutputValue' \
-		--output text 2>/dev/null)
-
-	# Get database username
-	local db_user=$(aws cloudformation describe-stacks \
-		--stack-name $stack_name \
-		--profile $AWS_PROFILE \
-		--query 'Stacks[0].Outputs[?OutputKey==`DatabaseUsername`].OutputValue' \
-		--output text 2>/dev/null)
-
-	# Get database password from AWS Secrets Manager
-	local secret_name="pawfectmatch-db-credentials-${ENVIRONMENT}"
-
-	local db_password=""
-	if [ -n "$secret_name" ] && [ "$secret_name" != "None" ]; then
-		db_password=$(aws secretsmanager get-secret-value \
-			--secret-id $secret_name \
-			--profile $AWS_PROFILE \
-			--query 'SecretString' \
-			--output text 2>/dev/null | jq -r '.password' 2>/dev/null)
-	fi
-
-	# Set defaults if values are empty or "None"
-	endpoint=${endpoint:-""}
-	db_name=${db_name:-"pawfectmatch"}
-	db_user=${db_user:-"dbadmin"}
-
-	if [ -z "$endpoint" ] || [ "$endpoint" = "None" ]; then
-		print_error "Could not retrieve database endpoint from CDK outputs"
-		return 1
-	fi
-
-	if [ -z "$db_password" ] || [ "$db_password" = "None" ]; then
-		print_error "Could not retrieve database password from AWS Secrets Manager"
-		return 1
-	fi
-
-	# Export variables for use in other functions
-	export DB_ENDPOINT=$endpoint
-	export DB_NAME=$db_name
-	export DB_USER=$db_user
-	export DB_PASSWORD=$db_password
-
-	print_success "Database connection details retrieved successfully"
-	print_info "Endpoint: $DB_ENDPOINT"
-	print_info "Database: $DB_NAME"
-	print_info "Username: $DB_USER"
-
-	return 0
-}
-
-# Function to install PostGIS extension
-install_postgis() {
-	print_info "Installing PostGIS extension..."
-
-	# Get database connection details automatically
-	if ! get_database_details; then
-		print_warning "Could not retrieve database connection details. Skipping PostGIS installation."
-		print_info "You can manually install PostGIS later using:"
-		print_info "psql -h <RDS_ENDPOINT> -U <USERNAME> -d <DATABASE> -c 'CREATE EXTENSION IF NOT EXISTS postgis;'"
-		return 0
-	fi
-
-	# Create PostGIS installation script
-	local postgis_script="./install_postgis.sql"
-
-	# Check if the PostGIS installation script exists
-	if [ ! -f "$postgis_script" ]; then
-		print_error "PostGIS installation script not found: $postgis_script"
-		print_info "Please create the file with the necessary PostGIS installation commands."
-		return 1
-	fi
-
-	# Set password for psql
-	export PGPASSWORD=$DB_PASSWORD
-
-	print_info "Connecting to database and installing PostGIS..."
-	if psql -h $DB_ENDPOINT -U $DB_USER -d $DB_NAME -f $postgis_script; then
-		print_success "PostGIS installed successfully"
-	else
-		print_error "Failed to install PostGIS"
-		return 1
-	fi
-
-	# Clean up
-	rm -f $postgis_script
-	unset PGPASSWORD DB_ENDPOINT DB_NAME DB_USER DB_PASSWORD
 }
 
 # Function to display stack outputs

@@ -6,7 +6,7 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 import { PawfectMatchStackProps } from './utils';
 import { BaseStack } from './base-stack';
-import { Duration, RemovalPolicy } from 'aws-cdk-lib';
+import { Duration, Fn, RemovalPolicy } from 'aws-cdk-lib';
 import * as path from 'path';
 
 export interface IdentityStackProps extends PawfectMatchStackProps {}
@@ -197,10 +197,14 @@ export class IdentityStack extends BaseStack {
       'RegisterAdopterFunction',
       {
         functionName: `pawfect-match-register-adopter-${stage}`,
-        runtime: lambda.Runtime.NODEJS_18_X,
-        handler: 'index.handler',
+        runtime: lambda.Runtime.DOTNET_8,
+        handler: 'RegisterAdopter::RegisterAdopter.Function::FunctionHandler',
         code: lambda.Code.fromAsset(
-          path.join(__dirname, '../../lambda/identity/register-adopter')
+          // path.join(__dirname, '../../lambda/identity/register-adopter')
+          path.join(
+            __dirname,
+            '../../Identity/Lambdas/RegisterAdopter/RegisterAdopter/src/RegisterAdopter/bin/Release/net8.0/publish'
+          )
         ),
         timeout: Duration.seconds(30),
         environment: {
@@ -258,7 +262,16 @@ export class IdentityStack extends BaseStack {
     });
 
     // Use API Gateway from environment stack
-    const identityResource = environmentStack.api.root.addResource('identity');
+    const api = apigateway.RestApi.fromRestApiAttributes(
+      this,
+      'PawfectMatchApi',
+      {
+        restApiId: Fn.importValue(`${stage}ApiGatewayId`),
+        rootResourceId: Fn.importValue(`${stage}ApiGatewayRootResourceId`),
+      }
+    );
+
+    const identityResource = api.root.addResource('identity');
     const adoptersResource = identityResource.addResource('adopters');
 
     // Create Lambda integration
@@ -295,10 +308,5 @@ export class IdentityStack extends BaseStack {
           },
         ],
       });
-
-    // Export Lambda function ARN
-    this.exportValue(this.registerAdopterFunction.functionArn, {
-      name: `${stage}RegisterAdopterFunctionArn`,
-    });
   }
 }
