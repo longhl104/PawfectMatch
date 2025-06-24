@@ -53,7 +53,10 @@ export class EnvironmentStack extends cdk.Stack {
         allowOrigins:
           stage === 'production'
             ? ['https://www.pawfectmatch.com']
-            : ['https://development.pawfectmatch.com', 'http://localhost:4200'],
+            : [
+                'https://development.pawfectmatch.com',
+                'https://localhost:4200',
+              ],
         allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
         allowHeaders: ['Content-Type', 'Authorization'],
       },
@@ -61,10 +64,6 @@ export class EnvironmentStack extends cdk.Stack {
       // Deployment options
       deployOptions: {
         stageName: stage,
-        // throttle: {
-        //   rateLimit: stage === 'production' ? 1000 : 100,
-        //   burstLimit: stage === 'production' ? 2000 : 200,
-        // },
       },
     });
 
