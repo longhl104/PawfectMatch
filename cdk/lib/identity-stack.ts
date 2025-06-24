@@ -33,17 +33,9 @@ export class IdentityStack extends BaseStack {
         email: true,
       },
 
-      // Required attributes
+      // Required attributes - only email is required
       standardAttributes: {
         email: {
-          required: true,
-          mutable: true,
-        },
-        givenName: {
-          required: true,
-          mutable: true,
-        },
-        familyName: {
           required: true,
           mutable: true,
         },
@@ -151,16 +143,12 @@ export class IdentityStack extends BaseStack {
         // Read and write attributes
         readAttributes: new cognito.ClientAttributes().withStandardAttributes({
           email: true,
-          givenName: true,
-          familyName: true,
           phoneNumber: true,
           address: true,
         }),
 
         writeAttributes: new cognito.ClientAttributes().withStandardAttributes({
           email: true,
-          givenName: true,
-          familyName: true,
           phoneNumber: true,
           address: true,
         }),
