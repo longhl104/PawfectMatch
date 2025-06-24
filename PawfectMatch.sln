@@ -11,11 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PostGisInstaller", "PostGis
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{599539B4-BF26-7E2A-2FAE-8F6B69CFEF10}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PostGisInstaller", "Environment\Lambdas\PostGisInstaller\src\PostGisInstaller\PostGisInstaller.csproj", "{CFAE0E60-69DF-4E92-9CB3-59D195DD2518}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{F744FAED-5BEC-9470-4C93-A1782F36CAF3}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PostGisInstaller.Tests", "Environment\Lambdas\PostGisInstaller\test\PostGisInstaller.Tests\PostGisInstaller.Tests.csproj", "{C9156FEF-DECC-4281-B5A5-CFC993217061}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
