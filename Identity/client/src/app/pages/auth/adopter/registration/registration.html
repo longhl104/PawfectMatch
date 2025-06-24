@@ -174,94 +174,24 @@
           formControlName="address"
           placeholder="Enter your full address"
           [class.error]="isFieldInvalid('address')"
+          [disabled]="isGoogleMapsLoading"
           autocomplete="off"
         />
-        <div class="help-text">
+        <div class="help-text" *ngIf="!isGoogleMapsLoading">
           Start typing your address and select from the suggestions
+        </div>
+        <div class="help-text" *ngIf="isGoogleMapsLoading">
+          Loading address suggestions...
         </div>
         <div class="error-message" *ngIf="isFieldInvalid('address')">
           <span *ngIf="registrationForm.get('address')?.errors?.['required']">
             Address is required
           </span>
-          <span *ngIf="registrationForm.get('address')?.errors?.['invalidAddress']">
+          <span
+            *ngIf="registrationForm.get('address')?.errors?.['invalidAddress']"
+          >
             Please select a valid address from the suggestions
           </span>
-        </div>
-      </div>
-
-      <!-- Australian State -->
-      <div class="form-group">
-        <label for="state">State *</label>
-        <select
-          id="state"
-          formControlName="state"
-          [class.error]="isFieldInvalid('state')"
-        >
-          <option value="" disabled>Select your state</option>
-          <option value="NSW">New South Wales (NSW)</option>
-          <option value="VIC">Victoria (VIC)</option>
-          <option value="QLD">Queensland (QLD)</option>
-          <option value="WA">Western Australia (WA)</option>
-          <option value="SA">South Australia (SA)</option>
-          <option value="TAS">Tasmania (TAS)</option>
-          <option value="ACT">Australian Capital Territory (ACT)</option>
-          <option value="NT">Northern Territory (NT)</option>
-        </select>
-        <div class="error-message" *ngIf="isFieldInvalid('state')">
-          <span *ngIf="registrationForm.get('state')?.errors?.['required']">
-            Please select your state
-          </span>
-        </div>
-      </div>
-
-      <!-- City/Suburb and Postcode -->
-      <div class="form-row">
-        <div class="form-group">
-          <label for="location">City / Suburb *</label>
-          <input
-            type="text"
-            id="location"
-            formControlName="location"
-            placeholder="e.g., Sydney, Melbourne, Brisbane"
-            [class.error]="isFieldInvalid('location')"
-          />
-          <div class="help-text" *ngIf="!registrationForm.get('state')?.value">
-            Please select a state first
-          </div>
-          <div class="error-message" *ngIf="isFieldInvalid('location')">
-            <span
-              *ngIf="registrationForm.get('location')?.errors?.['required']"
-            >
-              Location is required
-            </span>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="postcode">Postcode *</label>
-          <input
-            type="text"
-            id="postcode"
-            formControlName="postcode"
-            placeholder="e.g., 2000"
-            [class.error]="isFieldInvalid('postcode')"
-            maxlength="4"
-          />
-          <div class="error-message" *ngIf="isFieldInvalid('postcode')">
-            <span
-              *ngIf="registrationForm.get('postcode')?.errors?.['required']"
-            >
-              Postcode is required
-            </span>
-            <span *ngIf="registrationForm.get('postcode')?.errors?.['pattern']">
-              Please enter a valid 4-digit postcode
-            </span>
-            <span
-              *ngIf="registrationForm.get('postcode')?.errors?.['invalidStatePostcode']"
-            >
-              Postcode doesn't match selected state
-            </span>
-          </div>
         </div>
       </div>
 

@@ -4,6 +4,8 @@ import {
   NgZone,
   ViewChild,
   ElementRef,
+  Inject,
+  DOCUMENT,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -16,6 +18,7 @@ import {
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { environment } from 'environments/environment';
+import { GoogleMapsService } from 'shared/services/google-maps.service';
 
 declare const google: any;
 
@@ -32,6 +35,7 @@ export class Registration implements OnInit {
   registrationForm: FormGroup;
   showPassword = false;
   isSubmitting = false;
+  isGoogleMapsLoading = true;
 
   private autocomplete: any;
   selectedAddress: any = null;
@@ -39,42 +43,35 @@ export class Registration implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private router: Router,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private googleMapsService: GoogleMapsService
   ) {
     this.registrationForm = this.createForm();
   }
 
-  ngOnInit() {
-    this.loadGoogleMapsScript();
-  }
-
-  private loadGoogleMapsScript() {
-    if (typeof google !== 'undefined') {
-      this.initializeAutocomplete();
-      return;
+  async ngOnInit() {
+    try {
+      await this.googleMapsService.loadGoogleMaps();
+      this.isGoogleMapsLoading = false;
+      // Wait for view to be ready
+      setTimeout(() => this.initializeAutocomplete(), 100);
+    } catch (error) {
+      console.error('Failed to load Google Maps:', error);
+      this.isGoogleMapsLoading = false;
+      // Show fallback or error message
     }
-
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${environment.googleMapsApiKey}&libraries=places`;
-    script.async = true;
-    script.defer = true;
-    script.onload = () => {
-      this.initializeAutocomplete();
-    };
-    document.head.appendChild(script);
   }
 
   private initializeAutocomplete() {
     if (!this.addressInputRef?.nativeElement) {
-      // If the input isn't ready yet, try again after a short delay
       setTimeout(() => this.initializeAutocomplete(), 100);
       return;
     }
 
     const options = {
-      componentRestrictions: { country: 'AU' }, // Restrict to Australia
+      componentRestrictions: { country: 'AU' },
       fields: ['formatted_address', 'address_components', 'geometry'],
-      types: ['geocode'], // Only return geocoding results
+      types: ['geocode'],
     };
 
     this.autocomplete = new google.maps.places.Autocomplete(
