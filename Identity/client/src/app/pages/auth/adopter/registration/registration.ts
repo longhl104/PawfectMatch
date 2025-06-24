@@ -87,12 +87,56 @@ export class Registration implements OnInit {
           this.registrationForm
             .get('address')
             ?.setErrors({ invalidAddress: true });
+          this.selectedAddress = null;
           return;
         }
 
         this.selectedAddress = this.extractAddressComponents(place);
         this.registrationForm.get('address')?.setValue(place.formatted_address);
         this.registrationForm.get('address')?.setErrors(null);
+      });
+    });
+
+    // Add input event listener to validate manual typing
+    this.addressInputRef.nativeElement.addEventListener(
+      'input',
+      (event: any) => {
+        this.ngZone.run(() => {
+          const currentValue = event.target.value;
+          const addressControl = this.registrationForm.get('address');
+
+          // If user is typing and the current value doesn't match our selected address,
+          // mark as invalid
+          if (
+            currentValue &&
+            (!this.selectedAddress ||
+              this.selectedAddress.formattedAddress !== currentValue)
+          ) {
+            addressControl?.setErrors({ invalidAddress: true });
+          }
+
+          // If field is empty, only show required error
+          if (!currentValue) {
+            this.selectedAddress = null;
+            addressControl?.setErrors({ required: true });
+          }
+        });
+      }
+    );
+
+    // Add blur event to validate when user leaves the field
+    this.addressInputRef.nativeElement.addEventListener('blur', () => {
+      this.ngZone.run(() => {
+        const addressControl = this.registrationForm.get('address');
+        const currentValue = addressControl?.value;
+
+        if (
+          currentValue &&
+          (!this.selectedAddress ||
+            this.selectedAddress.formattedAddress !== currentValue)
+        ) {
+          addressControl?.setErrors({ invalidAddress: true });
+        }
       });
     });
   }
@@ -255,6 +299,12 @@ export class Registration implements OnInit {
   }
 
   async onSubmit(): Promise<void> {
+    // Add additional validation for address
+    const addressControl = this.registrationForm.get('address');
+    if (addressControl?.value && !this.selectedAddress) {
+      addressControl.setErrors({ invalidAddress: true });
+    }
+
     if (this.registrationForm.valid && this.selectedAddress) {
       this.isSubmitting = true;
 
