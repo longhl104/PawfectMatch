@@ -1,11 +1,12 @@
 import {
+  AdopterRegistrationRequest,
+  AdoptersService,
+} from 'shared/services/adopters.service';
+import {
   Component,
-  OnInit,
   NgZone,
   ViewChild,
   ElementRef,
-  Inject,
-  DOCUMENT,
   afterNextRender,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -44,7 +45,8 @@ export class Registration {
     private formBuilder: FormBuilder,
     private router: Router,
     private ngZone: NgZone,
-    private googleMapsService: GoogleMapsService
+    private googleMapsService: GoogleMapsService,
+    private adoptersService: AdoptersService
   ) {
     this.registrationForm = this.createForm();
 
@@ -324,22 +326,23 @@ export class Registration {
         const { confirmPassword, ...registrationData } = formData;
 
         // Include the detailed address information
-        const finalData = {
-          ...registrationData,
-          addressDetails: this.selectedAddress,
-          location: {
-            latitude: this.selectedAddress.latitude,
-            longitude: this.selectedAddress.longitude,
-          },
-        };
+        const finalData: AdopterRegistrationRequest = registrationData;
 
         console.log('Registration data:', finalData);
 
         // TODO: Call registration service
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-
-        this.router.navigate(['/auth/login'], {
-          queryParams: { message: 'Registration successful! Please log in.' },
+        this.adoptersService.register(finalData).subscribe({
+          next: (response) => {
+            console.log('Registration successful:', response);
+            this.router.navigate(['/auth/login'], {
+              queryParams: {
+                message: 'Registration successful! Please log in.',
+              },
+            });
+          },
+          error: (error) => {
+            console.error('Registration failed:', error);
+          },
         });
       } catch (error) {
         console.error('Registration failed:', error);
