@@ -28,6 +28,11 @@ yarn-error.log
 !.vscode/extensions.json
 .history/*
 
+# Environment files with sensitive data
+/src/environments/environment.dev.ts
+/src/environments/environment.staging.ts
+/src/environments/environment.prod.ts
+
 # Miscellaneous
 /.angular/cache
 .sass-cache/

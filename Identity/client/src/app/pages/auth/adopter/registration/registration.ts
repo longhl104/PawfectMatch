@@ -1,4 +1,10 @@
-import { Component } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  NgZone,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -9,6 +15,9 @@ import {
   ValidationErrors,
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { environment } from 'environments/environment';
+
+declare const google: any;
 
 @Component({
   selector: 'app-registration',
@@ -17,13 +26,122 @@ import { Router, RouterModule } from '@angular/router';
   templateUrl: './registration.html',
   styleUrl: './registration.scss',
 })
-export class Registration {
+export class Registration implements OnInit {
+  @ViewChild('addressInput', { static: false }) addressInputRef!: ElementRef;
+
   registrationForm: FormGroup;
   showPassword = false;
   isSubmitting = false;
 
-  constructor(private formBuilder: FormBuilder, private router: Router) {
+  private autocomplete: any;
+  selectedAddress: any = null;
+
+  constructor(
+    private formBuilder: FormBuilder,
+    private router: Router,
+    private ngZone: NgZone
+  ) {
     this.registrationForm = this.createForm();
+  }
+
+  ngOnInit() {
+    this.loadGoogleMapsScript();
+  }
+
+  private loadGoogleMapsScript() {
+    if (typeof google !== 'undefined') {
+      this.initializeAutocomplete();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${environment.googleMapsApiKey}&libraries=places`;
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      this.initializeAutocomplete();
+    };
+    document.head.appendChild(script);
+  }
+
+  private initializeAutocomplete() {
+    if (!this.addressInputRef?.nativeElement) {
+      // If the input isn't ready yet, try again after a short delay
+      setTimeout(() => this.initializeAutocomplete(), 100);
+      return;
+    }
+
+    const options = {
+      componentRestrictions: { country: 'AU' }, // Restrict to Australia
+      fields: ['formatted_address', 'address_components', 'geometry'],
+      types: ['geocode'], // Only return geocoding results
+    };
+
+    this.autocomplete = new google.maps.places.Autocomplete(
+      this.addressInputRef.nativeElement,
+      options
+    );
+
+    this.autocomplete.addListener('place_changed', () => {
+      this.ngZone.run(() => {
+        const place = this.autocomplete.getPlace();
+
+        if (!place.address_components) {
+          this.registrationForm
+            .get('address')
+            ?.setErrors({ invalidAddress: true });
+          return;
+        }
+
+        this.selectedAddress = this.extractAddressComponents(place);
+        this.registrationForm.get('address')?.setValue(place.formatted_address);
+        this.registrationForm.get('address')?.setErrors(null);
+      });
+    });
+  }
+
+  private extractAddressComponents(place: any) {
+    const components = place.address_components;
+    const result = {
+      streetNumber: '',
+      streetName: '',
+      suburb: '',
+      city: '',
+      state: '',
+      postcode: '',
+      country: '',
+      formattedAddress: place.formatted_address,
+      latitude: place.geometry?.location?.lat(),
+      longitude: place.geometry?.location?.lng(),
+    };
+
+    components.forEach((component: any) => {
+      const types = component.types;
+
+      if (types.includes('street_number')) {
+        result.streetNumber = component.long_name;
+      }
+      if (types.includes('route')) {
+        result.streetName = component.long_name;
+      }
+      if (types.includes('locality')) {
+        result.suburb = component.long_name;
+      }
+      if (types.includes('administrative_area_level_2')) {
+        result.city = component.long_name;
+      }
+      if (types.includes('administrative_area_level_1')) {
+        result.state = component.short_name; // NSW, VIC, etc.
+      }
+      if (types.includes('postal_code')) {
+        result.postcode = component.long_name;
+      }
+      if (types.includes('country')) {
+        result.country = component.short_name;
+      }
+    });
+
+    return result;
   }
 
   private createForm(): FormGroup {
@@ -41,17 +159,7 @@ export class Registration {
         ],
         confirmPassword: ['', [Validators.required]],
         phoneNumber: ['', [this.australianPhoneValidator]],
-        state: ['', [Validators.required]],
-        // Start both location and postcode as disabled
-        location: [{ value: '', disabled: true }, [Validators.required]],
-        postcode: [
-          { value: '', disabled: true },
-          [
-            Validators.required,
-            Validators.pattern(/^\d{4}$/),
-            this.postcodeStateValidator(),
-          ],
-        ],
+        address: ['', [Validators.required]], // Single address field
         bio: [''],
         agreeToTerms: [false, [Validators.requiredTrue]],
       },
@@ -60,7 +168,7 @@ export class Registration {
       }
     );
 
-    // Add custom validator to confirmPassword field and set up cross-field validation
+    // Add custom validator to confirmPassword field
     const confirmPasswordControl = form.get('confirmPassword');
     confirmPasswordControl?.setValidators([
       Validators.required,
@@ -72,112 +180,7 @@ export class Registration {
       confirmPasswordControl?.updateValueAndValidity({ emitEvent: false });
     });
 
-    // Enable/disable location and postcode fields based on state selection
-    form.get('state')?.valueChanges.subscribe((stateValue) => {
-      const locationControl = form.get('location');
-      const postcodeControl = form.get('postcode');
-
-      if (stateValue) {
-        // Enable both controls when state is selected
-        locationControl?.enable();
-        postcodeControl?.enable();
-        this.updateLocationPlaceholder(stateValue);
-        this.updatePostcodePlaceholder(stateValue);
-      } else {
-        // Disable and clear both controls when no state is selected
-        locationControl?.disable();
-        postcodeControl?.disable();
-        locationControl?.setValue('');
-        postcodeControl?.setValue('');
-      }
-    });
-
-    // Validate postcode when it changes
-    form.get('postcode')?.valueChanges.subscribe(() => {
-      const postcodeControl = form.get('postcode');
-      if (postcodeControl?.enabled) {
-        postcodeControl.updateValueAndValidity({ emitEvent: false });
-      }
-    });
-
     return form;
-  }
-
-  // Custom validator for postcode based on state
-  private postcodeStateValidator() {
-    return (control: AbstractControl): ValidationErrors | null => {
-      const postcode = control.value;
-      const state = control.parent?.get('state')?.value;
-
-      if (!postcode || !state) return null;
-
-      // Australian postcode ranges by state
-      const postcodeRanges: { [key: string]: (code: number) => boolean } = {
-        NSW: (code) =>
-          (code >= 1000 && code <= 1999) || (code >= 2000 && code <= 2999),
-        ACT: (code) =>
-          (code >= 200 && code <= 299) ||
-          (code >= 2600 && code <= 2699) ||
-          (code >= 2900 && code <= 2920),
-        VIC: (code) =>
-          (code >= 3000 && code <= 3999) || (code >= 8000 && code <= 8999),
-        QLD: (code) =>
-          (code >= 4000 && code <= 4999) || (code >= 9000 && code <= 9999),
-        SA: (code) => code >= 5000 && code <= 5999,
-        WA: (code) =>
-          (code >= 6000 && code <= 6797) || (code >= 6800 && code <= 6999),
-        TAS: (code) => code >= 7000 && code <= 7999,
-        NT: (code) => code >= 800 && code <= 999,
-      };
-
-      const postcodeNum = parseInt(postcode, 10);
-      const isValidRange = postcodeRanges[state]?.(postcodeNum);
-
-      return isValidRange ? null : { invalidStatePostcode: true };
-    };
-  }
-
-  // Update postcode placeholder based on selected state
-  private updatePostcodePlaceholder(state: string): void {
-    const postcodeInput = document.getElementById(
-      'postcode'
-    ) as HTMLInputElement;
-    if (postcodeInput) {
-      const placeholders: { [key: string]: string } = {
-        NSW: 'e.g., 2000, 2300, 2500',
-        VIC: 'e.g., 3000, 3220, 3350',
-        QLD: 'e.g., 4000, 4217, 4870',
-        WA: 'e.g., 6000, 6160, 6230',
-        SA: 'e.g., 5000, 5290, 5600',
-        TAS: 'e.g., 7000, 7250, 6450',
-        ACT: 'e.g., 2600, 2900, 2614',
-        NT: 'e.g., 0800, 0870, 0850',
-      };
-
-      postcodeInput.placeholder = placeholders[state] || 'Enter postcode';
-    }
-  }
-
-  // Update location placeholder based on selected state
-  private updateLocationPlaceholder(state: string): void {
-    const locationInput = document.getElementById(
-      'location'
-    ) as HTMLInputElement;
-    if (locationInput) {
-      const placeholders: { [key: string]: string } = {
-        NSW: 'e.g., Sydney, Newcastle, Wollongong',
-        VIC: 'e.g., Melbourne, Geelong, Ballarat',
-        QLD: 'e.g., Brisbane, Gold Coast, Cairns',
-        WA: 'e.g., Perth, Fremantle, Bunbury',
-        SA: 'e.g., Adelaide, Mount Gambier, Whyalla',
-        TAS: 'e.g., Hobart, Launceston, Burnie',
-        ACT: 'e.g., Canberra, Tuggeranong, Belconnen',
-        NT: 'e.g., Darwin, Alice Springs, Katherine',
-      };
-
-      locationInput.placeholder =
-        placeholders[state] || 'Enter your city or suburb';
-    }
   }
 
   // Custom validator for strong password
@@ -255,36 +258,33 @@ export class Registration {
   }
 
   async onSubmit(): Promise<void> {
-    if (this.registrationForm.valid) {
+    if (this.registrationForm.valid && this.selectedAddress) {
       this.isSubmitting = true;
 
       try {
         const formData = this.registrationForm.value;
-
-        // Remove confirmPassword from the data to be sent
         const { confirmPassword, ...registrationData } = formData;
 
-        // Combine location and postcode for full address identification
-        const fullLocation = `${registrationData.location}, ${registrationData.state} ${registrationData.postcode}`;
-
-        console.log('Registration data:', {
+        // Include the detailed address information
+        const finalData = {
           ...registrationData,
-          fullLocation,
-        });
+          addressDetails: this.selectedAddress,
+          location: {
+            latitude: this.selectedAddress.latitude,
+            longitude: this.selectedAddress.longitude,
+          },
+        };
+
+        console.log('Registration data:', finalData);
 
         // TODO: Call registration service
-        // await this.authService.registerAdopter(registrationData);
-
-        // Simulate API call
         await new Promise((resolve) => setTimeout(resolve, 2000));
 
-        // Navigate to success page or login
         this.router.navigate(['/auth/login'], {
           queryParams: { message: 'Registration successful! Please log in.' },
         });
       } catch (error) {
         console.error('Registration failed:', error);
-        // Handle error (show toast, etc.)
       } finally {
         this.isSubmitting = false;
       }
