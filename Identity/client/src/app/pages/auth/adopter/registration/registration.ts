@@ -18,7 +18,6 @@ import {
   ValidationErrors,
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { environment } from 'environments/environment';
 import { GoogleMapsService } from 'shared/services/google-maps.service';
 
 declare const google: any;
