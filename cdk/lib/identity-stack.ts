@@ -1,5 +1,6 @@
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
+import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import { Construct } from 'constructs';
 import { PawfectMatchStackProps } from './utils';
 import { BaseStack } from './base-stack';
@@ -10,6 +11,7 @@ export interface IdentityStackProps extends PawfectMatchStackProps {}
 export class IdentityStack extends BaseStack {
   public readonly userPool: cognito.UserPool;
   public readonly userPoolClient: cognito.UserPoolClient;
+  public readonly adoptersTable: dynamodb.Table;
   public readonly api: apigateway.RestApi;
 
   constructor(scope: Construct, id: string, props: IdentityStackProps) {
@@ -155,6 +157,25 @@ export class IdentityStack extends BaseStack {
       }
     );
 
+    // Create DynamoDB table for Adopters
+    this.adoptersTable = new dynamodb.Table(this, 'AdoptersTable', {
+      tableName: `pawfect-match-adopters-${stage}`,
+      partitionKey: {
+        name: 'userId',
+        type: dynamodb.AttributeType.STRING,
+      },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      pointInTimeRecoverySpecification:
+        stage === 'production'
+          ? {
+              pointInTimeRecoveryEnabled: true,
+            }
+          : undefined,
+      deletionProtection: stage === 'production',
+      removalPolicy:
+        stage === 'production' ? RemovalPolicy.RETAIN : RemovalPolicy.DESTROY,
+    });
+
     // Create User Pool Domain (optional, for hosted UI)
     const userPoolDomain = new cognito.UserPoolDomain(
       this,
@@ -169,19 +190,27 @@ export class IdentityStack extends BaseStack {
 
     // Export important values
     this.exportValue(this.userPool.userPoolId, {
-      name: 'UserPoolId',
+      name: `${stage}UserPoolId`,
     });
 
     this.exportValue(this.userPoolClient.userPoolClientId, {
-      name: 'UserPoolClientId',
+      name: `${stage}UserPoolClientId`,
     });
 
     this.exportValue(userPoolDomain.baseUrl(), {
-      name: 'UserPoolDomain',
+      name: `${stage}UserPoolDomain`,
     });
 
     this.exportValue(this.userPool.userPoolArn, {
-      name: 'UserPoolArn',
+      name: `${stage}UserPoolArn`,
+    });
+
+    this.exportValue(this.adoptersTable.tableName, {
+      name: `${stage}AdoptersTableName`,
+    });
+
+    this.exportValue(this.adoptersTable.tableArn, {
+      name: `${stage}AdoptersTableArn`,
     });
   }
 }
