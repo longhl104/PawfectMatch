@@ -3,6 +3,7 @@ using System.Text.Json;
 using Npgsql;
 using Amazon.SecretsManager;
 using Amazon.SecretsManager.Model;
+using System.Text.Json.Serialization;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
@@ -81,6 +82,8 @@ public class Function
         var secretArn = properties["SecretArn"].ToString()!;
 
         context.Logger.LogInformation($"Starting PostGIS installation for database: {databaseHost}");
+        context.Logger.LogInformation($"Database name: {databaseName}");
+        context.Logger.LogInformation($"Secret ARN: {secretArn}");
 
         // Get database credentials from Secrets Manager
         var secretRequest = new GetSecretValueRequest
@@ -89,6 +92,10 @@ public class Function
         };
 
         var secretResponse = await _secretsManager.GetSecretValueAsync(secretRequest);
+
+        // Log the raw secret string for debugging (be careful in production!)
+        context.Logger.LogInformation($"Raw secret string: {secretResponse.SecretString}");
+
         var secret = JsonSerializer.Deserialize<DatabaseSecret>(secretResponse.SecretString);
 
         if (secret == null)
@@ -96,16 +103,37 @@ public class Function
             throw new Exception("Failed to deserialize database secret");
         }
 
+        context.Logger.LogInformation($"Secret deserialized - Username: {secret.Username}");
+        context.Logger.LogInformation($"Secret deserialized - Password length: {secret.Password?.Length ?? 0}");
+        context.Logger.LogInformation($"Secret deserialized - Host: {secret.Host}");
+        context.Logger.LogInformation($"Secret deserialized - Port: {secret.Port}");
+
+        // Validate that we have the required credentials
+        if (string.IsNullOrEmpty(secret.Username) || string.IsNullOrEmpty(secret.Password))
+        {
+            throw new Exception($"Invalid credentials in secret - Username: {secret.Username}, Password empty: {string.IsNullOrEmpty(secret.Password)}");
+        }
+
         context.Logger.LogInformation("Successfully retrieved database credentials from Secrets Manager");
 
-        // Build connection string
-        var connectionString = $"Host={databaseHost};Database={databaseName};Username={secret.Username};Password={secret.Password};Port=5432;SSL Mode=Require;Trust Server Certificate=true;";
+        // Build connection string with explicit password validation
+        var connectionString = $"Host={databaseHost};Database={databaseName};Username={secret.Username};Password={secret.Password};Port=5432;SSL Mode=Require;Trust Server Certificate=true;Command Timeout=30;";
+
+        context.Logger.LogInformation($"Connection string (without password): Host={databaseHost};Database={databaseName};Username={secret.Username};Password=***;Port=5432;SSL Mode=Require;Trust Server Certificate=true;Command Timeout=30;");
 
         // Connect to database and install PostGIS
         await using var connection = new NpgsqlConnection(connectionString);
-        await connection.OpenAsync();
 
-        context.Logger.LogInformation("Connected to PostgreSQL database");
+        try
+        {
+            await connection.OpenAsync();
+            context.Logger.LogInformation("Connected to PostgreSQL database");
+        }
+        catch (Exception ex)
+        {
+            context.Logger.LogError($"Failed to connect to database: {ex.Message}");
+            throw;
+        }
 
         // Install PostGIS extensions
         await using var command = connection.CreateCommand();
@@ -169,10 +197,21 @@ public class PostGISInstallResult
 
 public class DatabaseSecret
 {
+    [JsonPropertyName("username")]
     public string Username { get; set; } = string.Empty;
+
+    [JsonPropertyName("password")]
     public string Password { get; set; } = string.Empty;
+
+    [JsonPropertyName("engine")]
     public string Engine { get; set; } = string.Empty;
+
+    [JsonPropertyName("host")]
     public string Host { get; set; } = string.Empty;
+
+    [JsonPropertyName("port")]
     public int Port { get; set; }
+
+    [JsonPropertyName("dbInstanceIdentifier")]
     public string DbInstanceIdentifier { get; set; } = string.Empty;
 }

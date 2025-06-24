@@ -141,6 +141,24 @@ export class EnvironmentStack extends cdk.Stack {
     // Grant Lambda access to read secrets
     this.database.secret?.grantRead(lambdaRole);
 
+    // Create security group for Lambda function
+    const lambdaSecurityGroup = new ec2.SecurityGroup(
+      this,
+      'LambdaSecurityGroup',
+      {
+        vpc: this.vpc,
+        description: 'Security group for PostGIS Lambda function',
+        allowAllOutbound: true, // Allow outbound traffic to AWS services
+      }
+    );
+
+    // Allow Lambda to connect to database
+    dbSecurityGroup.addIngressRule(
+      lambdaSecurityGroup,
+      ec2.Port.tcp(5432),
+      'Allow PostGIS Lambda to connect to database'
+    );
+
     // Create Lambda function for PostGIS installation
     const postGisInstaller = new lambda.Function(this, 'PostGISInstaller', {
       runtime: lambda.Runtime.DOTNET_8,
@@ -150,7 +168,7 @@ export class EnvironmentStack extends cdk.Stack {
       vpcSubnets: {
         subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
       },
-      securityGroups: [dbSecurityGroup],
+      securityGroups: [lambdaSecurityGroup], // Use Lambda-specific security group
       code: lambda.Code.fromAsset(
         '../Environment/Lambdas/PostGisInstaller/src/PostGisInstaller/bin/Release/net8.0/publish'
       ),
