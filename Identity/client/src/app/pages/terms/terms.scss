@@ -1,0 +1,187 @@
+.terms-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.6;
+  color: #333;
+}
+
+.terms-header {
+  margin-bottom: 40px;
+
+  .back-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    color: #6366f1;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 8px 0;
+    margin-bottom: 20px;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: #4f46e5;
+    }
+
+    svg {
+      fill: currentColor;
+    }
+  }
+
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 8px;
+  }
+
+  .last-updated {
+    color: #6b7280;
+    font-size: 14px;
+    margin: 0;
+  }
+}
+
+.terms-content {
+  margin-bottom: 40px;
+}
+
+.terms-section {
+  margin-bottom: 32px;
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e5e7eb;
+  }
+
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #374151;
+    margin: 20px 0 12px 0;
+  }
+
+  p {
+    margin-bottom: 12px;
+    color: #4b5563;
+  }
+
+  ul {
+    margin: 12px 0;
+    padding-left: 24px;
+
+    li {
+      margin-bottom: 8px;
+      color: #4b5563;
+
+      strong {
+        color: #1f2937;
+      }
+    }
+  }
+
+  a {
+    color: #6366f1;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.contact-info {
+  background: #f9fafb;
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 12px;
+
+  p {
+    margin-bottom: 8px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.terms-footer {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 24px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+
+  .btn-secondary,
+  .btn-primary {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    font-size: 14px;
+  }
+
+  .btn-secondary {
+    background: #f3f4f6;
+    color: #374151;
+
+    &:hover {
+      background: #e5e7eb;
+    }
+  }
+
+  .btn-primary {
+    background: #6366f1;
+    color: white;
+
+    &:hover {
+      background: #4f46e5;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .terms-container {
+    padding: 16px;
+  }
+
+  .terms-header h1 {
+    font-size: 2rem;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+
+    .btn-secondary,
+    .btn-primary {
+      width: 100%;
+    }
+  }
+}
+
+// Print styles
+@media print {
+  .terms-header .back-btn,
+  .terms-footer {
+    display: none;
+  }
+
+  .terms-container {
+    max-width: none;
+    padding: 0;
+  }
+}
