@@ -4,7 +4,7 @@
       <svg
         xmlns="http://www.w3.org/2000/svg"
         height="20"
-        viewBox="http://www.w3.org/2000/svg"
+        viewBox="0 0 960 960"
         width="20"
       >
         <path
@@ -48,6 +48,7 @@
           id="email"
           formControlName="email"
           placeholder="Enter your email address"
+          autocomplete="email"
           [class.error]="isFieldInvalid('email')"
         />
         <div class="error-message" *ngIf="isFieldInvalid('email')">
@@ -69,6 +70,7 @@
             id="password"
             formControlName="password"
             placeholder="Create a strong password"
+            autocomplete="new-password"
             [class.error]="isFieldInvalid('password')"
           />
           <button
@@ -80,7 +82,7 @@
               *ngIf="!showPassword"
               xmlns="http://www.w3.org/2000/svg"
               height="20"
-              viewBox="http://www.w3.org/2000/svg"
+              viewBox="0 0 960 960"
               width="20"
             >
               <path
@@ -91,7 +93,7 @@
               *ngIf="showPassword"
               xmlns="http://www.w3.org/2000/svg"
               height="20"
-              viewBox="http://www.w3.org/2000/svg"
+              viewBox="0 0 960 960"
               width="20"
             >
               <path
@@ -122,6 +124,7 @@
           id="confirmPassword"
           formControlName="confirmPassword"
           placeholder="Confirm your password"
+          autocomplete="new-password"
           [class.error]="isFieldInvalid('confirmPassword')"
         />
         @if(registrationForm.get('confirmPassword')?.errors?.['required'] ||
@@ -174,7 +177,6 @@
           formControlName="address"
           placeholder="Enter your full address"
           [class.error]="isFieldInvalid('address')"
-          [disabled]="isGoogleMapsLoading"
           autocomplete="off"
         />
         <div class="help-text" *ngIf="!isGoogleMapsLoading">

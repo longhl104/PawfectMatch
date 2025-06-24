@@ -53,11 +53,19 @@ export class Registration implements OnInit {
     try {
       await this.googleMapsService.loadGoogleMaps();
       this.isGoogleMapsLoading = false;
+
+      // Enable the address field when Google Maps is loaded
+      this.registrationForm.get('address')?.enable();
+
       // Wait for view to be ready
       setTimeout(() => this.initializeAutocomplete(), 100);
     } catch (error) {
       console.error('Failed to load Google Maps:', error);
       this.isGoogleMapsLoading = false;
+
+      // Still enable the field even if Google Maps fails to load
+      this.registrationForm.get('address')?.enable();
+
       // Show fallback or error message
     }
   }
@@ -200,7 +208,10 @@ export class Registration implements OnInit {
         ],
         confirmPassword: ['', [Validators.required]],
         phoneNumber: ['', [this.australianPhoneValidator]],
-        address: ['', [Validators.required]], // Single address field
+        address: [
+          { value: '', disabled: this.isGoogleMapsLoading },
+          [Validators.required]
+        ], // Initialize with disabled state
         bio: [''],
         agreeToTerms: [false, [Validators.requiredTrue]],
       },
