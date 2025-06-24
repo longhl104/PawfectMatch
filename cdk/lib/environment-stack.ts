@@ -1,8 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
-import * as rds from 'aws-cdk-lib/aws-rds';
-import * as iam from 'aws-cdk-lib/aws-iam';
-import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 import { SharedStack } from './shared-stack';
 import { StageType } from './utils';
@@ -15,7 +12,6 @@ export interface EnvironmentStackProps extends cdk.StackProps {
 
 export class EnvironmentStack extends cdk.Stack {
   public readonly vpc: ec2.Vpc;
-  public readonly database: rds.DatabaseInstance;
 
   constructor(scope: Construct, id: string, props: EnvironmentStackProps) {
     super(scope, id, props);
@@ -44,165 +40,5 @@ export class EnvironmentStack extends cdk.Stack {
         },
       ],
     });
-
-    // Create security group for database
-    const dbSecurityGroup = new ec2.SecurityGroup(
-      this,
-      'DatabaseSecurityGroup',
-      {
-        vpc: this.vpc,
-        description: 'Security group for PostgreSQL database',
-        allowAllOutbound: false,
-      }
-    );
-
-    // Allow inbound connections from VPC on PostgreSQL port
-    dbSecurityGroup.addIngressRule(
-      ec2.Peer.ipv4(this.vpc.vpcCidrBlock),
-      ec2.Port.tcp(5432),
-      'Allow PostgreSQL connections from VPC'
-    );
-
-    // Create DB subnet group
-    const dbSubnetGroup = new rds.SubnetGroup(this, 'DatabaseSubnetGroup', {
-      vpc: this.vpc,
-      description: 'Subnet group for PostgreSQL database',
-      vpcSubnets: {
-        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
-      },
-    });
-
-    // Create PostgreSQL database with PostGIS extension
-    this.database = new rds.DatabaseInstance(this, 'PostgreSQLDatabase', {
-      engine: rds.DatabaseInstanceEngine.postgres({
-        version: rds.PostgresEngineVersion.VER_17_5,
-      }),
-      instanceType: ec2.InstanceType.of(
-        ec2.InstanceClass.T3,
-        ec2.InstanceSize.MICRO
-      ),
-      vpc: this.vpc,
-      subnetGroup: dbSubnetGroup,
-      securityGroups: [dbSecurityGroup],
-      databaseName: 'pawfectmatch',
-      credentials: rds.Credentials.fromGeneratedSecret('dbadmin', {
-        secretName: `pawfectmatch-db-credentials-${stage}`,
-      }),
-      backupRetention:
-        stage === 'production' ? cdk.Duration.days(7) : cdk.Duration.days(1),
-      deletionProtection: stage === 'production',
-      multiAz: stage === 'production',
-      storageEncrypted: true,
-      allocatedStorage: stage === 'production' ? 100 : 20,
-      maxAllocatedStorage: stage === 'production' ? 1000 : 100,
-      parameterGroup: new rds.ParameterGroup(this, 'DatabaseParameterGroup', {
-        engine: rds.DatabaseInstanceEngine.postgres({
-          version: rds.PostgresEngineVersion.VER_17_5,
-        }),
-        parameters: {
-          log_statement: stage === 'production' ? 'none' : 'all',
-        },
-      }),
-    });
-
-    // Output the database endpoint
-    new cdk.CfnOutput(this, 'DatabaseEndpoint', {
-      value: this.database.instanceEndpoint.hostname,
-      description: 'PostgreSQL database endpoint',
-    });
-
-    // Output the VPC ID
-    new cdk.CfnOutput(this, 'VpcId', {
-      value: this.vpc.vpcId,
-      description: 'VPC ID',
-    });
-
-    // Create VPC endpoints for AWS services
-    const secretsManagerEndpoint = this.vpc.addInterfaceEndpoint(
-      'SecretsManagerEndpoint',
-      {
-        service: ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER,
-        subnets: {
-          subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
-        },
-      }
-    );
-
-    // Create Lambda execution role
-    const lambdaRole = new iam.Role(this, 'PostGISLambdaRole', {
-      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
-      managedPolicies: [
-        iam.ManagedPolicy.fromAwsManagedPolicyName(
-          'service-role/AWSLambdaVPCAccessExecutionRole'
-        ),
-      ],
-    });
-
-    // Grant Lambda access to read secrets
-    this.database.secret?.grantRead(lambdaRole);
-
-    // Create security group for Lambda function
-    const lambdaSecurityGroup = new ec2.SecurityGroup(
-      this,
-      'LambdaSecurityGroup',
-      {
-        vpc: this.vpc,
-        description: 'Security group for PostGIS Lambda function',
-        allowAllOutbound: true, // Allow outbound traffic to AWS services
-      }
-    );
-
-    // Allow Lambda to connect to database
-    dbSecurityGroup.addIngressRule(
-      lambdaSecurityGroup,
-      ec2.Port.tcp(5432),
-      'Allow PostGIS Lambda to connect to database'
-    );
-
-    // Create Lambda function for PostGIS installation
-    const postGisInstaller = new lambda.Function(this, 'PostGISInstaller', {
-      runtime: lambda.Runtime.DOTNET_8,
-      handler: 'PostGisInstaller::PostGisInstaller.Function::FunctionHandler',
-      role: lambdaRole,
-      vpc: this.vpc,
-      vpcSubnets: {
-        subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
-      },
-      securityGroups: [lambdaSecurityGroup], // Use Lambda-specific security group
-      code: lambda.Code.fromAsset(
-        '../Environment/Lambdas/PostGisInstaller/src/PostGisInstaller/bin/Release/net8.0/publish'
-      ),
-      timeout: cdk.Duration.minutes(5),
-      memorySize: 512,
-    });
-
-    // Create a custom resource provider to handle PostGIS installation
-    const postGisProvider = new cdk.custom_resources.Provider(
-      this,
-      'PostGISProvider',
-      {
-        onEventHandler: postGisInstaller,
-        logRetention: cdk.aws_logs.RetentionDays.ONE_WEEK,
-      }
-    );
-
-    // Create custom resource to trigger PostGIS installation
-    const postGisCustomResource = new cdk.CustomResource(
-      this,
-      'PostGISCustomResource',
-      {
-        serviceToken: postGisProvider.serviceToken,
-        properties: {
-          DatabaseHost: this.database.instanceEndpoint.hostname,
-          DatabaseName: 'pawfectmatch',
-          SecretArn: this.database.secret?.secretArn || '',
-          // Add a timestamp to force updates when needed
-          Timestamp: Date.now().toString(),
-        },
-      }
-    );
-
-    // Ensure the custom resource runs after the database is created
-    postGisCustomResource.node.addDependency(this.database);
   }
 }
