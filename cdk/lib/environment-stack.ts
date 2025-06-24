@@ -117,6 +117,17 @@ export class EnvironmentStack extends cdk.Stack {
       description: 'VPC ID',
     });
 
+    // Create VPC endpoints for AWS services
+    const secretsManagerEndpoint = this.vpc.addInterfaceEndpoint(
+      'SecretsManagerEndpoint',
+      {
+        service: ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER,
+        subnets: {
+          subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
+        },
+      }
+    );
+
     // Create Lambda execution role
     const lambdaRole = new iam.Role(this, 'PostGISLambdaRole', {
       assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
