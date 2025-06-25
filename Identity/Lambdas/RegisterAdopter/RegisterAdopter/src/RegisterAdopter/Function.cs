@@ -24,7 +24,7 @@ public class AdopterRegistrationRequest
 public class AdopterRegistrationResponse
 {
     public string Message { get; set; } = string.Empty;
-    public string AdopterId { get; set; } = string.Empty;
+    public string UserId { get; set; } = string.Empty;
 }
 
 public class Function
@@ -86,19 +86,19 @@ public class Function
             }
 
             // Generate unique adopter ID
-            var adopterId = Guid.NewGuid().ToString();
+            var userId = Guid.NewGuid().ToString();
 
             // Create user in Cognito
-            await CreateCognitoUser(registrationRequest, adopterId);
+            await CreateCognitoUser(registrationRequest, userId, context);
 
             // Save adopter profile to DynamoDB
-            await SaveAdopterProfile(registrationRequest, adopterId);
+            await SaveAdopterProfile(registrationRequest, userId);
 
             // Return success response
             var response = new AdopterRegistrationResponse
             {
                 Message = "Registration successful! Please check your email to verify your account.",
-                AdopterId = adopterId
+                UserId = userId
             };
 
             return new APIGatewayProxyResponse
@@ -130,7 +130,7 @@ public class Function
         }
     }
 
-    private string ValidateRegistrationRequest(AdopterRegistrationRequest request)
+    private static string ValidateRegistrationRequest(AdopterRegistrationRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.FullName))
             return "Full name is required";
@@ -153,7 +153,7 @@ public class Function
         return string.Empty;
     }
 
-    private bool IsValidEmail(string email)
+    private static bool IsValidEmail(string email)
     {
         try
         {
@@ -185,20 +185,18 @@ public class Function
         }
     }
 
-    private async Task CreateCognitoUser(AdopterRegistrationRequest request, string adopterId)
+    private async Task CreateCognitoUser(AdopterRegistrationRequest request, string userId, ILambdaContext context)
     {
         var userAttributes = new List<AttributeType>
         {
             new() { Name = "email", Value = request.Email },
             new() { Name = "email_verified", Value = "false" },
-            new() { Name = "name", Value = request.FullName },
-            new() { Name = "custom:user_type", Value = "adopter" },
-            new() { Name = "custom:adopter_id", Value = adopterId }
+            new() { Name = "name", Value = request.FullName }
         };
 
         if (!string.IsNullOrWhiteSpace(request.PhoneNumber))
         {
-            userAttributes.Add(new AttributeType { Name = "phone_number", Value = request.PhoneNumber });
+            userAttributes.Add(new AttributeType { Name = "phone_number", Value = $"+61{request.PhoneNumber}" });
         }
 
         var createUserRequest = new AdminCreateUserRequest
@@ -207,11 +205,13 @@ public class Function
             Username = request.Email,
             UserAttributes = userAttributes,
             TemporaryPassword = request.Password,
-            MessageAction = MessageActionType.SUPPRESS, // We'll handle email verification separately
+            MessageAction = MessageActionType.SUPPRESS,
             ForceAliasCreation = false
         };
 
         var createUserResponse = await _cognitoClient.AdminCreateUserAsync(createUserRequest);
+
+        context.Logger.LogInformation($"Created user in Cognito: {createUserResponse.User.Username}");
 
         // Set permanent password
         var setPasswordRequest = new AdminSetUserPasswordRequest
@@ -223,27 +223,28 @@ public class Function
         };
 
         await _cognitoClient.AdminSetUserPasswordAsync(setPasswordRequest);
+        context.Logger.LogInformation($"Set permanent password for user: {request.Email}");
     }
 
-    private async Task SaveAdopterProfile(AdopterRegistrationRequest request, string adopterId)
+    private async Task SaveAdopterProfile(AdopterRegistrationRequest request, string userId)
     {
         var item = new Dictionary<string, AttributeValue>
         {
-            ["AdopterId"] = new AttributeValue { S = adopterId },
+            ["UserId"] = new AttributeValue { S = userId },
             ["FullName"] = new AttributeValue { S = request.FullName },
             ["Email"] = new AttributeValue { S = request.Email },
             ["Address"] = new AttributeValue { S = request.Address },
             ["IsVerified"] = new AttributeValue { BOOL = false },
             ["DateJoined"] = new AttributeValue { S = DateTime.UtcNow.ToString("O") },
             ["LastActive"] = new AttributeValue { S = DateTime.UtcNow.ToString("O") },
-            ["AdoptionHistory"] = new AttributeValue { L = new List<AttributeValue>() },
+            ["AdoptionHistory"] = new AttributeValue { L = [] },
             ["Preferences"] = new AttributeValue
             {
                 M = new Dictionary<string, AttributeValue>
                 {
-                    ["PetTypes"] = new AttributeValue { L = new List<AttributeValue>() },
-                    ["PetSizes"] = new AttributeValue { L = new List<AttributeValue>() },
-                    ["AgeRanges"] = new AttributeValue { L = new List<AttributeValue>() },
+                    ["PetTypes"] = new AttributeValue { L = [] },
+                    ["PetSizes"] = new AttributeValue { L = [] },
+                    ["AgeRanges"] = new AttributeValue { L = [] },
                     ["ActivityLevel"] = new AttributeValue { S = "" },
                     ["HasChildren"] = new AttributeValue { BOOL = false },
                     ["HasOtherPets"] = new AttributeValue { BOOL = false },
@@ -277,13 +278,13 @@ public class Function
         {
             TableName = _tableName,
             Item = item,
-            ConditionExpression = "attribute_not_exists(AdopterId)" // Prevent duplicates
+            ConditionExpression = "attribute_not_exists(UserId)" // Prevent duplicates
         };
 
         await _dynamoDbClient.PutItemAsync(putItemRequest);
     }
 
-    private APIGatewayProxyResponse CreateErrorResponse(int statusCode, string message)
+    private static APIGatewayProxyResponse CreateErrorResponse(int statusCode, string message)
     {
         var errorResponse = new { error = message };
 

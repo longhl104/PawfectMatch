@@ -164,7 +164,7 @@ export class IdentityStack extends BaseStack {
     this.adoptersTable = new dynamodb.Table(this, 'AdoptersTable', {
       tableName: `pawfect-match-adopters-${stage}`,
       partitionKey: {
-        name: 'userId',
+        name: 'UserId',
         type: dynamodb.AttributeType.STRING,
       },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,

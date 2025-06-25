@@ -121,10 +121,10 @@ export class AdoptersService {
    */
   register(
     request: AdopterRegistrationRequest
-  ): Observable<{ message: string; adopterId: string }> {
+  ): Observable<{ message: string; userId: string }> {
     return this.http
-      .post<{ message: string; adopterId: string }>(
-        `${this.apiUrl}/identity/adopters/register`,
+      .post<{ message: string; userId: string }>(
+        `${this.apiUrl}/register`,
         request
       )
       .pipe(catchError(this.handleError));
