@@ -4,7 +4,7 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
-import { PawfectMatchStackProps } from './utils';
+import { LambdaUtils, PawfectMatchStackProps } from './utils';
 import { BaseStack } from './base-stack';
 import { Duration, Fn, RemovalPolicy } from 'aws-cdk-lib';
 import * as path from 'path';
@@ -192,27 +192,20 @@ export class IdentityStack extends BaseStack {
     );
 
     // Create Lambda function for adopter registration
-    this.registerAdopterFunction = new lambda.Function(
+    this.registerAdopterFunction = LambdaUtils.createFunction(
       this,
       'RegisterAdopterFunction',
+      'Identity',
+      stage,
       {
-        functionName: `pawfect-match-register-adopter-${stage}`,
-        runtime: lambda.Runtime.DOTNET_8,
-        handler: 'RegisterAdopter::RegisterAdopter.Function::FunctionHandler',
-        code: lambda.Code.fromAsset(
-          // path.join(__dirname, '../../lambda/identity/register-adopter')
-          path.join(
-            __dirname,
-            '../../Identity/Lambdas/RegisterAdopter/RegisterAdopter/src/RegisterAdopter/bin/Release/net8.0/publish'
-          )
-        ),
-        timeout: Duration.seconds(30),
+        functionName: 'RegisterAdopter',
         environment: {
           USER_POOL_ID: this.userPool.userPoolId,
           USER_POOL_CLIENT_ID: this.userPoolClient.userPoolClientId,
           ADOPTERS_TABLE_NAME: this.adoptersTable.tableName,
           STAGE: stage,
         },
+        description: 'Lambda function to register new adopters',
       }
     );
 
