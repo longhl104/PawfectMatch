@@ -2,8 +2,6 @@ using Amazon.Lambda.Core;
 using Amazon.Lambda.DynamoDBEvents;
 using Amazon.CognitoIdentityProvider;
 using Amazon.CognitoIdentityProvider.Model;
-using Amazon.SimpleEmailV2;
-using Amazon.SimpleEmailV2.Model;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
@@ -12,21 +10,15 @@ namespace SendVerificationEmail;
 
 public class Function
 {
-    private readonly IAmazonSimpleEmailServiceV2 _sesClient;
     private readonly IAmazonCognitoIdentityProvider _cognitoClient;
     private readonly string _userPoolId;
-    private readonly string _fromEmailAddress;
     private readonly string _userPoolClientId;
-    private readonly string _frontendBaseUrl;
 
     public Function()
     {
-        _sesClient = new AmazonSimpleEmailServiceV2Client();
         _cognitoClient = new AmazonCognitoIdentityProviderClient();
         _userPoolId = Environment.GetEnvironmentVariable("USER_POOL_ID") ?? string.Empty;
         _userPoolClientId = Environment.GetEnvironmentVariable("USER_POOL_CLIENT_ID") ?? string.Empty;
-        _fromEmailAddress = Environment.GetEnvironmentVariable("FROM_EMAIL_ADDRESS") ?? "noreply@example.com";
-        _frontendBaseUrl = Environment.GetEnvironmentVariable("FRONTEND_BASE_URL") ?? "https://www.pawfectmatch.com";
     }
 
     /// <summary>
@@ -141,6 +133,12 @@ public class Function
     private async Task SendVerificationEmail(string toEmail, string? fullName, string userId, ILambdaContext context)
     {
         context.Logger.LogInformation($"Triggering Cognito email verification for user: {userId}");
+
+        if (string.IsNullOrEmpty(_userPoolClientId))
+        {
+            context.Logger.LogError("USER_POOL_CLIENT_ID environment variable is not set.");
+            throw new InvalidOperationException("USER_POOL_CLIENT_ID environment variable is not set.");
+        }
 
         try
         {

@@ -249,6 +249,7 @@ export class IdentityStack extends BaseStack {
             stage === 'production' ? 'www' : stage
           }.pawfectmatch.com`,
           STAGE: stage,
+          USER_POOL_CLIENT_ID: this.userPoolClient.userPoolClientId,
         },
         description:
           'Lambda function to send verification emails to new adopters',
