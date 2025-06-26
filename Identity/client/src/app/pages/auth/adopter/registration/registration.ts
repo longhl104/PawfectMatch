@@ -21,6 +21,7 @@ import {
 import { Router, RouterModule } from '@angular/router';
 import { GoogleMapsService } from 'shared/services/google-maps.service';
 import { ToastService } from 'shared/services/toast.service';
+import { ErrorHandlingService } from 'shared/services/error-handling.service';
 import { firstValueFrom } from 'rxjs';
 
 declare const google: any;
@@ -49,7 +50,8 @@ export class Registration {
     private ngZone: NgZone,
     private googleMapsService: GoogleMapsService,
     private adoptersService: AdoptersService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private errorHandlingService: ErrorHandlingService
   ) {
     this.registrationForm = this.createForm();
 
@@ -67,13 +69,15 @@ export class Registration {
         console.error('Failed to load Google Maps:', error);
         this.isGoogleMapsLoading = false;
 
+        // Use the global error handler with context
+        this.errorHandlingService.handleErrorWithComponent(
+          error,
+          this,
+          'loadGoogleMaps'
+        );
+
         // Still enable the field even if Google Maps fails to load
         this.registrationForm.get('address')?.enable();
-
-        // Show fallback or error message
-        this.toastService.warning(
-          'Google Maps failed to load. Please type your address manually.'
-        );
       }
     });
   }
@@ -327,13 +331,13 @@ export class Registration {
     if (this.registrationForm.valid && this.selectedAddress) {
       this.isSubmitting = true;
 
+      const formData = this.registrationForm.value;
+      const { confirmPassword, ...registrationData } = formData;
+
+      // Include the detailed address information
+      const finalData: AdopterRegistrationRequest = registrationData;
+
       try {
-        const formData = this.registrationForm.value;
-        const { confirmPassword, ...registrationData } = formData;
-
-        // Include the detailed address information
-        const finalData: AdopterRegistrationRequest = registrationData;
-
         console.log('Registration data:', finalData);
 
         await firstValueFrom(this.adoptersService.register(finalData));
@@ -343,9 +347,6 @@ export class Registration {
         );
 
         this.router.navigate(['/auth/login']);
-      } catch (error) {
-        console.error('Registration failed:', error);
-        this.toastService.error('Registration failed. Please try again.');
       } finally {
         this.isSubmitting = false;
       }

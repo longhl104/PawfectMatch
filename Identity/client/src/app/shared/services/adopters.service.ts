@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, BehaviorSubject, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { environment } from 'environments/environment';
 
 export interface AdopterRegistrationRequest {
@@ -122,31 +121,10 @@ export class AdoptersService {
   register(
     request: AdopterRegistrationRequest
   ): Observable<{ message: string; userId: string }> {
-    return this.http
-      .post<{ message: string; userId: string }>(
-        `${this.apiUrl}/register`,
-        request
-      )
-      .pipe(catchError(this.handleError));
-  }
-
-  /**
-   * Handle HTTP errors
-   */
-  private handleError(error: any): Observable<never> {
-    let errorMessage = 'An unexpected error occurred';
-
-    if (error.error instanceof ErrorEvent) {
-      // Client-side error
-      errorMessage = error.error.message;
-    } else {
-      // Server-side error
-      errorMessage =
-        error.error?.message ||
-        `Error Code: ${error.status}\nMessage: ${error.message}`;
-    }
-
-    console.error('AdoptersService Error:', error);
-    return throwError(() => new Error(errorMessage));
+    return this.http.post<{ message: string; userId: string }>(
+      `${this.apiUrl}/register`,
+      request
+    );
+    // Note: HTTP errors are now handled by the global error interceptor
   }
 }
