@@ -20,6 +20,7 @@ import {
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { GoogleMapsService } from 'shared/services/google-maps.service';
+import { ToastService } from 'shared/services/toast.service';
 import { firstValueFrom } from 'rxjs';
 
 declare const google: any;
@@ -47,7 +48,8 @@ export class Registration {
     private router: Router,
     private ngZone: NgZone,
     private googleMapsService: GoogleMapsService,
-    private adoptersService: AdoptersService
+    private adoptersService: AdoptersService,
+    private toastService: ToastService
   ) {
     this.registrationForm = this.createForm();
 
@@ -69,6 +71,9 @@ export class Registration {
         this.registrationForm.get('address')?.enable();
 
         // Show fallback or error message
+        this.toastService.warning(
+          'Google Maps failed to load. Please type your address manually.'
+        );
       }
     });
   }
@@ -333,13 +338,14 @@ export class Registration {
 
         await firstValueFrom(this.adoptersService.register(finalData));
         console.log('Registration successful');
-        this.router.navigate(['/auth/login'], {
-          queryParams: {
-            message: 'Registration successful! Please log in.',
-          },
-        });
+        this.toastService.success(
+          'Registration successful! Welcome to PawfectMatch!'
+        );
+
+        this.router.navigate(['/auth/login']);
       } catch (error) {
         console.error('Registration failed:', error);
+        this.toastService.error('Registration failed. Please try again.');
       } finally {
         this.isSubmitting = false;
       }
@@ -348,6 +354,8 @@ export class Registration {
       Object.keys(this.registrationForm.controls).forEach((key) => {
         this.registrationForm.get(key)?.markAsTouched();
       });
+
+      this.toastService.error('Please fill in all required fields correctly.');
     }
   }
 
