@@ -244,7 +244,7 @@ export class IdentityStack extends BaseStack {
           FROM_EMAIL_ADDRESS: `noreply@${
             stage === 'production'
               ? 'pawfectmatch.com'
-              : `${stage}.pawfectmatch.com`
+              : 'longlunglay1998@gmail.com'
           }`,
           FRONTEND_BASE_URL: `https://${
             stage === 'production' ? 'www' : stage

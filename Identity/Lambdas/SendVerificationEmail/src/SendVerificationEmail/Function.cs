@@ -23,7 +23,7 @@ public class Function
         _sesClient = new AmazonSimpleEmailServiceV2Client();
         _cognitoClient = new AmazonCognitoIdentityProviderClient();
         _userPoolId = Environment.GetEnvironmentVariable("USER_POOL_ID") ?? string.Empty;
-        _fromEmailAddress = Environment.GetEnvironmentVariable("FROM_EMAIL_ADDRESS") ?? "noreply@pawfectmatch.com";
+        _fromEmailAddress = Environment.GetEnvironmentVariable("FROM_EMAIL_ADDRESS") ?? "noreply@example.com";
         _frontendBaseUrl = Environment.GetEnvironmentVariable("FRONTEND_BASE_URL") ?? "https://www.pawfectmatch.com";
     }
 
@@ -67,8 +67,7 @@ public class Function
         // Extract adopter information
         var userId = newImage.GetValueOrDefault("UserId")?.S;
         var email = newImage.GetValueOrDefault("Email")?.S;
-        var firstName = newImage.GetValueOrDefault("FirstName")?.S;
-        var lastName = newImage.GetValueOrDefault("LastName")?.S;
+        var fullName = newImage.GetValueOrDefault("FullName")?.S;
 
         if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(email))
         {
@@ -86,7 +85,7 @@ public class Function
             // Only send verification email if the user email is not already verified
             if (userDetails != null && !IsEmailVerified(userDetails))
             {
-                await SendVerificationEmail(email, firstName, lastName, userId, context);
+                await SendVerificationEmail(email, fullName, userId, context);
                 context.Logger.LogInformation($"Verification email sent successfully to {email}");
             }
             else
@@ -137,9 +136,22 @@ public class Function
         return emailVerifiedAttribute?.Value?.ToLower() == "true";
     }
 
-    private async Task SendVerificationEmail(string toEmail, string? firstName, string? lastName, string userId, ILambdaContext context)
+    private async Task SendVerificationEmail(string toEmail, string? fullName, string userId, ILambdaContext context)
     {
-        var displayName = !string.IsNullOrEmpty(firstName) ? firstName : "New Adopter";
+        // Validate email addresses
+        if (string.IsNullOrEmpty(_fromEmailAddress))
+        {
+            throw new InvalidOperationException("FROM_EMAIL_ADDRESS environment variable is not set");
+        }
+
+        if (string.IsNullOrEmpty(toEmail))
+        {
+            throw new ArgumentException("Recipient email address cannot be null or empty", nameof(toEmail));
+        }
+
+        context.Logger.LogInformation($"Sending verification email from '{_fromEmailAddress}' to '{toEmail}'");
+
+        var displayName = !string.IsNullOrEmpty(fullName) ? fullName : "New Adopter";
         var verificationUrl = $"{_frontendBaseUrl}/verify-email?userId={userId}";
 
         var subject = "Welcome to PawfectMatch - Please Verify Your Email";
@@ -148,10 +160,10 @@ public class Function
 
         var sendRequest = new SendEmailRequest
         {
-            FromEmailAddress = _fromEmailAddress,
+            FromEmailAddress = _fromEmailAddress.Trim(), // Trim any whitespace
             Destination = new Destination
             {
-                ToAddresses = [toEmail]
+                ToAddresses = [toEmail.Trim()] // Trim any whitespace
             },
             Content = new EmailContent
             {
