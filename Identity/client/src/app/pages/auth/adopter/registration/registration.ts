@@ -20,6 +20,7 @@ import {
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { GoogleMapsService } from 'shared/services/google-maps.service';
+import { firstValueFrom } from 'rxjs';
 
 declare const google: any;
 
@@ -330,18 +331,11 @@ export class Registration {
 
         console.log('Registration data:', finalData);
 
-        // TODO: Call registration service
-        this.adoptersService.register(finalData).subscribe({
-          next: (response) => {
-            console.log('Registration successful:', response);
-            this.router.navigate(['/auth/login'], {
-              queryParams: {
-                message: 'Registration successful! Please log in.',
-              },
-            });
-          },
-          error: (error) => {
-            console.error('Registration failed:', error);
+        await firstValueFrom(this.adoptersService.register(finalData));
+        console.log('Registration successful');
+        this.router.navigate(['/auth/login'], {
+          queryParams: {
+            message: 'Registration successful! Please log in.',
           },
         });
       } catch (error) {
