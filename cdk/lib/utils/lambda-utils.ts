@@ -22,18 +22,18 @@ export class LambdaUtils {
   static createFunction(
     scope: Construct,
     id: string,
-    microserviceName: string,
+    serviceGroup: string,
     stage: StageType,
     config: LambdaFunctionConfig
   ): lambda.Function {
     const lambdaFunction = new lambda.Function(scope, id, {
-      functionName: `pawfect-match-${microserviceName}-${config.functionName}-${stage}`,
+      functionName: `pawfect-match-${serviceGroup}-${config.functionName}-${stage}`,
       runtime: lambda.Runtime.DOTNET_8,
       handler: `${config.functionName}::${config.functionName}.Function::FunctionHandler`,
       code: lambda.Code.fromAsset(
         path.join(
           __dirname,
-          `../../../${microserviceName}/Lambdas/${config.functionName}/src/${config.functionName}/bin/Release/net8.0/publish`
+          `../../../${serviceGroup}/Lambdas/${config.functionName}/src/${config.functionName}/bin/Release/net8.0/publish`
         )
       ),
       timeout: config.timeout ?? Duration.seconds(30),
