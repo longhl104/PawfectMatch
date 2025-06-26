@@ -241,11 +241,10 @@ export class IdentityStack extends BaseStack {
         functionName: 'SendVerificationEmail',
         environment: {
           USER_POOL_ID: this.userPool.userPoolId,
-          FROM_EMAIL_ADDRESS: `noreply@${
+          FROM_EMAIL_ADDRESS:
             stage === 'production'
-              ? 'pawfectmatch.com'
-              : 'longlunglay1998@gmail.com'
-          }`,
+              ? 'noreply@pawfectmatch.com'
+              : 'longlunglay1998@gmail.com',
           FRONTEND_BASE_URL: `https://${
             stage === 'production' ? 'www' : stage
           }.pawfectmatch.com`,
