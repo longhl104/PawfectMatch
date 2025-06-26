@@ -191,8 +191,7 @@ public class Function
         {
             new() { Name = "email", Value = request.Email },
             new() { Name = "email_verified", Value = "false" },
-            new() { Name = "name", Value = request.FullName },
-            new() { Name = "custom:user_type", Value = "adopter" }
+            new() { Name = "name", Value = request.FullName }
         };
 
         if (!string.IsNullOrWhiteSpace(request.PhoneNumber))
