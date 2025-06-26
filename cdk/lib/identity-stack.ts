@@ -3,11 +3,11 @@ import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as lambdaEventSources from 'aws-cdk-lib/aws-lambda-event-sources';
 import { Construct } from 'constructs';
 import { LambdaUtils, PawfectMatchStackProps } from './utils';
 import { BaseStack } from './base-stack';
 import { Duration, Fn, RemovalPolicy } from 'aws-cdk-lib';
-import * as path from 'path';
 
 export interface IdentityStackProps extends PawfectMatchStackProps {}
 
@@ -16,6 +16,7 @@ export class IdentityStack extends BaseStack {
   public readonly userPoolClient: cognito.UserPoolClient;
   public readonly adoptersTable: dynamodb.Table;
   public readonly registerAdopterFunction: lambda.Function;
+  public readonly sendVerificationEmailFunction: lambda.Function;
 
   constructor(scope: Construct, id: string, props: IdentityStackProps) {
     super(scope, id, props);
@@ -160,7 +161,7 @@ export class IdentityStack extends BaseStack {
       }
     );
 
-    // Create DynamoDB table for Adopters
+    // Create DynamoDB table for Adopters with stream enabled
     this.adoptersTable = new dynamodb.Table(this, 'AdoptersTable', {
       tableName: `pawfect-match-adopters-${stage}`,
       partitionKey: {
@@ -168,6 +169,7 @@ export class IdentityStack extends BaseStack {
         type: dynamodb.AttributeType.STRING,
       },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      stream: dynamodb.StreamViewType.NEW_AND_OLD_IMAGES, // Enable DynamoDB streams
       pointInTimeRecoverySpecification:
         stage === 'production'
           ? {
@@ -229,6 +231,61 @@ export class IdentityStack extends BaseStack {
     // Grant Lambda permissions to access DynamoDB
     this.adoptersTable.grantReadWriteData(this.registerAdopterFunction);
 
+    // Create Lambda function for sending verification emails
+    this.sendVerificationEmailFunction = LambdaUtils.createFunction(
+      this,
+      'SendVerificationEmailFunction',
+      'Identity',
+      stage,
+      {
+        functionName: 'SendVerificationEmail',
+        environment: {
+          USER_POOL_ID: this.userPool.userPoolId,
+          FROM_EMAIL_ADDRESS: `noreply@${
+            stage === 'production'
+              ? 'pawfectmatch.com'
+              : `${stage}.pawfectmatch.com`
+          }`,
+          FRONTEND_BASE_URL: `https://${
+            stage === 'production' ? 'www' : stage
+          }.pawfectmatch.com`,
+          STAGE: stage,
+        },
+        description:
+          'Lambda function to send verification emails to new adopters',
+        timeout: Duration.minutes(1),
+        memorySize: 256,
+      }
+    );
+
+    // Grant Lambda permissions to access Cognito
+    this.sendVerificationEmailFunction.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ['cognito-idp:AdminGetUser'],
+        resources: [this.userPool.userPoolArn],
+      })
+    );
+
+    // Grant Lambda permissions to send emails via SES
+    this.sendVerificationEmailFunction.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ['ses:SendEmail', 'ses:SendRawEmail'],
+        resources: [`arn:aws:ses:*:${this.account}:identity/*`],
+      })
+    );
+
+    // Add DynamoDB stream event source to trigger verification email
+    this.sendVerificationEmailFunction.addEventSource(
+      new lambdaEventSources.DynamoEventSource(this.adoptersTable, {
+        startingPosition: lambda.StartingPosition.LATEST,
+        batchSize: 10,
+        maxBatchingWindow: Duration.seconds(5),
+        retryAttempts: 3,
+      })
+    );
+
     // Export important values
     this.exportValue(this.userPool.userPoolId, {
       name: `${stage}UserPoolId`,
@@ -252,6 +309,14 @@ export class IdentityStack extends BaseStack {
 
     this.exportValue(this.adoptersTable.tableArn, {
       name: `${stage}AdoptersTableArn`,
+    });
+
+    this.exportValue(this.sendVerificationEmailFunction.functionArn, {
+      name: `${stage}SendVerificationEmailFunctionArn`,
+    });
+
+    this.exportValue(this.sendVerificationEmailFunction.functionName, {
+      name: `${stage}SendVerificationEmailFunctionName`,
     });
 
     // Use API Gateway from environment stack

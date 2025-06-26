@@ -11,13 +11,8 @@ import {
   provideClientHydration,
   withEventReplay,
 } from '@angular/platform-browser';
-import {
-  provideHttpClient,
-  withFetch,
-  withInterceptors,
-} from '@angular/common/http';
+import { provideHttpClient, withFetch } from '@angular/common/http';
 import { GlobalErrorHandler } from './shared/services/global-error-handler.service';
-import { errorInterceptor } from './shared/interceptors/error.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [

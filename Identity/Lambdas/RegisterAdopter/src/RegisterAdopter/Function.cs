@@ -85,11 +85,8 @@ public class Function
                 return CreateErrorResponse(409, "An account with this email already exists");
             }
 
-            // Generate unique adopter ID
-            var userId = Guid.NewGuid().ToString();
-
             // Create user in Cognito
-            await CreateCognitoUser(registrationRequest, userId, context);
+            var userId = await CreateCognitoUser(registrationRequest, context);
 
             // Save adopter profile to DynamoDB
             await SaveAdopterProfile(registrationRequest, userId);
@@ -185,7 +182,7 @@ public class Function
         }
     }
 
-    private async Task CreateCognitoUser(AdopterRegistrationRequest request, string userId, ILambdaContext context)
+    private async Task<string> CreateCognitoUser(AdopterRegistrationRequest request, ILambdaContext context)
     {
         var userAttributes = new List<AttributeType>
         {
@@ -224,6 +221,17 @@ public class Function
 
         await _cognitoClient.AdminSetUserPasswordAsync(setPasswordRequest);
         context.Logger.LogInformation($"Set permanent password for user: {request.Email}");
+
+        // Extract and return the user's sub (subject identifier)
+        var userSub = createUserResponse.User.Attributes
+            .FirstOrDefault(attr => attr.Name == "sub")?.Value;
+
+        if (string.IsNullOrEmpty(userSub))
+        {
+            throw new InvalidOperationException("Failed to retrieve user sub from Cognito response");
+        }
+
+        return userSub;
     }
 
     private async Task SaveAdopterProfile(AdopterRegistrationRequest request, string userId)
