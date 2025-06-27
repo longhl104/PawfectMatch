@@ -375,6 +375,7 @@ export class IdentityStack extends BaseStack {
 
     const identityResource = api.root.addResource('identity');
     const adoptersResource = identityResource.addResource('adopters');
+    const usersResource = identityResource.addResource('users');
 
     // Create Lambda integration
     const registerAdopterIntegration = new apigateway.LambdaIntegration(
@@ -421,7 +422,7 @@ export class IdentityStack extends BaseStack {
       });
 
     // Add POST /identity/adopters/verify-code endpoint
-    adoptersResource
+    usersResource
       .addResource('verify-code')
       .addMethod('POST', verifyCodeIntegration, {
         methodResponses: [

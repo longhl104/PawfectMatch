@@ -14,14 +14,15 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
-import {
-  AdoptersService,
-  VerificationRequest,
-  ResendCodeRequest,
-} from 'shared/services/adopters.service';
+import { AdoptersService } from 'shared/services/adopters.service';
 import { ToastService } from 'shared/services/toast.service';
 import { ErrorHandlingService } from 'shared/services/error-handling.service';
 import { firstValueFrom } from 'rxjs';
+import {
+  ResendCodeRequest,
+  UsersService,
+  VerificationRequest,
+} from 'shared/services/users.service';
 
 @Component({
   selector: 'app-code-verification',
@@ -37,6 +38,7 @@ export class CodeVerification implements OnInit, OnDestroy {
   private toastService = inject(ToastService);
   private errorHandlingService = inject(ErrorHandlingService);
   private ngZone = inject(NgZone);
+  private usersService = inject(UsersService);
   private resendTimer: any;
   private userType: 'adopter' | 'shelter' = 'adopter';
 
@@ -178,7 +180,7 @@ export class CodeVerification implements OnInit, OnDestroy {
 
     try {
       const response = await firstValueFrom(
-        this.adoptersService.verifyCode(request),
+        this.usersService.verifyCode(request),
       );
 
       if (response.verified) {
@@ -219,9 +221,7 @@ export class CodeVerification implements OnInit, OnDestroy {
     };
 
     try {
-      await firstValueFrom(
-        this.adoptersService.resendVerificationCode(request),
-      );
+      await firstValueFrom(this.usersService.resendVerificationCode(request));
       this.toastService.success('Verification code sent! Check your email.');
 
       // Reset timer
