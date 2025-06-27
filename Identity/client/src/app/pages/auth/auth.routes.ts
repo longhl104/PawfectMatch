@@ -17,4 +17,12 @@ export const authRoutes: Routes = [
     loadChildren: () =>
       import('./adopter/adopter.routes').then((m) => m.adopterRoutes),
   },
+  {
+    path: 'code-verification',
+    loadComponent: () =>
+      import('./code-verification/code-verification').then(
+        (m) => m.CodeVerification
+      ),
+    title: 'Code Verification',
+  },
 ];

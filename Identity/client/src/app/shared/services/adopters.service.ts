@@ -9,6 +9,18 @@ export interface AdopterRegistrationRequest {
   password: string;
   phoneNumber?: string;
   address: string;
+  addressDetails?: {
+    streetNumber: string;
+    streetName: string;
+    suburb: string;
+    city: string;
+    state: string;
+    postcode: string;
+    country: string;
+    formattedAddress: string;
+    latitude: number;
+    longitude: number;
+  };
   bio?: string;
 }
 
@@ -98,6 +110,22 @@ export interface ChangePasswordRequest {
   newPassword: string;
 }
 
+export interface VerificationRequest {
+  email: string;
+  code: string;
+  userType: 'adopter' | 'shelter';
+}
+
+export interface VerificationResponse {
+  message: string;
+  verified: boolean;
+}
+
+export interface ResendCodeRequest {
+  email: string;
+  userType: 'adopter' | 'shelter';
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -126,5 +154,25 @@ export class AdoptersService {
       request
     );
     // Note: HTTP errors are now handled by the global error interceptor
+  }
+
+  /**
+   * Verify registration code
+   */
+  verifyCode(request: VerificationRequest): Observable<VerificationResponse> {
+    return this.http.post<VerificationResponse>(
+      `${this.authUrl}/verify-code`,
+      request
+    );
+  }
+
+  /**
+   * Resend verification code
+   */
+  resendVerificationCode(request: ResendCodeRequest): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.authUrl}/resend-code`,
+      request
+    );
   }
 }

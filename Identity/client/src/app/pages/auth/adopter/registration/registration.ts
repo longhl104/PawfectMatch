@@ -335,7 +335,11 @@ export class Registration {
       const { confirmPassword, ...registrationData } = formData;
 
       // Include the detailed address information
-      const finalData: AdopterRegistrationRequest = registrationData;
+      const finalData: AdopterRegistrationRequest = {
+        ...registrationData,
+        address: this.selectedAddress.formattedAddress,
+        addressDetails: this.selectedAddress,
+      };
 
       try {
         console.log('Registration data:', finalData);
@@ -343,10 +347,18 @@ export class Registration {
         await firstValueFrom(this.adoptersService.register(finalData));
         console.log('Registration successful');
         this.toastService.success(
-          'Registration successful! Welcome to PawfectMatch!'
+          'Registration successful! Please check your email for a verification code.'
         );
 
-        this.router.navigate(['/auth/login']);
+        this.router.navigate(['/auth/code-verification'], {
+          queryParams: { email: finalData.email, userType: 'adopter' },
+        });
+      } catch (error) {
+        this.errorHandlingService.handleErrorWithComponent(
+          error,
+          this,
+          'registration'
+        );
       } finally {
         this.isSubmitting = false;
       }

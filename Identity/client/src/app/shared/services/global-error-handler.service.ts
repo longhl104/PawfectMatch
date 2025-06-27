@@ -38,7 +38,7 @@ export class GlobalErrorHandler implements ErrorHandler {
     this.updateErrorCache(errorInfo.key);
 
     // Show user-friendly toast message
-    this.showUserFriendlyError(errorInfo, context);
+    this.showUserFriendlyError(errorInfo);
 
     // Log to external service if needed (implement as needed)
     this.logToExternalService(error, errorInfo, context);
@@ -185,10 +185,10 @@ export class GlobalErrorHandler implements ErrorHandler {
     }
   }
 
-  private showUserFriendlyError(
-    errorInfo: { message: string; type: string },
-    context?: ErrorContext
-  ): void {
+  private showUserFriendlyError(errorInfo: {
+    message: string;
+    type: string;
+  }): void {
     let duration = 8000; // Default 8 seconds for errors
 
     // Adjust duration based on error type
@@ -205,13 +205,7 @@ export class GlobalErrorHandler implements ErrorHandler {
         break;
     }
 
-    // Add context information if available
-    let message = errorInfo.message;
-    if (context?.component) {
-      message = `${message} (${context.component})`;
-    }
-
-    this.toastService.error(message, duration, true);
+    this.toastService.error(errorInfo.message, duration, true);
   }
 
   private logToExternalService(
