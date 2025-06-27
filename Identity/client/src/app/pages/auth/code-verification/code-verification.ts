@@ -1,10 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Component,
   OnInit,
   ViewChildren,
   QueryList,
   ElementRef,
-  ChangeDetectionStrategy,
+  OnDestroy,
+  inject,
+  NgZone,
+  signal,
+  computed,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -24,35 +29,33 @@ import { firstValueFrom } from 'rxjs';
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './code-verification.html',
   styleUrl: './code-verification.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CodeVerification implements OnInit {
+export class CodeVerification implements OnInit, OnDestroy {
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private adoptersService = inject(AdoptersService);
+  private toastService = inject(ToastService);
+  private errorHandlingService = inject(ErrorHandlingService);
+  private ngZone = inject(NgZone);
+  private resendTimer: any;
+  private userType: 'adopter' | 'shelter' = 'adopter';
+
   @ViewChildren('codeInput') codeInputs!: QueryList<ElementRef>;
 
-  email: string = '';
-  userType: 'adopter' | 'shelter' = 'adopter';
-  code: string[] = ['', '', '', '', '', ''];
-  isSubmitting: boolean = false;
-  isResending: boolean = false;
-  canResend: boolean = false;
-  resendCountdown: number = 60;
-  private resendTimer: any;
-
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private adoptersService: AdoptersService,
-    private toastService: ToastService,
-    private errorHandlingService: ErrorHandlingService,
-  ) {}
+  email = signal<string>('');
+  code = signal<string[]>(['', '', '', '', '', '']);
+  isSubmitting = signal<boolean>(false);
+  isResending = signal<boolean>(false);
+  canResend = signal<boolean>(false);
+  resendCountdown = signal<number>(60);
 
   ngOnInit(): void {
     // Get email and userType from query parameters
     this.route.queryParams.subscribe((params) => {
-      this.email = params['email'] || '';
+      this.email.set(params['email'] || '');
       this.userType = params['userType'] || 'adopter';
 
-      if (!this.email) {
+      if (!this.email()) {
         this.toastService.error(
           'Invalid verification link. Please try registering again.',
         );
@@ -62,7 +65,7 @@ export class CodeVerification implements OnInit {
 
       // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(this.email)) {
+      if (!emailRegex.test(this.email())) {
         this.toastService.error(
           'Invalid email format. Please try registering again.',
         );
@@ -86,9 +89,17 @@ export class CodeVerification implements OnInit {
     // Only allow single digit
     if (value.length > 1) {
       event.target.value = value.slice(-1);
-      this.code[index] = event.target.value;
+      this.code.update((prev) => {
+        const newCode = [...prev];
+        newCode[index] = event.target.value;
+        return newCode;
+      });
     } else {
-      this.code[index] = value;
+      this.code.update((prev) => {
+        const newCode = [...prev];
+        newCode[index] = value;
+        return newCode;
+      });
     }
 
     // Move to next input if digit entered
@@ -100,14 +111,14 @@ export class CodeVerification implements OnInit {
     }
 
     // Auto-submit when all 6 digits are entered
-    if (this.isCodeComplete()) {
+    if (this.isCodeCompleted()) {
       this.verifyCode();
     }
   }
 
   onKeyDown(event: KeyboardEvent, index: number): void {
     // Handle backspace
-    if (event.key === 'Backspace' && !this.code[index] && index > 0) {
+    if (event.key === 'Backspace' && !this.code()[index] && index > 0) {
       const prevInput = this.codeInputs.toArray()[index - 1];
       if (prevInput) {
         prevInput.nativeElement.focus();
@@ -125,7 +136,12 @@ export class CodeVerification implements OnInit {
     if (pastedData.length === 6 && /^\d{6}$/.test(pastedData)) {
       // Valid 6-digit code pasted
       for (let i = 0; i < 6; i++) {
-        this.code[i] = pastedData[i];
+        this.code.update((prev) => {
+          const newCode = [...prev];
+          newCode[i] = pastedData[i];
+          return newCode;
+        });
+
         const input = this.codeInputs.toArray()[i];
         if (input) {
           input.nativeElement.value = pastedData[i];
@@ -138,24 +154,24 @@ export class CodeVerification implements OnInit {
     }
   }
 
-  isCodeComplete(): boolean {
-    return this.code.every((digit) => digit.length === 1);
-  }
+  isCodeCompleted = computed((): boolean => {
+    return this.code().every((digit) => digit.length === 1);
+  });
 
-  getCodeString(): string {
-    return this.code.join('');
-  }
+  getCodeString = computed((): string => {
+    return this.code().join('');
+  });
 
   async verifyCode(): Promise<void> {
-    if (!this.isCodeComplete()) {
+    if (!this.isCodeCompleted()) {
       this.toastService.error('Please enter all 6 digits');
       return;
     }
 
-    this.isSubmitting = true;
+    this.isSubmitting.set(true);
 
     const request: VerificationRequest = {
-      email: this.email,
+      email: this.email(),
       code: this.getCodeString(),
       userType: this.userType,
     };
@@ -186,19 +202,19 @@ export class CodeVerification implements OnInit {
       );
       this.clearCode();
     } finally {
-      this.isSubmitting = false;
+      this.isSubmitting.set(false);
     }
   }
 
   async resendCode(): Promise<void> {
-    if (!this.canResend || this.isResending) {
+    if (!this.canResend() || this.isResending()) {
       return;
     }
 
-    this.isResending = true;
+    this.isResending.set(true);
 
     const request: ResendCodeRequest = {
-      email: this.email,
+      email: this.email(),
       userType: this.userType,
     };
 
@@ -209,8 +225,8 @@ export class CodeVerification implements OnInit {
       this.toastService.success('Verification code sent! Check your email.');
 
       // Reset timer
-      this.canResend = false;
-      this.resendCountdown = 60;
+      this.canResend.set(false);
+      this.resendCountdown.set(60);
       this.startResendTimer();
 
       // Clear current code
@@ -222,12 +238,12 @@ export class CodeVerification implements OnInit {
         'resendCode',
       );
     } finally {
-      this.isResending = false;
+      this.isResending.set(false);
     }
   }
 
   clearCode(): void {
-    this.code = ['', '', '', '', '', ''];
+    this.code.set(['', '', '', '', '', '']);
     this.codeInputs.toArray().forEach((input, index) => {
       input.nativeElement.value = '';
       if (index === 0) {
@@ -237,13 +253,15 @@ export class CodeVerification implements OnInit {
   }
 
   private startResendTimer(): void {
-    this.resendTimer = setInterval(() => {
-      this.resendCountdown--;
-      if (this.resendCountdown <= 0) {
-        this.canResend = true;
-        clearInterval(this.resendTimer);
-      }
-    }, 1000);
+    this.ngZone.runOutsideAngular(() => {
+      this.resendTimer = setInterval(() => {
+        this.resendCountdown.update((count) => count - 1);
+        if (this.resendCountdown() <= 0) {
+          this.canResend.set(true);
+          clearInterval(this.resendTimer);
+        }
+      }, 1000);
+    });
   }
 
   goBack(): void {

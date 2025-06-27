@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { RouterModule } from '@angular/router';
@@ -12,15 +12,13 @@ import { Location } from '@angular/common';
   styleUrl: './privacy.scss',
 })
 export class Privacy implements OnInit {
-  lastUpdated: Date = new Date('2024-06-24');
-  showAcceptButton: boolean = false;
-  returnUrl: string | null = null;
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private location = inject(Location);
 
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private location: Location
-  ) {}
+  lastUpdated: Date = new Date('2024-06-24');
+  showAcceptButton = false;
+  returnUrl: string | null = null;
 
   ngOnInit() {
     // Check if user came from registration form

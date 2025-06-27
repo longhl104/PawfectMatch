@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   AdopterRegistrationRequest,
   AdoptersService,
@@ -8,6 +9,7 @@ import {
   ViewChild,
   ElementRef,
   afterNextRender,
+  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -34,6 +36,14 @@ declare const google: any;
   styleUrl: './registration.scss',
 })
 export class Registration {
+  private formBuilder = inject(FormBuilder);
+  private router = inject(Router);
+  private ngZone = inject(NgZone);
+  private googleMapsService = inject(GoogleMapsService);
+  private adoptersService = inject(AdoptersService);
+  private toastService = inject(ToastService);
+  private errorHandlingService = inject(ErrorHandlingService);
+
   @ViewChild('addressInput', { static: false }) addressInputRef!: ElementRef;
 
   registrationForm: FormGroup;
@@ -44,15 +54,7 @@ export class Registration {
   private autocomplete: any;
   selectedAddress: any = null;
 
-  constructor(
-    private formBuilder: FormBuilder,
-    private router: Router,
-    private ngZone: NgZone,
-    private googleMapsService: GoogleMapsService,
-    private adoptersService: AdoptersService,
-    private toastService: ToastService,
-    private errorHandlingService: ErrorHandlingService
-  ) {
+  constructor() {
     this.registrationForm = this.createForm();
 
     afterNextRender(async () => {
@@ -73,7 +75,7 @@ export class Registration {
         this.errorHandlingService.handleErrorWithComponent(
           error,
           this,
-          'loadGoogleMaps'
+          'loadGoogleMaps',
         );
 
         // Still enable the field even if Google Maps fails to load
@@ -96,7 +98,7 @@ export class Registration {
 
     this.autocomplete = new google.maps.places.Autocomplete(
       this.addressInputRef.nativeElement,
-      options
+      options,
     );
 
     this.autocomplete.addListener('place_changed', () => {
@@ -141,7 +143,7 @@ export class Registration {
             addressControl?.setErrors({ required: true });
           }
         });
-      }
+      },
     );
 
     // Add blur event to validate when user leaves the field
@@ -229,7 +231,7 @@ export class Registration {
       },
       {
         validators: this.passwordMatchValidator,
-      }
+      },
     );
 
     // Add custom validator to confirmPassword field
@@ -249,7 +251,7 @@ export class Registration {
 
   // Custom validator for strong password
   private strongPasswordValidator(
-    control: AbstractControl
+    control: AbstractControl,
   ): ValidationErrors | null {
     const value = control.value;
     if (!value) return null;
@@ -257,7 +259,7 @@ export class Registration {
     const hasUpperCase = /[A-Z]/.test(value);
     const hasLowerCase = /[a-z]/.test(value);
     const hasNumeric = /[0-9]/.test(value);
-    const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(value);
+    const hasSpecialChar = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(value);
 
     const passwordValid =
       hasUpperCase && hasLowerCase && hasNumeric && hasSpecialChar;
@@ -267,7 +269,7 @@ export class Registration {
 
   // Custom validator for Australian phone numbers
   private australianPhoneValidator(
-    control: AbstractControl
+    control: AbstractControl,
   ): ValidationErrors | null {
     const value = control.value;
     if (!value) return null; // Optional field
@@ -300,7 +302,7 @@ export class Registration {
 
   // Custom validator to check if passwords match
   private passwordMatchValidator(
-    form: AbstractControl
+    form: AbstractControl,
   ): ValidationErrors | null {
     const password = form.get('password');
     const confirmPassword = form.get('confirmPassword');
@@ -332,7 +334,7 @@ export class Registration {
       this.isSubmitting = true;
 
       const formData = this.registrationForm.value;
-      const { confirmPassword, ...registrationData } = formData;
+      const { ...registrationData } = formData;
 
       // Include the detailed address information
       const finalData: AdopterRegistrationRequest = {
@@ -347,7 +349,7 @@ export class Registration {
         await firstValueFrom(this.adoptersService.register(finalData));
         console.log('Registration successful');
         this.toastService.success(
-          'Registration successful! Please check your email for a verification code.'
+          'Registration successful! Please check your email for a verification code.',
         );
 
         this.router.navigate(['/auth/code-verification'], {
@@ -357,7 +359,7 @@ export class Registration {
         this.errorHandlingService.handleErrorWithComponent(
           error,
           this,
-          'registration'
+          'registration',
         );
       } finally {
         this.isSubmitting = false;

@@ -10,15 +10,13 @@ export interface Toast {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ToastService {
   private toastsSubject = new BehaviorSubject<Toast[]>([]);
   public toasts$: Observable<Toast[]> = this.toastsSubject.asObservable();
 
   private defaultDuration = 5000; // 5 seconds
-
-  constructor() {}
 
   private generateId(): string {
     return Math.random().toString(36).substring(2) + Date.now().toString(36);
@@ -29,7 +27,7 @@ export class ToastService {
       ...toast,
       id: this.generateId(),
       duration: toast.duration ?? this.defaultDuration,
-      closable: toast.closable ?? true
+      closable: toast.closable ?? true,
     };
 
     const currentToasts = this.toastsSubject.value;
@@ -48,7 +46,7 @@ export class ToastService {
       message,
       type: 'success',
       duration,
-      closable
+      closable,
     });
   }
 
@@ -57,7 +55,7 @@ export class ToastService {
       message,
       type: 'error',
       duration: duration ?? 8000, // Error messages stay longer by default
-      closable
+      closable,
     });
   }
 
@@ -66,7 +64,7 @@ export class ToastService {
       message,
       type: 'warning',
       duration,
-      closable
+      closable,
     });
   }
 
@@ -75,13 +73,13 @@ export class ToastService {
       message,
       type: 'info',
       duration,
-      closable
+      closable,
     });
   }
 
   removeToast(id: string): void {
     const currentToasts = this.toastsSubject.value;
-    const filteredToasts = currentToasts.filter(toast => toast.id !== id);
+    const filteredToasts = currentToasts.filter((toast) => toast.id !== id);
     this.toastsSubject.next(filteredToasts);
   }
 

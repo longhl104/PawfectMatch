@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
@@ -92,6 +93,6 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
       // Always re-throw the error so components can handle it if needed
       return throwError(() => error);
-    })
+    }),
   );
 };

@@ -1,12 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable, inject } from '@angular/core';
-import { GlobalErrorHandler, ErrorContext } from './global-error-handler.service';
+import {
+  GlobalErrorHandler,
+  ErrorContext,
+} from './global-error-handler.service';
 
 /**
  * Error handling service that can be injected into components and services
  * This provides a simpler alternative to the utility functions for manual error handling
  */
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ErrorHandlingService {
   private globalErrorHandler = inject(GlobalErrorHandler);
@@ -23,13 +27,18 @@ export class ErrorHandlingService {
    * Handle an error with automatic component context detection
    * Pass 'this' as the component parameter for automatic context
    */
-  handleErrorWithComponent(error: any, component: any, action?: string, additionalContext?: Partial<ErrorContext>): void {
+  handleErrorWithComponent(
+    error: any,
+    component: any,
+    action?: string,
+    additionalContext?: Partial<ErrorContext>,
+  ): void {
     const context: ErrorContext = {
       component: component.constructor?.name || 'Unknown',
       action: action,
       url: window.location.href,
       timestamp: new Date(),
-      ...additionalContext
+      ...additionalContext,
     };
 
     this.globalErrorHandler.handleError(error, context);
@@ -41,7 +50,7 @@ export class ErrorHandlingService {
    */
   async handleAsync<T>(
     operation: () => Promise<T>,
-    context?: ErrorContext
+    context?: ErrorContext,
   ): Promise<T | undefined> {
     try {
       return await operation();
@@ -57,7 +66,7 @@ export class ErrorHandlingService {
    */
   wrapWithErrorHandling<T extends (...args: any[]) => any>(
     fn: T,
-    context?: ErrorContext
+    context?: ErrorContext,
   ): T {
     return ((...args: any[]) => {
       try {

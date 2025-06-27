@@ -16,7 +16,7 @@
 
     <h1>Verify Your Email</h1>
     <p>
-      We've sent a 6-digit verification code to <strong>{{ email }}</strong>
+      We've sent a 6-digit verification code to <strong>{{ email() }}</strong>
     </p>
   </div>
 
@@ -29,7 +29,7 @@
 
       <div class="code-inputs" role="group" aria-labelledby="code-label">
         <label id="code-label" class="sr-only">6-digit verification code</label>
-        @for (digit of code; track $index) {
+        @for (digit of code(); track $index) {
           <input
             #codeInput
             type="text"
@@ -40,21 +40,24 @@
             autocomplete="one-time-code"
             (input)="onCodeInput($event, $index)"
             (keydown)="onKeyDown($event, $index)"
-            [disabled]="isSubmitting"
+            [disabled]="isSubmitting()"
             [attr.aria-label]="'Digit ' + ($index + 1)"
             [attr.aria-describedby]="$index === 0 ? 'code-instruction' : null"
           />
         }
       </div>
 
+      <pre>{{ !isCodeCompleted() }}</pre>
+      <pre>{{ isSubmitting() }}</pre>
+
       <button
         type="button"
         class="verify-btn"
         (click)="verifyCode()"
-        [disabled]="!isCodeComplete() || isSubmitting"
+        [disabled]="!isCodeCompleted() || isSubmitting()"
       >
-        <span *ngIf="!isSubmitting">Verify Code</span>
-        <span *ngIf="isSubmitting" class="loading">
+        <span *ngIf="!isSubmitting()">Verify Code</span>
+        <span *ngIf="isSubmitting()" class="loading">
           <svg class="spinner" viewBox="0 0 50 50">
             <circle
               cx="25"
@@ -93,13 +96,13 @@
         type="button"
         class="resend-btn"
         (click)="resendCode()"
-        [disabled]="!canResend || isResending"
+        [disabled]="!canResend() || isResending()"
       >
-        <span *ngIf="!isResending && canResend">Resend Code</span>
-        <span *ngIf="!isResending && !canResend">
-          Resend in {{ resendCountdown }}s
+        <span *ngIf="!isResending() && canResend()">Resend Code</span>
+        <span *ngIf="!isResending() && !canResend()">
+          Resend in {{ resendCountdown() }}s
         </span>
-        <span *ngIf="isResending" class="loading">
+        <span *ngIf="isResending()" class="loading">
           <svg class="spinner" viewBox="0 0 50 50">
             <circle
               cx="25"

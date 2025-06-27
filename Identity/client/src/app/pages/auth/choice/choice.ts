@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
@@ -8,7 +8,8 @@ import { ActivatedRoute, Router } from '@angular/router';
   styleUrl: './choice.scss',
 })
 export class Choice {
-  constructor(private router: Router, private route: ActivatedRoute) {}
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   selectAdopter(): void {
     // Navigate to adopter registration page

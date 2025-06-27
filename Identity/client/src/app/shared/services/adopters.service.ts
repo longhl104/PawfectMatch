@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { environment } from 'environments/environment';
 
@@ -130,28 +130,28 @@ export interface ResendCodeRequest {
   providedIn: 'root',
 })
 export class AdoptersService {
+  private http = inject(HttpClient);
+
   private readonly apiUrl = `${environment.apiUrl}/adopters`;
   private readonly authUrl = `${environment.apiUrl}/auth`;
 
   private currentAdopterSubject = new BehaviorSubject<AdopterProfile | null>(
-    null
+    null,
   );
   public currentAdopter$ = this.currentAdopterSubject.asObservable();
 
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
-
   /**
    * Register a new adopter
    */
   register(
-    request: AdopterRegistrationRequest
+    request: AdopterRegistrationRequest,
   ): Observable<{ message: string; userId: string }> {
     return this.http.post<{ message: string; userId: string }>(
       `${this.apiUrl}/register`,
-      request
+      request,
     );
     // Note: HTTP errors are now handled by the global error interceptor
   }
@@ -162,17 +162,19 @@ export class AdoptersService {
   verifyCode(request: VerificationRequest): Observable<VerificationResponse> {
     return this.http.post<VerificationResponse>(
       `${this.authUrl}/verify-code`,
-      request
+      request,
     );
   }
 
   /**
    * Resend verification code
    */
-  resendVerificationCode(request: ResendCodeRequest): Observable<{ message: string }> {
+  resendVerificationCode(
+    request: ResendCodeRequest,
+  ): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(
       `${this.authUrl}/resend-code`,
-      request
+      request,
     );
   }
 }

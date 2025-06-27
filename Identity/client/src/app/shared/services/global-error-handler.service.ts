@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ErrorHandler, Injectable, inject, Injector } from '@angular/core';
 import { ToastService } from './toast.service';
 import { environment } from 'environments/environment';
@@ -211,7 +212,7 @@ export class GlobalErrorHandler implements ErrorHandler {
   private logToExternalService(
     originalError: any,
     errorInfo: any,
-    context?: ErrorContext
+    context?: ErrorContext,
   ): void {
     // This is where you would implement logging to external services
     // like Sentry, LogRocket, or your own logging API
@@ -286,7 +287,7 @@ export function HandleErrors(context?: Partial<ErrorContext>) {
   return function (
     target: any,
     propertyKey: string,
-    descriptor: PropertyDescriptor
+    descriptor: PropertyDescriptor,
   ) {
     const originalMethod = descriptor.value;
 
