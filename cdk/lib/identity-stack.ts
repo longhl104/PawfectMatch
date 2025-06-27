@@ -17,6 +17,7 @@ export class IdentityStack extends BaseStack {
   public readonly adoptersTable: dynamodb.Table;
   public readonly registerAdopterFunction: lambda.Function;
   public readonly sendVerificationEmailFunction: lambda.Function;
+  public readonly verifyCodeFunction: lambda.Function;
 
   constructor(scope: Construct, id: string, props: IdentityStackProps) {
     super(scope, id, props);
@@ -286,6 +287,41 @@ export class IdentityStack extends BaseStack {
       })
     );
 
+    // Create Lambda function for verifying email codes
+    this.verifyCodeFunction = LambdaUtils.createFunction(
+      this,
+      'VerifyCodeFunction',
+      'Identity',
+      stage,
+      {
+        functionName: 'VerifyCode',
+        environment: {
+          USER_POOL_ID: this.userPool.userPoolId,
+          USER_POOL_CLIENT_ID: this.userPoolClient.userPoolClientId,
+          ADOPTERS_TABLE_NAME: this.adoptersTable.tableName,
+          STAGE: stage,
+        },
+        description: 'Lambda function to verify email confirmation codes and update verification status',
+        timeout: Duration.minutes(1),
+        memorySize: 256,
+      }
+    );
+
+    // Grant Lambda permissions to access Cognito
+    this.verifyCodeFunction.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          'cognito-idp:ConfirmSignUp',
+          'cognito-idp:AdminGetUser',
+        ],
+        resources: [this.userPool.userPoolArn],
+      })
+    );
+
+    // Grant Lambda permissions to access DynamoDB
+    this.adoptersTable.grantReadWriteData(this.verifyCodeFunction);
+
     // Export important values
     this.exportValue(this.userPool.userPoolId, {
       name: `${stage}UserPoolId`,
@@ -319,6 +355,14 @@ export class IdentityStack extends BaseStack {
       name: `${stage}SendVerificationEmailFunctionName`,
     });
 
+    this.exportValue(this.verifyCodeFunction.functionArn, {
+      name: `${stage}VerifyCodeFunctionArn`,
+    });
+
+    this.exportValue(this.verifyCodeFunction.functionName, {
+      name: `${stage}VerifyCodeFunctionName`,
+    });
+
     // Use API Gateway from environment stack
     const api = apigateway.RestApi.fromRestApiAttributes(
       this,
@@ -335,6 +379,15 @@ export class IdentityStack extends BaseStack {
     // Create Lambda integration
     const registerAdopterIntegration = new apigateway.LambdaIntegration(
       this.registerAdopterFunction,
+      {
+        requestTemplates: { 'application/json': '{ "statusCode": "200" }' },
+        proxy: true,
+      }
+    );
+
+    // Create Lambda integration for verify code
+    const verifyCodeIntegration = new apigateway.LambdaIntegration(
+      this.verifyCodeFunction,
       {
         requestTemplates: { 'application/json': '{ "statusCode": "200" }' },
         proxy: true,
@@ -366,5 +419,44 @@ export class IdentityStack extends BaseStack {
           },
         ],
       });
+
+    // Add POST /identity/adopters/verify-code endpoint
+    adoptersResource
+      .addResource('verify-code')
+      .addMethod('POST', verifyCodeIntegration, {
+        methodResponses: [
+          {
+            statusCode: '200',
+            responseModels: {
+              'application/json': apigateway.Model.EMPTY_MODEL,
+            },
+          },
+          {
+            statusCode: '400',
+            responseModels: {
+              'application/json': apigateway.Model.ERROR_MODEL,
+            },
+          },
+          {
+            statusCode: '404',
+            responseModels: {
+              'application/json': apigateway.Model.ERROR_MODEL,
+            },
+          },
+          {
+            statusCode: '500',
+            responseModels: {
+              'application/json': apigateway.Model.ERROR_MODEL,
+            },
+          },
+        ],
+      });
+
+    // Add CORS support for verify-code endpoint
+    adoptersResource.getResource('verify-code')?.addCorsPreflight({
+      allowOrigins: apigateway.Cors.ALL_ORIGINS,
+      allowMethods: ['POST', 'OPTIONS'],
+      allowHeaders: ['Content-Type', 'Authorization'],
+    });
   }
 }
