@@ -187,13 +187,15 @@ public class Function
         var userAttributes = new List<AttributeType>
         {
             new() { Name = "email", Value = request.Email },
-            new() { Name = "email_verified", Value = "false" },
-            new() { Name = "name", Value = request.FullName }
+            new() { Name = "email_verified", Value = "true" },
+            new() { Name = "name", Value = request.FullName },
+            new() { Name = "custom:user_type", Value = "adopter"  }
         };
 
         if (!string.IsNullOrWhiteSpace(request.PhoneNumber))
         {
             userAttributes.Add(new AttributeType { Name = "phone_number", Value = $"+61{request.PhoneNumber}" });
+            userAttributes.Add(new AttributeType { Name = "phone_number_verified", Value = "true" });
         }
 
         var createUserRequest = new AdminCreateUserRequest

@@ -124,7 +124,7 @@ public class Function
         }
     }
 
-    private bool IsEmailVerified(User user)
+    private static bool IsEmailVerified(User user)
     {
         var emailVerifiedAttribute = user.UserAttributes?.FirstOrDefault(attr => attr.Name == "email_verified");
         return emailVerifiedAttribute?.Value?.ToLower() == "true";
