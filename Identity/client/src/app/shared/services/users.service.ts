@@ -19,6 +19,25 @@ export interface ResendCodeRequest {
   userType: 'adopter' | 'shelter';
 }
 
+export interface LoginRequest {
+  email: string;
+  password: string;
+  userType: 'adopter' | 'shelter';
+}
+
+export interface LoginResponse {
+  message: string;
+  accessToken: string;
+  refreshToken: string;
+  user: {
+    id: string;
+    email: string;
+    fullName: string;
+    userType: 'adopter' | 'shelter';
+    verified: boolean;
+  };
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -26,6 +45,13 @@ export class UsersService {
   private http = inject(HttpClient);
 
   private readonly authUrl = `${environment.apiUrl}/users`;
+
+  /**
+   * Login user
+   */
+  login(request: LoginRequest): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.authUrl}/login`, request);
+  }
 
   /**
    * Verify registration code

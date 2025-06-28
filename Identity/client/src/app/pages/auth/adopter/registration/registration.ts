@@ -352,9 +352,7 @@ export class Registration {
           'Registration successful! Please check your email for a verification code.',
         );
 
-        this.router.navigate(['/auth/code-verification'], {
-          queryParams: { email: finalData.email, userType: 'adopter' },
-        });
+        this.router.navigate(['/auth/login']);
       } catch (error) {
         this.errorHandlingService.handleErrorWithComponent(
           error,

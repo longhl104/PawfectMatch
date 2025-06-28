@@ -18,6 +18,11 @@ export const authRoutes: Routes = [
       import('./adopter/adopter.routes').then((m) => m.adopterRoutes),
   },
   {
+    path: 'login',
+    loadComponent: () => import('./login/login').then((m) => m.Login),
+    title: 'Sign In',
+  },
+  {
     path: 'code-verification',
     loadComponent: () =>
       import('./code-verification/code-verification').then(
