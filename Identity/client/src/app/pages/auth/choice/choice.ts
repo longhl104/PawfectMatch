@@ -1,9 +1,9 @@
 import { Component, inject } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-choice',
-  imports: [],
+  imports: [RouterModule],
   templateUrl: './choice.html',
   styleUrl: './choice.scss',
 })
