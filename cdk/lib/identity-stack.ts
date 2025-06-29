@@ -112,7 +112,7 @@ export class IdentityStack extends BaseStack {
           userSrp: true,
           userPassword: false,
           custom: false,
-          adminUserPassword: false,
+          adminUserPassword: true,
         },
 
         // OAuth settings
@@ -283,7 +283,10 @@ export class IdentityStack extends BaseStack {
           ADOPTERS_TABLE_NAME: this.adoptersTable.tableName,
           REFRESH_TOKENS_TABLE_NAME: this.refreshTokensTable.tableName,
           STAGE: stage,
-          JWT_SECRET: stage === 'production' ? '${aws:ssm:/pawfect-match/jwt-secret}' : 'dev-jwt-secret-key',
+          JWT_SECRET:
+            stage === 'production'
+              ? '${aws:ssm:/pawfect-match/jwt-secret}'
+              : 'dev-jwt-secret-key',
           JWT_EXPIRES_IN: '3600', // 1 hour
           REFRESH_TOKEN_EXPIRES_IN: '2592000', // 30 days
         },
@@ -305,7 +308,10 @@ export class IdentityStack extends BaseStack {
           ADOPTERS_TABLE_NAME: this.adoptersTable.tableName,
           REFRESH_TOKENS_TABLE_NAME: this.refreshTokensTable.tableName,
           STAGE: stage,
-          JWT_SECRET: stage === 'production' ? '${aws:ssm:/pawfect-match/jwt-secret}' : 'dev-jwt-secret-key',
+          JWT_SECRET:
+            stage === 'production'
+              ? '${aws:ssm:/pawfect-match/jwt-secret}'
+              : 'dev-jwt-secret-key',
           JWT_EXPIRES_IN: '3600', // 1 hour
           REFRESH_TOKEN_EXPIRES_IN: '2592000', // 30 days
         },
@@ -331,10 +337,7 @@ export class IdentityStack extends BaseStack {
     this.refreshTokenFunction.addToRolePolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
-        actions: [
-          'cognito-idp:AdminInitiateAuth',
-          'cognito-idp:AdminGetUser',
-        ],
+        actions: ['cognito-idp:AdminInitiateAuth', 'cognito-idp:AdminGetUser'],
         resources: [this.userPool.userPoolArn],
       })
     );
@@ -444,30 +447,28 @@ export class IdentityStack extends BaseStack {
       });
 
     // Add POST /identity/users/login endpoint
-    usersResource
-      .addResource('login')
-      .addMethod('POST', loginIntegration, {
-        methodResponses: [
-          {
-            statusCode: '200',
-            responseModels: {
-              'application/json': apigateway.Model.EMPTY_MODEL,
-            },
+    usersResource.addResource('login').addMethod('POST', loginIntegration, {
+      methodResponses: [
+        {
+          statusCode: '200',
+          responseModels: {
+            'application/json': apigateway.Model.EMPTY_MODEL,
           },
-          {
-            statusCode: '400',
-            responseModels: {
-              'application/json': apigateway.Model.ERROR_MODEL,
-            },
+        },
+        {
+          statusCode: '400',
+          responseModels: {
+            'application/json': apigateway.Model.ERROR_MODEL,
           },
-          {
-            statusCode: '500',
-            responseModels: {
-              'application/json': apigateway.Model.ERROR_MODEL,
-            },
+        },
+        {
+          statusCode: '500',
+          responseModels: {
+            'application/json': apigateway.Model.ERROR_MODEL,
           },
-        ],
-      });
+        },
+      ],
+    });
 
     // Add POST /identity/users/refresh-token endpoint
     usersResource

@@ -14,6 +14,10 @@ public class Function
     private readonly ICognitoService _cognitoService;
     private readonly IJwtService _jwtService;
     private readonly IRefreshTokenService _refreshTokenService;
+    private static readonly JsonSerializerOptions jsonSerializerOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
 
     public Function()
     {
@@ -42,7 +46,7 @@ public class Function
         try
         {
             // Validate HTTP method
-            if (request.HttpMethod.ToUpper() != "POST")
+            if (!request.HttpMethod.Equals("POST", StringComparison.CurrentCultureIgnoreCase))
             {
                 return CreateErrorResponse(405, "Method not allowed");
             }
@@ -53,10 +57,7 @@ public class Function
                 return CreateErrorResponse(400, "Request body is required");
             }
 
-            var loginRequest = JsonSerializer.Deserialize<LoginRequest>(request.Body, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            var loginRequest = JsonSerializer.Deserialize<LoginRequest>(request.Body, jsonSerializerOptions);
 
             if (loginRequest == null)
             {
@@ -64,16 +65,17 @@ public class Function
             }
 
             // Validate input
-            var validationResult = ValidateLoginRequest(loginRequest);
-            if (!validationResult.IsValid)
+            var (IsValid, ErrorMessage) = ValidateLoginRequest(loginRequest);
+            if (!IsValid)
             {
-                return CreateErrorResponse(400, validationResult.ErrorMessage);
+                return CreateErrorResponse(400, ErrorMessage);
             }
 
             // Authenticate user with Cognito
             var (success, message, user) = await _cognitoService.AuthenticateUserAsync(
                 loginRequest.Email,
-                loginRequest.Password);
+                loginRequest.Password
+                );
 
             if (!success || user == null)
             {
