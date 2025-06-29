@@ -283,10 +283,7 @@ export class IdentityStack extends BaseStack {
           ADOPTERS_TABLE_NAME: this.adoptersTable.tableName,
           REFRESH_TOKENS_TABLE_NAME: this.refreshTokensTable.tableName,
           STAGE: stage,
-          JWT_SECRET:
-            stage === 'production'
-              ? '${aws:ssm:/pawfect-match/jwt-secret}'
-              : 'dev-jwt-secret-key',
+          JWT_SECRET: '${aws:ssm:/pawfect-match/jwt-secret}',
           JWT_EXPIRES_IN: '3600', // 1 hour
           REFRESH_TOKEN_EXPIRES_IN: '2592000', // 30 days
         },
@@ -308,10 +305,7 @@ export class IdentityStack extends BaseStack {
           ADOPTERS_TABLE_NAME: this.adoptersTable.tableName,
           REFRESH_TOKENS_TABLE_NAME: this.refreshTokensTable.tableName,
           STAGE: stage,
-          JWT_SECRET:
-            stage === 'production'
-              ? '${aws:ssm:/pawfect-match/jwt-secret}'
-              : 'dev-jwt-secret-key',
+          JWT_SECRET: '${aws:ssm:/pawfect-match/jwt-secret}',
           JWT_EXPIRES_IN: '3600', // 1 hour
           REFRESH_TOKEN_EXPIRES_IN: '2592000', // 30 days
         },
