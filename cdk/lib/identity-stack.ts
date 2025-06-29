@@ -249,40 +249,6 @@ export class IdentityStack extends BaseStack {
       }
     );
 
-    // Create Lambda function for user login
-    this.loginFunction = LambdaUtils.createFunction(
-      this,
-      'LoginFunction',
-      'Identity',
-      stage,
-      {
-        functionName: 'UserLogin',
-        environment: {
-          USER_POOL_ID: this.userPool.userPoolId,
-          USER_POOL_CLIENT_ID: this.userPoolClient.userPoolClientId,
-          STAGE: stage,
-        },
-        description: 'Lambda function to authenticate users and issue tokens',
-      }
-    );
-
-    // Create Lambda function to refresh tokens
-    this.refreshTokenFunction = LambdaUtils.createFunction(
-      this,
-      'RefreshTokenFunction',
-      'Identity',
-      stage,
-      {
-        functionName: 'RefreshToken',
-        environment: {
-          USER_POOL_ID: this.userPool.userPoolId,
-          USER_POOL_CLIENT_ID: this.userPoolClient.userPoolClientId,
-          STAGE: stage,
-        },
-        description: 'Lambda function to refresh user tokens',
-      }
-    );
-
     // Grant Lambda permissions to access Cognito
     this.registerAdopterFunction.addToRolePolicy(
       new iam.PolicyStatement({

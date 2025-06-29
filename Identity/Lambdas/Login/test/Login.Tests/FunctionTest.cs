@@ -2,7 +2,7 @@ using Xunit;
 using Amazon.Lambda.TestUtilities;
 using Amazon.Lambda.APIGatewayEvents;
 using System.Text.Json;
-using Login.Models;
+using Longhl104.PawfectMatch.Models.Identity;
 
 namespace Login.Tests;
 

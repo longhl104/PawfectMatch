@@ -203,15 +203,46 @@ main() {
 	echo "========================================="
 	echo
 
+	# Parse command line arguments
+	local environment=""
+	local skip_lambda_build=false
+
+	while [[ $# -gt 0 ]]; do
+		case $1 in
+		--skip-lambda-build)
+			skip_lambda_build=true
+			shift
+			;;
+		-*)
+			print_error "Unknown option: $1"
+			echo "Usage: $0 <environment> [--skip-lambda-build]"
+			echo "Environments: dev, development, prod, production"
+			echo "Options:"
+			echo "  --skip-lambda-build    Skip building .NET Lambda functions"
+			exit 1
+			;;
+		*)
+			if [ -z "$environment" ]; then
+				environment=$1
+			else
+				print_error "Multiple environments specified"
+				echo "Usage: $0 <environment> [--skip-lambda-build]"
+				exit 1
+			fi
+			shift
+			;;
+		esac
+	done
+
 	# Check if environment parameter is provided
-	if [ $# -eq 0 ]; then
+	if [ -z "$environment" ]; then
 		print_error "Environment parameter is required"
-		echo "Usage: $0 <environment>"
+		echo "Usage: $0 <environment> [--skip-lambda-build]"
 		echo "Environments: dev, development, prod, production"
+		echo "Options:"
+		echo "  --skip-lambda-build    Skip building .NET Lambda functions"
 		exit 1
 	fi
-
-	local environment=$1
 
 	# Validate inputs and check prerequisites
 	validate_environment $environment
@@ -219,6 +250,9 @@ main() {
 
 	print_info "Deploying to environment: $ENVIRONMENT"
 	print_info "Using AWS profile: $AWS_PROFILE"
+	if [ "$skip_lambda_build" = true ]; then
+		print_warning "Skipping Lambda function builds"
+	fi
 	echo
 
 	# AWS authentication
@@ -227,7 +261,10 @@ main() {
 
 	# Build and deploy
 	build_project
-	build_lambda_functions
+
+	if [ "$skip_lambda_build" = false ]; then
+		build_lambda_functions
+	fi
 
 	if deploy_cdk; then
 		print_success "CDK deployment completed successfully!"
