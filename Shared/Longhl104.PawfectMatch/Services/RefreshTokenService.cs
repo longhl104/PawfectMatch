@@ -1,17 +1,23 @@
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 
-namespace RefreshToken.Services;
+namespace Longhl104.PawfectMatch.Services;
 
+/// <summary>
+/// Interface for refresh token management
+/// </summary>
 public interface IRefreshTokenService
 {
     Task StoreRefreshTokenAsync(string userId, string refreshToken, DateTime expiresAt);
     Task<bool> ValidateRefreshTokenAsync(string userId, string refreshToken);
     Task RevokeRefreshTokenAsync(string userId, string refreshToken);
     Task RevokeAllUserTokensAsync(string userId);
-    Task<string?> GetUserIdFromRefreshTokenAsync(string refreshToken);
+    Task<string> GetUserIdFromRefreshTokenAsync(string refreshToken);
 }
 
+/// <summary>
+/// Service for managing refresh tokens in DynamoDB
+/// </summary>
 public class RefreshTokenService : IRefreshTokenService
 {
     private readonly IAmazonDynamoDB _dynamoClient;
@@ -24,6 +30,18 @@ public class RefreshTokenService : IRefreshTokenService
         _tableName = $"pawfect-match-refresh-tokens-{stage}";
     }
 
+    public RefreshTokenService(IAmazonDynamoDB dynamoClient, string tableName)
+    {
+        _dynamoClient = dynamoClient;
+        _tableName = tableName;
+    }
+
+    /// <summary>
+    /// Stores a refresh token in DynamoDB
+    /// </summary>
+    /// <param name="userId">User ID associated with the token</param>
+    /// <param name="refreshToken">The refresh token to store</param>
+    /// <param name="expiresAt">When the token expires</param>
     public async Task StoreRefreshTokenAsync(string userId, string refreshToken, DateTime expiresAt)
     {
         try
@@ -52,6 +70,12 @@ public class RefreshTokenService : IRefreshTokenService
         }
     }
 
+    /// <summary>
+    /// Validates a refresh token by checking if it exists and is still active
+    /// </summary>
+    /// <param name="userId">User ID associated with the token</param>
+    /// <param name="refreshToken">The refresh token to validate</param>
+    /// <returns>True if valid and active, false otherwise</returns>
     public async Task<bool> ValidateRefreshTokenAsync(string userId, string refreshToken)
     {
         try
@@ -74,8 +98,13 @@ public class RefreshTokenService : IRefreshTokenService
                 return false;
 
             // Check if token is active
-            if (!response.Item.ContainsKey("IsActive") || !response.Item["IsActive"].BOOL)
+            if (!response.Item.TryGetValue("IsActive", out AttributeValue? value)
+                || !value.BOOL.HasValue
+                || !value.BOOL.Value
+                )
+            {
                 return false;
+            }
 
             // Check if token has expired
             if (response.Item.ContainsKey("ExpiresAt"))
@@ -94,45 +123,11 @@ public class RefreshTokenService : IRefreshTokenService
         }
     }
 
-    public async Task<string?> GetUserIdFromRefreshTokenAsync(string refreshToken)
-    {
-        try
-        {
-            var scanRequest = new ScanRequest
-            {
-                TableName = _tableName,
-                FilterExpression = "RefreshToken = :refreshToken AND IsActive = :isActive",
-                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
-                {
-                    [":refreshToken"] = new AttributeValue { S = refreshToken },
-                    [":isActive"] = new AttributeValue { BOOL = true }
-                }
-            };
-
-            var response = await _dynamoClient.ScanAsync(scanRequest);
-
-            if (response.Items.Count == 0)
-                return null;
-
-            var item = response.Items.First();
-
-            // Check if token has expired
-            if (item.ContainsKey("ExpiresAt"))
-            {
-                var expiresAt = DateTime.FromFileTimeUtc(long.Parse(item["ExpiresAt"].N));
-                if (expiresAt <= DateTime.UtcNow)
-                    return null;
-            }
-
-            return item["UserId"].S;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error getting user ID from refresh token: {ex.Message}");
-            return null;
-        }
-    }
-
+    /// <summary>
+    /// Revokes a specific refresh token by marking it as inactive
+    /// </summary>
+    /// <param name="userId">User ID associated with the token</param>
+    /// <param name="refreshToken">The refresh token to revoke</param>
     public async Task RevokeRefreshTokenAsync(string userId, string refreshToken)
     {
         try
@@ -163,6 +158,10 @@ public class RefreshTokenService : IRefreshTokenService
         }
     }
 
+    /// <summary>
+    /// Revokes all refresh tokens for a specific user
+    /// </summary>
+    /// <param name="userId">User ID whose tokens should be revoked</param>
     public async Task RevokeAllUserTokensAsync(string userId)
     {
         try
@@ -190,6 +189,35 @@ public class RefreshTokenService : IRefreshTokenService
         catch (Exception ex)
         {
             Console.WriteLine($"Error revoking all user tokens: {ex.Message}");
+            throw;
+        }
+    }
+
+    public async Task<string> GetUserIdFromRefreshTokenAsync(string refreshToken)
+    {
+        try
+        {
+            var scanRequest = new ScanRequest
+            {
+                TableName = _tableName,
+                FilterExpression = "RefreshToken = :refreshToken",
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                {
+                    [":refreshToken"] = new AttributeValue { S = refreshToken }
+                }
+            };
+
+            var scanResponse = await _dynamoClient.ScanAsync(scanRequest);
+
+            if (scanResponse.Items.Count == 0)
+                return string.Empty;
+
+            // Assuming only one token per user
+            return scanResponse.Items[0]["UserId"].S;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error getting user ID from refresh token: {ex.Message}");
             throw;
         }
     }

@@ -1,15 +1,21 @@
 using Amazon.CognitoIdentityProvider;
 using Amazon.CognitoIdentityProvider.Model;
-using Login.Models;
+using Longhl104.PawfectMatch.Models.Identity;
 
-namespace Login.Services;
+namespace Longhl104.PawfectMatch.Services;
 
+/// <summary>
+/// Interface for Cognito user authentication and management
+/// </summary>
 public interface ICognitoService
 {
     Task<(bool Success, string Message, UserProfile? User)> AuthenticateUserAsync(string email, string password);
     Task<UserProfile?> GetUserProfileAsync(string email);
 }
 
+/// <summary>
+/// Service for managing AWS Cognito user operations
+/// </summary>
 public class CognitoService : ICognitoService
 {
     private readonly IAmazonCognitoIdentityProvider _cognitoClient;
@@ -23,6 +29,19 @@ public class CognitoService : ICognitoService
         _clientId = Environment.GetEnvironmentVariable("USER_POOL_CLIENT_ID") ?? throw new InvalidOperationException("USER_POOL_CLIENT_ID environment variable is required");
     }
 
+    public CognitoService(IAmazonCognitoIdentityProvider cognitoClient, string userPoolId, string clientId)
+    {
+        _cognitoClient = cognitoClient;
+        _userPoolId = userPoolId;
+        _clientId = clientId;
+    }
+
+    /// <summary>
+    /// Authenticates a user with email and password
+    /// </summary>
+    /// <param name="email">User's email address</param>
+    /// <param name="password">User's password</param>
+    /// <returns>Authentication result with success status, message, and user profile</returns>
     public async Task<(bool Success, string Message, UserProfile? User)> AuthenticateUserAsync(string email, string password)
     {
         try
@@ -83,6 +102,11 @@ public class CognitoService : ICognitoService
         }
     }
 
+    /// <summary>
+    /// Retrieves user profile information from Cognito
+    /// </summary>
+    /// <param name="email">User's email address</param>
+    /// <returns>User profile or null if not found</returns>
     public async Task<UserProfile?> GetUserProfileAsync(string email)
     {
         try
@@ -95,11 +119,16 @@ public class CognitoService : ICognitoService
 
             var getUserResponse = await _cognitoClient.AdminGetUserAsync(getUserRequest);
 
+            if (!getUserResponse.UserCreateDate.HasValue)
+            {
+                throw new InvalidOperationException("User creation date is not available.");
+            }
+
             var userProfile = new UserProfile
             {
                 UserId = getUserResponse.Username,
                 Email = email,
-                CreatedAt = getUserResponse.UserCreateDate,
+                CreatedAt = getUserResponse.UserCreateDate.Value,
                 LastLoginAt = DateTime.UtcNow
             };
 

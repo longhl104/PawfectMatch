@@ -1,8 +1,8 @@
 using Amazon.Lambda.Core;
 using Amazon.Lambda.APIGatewayEvents;
 using System.Text.Json;
-using RefreshToken.Models;
-using RefreshToken.Services;
+using Longhl104.PawfectMatch.Services;
+using Longhl104.PawfectMatch.Models.Identity;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]

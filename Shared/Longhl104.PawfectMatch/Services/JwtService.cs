@@ -3,10 +3,13 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using RefreshToken.Models;
+using Longhl104.PawfectMatch.Models.Identity;
 
-namespace RefreshToken.Services;
+namespace Longhl104.PawfectMatch.Services;
 
+/// <summary>
+/// Interface for JWT token operations
+/// </summary>
 public interface IJwtService
 {
     string GenerateAccessToken(UserProfile user);
@@ -15,6 +18,9 @@ public interface IJwtService
     bool ValidateRefreshToken(string refreshToken, string userId);
 }
 
+/// <summary>
+/// Service for managing JWT tokens
+/// </summary>
 public class JwtService : IJwtService
 {
     private readonly string _secretKey;
@@ -28,6 +34,18 @@ public class JwtService : IJwtService
         _refreshTokenExpiryDays = int.Parse(Environment.GetEnvironmentVariable("REFRESH_TOKEN_EXPIRES_IN") ?? "30");
     }
 
+    public JwtService(string secretKey, int accessTokenExpiryMinutes = 60, int refreshTokenExpiryDays = 30)
+    {
+        _secretKey = secretKey;
+        _accessTokenExpiryMinutes = accessTokenExpiryMinutes;
+        _refreshTokenExpiryDays = refreshTokenExpiryDays;
+    }
+
+    /// <summary>
+    /// Generates a JWT access token for the specified user
+    /// </summary>
+    /// <param name="user">User profile to create token for</param>
+    /// <returns>JWT access token string</returns>
     public string GenerateAccessToken(UserProfile user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -62,6 +80,10 @@ public class JwtService : IJwtService
         return tokenHandler.WriteToken(token);
     }
 
+    /// <summary>
+    /// Generates a secure refresh token
+    /// </summary>
+    /// <returns>Base64 encoded refresh token</returns>
     public string GenerateRefreshToken()
     {
         var randomNumber = new byte[64];
@@ -70,6 +92,11 @@ public class JwtService : IJwtService
         return Convert.ToBase64String(randomNumber);
     }
 
+    /// <summary>
+    /// Validates a JWT token and returns the claims principal
+    /// </summary>
+    /// <param name="token">JWT token to validate</param>
+    /// <returns>Claims principal if valid, null otherwise</returns>
     public ClaimsPrincipal? ValidateToken(string token)
     {
         try
@@ -85,7 +112,7 @@ public class JwtService : IJwtService
                 ValidIssuer = "PawfectMatch",
                 ValidateAudience = true,
                 ValidAudience = "PawfectMatch-App",
-                ValidateLifetime = false, // Don't validate lifetime for refresh token validation
+                ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero
             };
 
@@ -98,8 +125,17 @@ public class JwtService : IJwtService
         }
     }
 
+    /// <summary>
+    /// Validates a refresh token (basic validation - should be enhanced with database check)
+    /// </summary>
+    /// <param name="refreshToken">Refresh token to validate</param>
+    /// <param name="userId">User ID associated with the token</param>
+    /// <returns>True if valid, false otherwise</returns>
     public bool ValidateRefreshToken(string refreshToken, string userId)
     {
+        // In a production system, you would store refresh tokens in a database
+        // and validate against that. For now, we'll do basic validation.
+        // This should be enhanced to check against a refresh token store.
         return !string.IsNullOrEmpty(refreshToken) && !string.IsNullOrEmpty(userId);
     }
 }

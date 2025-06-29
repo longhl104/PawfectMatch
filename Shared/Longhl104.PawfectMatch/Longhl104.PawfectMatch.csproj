@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+    <!-- Package Metadata -->
+    <PackageId>Longhl104.PawfectMatch</PackageId>
+    <Version>1.0.1</Version>
+    <Authors>Longhl104</Authors>
+    <Description>Shared services and models for PawfectMatch application</Description>
+    <PackageTags>PawfectMatch;AWS;Cognito;JWT;DynamoDB</PackageTags>
+    <RepositoryUrl>https://github.com/longhl104/PawfectMatch</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+
+    <!-- NuGet Package Settings -->
+    <PackageOutputPath>./nupkg</PackageOutputPath>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.CognitoIdentityProvider" Version="4.0.1.9" />
+    <PackageReference Include="AWSSDK.DynamoDBv2" Version="4.0.1.9" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.12.1" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.12.1" />
+  </ItemGroup>
+</Project>
