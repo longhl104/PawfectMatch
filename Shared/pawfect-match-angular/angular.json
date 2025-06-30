@@ -3,5 +3,34 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
+    "@longhl104/pawfect-match-ng": {
+      "projectType": "library",
+      "root": "projects/longhl104/pawfect-match-ng",
+      "sourceRoot": "projects/longhl104/pawfect-match-ng/src",
+      "prefix": "pm",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/longhl104/pawfect-match-ng/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/longhl104/pawfect-match-ng/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:karma",
+          "options": {
+            "tsConfig": "projects/longhl104/pawfect-match-ng/tsconfig.spec.json"
+          }
+        }
+      }
+    }
+  },
+  "cli": {
+    "analytics": "52c79f8a-1f31-4d51-81be-706cee939280"
   }
 }
