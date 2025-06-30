@@ -1,0 +1,112 @@
+@use "styles" as *;
+
+.registration-container {
+  @extend .full-height-container;
+  @extend .gradient-bg-primary;
+  padding: 1rem;
+}
+
+.registration-header {
+  @extend .page-header;
+  color: white; /* Use direct color instead of @extend for better control */
+
+  .back-btn {
+    @extend .back-btn;
+  }
+}
+
+.registration-card {
+  @extend .card;
+  max-width: 500px;
+  width: 100%;
+  text-align: left;
+  padding: 2rem;
+
+  .form-group {
+    @extend .form-group;
+
+    // Google Maps Autocomplete styling
+    .pac-container {
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+    }
+
+    .pac-item {
+      padding: 12px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid #f0f0f0;
+
+      &:hover {
+        background-color: #f8f9fa;
+      }
+
+      &.pac-item-selected {
+        background-color: #e3f2fd;
+      }
+    }
+
+    .pac-matched {
+      font-weight: 600;
+      color: #1976d2;
+    }
+  }
+
+  .help-text {
+    font-size: 0.875rem;
+    color: #666;
+    margin-top: 0.25rem;
+    font-style: italic;
+  }
+
+  // Remove form-row styles since we're not using side-by-side inputs anymore
+  // .form-row { ... } - Remove this section
+
+  .password-input {
+    @extend .password-input;
+  }
+
+  .checkbox-group {
+    @extend .checkbox-group;
+  }
+
+  .error-message {
+    @extend .error-message;
+  }
+
+  .char-count {
+    @extend .char-count;
+  }
+}
+
+.submit-btn {
+  @extend .btn-base;
+  @extend .btn-success;
+  margin-top: 1rem;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+
+    &:hover {
+      transform: none;
+      box-shadow: none;
+    }
+  }
+}
+
+.login-link {
+  @extend .page-footer-link;
+}
+
+@media (max-width: 768px) {
+  .registration-container {
+    padding: 0.5rem;
+  }
+
+  .registration-card {
+    padding: 1.5rem;
+  }
+}
