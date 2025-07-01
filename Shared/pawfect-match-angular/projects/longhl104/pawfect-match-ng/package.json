@@ -1,6 +1,6 @@
 {
   "name": "@longhl104/pawfect-match-ng",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "peerDependencies": {
     "@angular/common": "^20.0.0",
     "@angular/core": "^20.0.0"
