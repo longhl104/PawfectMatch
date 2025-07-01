@@ -72,30 +72,12 @@ export class Login {
       };
 
       try {
-        const response = await firstValueFrom(
-          this.usersService.login(loginRequest),
-        );
+        await firstValueFrom(this.usersService.login(loginRequest));
 
-        // Store tokens (you might want to use a more secure storage method)
-        if (formData.rememberMe) {
-          localStorage.setItem('accessToken', response.accessToken);
-          localStorage.setItem('refreshToken', response.refreshToken);
-        } else {
-          sessionStorage.setItem('accessToken', response.accessToken);
-          sessionStorage.setItem('refreshToken', response.refreshToken);
-        }
+        this.toastService.success(`Welcome back!`);
 
-        // Store user info
-        localStorage.setItem('currentUser', JSON.stringify(response.user));
-
-        this.toastService.success(`Welcome back, ${response.user.fullName}!`);
-
-        // Navigate based on user type
-        if (response.user.userType === 'adopter') {
-          this.router.navigate(['/adopter/dashboard']);
-        } else {
-          this.router.navigate(['/shelter/dashboard']);
-        }
+        // Navigate to localhost:4201 (Matcher application)
+        window.location.href = 'https://localhost:4201';
       } catch (error: unknown) {
         // Handle specific error cases
         const httpError = error as HttpError;

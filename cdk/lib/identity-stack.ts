@@ -286,6 +286,7 @@ export class IdentityStack extends BaseStack {
           JWT_SECRET: '${aws:ssm:/pawfect-match/jwt-secret}',
           JWT_EXPIRES_IN: '3600', // 1 hour
           REFRESH_TOKEN_EXPIRES_IN: '2592000', // 30 days
+          COOKIE_DOMAIN: stage === 'production' ? 'pawfectmatch.com' : 'localhost',
         },
         description: 'Lambda function to handle user login with JWT',
       }

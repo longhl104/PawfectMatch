@@ -19,6 +19,11 @@ public class Function
         PropertyNameCaseInsensitive = true
     };
 
+    private static readonly JsonSerializerOptions camelCaseOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
     public Function()
     {
         _cognitoService = new CognitoService();
@@ -110,6 +115,11 @@ public class Function
 
             context.Logger.LogInformation($"User {loginRequest.Email} logged in successfully");
 
+            // Determine the domain for cookies (localhost during development, actual domain in production)
+            var cookieDomain = Environment.GetEnvironmentVariable("COOKIE_DOMAIN") ?? "localhost";
+            var isSecure = !cookieDomain.Equals("localhost", StringComparison.OrdinalIgnoreCase);
+            var sameSite = isSecure ? "None" : "Lax";
+
             return new APIGatewayProxyResponse
             {
                 StatusCode = 200,
@@ -118,12 +128,22 @@ public class Function
                     { "Content-Type", "application/json" },
                     { "Access-Control-Allow-Origin", "*" },
                     { "Access-Control-Allow-Headers", "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token" },
-                    { "Access-Control-Allow-Methods", "POST,OPTIONS" }
+                    { "Access-Control-Allow-Methods", "POST,OPTIONS" },
+                    { "Access-Control-Allow-Credentials", "true" }
                 },
-                Body = JsonSerializer.Serialize(loginResponse, new JsonSerializerOptions
+                MultiValueHeaders = new Dictionary<string, IList<string>>
                 {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                })
+                    {
+                        "Set-Cookie",
+                        new List<string>
+                        {
+                            $"accessToken={accessToken}; Path=/; Domain={cookieDomain}; Max-Age=3600; HttpOnly; {(isSecure ? "Secure; " : "")}SameSite={sameSite}",
+                            $"refreshToken={refreshToken}; Path=/; Domain={cookieDomain}; Max-Age=2592000; HttpOnly; {(isSecure ? "Secure; " : "")}SameSite={sameSite}",
+                            $"userInfo={Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(JsonSerializer.Serialize(user, camelCaseOptions)))}; Path=/; Domain={cookieDomain}; Max-Age=3600; {(isSecure ? "Secure; " : "")}SameSite={sameSite}"
+                        }
+                    }
+                },
+                Body = JsonSerializer.Serialize(loginResponse, camelCaseOptions)
             };
         }
         catch (JsonException ex)
@@ -195,10 +215,7 @@ public class Function
                 { "Access-Control-Allow-Headers", "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token" },
                 { "Access-Control-Allow-Methods", "POST,OPTIONS" }
             },
-            Body = JsonSerializer.Serialize(errorResponse, new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            })
+            Body = JsonSerializer.Serialize(errorResponse, camelCaseOptions)
         };
     }
 }
