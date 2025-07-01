@@ -7,10 +7,12 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { ToastService } from 'shared/services/toast.service';
-import { ErrorHandlingService } from 'shared/services/error-handling.service';
 import { LoginRequest, UsersService } from 'shared/services/users.service';
 import { firstValueFrom } from 'rxjs';
+import {
+  ToastService,
+  ErrorHandlingService,
+} from '@longhl104/pawfect-match-ng';
 
 interface HttpError {
   status?: number;
