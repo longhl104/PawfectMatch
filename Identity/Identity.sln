@@ -25,6 +25,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{B0160816-0
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RefreshToken.Tests", "Lambdas\RefreshToken\test\RefreshToken.Tests\RefreshToken.Tests.csproj", "{9E1731A7-A89D-4AD5-8C2C-838C63B46DF5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Longhl104.Identity", "Longhl104.Identity\Longhl104.Identity.csproj", "{1F22F757-9798-4423-8B18-ED54D8CC11FD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,18 @@ Global
 		{9E1731A7-A89D-4AD5-8C2C-838C63B46DF5}.Release|x64.Build.0 = Release|Any CPU
 		{9E1731A7-A89D-4AD5-8C2C-838C63B46DF5}.Release|x86.ActiveCfg = Release|Any CPU
 		{9E1731A7-A89D-4AD5-8C2C-838C63B46DF5}.Release|x86.Build.0 = Release|Any CPU
+		{1F22F757-9798-4423-8B18-ED54D8CC11FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F22F757-9798-4423-8B18-ED54D8CC11FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F22F757-9798-4423-8B18-ED54D8CC11FD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1F22F757-9798-4423-8B18-ED54D8CC11FD}.Debug|x64.Build.0 = Debug|Any CPU
+		{1F22F757-9798-4423-8B18-ED54D8CC11FD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1F22F757-9798-4423-8B18-ED54D8CC11FD}.Debug|x86.Build.0 = Debug|Any CPU
+		{1F22F757-9798-4423-8B18-ED54D8CC11FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F22F757-9798-4423-8B18-ED54D8CC11FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F22F757-9798-4423-8B18-ED54D8CC11FD}.Release|x64.ActiveCfg = Release|Any CPU
+		{1F22F757-9798-4423-8B18-ED54D8CC11FD}.Release|x64.Build.0 = Release|Any CPU
+		{1F22F757-9798-4423-8B18-ED54D8CC11FD}.Release|x86.ActiveCfg = Release|Any CPU
+		{1F22F757-9798-4423-8B18-ED54D8CC11FD}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
