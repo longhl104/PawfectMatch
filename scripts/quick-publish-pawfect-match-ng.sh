@@ -11,7 +11,7 @@ BLUE='\033[0;34m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-WORKSPACE_DIR="/Volumes/T7Shield/Projects/PawfectMatch/Shared/pawfect-match-angular"
+WORKSPACE_DIR="../Shared/pawfect-match-angular"
 LIBRARY_NAME="pawfect-match-ng"
 
 echo -e "${BLUE}🚀 Quick Publishing @longhl104/pawfect-match-ng${NC}"

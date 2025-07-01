@@ -34,8 +34,8 @@ Interactive deployment script for the PawfectMatch CDK infrastructure.
 **Example:**
 
 ```bash
-cd /Volumes/T7Shield/Projects/PawfectMatch
-./scripts/deploy.sh
+cd scripts
+./deploy.sh
 ```
 
 The script will:
