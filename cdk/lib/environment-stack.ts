@@ -55,7 +55,7 @@ export class EnvironmentStack extends cdk.Stack {
             ? ['https://www.pawfectmatch.com']
             : [
                 'https://development.pawfectmatch.com',
-                'https://localhost:4200',
+                'http://localhost:4200',
               ],
         allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
         allowHeaders: ['Content-Type', 'Authorization'],

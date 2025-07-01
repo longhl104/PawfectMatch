@@ -13,7 +13,7 @@ dotnet build
 if [ $? -eq 0 ]; then
     echo "Build successful. Starting the API..."
     echo "The API will be available at:"
-    echo "  HTTP:  http://localhost:5209"
+    echo "  HTTP:  http://localhost:5200"
     echo "  HTTPS: https://localhost:7027"
     echo ""
     echo "Available endpoints:"
