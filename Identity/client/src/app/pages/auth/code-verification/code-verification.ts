@@ -15,14 +15,16 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { AdoptersService } from 'shared/services/adopters.service';
-import { ToastService } from 'shared/services/toast.service';
-import { ErrorHandlingService } from 'shared/services/error-handling.service';
 import { firstValueFrom } from 'rxjs';
 import {
   ResendCodeRequest,
   UsersService,
   VerificationRequest,
 } from 'shared/services/users.service';
+import {
+  ToastService,
+  ErrorHandlingService,
+} from '@longhl104/pawfect-match-ng';
 
 @Component({
   selector: 'app-code-verification',

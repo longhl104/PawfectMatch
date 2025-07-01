@@ -1,7 +1,7 @@
 import { Component, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ToastService, Toast } from 'shared/services/toast.service';
 import { Observable, Subscription } from 'rxjs';
+import { ToastService, Toast } from '@longhl104/pawfect-match-ng';
 
 @Component({
   selector: 'app-toast-container',

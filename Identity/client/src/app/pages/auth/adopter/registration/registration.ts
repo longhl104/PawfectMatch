@@ -21,10 +21,13 @@ import {
   ValidationErrors,
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { GoogleMapsService } from 'shared/services/google-maps.service';
-import { ToastService } from 'shared/services/toast.service';
-import { ErrorHandlingService } from 'shared/services/error-handling.service';
 import { firstValueFrom } from 'rxjs';
+import {
+  GoogleMapsService,
+  ToastService,
+  ErrorHandlingService,
+} from '@longhl104/pawfect-match-ng';
+import { environment } from 'environments/environment';
 
 declare const google: any;
 
@@ -59,7 +62,10 @@ export class Registration {
 
     afterNextRender(async () => {
       try {
-        await this.googleMapsService.loadGoogleMaps();
+        await this.googleMapsService.loadGoogleMaps(
+          environment.googleMapsApiKey,
+        );
+
         this.isGoogleMapsLoading = false;
 
         // Enable the address field when Google Maps is loaded

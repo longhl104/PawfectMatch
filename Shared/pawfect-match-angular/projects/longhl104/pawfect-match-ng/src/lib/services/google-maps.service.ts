@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@angular/core';
-import { environment } from 'environments/environment';
 
 let google: any; // Declare google globally
 
@@ -11,7 +10,7 @@ export class GoogleMapsService {
   private isLoaded = false;
   private loadingPromise: Promise<void> | null = null;
 
-  async loadGoogleMaps(): Promise<void> {
+  async loadGoogleMaps(apiKey: string): Promise<void> {
     if (this.isLoaded) {
       return Promise.resolve();
     }
@@ -35,7 +34,7 @@ export class GoogleMapsService {
       };
 
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${environment.googleMapsApiKey}&libraries=places&loading=async&callback=${callbackName}`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&loading=async&callback=${callbackName}`;
       script.async = true;
       script.defer = true;
       script.onerror = () => {

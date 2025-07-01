@@ -12,7 +12,7 @@ import {
   withEventReplay,
 } from '@angular/platform-browser';
 import { provideHttpClient, withFetch } from '@angular/common/http';
-import { GlobalErrorHandler } from './shared/services/global-error-handler.service';
+import { GlobalErrorHandler } from "@longhl104/pawfect-match-ng";
 
 export const appConfig: ApplicationConfig = {
   providers: [

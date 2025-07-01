@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
+import { GlobalErrorHandler } from '@longhl104/pawfect-match-ng';
 import { catchError, throwError } from 'rxjs';
-import { GlobalErrorHandler } from '../services/global-error-handler.service';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const errorHandler = inject(GlobalErrorHandler);

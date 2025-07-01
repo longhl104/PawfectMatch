@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ErrorHandler, Injectable, inject, Injector } from '@angular/core';
 import { ToastService } from './toast.service';
-import { environment } from 'environments/environment';
 
 export interface ErrorContext {
   component?: string;
@@ -240,14 +239,13 @@ export class GlobalErrorHandler implements ErrorHandler {
     // });
 
     // For now, just log to console in development
-    if (!environment?.production) {
-      console.group('🚨 Global Error Handler - Detailed Log');
-      console.error('Original Error:', originalError);
-      console.log('Error Info:', errorInfo);
-      console.log('Context:', context);
-      console.log('Log Data:', logData);
-      console.groupEnd();
-    }
+    // Note: environment check would need to be implemented in consuming applications
+    console.group('🚨 Global Error Handler - Detailed Log');
+    console.error('Original Error:', originalError);
+    console.log('Error Info:', errorInfo);
+    console.log('Context:', context);
+    console.log('Log Data:', logData);
+    console.groupEnd();
   }
 }
 
