@@ -4,8 +4,11 @@ using Longhl104.PawfectMatch.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Longhl104.Identity.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Configuration.AddParameterStore("/PawfectMatch/Identity", optional: true);
 
 // Add services to the container
 builder.Services.AddControllers();
@@ -17,7 +20,7 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
     {
         policy.WithOrigins(
-                builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "http://localhost:4200" }
+                builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? ["http://localhost:4200"]
             )
             .AllowAnyMethod()
             .AllowAnyHeader()
