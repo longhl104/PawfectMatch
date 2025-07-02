@@ -89,7 +89,7 @@ public class RegistrationController : ControllerBase
         }
     }
 
-    private string ValidateRegistrationRequest(AdopterRegistrationRequest request)
+    private static string ValidateRegistrationRequest(AdopterRegistrationRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.FullName))
             return "Full name is required";
