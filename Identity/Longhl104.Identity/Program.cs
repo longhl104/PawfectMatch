@@ -8,7 +8,11 @@ using Longhl104.Identity.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration.AddParameterStore("/PawfectMatch/Identity", optional: true);
+var environmentName = builder.Environment.EnvironmentName;
+
+Console.WriteLine($"Environment: {environmentName}");
+
+builder.Configuration.AddParameterStore($"/PawfectMatch/{environmentName}/Identity");
 
 // Add services to the container
 builder.Services.AddControllers();
