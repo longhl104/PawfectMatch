@@ -129,13 +129,16 @@ export class AdoptersService {
   /**
    * Register a new adopter
    */
-  register(
-    request: AdopterRegistrationRequest,
-  ): Observable<{ message: string; userId: string }> {
-    return this.http.post<{ message: string; userId: string }>(
-      `${this.apiUrl}/registration/adopter`,
-      request,
-    );
+  register(request: AdopterRegistrationRequest): Observable<{
+    message: string;
+    userId: string;
+    redirectUrl: string;
+  }> {
+    return this.http.post<{
+      message: string;
+      userId: string;
+      redirectUrl: string;
+    }>(`${this.apiUrl}/registration/adopter`, request);
     // Note: HTTP errors are now handled by the global error interceptor
   }
 }

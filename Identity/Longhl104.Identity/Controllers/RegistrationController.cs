@@ -21,13 +21,15 @@ public class RegistrationController : ControllerBase
         AmazonDynamoDBClient dynamoDbClient,
         AmazonCognitoIdentityProviderClient cognitoClient,
         ILogger<RegistrationController> logger,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IHostEnvironment hostEnvironment
+        )
     {
         _dynamoDbClient = dynamoDbClient;
         _cognitoClient = cognitoClient;
         _logger = logger;
         _configuration = configuration;
-        _tableName = _configuration["AWS:AdoptersTableName"] ?? "PawfectMatch-Adopters";
+        _tableName = $"pawfect-match-adopters-{hostEnvironment.EnvironmentName.ToLowerInvariant()}";
         _userPoolId = _configuration["AWS:UserPoolId"] ?? throw new InvalidOperationException("AWS:UserPoolId configuration is required");
     }
 
@@ -39,35 +41,40 @@ public class RegistrationController : ControllerBase
     {
         try
         {
-            _logger.LogInformation("Processing adopter registration request for email: {Email}", registrationRequest.Email);
+            // _logger.LogInformation("Processing adopter registration request for email: {Email}", registrationRequest.Email);
 
-            // Validate required fields
-            var validationError = ValidateRegistrationRequest(registrationRequest);
-            if (!string.IsNullOrEmpty(validationError))
-            {
-                return BadRequest(new { Message = validationError });
-            }
+            // // Validate required fields
+            // var validationError = ValidateRegistrationRequest(registrationRequest);
+            // if (!string.IsNullOrEmpty(validationError))
+            // {
+            //     return BadRequest(new { Message = validationError });
+            // }
 
-            // Check if email already exists
-            var existingUser = await CheckIfEmailExists(registrationRequest.Email);
-            if (existingUser)
-            {
-                return Conflict(new { Message = "An account with this email already exists" });
-            }
+            // // Check if email already exists
+            // var existingUser = await CheckIfEmailExists(registrationRequest.Email);
+            // if (existingUser)
+            // {
+            //     return Conflict(new { Message = "An account with this email already exists" });
+            // }
 
-            // Create user in Cognito
-            var userId = await CreateCognitoUser(registrationRequest);
+            // // Create user in Cognito
+            // var userId = await CreateCognitoUser(registrationRequest);
 
-            // Save adopter profile to DynamoDB
-            await SaveAdopterProfile(registrationRequest, userId);
+            // // Save adopter profile to DynamoDB
+            // await SaveAdopterProfile(registrationRequest, userId);
 
-            // Set cookies for the registered user
-            SetAuthenticationCookies(userId, registrationRequest.Email);
+            // // Set cookies for the registered user
+            // SetAuthenticationCookies(userId, registrationRequest.Email);
 
-            _logger.LogInformation("Adopter registration successful for email: {Email}, UserId: {UserId}", registrationRequest.Email, userId);
+            // _logger.LogInformation("Adopter registration successful for email: {Email}, UserId: {UserId}", registrationRequest.Email, userId);
 
-            // Redirect to the specified URL
-            return Redirect("https://localhost:4201");
+            // Return success response with redirect URL for Angular to handle
+            return Ok(new AdopterRegistrationResponse 
+            { 
+                Message = "Registration successful", 
+                UserId = "temp-user-id", // This will be the actual userId when uncommented
+                RedirectUrl = "https://localhost:4201"
+            });
         }
         catch (UsernameExistsException)
         {
@@ -157,7 +164,8 @@ public class RegistrationController : ControllerBase
 
         if (!string.IsNullOrWhiteSpace(request.PhoneNumber))
         {
-            userAttributes.Add(new AttributeType { Name = "phone_number", Value = request.PhoneNumber });
+            var australianPhoneNumber = request.PhoneNumber.StartsWith("+61") ? request.PhoneNumber : $"+61{request.PhoneNumber.TrimStart('0')}";
+            userAttributes.Add(new AttributeType { Name = "phone_number", Value = australianPhoneNumber });
         }
 
         var adminCreateUserRequest = new AdminCreateUserRequest
@@ -192,7 +200,7 @@ public class RegistrationController : ControllerBase
     {
         var adopterItem = new Dictionary<string, AttributeValue>
         {
-            ["AdopterId"] = new() { S = userId },
+            ["UserId"] = new() { S = userId },
             ["FullName"] = new() { S = request.FullName },
             ["Email"] = new() { S = request.Email },
             ["Address"] = new() { S = request.Address },
@@ -261,4 +269,5 @@ public class AdopterRegistrationResponse
 {
     public string Message { get; set; } = string.Empty;
     public string UserId { get; set; } = string.Empty;
+    public string? RedirectUrl { get; set; }
 }

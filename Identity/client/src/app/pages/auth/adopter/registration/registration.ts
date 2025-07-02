@@ -352,13 +352,16 @@ export class Registration {
       try {
         console.log('Registration data:', finalData);
 
-        await firstValueFrom(this.adoptersService.register(finalData));
+        const response = await firstValueFrom(
+          this.adoptersService.register(finalData),
+        );
+
         console.log('Registration successful');
         this.toastService.success(
           'Registration successful! Please check your email for a verification code.',
         );
 
-        this.router.navigate(['/auth/login']);
+        window.location.href = response.redirectUrl;
       } catch (error) {
         this.errorHandlingService.handleErrorWithComponent(
           error,
