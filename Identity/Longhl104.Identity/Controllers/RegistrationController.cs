@@ -61,16 +61,13 @@ public class RegistrationController : ControllerBase
             // Save adopter profile to DynamoDB
             await SaveAdopterProfile(registrationRequest, userId);
 
-            // Return success response
-            var response = new AdopterRegistrationResponse
-            {
-                Message = "Registration successful! Please check your email to verify your account.",
-                UserId = userId
-            };
+            // Set cookies for the registered user
+            SetAuthenticationCookies(userId, registrationRequest.Email);
 
             _logger.LogInformation("Adopter registration successful for email: {Email}, UserId: {UserId}", registrationRequest.Email, userId);
 
-            return Ok(response);
+            // Redirect to the specified URL
+            return Redirect("https://localhost:4201");
         }
         catch (UsernameExistsException)
         {
@@ -222,6 +219,31 @@ public class RegistrationController : ControllerBase
         await _dynamoDbClient.PutItemAsync(putItemRequest);
 
         _logger.LogInformation("Saved adopter profile to DynamoDB for UserId: {UserId}", userId);
+    }
+
+    private void SetAuthenticationCookies(string userId, string email)
+    {
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true, // Use HTTPS only
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTime.UtcNow.AddDays(30) // Cookie expires in 30 days
+        };
+
+        // Set user ID cookie
+        Response.Cookies.Append("PawfectMatch_UserId", userId, cookieOptions);
+
+        // Set email cookie
+        Response.Cookies.Append("PawfectMatch_Email", email, cookieOptions);
+
+        // Set authentication status cookie
+        Response.Cookies.Append("PawfectMatch_Authenticated", "true", cookieOptions);
+
+        // Set user type cookie
+        Response.Cookies.Append("PawfectMatch_UserType", "adopter", cookieOptions);
+
+        _logger.LogInformation("Authentication cookies set for user: {UserId}", userId);
     }
 }
 
