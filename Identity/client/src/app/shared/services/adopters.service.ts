@@ -116,7 +116,7 @@ export interface ChangePasswordRequest {
 export class AdoptersService {
   private http = inject(HttpClient);
 
-  private readonly apiUrl = `${environment.apiUrl}/adopters`;
+  private readonly apiUrl = `${environment.apiUrl}`;
 
   private currentAdopterSubject = new BehaviorSubject<AdopterProfile | null>(
     null,
@@ -133,7 +133,7 @@ export class AdoptersService {
     request: AdopterRegistrationRequest,
   ): Observable<{ message: string; userId: string }> {
     return this.http.post<{ message: string; userId: string }>(
-      `${this.apiUrl}/register`,
+      `${this.apiUrl}/registration/adopter`,
       request,
     );
     // Note: HTTP errors are now handled by the global error interceptor

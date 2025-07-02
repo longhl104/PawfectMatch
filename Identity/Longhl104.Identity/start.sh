@@ -15,8 +15,8 @@ if [ $? -eq 0 ]; then
 	echo "Press Ctrl+C to stop the server"
 	echo "================================================"
 
-	# Run the application
-	dotnet run
+	# Run the application with HTTPS profile
+	dotnet run --launch-profile https
 else
 	echo "Build failed. Please check the errors above."
 	exit 1
