@@ -1,6 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
-import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import { Construct } from 'constructs';
 import { SharedStack } from './shared-stack';
 import { StageType } from './utils';
@@ -13,7 +12,6 @@ export interface EnvironmentStackProps extends cdk.StackProps {
 
 export class EnvironmentStack extends cdk.Stack {
   public readonly vpc: ec2.Vpc;
-  private readonly api: apigateway.RestApi;
 
   constructor(scope: Construct, id: string, props: EnvironmentStackProps) {
     super(scope, id, props);
@@ -43,72 +41,14 @@ export class EnvironmentStack extends cdk.Stack {
       ],
     });
 
-    // Create API Gateway
-    this.api = new apigateway.RestApi(this, 'PawfectMatchApi', {
-      restApiName: `pawfect-match-api-${stage}`,
-      description: `PawfectMatch API for ${stage} environment`,
-
-      // CORS configuration
-      defaultCorsPreflightOptions: {
-        allowOrigins:
-          stage === 'production'
-            ? ['https://www.pawfectmatch.com']
-            : [
-                'https://development.pawfectmatch.com',
-                'http://localhost:4200',
-              ],
-        allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        allowHeaders: ['Content-Type', 'Authorization'],
-      },
-
-      // Deployment options
-      deployOptions: {
-        stageName: stage,
-      },
+    new cdk.CfnOutput(this, 'developmentApiGatewayId', {
+      value: 'inb3ebm6ie',
+      exportName: 'developmentApiGatewayId',
     });
 
-    this.api.addUsagePlan('PawfectMatchUsagePlan', {
-      name: `PawfectMatchUsagePlan-${stage}`,
-      description: `Usage plan for PawfectMatch API in ${stage} environment`,
-      apiStages: [
-        {
-          api: this.api,
-          stage: this.api.deploymentStage,
-        },
-      ],
-      throttle:
-        stage === 'production'
-          ? {
-              burstLimit: 2000,
-              rateLimit: 1000,
-            }
-          : {
-              burstLimit: 200,
-              rateLimit: 100,
-            },
-      quota:
-        stage === 'production'
-          ? {
-              limit: 1000000,
-              period: apigateway.Period.MONTH,
-            }
-          : {
-              limit: 10000,
-              period: apigateway.Period.MONTH,
-            },
-    });
-
-    // Export API Gateway for other stacks to use
-    this.exportValue(this.api.restApiId, {
-      name: `${stage}ApiGatewayId`,
-    });
-
-    this.exportValue(this.api.root.resourceId, {
-      name: `${stage}ApiGatewayRootResourceId`,
-    });
-
-    this.exportValue(this.api.url, {
-      name: `${stage}ApiGatewayUrl`,
+    new cdk.CfnOutput(this, 'developmentApiGatewayRootResourceId', {
+      value: '0h9s1i54jl',
+      exportName: 'developmentApiGatewayRootResourceId',
     });
   }
 }
