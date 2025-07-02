@@ -47,7 +47,6 @@ export class Login {
     return this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required]],
-      rememberMe: [false],
     });
   }
 
