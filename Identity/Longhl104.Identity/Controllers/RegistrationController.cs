@@ -41,38 +41,38 @@ public class RegistrationController : ControllerBase
     {
         try
         {
-            // _logger.LogInformation("Processing adopter registration request for email: {Email}", registrationRequest.Email);
+            _logger.LogInformation("Processing adopter registration request for email: {Email}", registrationRequest.Email);
 
-            // // Validate required fields
-            // var validationError = ValidateRegistrationRequest(registrationRequest);
-            // if (!string.IsNullOrEmpty(validationError))
-            // {
-            //     return BadRequest(new { Message = validationError });
-            // }
+            // Validate required fields
+            var validationError = ValidateRegistrationRequest(registrationRequest);
+            if (!string.IsNullOrEmpty(validationError))
+            {
+                return BadRequest(new { Message = validationError });
+            }
 
-            // // Check if email already exists
-            // var existingUser = await CheckIfEmailExists(registrationRequest.Email);
-            // if (existingUser)
-            // {
-            //     return Conflict(new { Message = "An account with this email already exists" });
-            // }
+            // Check if email already exists
+            var existingUser = await CheckIfEmailExists(registrationRequest.Email);
+            if (existingUser)
+            {
+                return Conflict(new { Message = "An account with this email already exists" });
+            }
 
-            // // Create user in Cognito
-            // var userId = await CreateCognitoUser(registrationRequest);
+            // Create user in Cognito
+            var userId = await CreateCognitoUser(registrationRequest);
 
-            // // Save adopter profile to DynamoDB
-            // await SaveAdopterProfile(registrationRequest, userId);
+            // Save adopter profile to DynamoDB
+            await SaveAdopterProfile(registrationRequest, userId);
 
-            // // Set cookies for the registered user
-            // SetAuthenticationCookies(userId, registrationRequest.Email);
+            // Set cookies for the registered user
+            SetAuthenticationCookies(userId, registrationRequest.Email);
 
-            // _logger.LogInformation("Adopter registration successful for email: {Email}, UserId: {UserId}", registrationRequest.Email, userId);
+            _logger.LogInformation("Adopter registration successful for email: {Email}, UserId: {UserId}", registrationRequest.Email, userId);
 
             // Return success response with redirect URL for Angular to handle
-            return Ok(new AdopterRegistrationResponse 
-            { 
-                Message = "Registration successful", 
-                UserId = "temp-user-id", // This will be the actual userId when uncommented
+            return Ok(new AdopterRegistrationResponse
+            {
+                Message = "Registration successful",
+                UserId = userId,
                 RedirectUrl = "https://localhost:4201"
             });
         }
