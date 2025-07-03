@@ -159,11 +159,13 @@ public class RegistrationController : ControllerBase
         {
             new() { Name = "email", Value = request.Email },
             new() { Name = "given_name", Value = request.FullName },
-            new() { Name = "custom:user_type", Value = "adopter" }
+            new() { Name = "custom:user_type", Value = "adopter" },
+            new() { Name = "email_verified", Value = "true" } // Assuming email is verified at registration
         };
 
         if (!string.IsNullOrWhiteSpace(request.PhoneNumber))
         {
+            userAttributes.Add(new AttributeType { Name = "phone_number_verified", Value = "true" });
             var australianPhoneNumber = request.PhoneNumber.StartsWith("+61") ? request.PhoneNumber : $"+61{request.PhoneNumber.TrimStart('0')}";
             userAttributes.Add(new AttributeType { Name = "phone_number", Value = australianPhoneNumber });
         }
@@ -175,7 +177,7 @@ public class RegistrationController : ControllerBase
             UserAttributes = userAttributes,
             TemporaryPassword = request.Password,
             MessageAction = MessageActionType.SUPPRESS, // Don't send welcome email
-            DesiredDeliveryMediums = new List<string> { "EMAIL" }
+            DesiredDeliveryMediums = ["EMAIL"]
         };
 
         var response = await _cognitoClient.AdminCreateUserAsync(adminCreateUserRequest);
