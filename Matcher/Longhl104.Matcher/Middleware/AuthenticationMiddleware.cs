@@ -1,0 +1,193 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Text.Json;
+using Longhl104.PawfectMatch.Models.Identity;
+
+namespace Longhl104.Matcher.Middleware;
+
+public class AuthenticationMiddleware(RequestDelegate next, ILogger<AuthenticationMiddleware> logger)
+{
+    private readonly RequestDelegate _next = next;
+    private readonly ILogger<AuthenticationMiddleware> _logger = logger;
+
+    public async Task InvokeAsync(HttpContext context)
+    {
+        // Skip authentication check for certain paths
+        if (ShouldSkipAuthCheck(context.Request.Path))
+        {
+            await _next(context);
+            return;
+        }
+
+        var authResult = CheckAuthentication(context);
+
+        if (!authResult.IsAuthenticated)
+        {
+            _logger.LogInformation("User not authenticated for path: {Path}", context.Request.Path);
+
+            // For API requests, return JSON response
+            if (context.Request.Path.StartsWithSegments("/api"))
+            {
+                await WriteJsonResponse(context, authResult);
+                return;
+            }
+
+            // For web requests, redirect to login
+            var identityUrl = context.RequestServices
+                .GetRequiredService<IConfiguration>()
+                .GetValue<string>("IdentityUrl") ?? "https://localhost:4200";
+
+            var loginUrl = $"{identityUrl}/auth/login";
+
+            _logger.LogInformation("Redirecting to login: {LoginUrl}", loginUrl);
+            context.Response.Redirect(loginUrl);
+            return;
+        }
+
+        // Add user information to context for downstream use
+        if (authResult.User != null)
+        {
+            context.Items["User"] = authResult.User;
+            context.Items["UserId"] = authResult.User.UserId;
+            context.Items["UserEmail"] = authResult.User.Email;
+        }
+
+        await _next(context);
+    }
+
+    private static bool ShouldSkipAuthCheck(PathString path)
+    {
+        var skipPaths = new[]
+        {
+            "/health",
+            "/api/authcheck",
+            "/swagger",
+            "/openapi",
+            "/.well-known"
+        };
+
+        return skipPaths.Any(skipPath => path.StartsWithSegments(skipPath, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private AuthCheckResult CheckAuthentication(HttpContext context)
+    {
+        try
+        {
+            var accessToken = context.Request.Cookies["accessToken"];
+            var userInfoCookie = context.Request.Cookies["userInfo"];
+
+            if (string.IsNullOrEmpty(accessToken) || string.IsNullOrEmpty(userInfoCookie))
+            {
+                return new AuthCheckResult
+                {
+                    IsAuthenticated = false,
+                    Message = "No authentication cookies found"
+                };
+            }
+
+            // Validate JWT token format
+            if (!IsValidJwtFormat(accessToken))
+            {
+                return new AuthCheckResult
+                {
+                    IsAuthenticated = false,
+                    Message = "Invalid token format"
+                };
+            }
+
+            // Parse JWT token to check expiration
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var jwt = tokenHandler.ReadJwtToken(accessToken);
+
+            // Check if token is expired
+            if (jwt.ValidTo < DateTime.UtcNow)
+            {
+                return new AuthCheckResult
+                {
+                    IsAuthenticated = false,
+                    Message = "Access token expired",
+                    RequiresRefresh = true
+                };
+            }
+
+            // Decode user information from cookie
+            UserProfile? userProfile = null;
+            try
+            {
+                var userInfoJson = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(userInfoCookie));
+                userProfile = JsonSerializer.Deserialize<UserProfile>(userInfoJson, new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to decode user info cookie");
+            }
+
+            return new AuthCheckResult
+            {
+                IsAuthenticated = true,
+                Message = "User is authenticated",
+                User = userProfile,
+                TokenExpiresAt = jwt.ValidTo
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error checking authentication");
+            return new AuthCheckResult
+            {
+                IsAuthenticated = false,
+                Message = "Authentication check failed"
+            };
+        }
+    }
+
+    private static bool IsValidJwtFormat(string token)
+    {
+        try
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            return tokenHandler.CanReadToken(token);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static async Task WriteJsonResponse(HttpContext context, AuthCheckResult result)
+    {
+        context.Response.StatusCode = 401;
+        context.Response.ContentType = "application/json";
+
+        var identityUrl = context.RequestServices
+            .GetRequiredService<IConfiguration>()
+            .GetValue<string>("IdentityUrl") ?? "https://localhost:4200";
+
+        var response = new
+        {
+            success = false,
+            message = result.Message,
+            isAuthenticated = false,
+            redirectUrl = $"{identityUrl}/auth/login",
+            requiresRefresh = result.RequiresRefresh
+        };
+
+        var json = JsonSerializer.Serialize(response, new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        });
+
+        await context.Response.WriteAsync(json);
+    }
+}
+
+public class AuthCheckResult
+{
+    public bool IsAuthenticated { get; set; }
+    public string Message { get; set; } = string.Empty;
+    public bool RequiresRefresh { get; set; } = false;
+    public UserProfile? User { get; set; }
+    public DateTime? TokenExpiresAt { get; set; }
+}
