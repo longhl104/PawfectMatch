@@ -9,6 +9,11 @@ namespace Longhl104.Matcher.Controllers;
 [Route("api/[controller]")]
 public class AuthCheckController(ILogger<AuthCheckController> logger) : ControllerBase
 {
+    private readonly JsonSerializerOptions jsonSerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
     /// <summary>
     /// Check if the current user is authenticated based on cookies
     /// </summary>
@@ -68,10 +73,7 @@ public class AuthCheckController(ILogger<AuthCheckController> logger) : Controll
             try
             {
                 var userInfoJson = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(userInfoCookie));
-                userProfile = JsonSerializer.Deserialize<UserProfile>(userInfoJson, new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                });
+                userProfile = JsonSerializer.Deserialize<UserProfile>(userInfoJson, jsonSerializerOptions);
             }
             catch (Exception ex)
             {
