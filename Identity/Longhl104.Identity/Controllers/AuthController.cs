@@ -11,6 +11,7 @@ public class AuthController(
     ICognitoService cognitoService,
     IJwtService jwtService,
     IRefreshTokenService refreshTokenService,
+    ICookieService cookieService,
     ILogger<AuthController> logger
     ) : ControllerBase
 {
@@ -86,7 +87,7 @@ public class AuthController(
             logger.LogInformation("User {Email} logged in successfully", loginRequest.Email);
 
             // Set cookies
-            SetAuthenticationCookies(accessToken, refreshToken, user);
+            cookieService.SetJwtAuthenticationCookies(HttpContext, accessToken, refreshToken, user);
 
             return Ok(loginResponse);
         }
@@ -191,7 +192,7 @@ public class AuthController(
             logger.LogInformation("Tokens refreshed successfully for user {UserId}", userId);
 
             // Set new cookies
-            SetAuthenticationCookies(newAccessToken, newRefreshToken, userProfile);
+            cookieService.SetJwtAuthenticationCookies(HttpContext, newAccessToken, newRefreshToken, userProfile);
 
             return Ok(refreshResponse);
         }
@@ -216,7 +217,7 @@ public class AuthController(
         try
         {
             // Clear cookies
-            ClearAuthenticationCookies();
+            cookieService.ClearAuthenticationCookies(HttpContext);
 
             // TODO: Implement token blacklisting if needed
 
@@ -275,54 +276,5 @@ public class AuthController(
         {
             return false;
         }
-    }
-
-    private void SetAuthenticationCookies(string accessToken, string refreshToken, UserProfile user)
-    {
-        var cookieDomain = HttpContext.Request.Host.Host;
-        var isSecure = HttpContext.Request.IsHttps;
-        var sameSite = isSecure ? SameSiteMode.None : SameSiteMode.Lax;
-
-        // Access token cookie
-        Response.Cookies.Append("accessToken", accessToken, new CookieOptions
-        {
-            Path = "/",
-            Domain = cookieDomain.Equals("localhost", StringComparison.OrdinalIgnoreCase) ? null : cookieDomain,
-            MaxAge = TimeSpan.FromHours(1),
-            HttpOnly = true,
-            Secure = isSecure,
-            SameSite = sameSite
-        });
-
-        // Refresh token cookie
-        Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
-        {
-            Path = "/",
-            Domain = cookieDomain.Equals("localhost", StringComparison.OrdinalIgnoreCase) ? null : cookieDomain,
-            MaxAge = TimeSpan.FromDays(30),
-            HttpOnly = true,
-            Secure = isSecure,
-            SameSite = sameSite
-        });
-
-        // User info cookie (non-HttpOnly for client access)
-        var userInfoJson = JsonSerializer.Serialize(user, CamelCaseOptions);
-        var userInfoBase64 = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(userInfoJson));
-        Response.Cookies.Append("userInfo", userInfoBase64, new CookieOptions
-        {
-            Path = "/",
-            Domain = cookieDomain.Equals("localhost", StringComparison.OrdinalIgnoreCase) ? null : cookieDomain,
-            MaxAge = TimeSpan.FromHours(1),
-            HttpOnly = false,
-            Secure = isSecure,
-            SameSite = sameSite
-        });
-    }
-
-    private void ClearAuthenticationCookies()
-    {
-        Response.Cookies.Delete("accessToken");
-        Response.Cookies.Delete("refreshToken");
-        Response.Cookies.Delete("userInfo");
     }
 }

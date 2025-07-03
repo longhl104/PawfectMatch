@@ -39,6 +39,7 @@ builder.Services.AddSingleton<AmazonCognitoIdentityProviderClient>();
 builder.Services.AddScoped<ICognitoService, CognitoService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+builder.Services.AddScoped<ICookieService, CookieService>();
 
 // Configure JWT authentication
 var jwtKey = builder.Configuration["JWT:Key"] ?? throw new InvalidOperationException("JWT:Key configuration is required");

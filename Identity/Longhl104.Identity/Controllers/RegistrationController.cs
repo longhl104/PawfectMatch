@@ -3,6 +3,7 @@ using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using Amazon.CognitoIdentityProvider;
 using Amazon.CognitoIdentityProvider.Model;
+using Longhl104.Identity.Services;
 
 namespace Longhl104.Identity.Controllers;
 
@@ -14,6 +15,7 @@ public class RegistrationController : ControllerBase
     private readonly AmazonCognitoIdentityProviderClient _cognitoClient;
     private readonly ILogger<RegistrationController> _logger;
     private readonly IConfiguration _configuration;
+    private readonly ICookieService _cookieService;
     private readonly string _tableName;
     private readonly string _userPoolId;
 
@@ -22,6 +24,7 @@ public class RegistrationController : ControllerBase
         AmazonCognitoIdentityProviderClient cognitoClient,
         ILogger<RegistrationController> logger,
         IConfiguration configuration,
+        ICookieService cookieService,
         IHostEnvironment hostEnvironment
         )
     {
@@ -29,6 +32,7 @@ public class RegistrationController : ControllerBase
         _cognitoClient = cognitoClient;
         _logger = logger;
         _configuration = configuration;
+        _cookieService = cookieService;
         _tableName = $"pawfect-match-adopters-{hostEnvironment.EnvironmentName.ToLowerInvariant()}";
         _userPoolId = _configuration["AWS:UserPoolId"] ?? throw new InvalidOperationException("AWS:UserPoolId configuration is required");
     }
@@ -64,7 +68,7 @@ public class RegistrationController : ControllerBase
             await SaveAdopterProfile(registrationRequest, userId);
 
             // Set cookies for the registered user
-            SetAuthenticationCookies(userId, registrationRequest.Email);
+            _cookieService.SetSimpleAuthenticationCookies(HttpContext, userId, registrationRequest.Email);
 
             _logger.LogInformation("Adopter registration successful for email: {Email}, UserId: {UserId}", registrationRequest.Email, userId);
 
@@ -229,31 +233,6 @@ public class RegistrationController : ControllerBase
         await _dynamoDbClient.PutItemAsync(putItemRequest);
 
         _logger.LogInformation("Saved adopter profile to DynamoDB for UserId: {UserId}", userId);
-    }
-
-    private void SetAuthenticationCookies(string userId, string email)
-    {
-        var cookieOptions = new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true, // Use HTTPS only
-            SameSite = SameSiteMode.Strict,
-            Expires = DateTime.UtcNow.AddDays(30) // Cookie expires in 30 days
-        };
-
-        // Set user ID cookie
-        Response.Cookies.Append("PawfectMatch_UserId", userId, cookieOptions);
-
-        // Set email cookie
-        Response.Cookies.Append("PawfectMatch_Email", email, cookieOptions);
-
-        // Set authentication status cookie
-        Response.Cookies.Append("PawfectMatch_Authenticated", "true", cookieOptions);
-
-        // Set user type cookie
-        Response.Cookies.Append("PawfectMatch_UserType", "adopter", cookieOptions);
-
-        _logger.LogInformation("Authentication cookies set for user: {UserId}", userId);
     }
 }
 
