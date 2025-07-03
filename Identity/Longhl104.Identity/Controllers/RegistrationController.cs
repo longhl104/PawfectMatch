@@ -4,6 +4,7 @@ using Amazon.DynamoDBv2.Model;
 using Amazon.CognitoIdentityProvider;
 using Amazon.CognitoIdentityProvider.Model;
 using Longhl104.Identity.Services;
+using Longhl104.Identity.Models;
 
 namespace Longhl104.Identity.Controllers;
 
@@ -16,6 +17,8 @@ public class RegistrationController : ControllerBase
     private readonly ILogger<RegistrationController> _logger;
     private readonly IConfiguration _configuration;
     private readonly ICookieService _cookieService;
+    private readonly IJwtService _jwtService;
+    private readonly IRefreshTokenService _refreshTokenService;
     private readonly string _tableName;
     private readonly string _userPoolId;
 
@@ -25,6 +28,8 @@ public class RegistrationController : ControllerBase
         ILogger<RegistrationController> logger,
         IConfiguration configuration,
         ICookieService cookieService,
+        IJwtService jwtService,
+        IRefreshTokenService refreshTokenService,
         IHostEnvironment hostEnvironment
         )
     {
@@ -33,6 +38,8 @@ public class RegistrationController : ControllerBase
         _logger = logger;
         _configuration = configuration;
         _cookieService = cookieService;
+        _jwtService = jwtService;
+        _refreshTokenService = refreshTokenService;
         _tableName = $"pawfect-match-adopters-{hostEnvironment.EnvironmentName.ToLowerInvariant()}";
         _userPoolId = _configuration["AWS:UserPoolId"] ?? throw new InvalidOperationException("AWS:UserPoolId configuration is required");
     }
@@ -51,14 +58,24 @@ public class RegistrationController : ControllerBase
             var validationError = ValidateRegistrationRequest(registrationRequest);
             if (!string.IsNullOrEmpty(validationError))
             {
-                return BadRequest(new { Message = validationError });
+                return BadRequest(new AdopterRegistrationResponse
+                {
+                    Success = false,
+                    Message = validationError,
+                    UserId = string.Empty
+                });
             }
 
             // Check if email already exists
             var existingUser = await CheckIfEmailExists(registrationRequest.Email);
             if (existingUser)
             {
-                return Conflict(new { Message = "An account with this email already exists" });
+                return Conflict(new AdopterRegistrationResponse
+                {
+                    Success = false,
+                    Message = "An account with this email already exists",
+                    UserId = string.Empty
+                });
             }
 
             // Create user in Cognito
@@ -69,28 +86,77 @@ public class RegistrationController : ControllerBase
 
             _logger.LogInformation("Adopter registration successful for email: {Email}, UserId: {UserId}", registrationRequest.Email, userId);
 
-            // Return success response with redirect URL for Angular to handle
+            // Auto-login the user after successful registration
+            var userProfile = new UserProfile
+            {
+                UserId = userId,
+                Email = registrationRequest.Email,
+                UserType = "adopter",
+                PhoneNumber = registrationRequest.PhoneNumber,
+                CreatedAt = DateTime.UtcNow,
+                LastLoginAt = DateTime.UtcNow
+            };
+
+            // Generate tokens
+            var accessToken = _jwtService.GenerateAccessToken(userProfile);
+            var refreshToken = _jwtService.GenerateRefreshToken();
+            var expiresAt = DateTime.UtcNow.AddMinutes(60); // 1 hour for access token
+
+            // Store refresh token
+            var refreshTokenExpiresAt = DateTime.UtcNow.AddDays(30); // 30 days for refresh token
+            await _refreshTokenService.StoreRefreshTokenAsync(userId, refreshToken, refreshTokenExpiresAt);
+
+            // Set authentication cookies
+            _cookieService.SetJwtAuthenticationCookies(HttpContext, accessToken, refreshToken, userProfile);
+
+            // Create token data for response
+            var tokenData = new TokenData
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+                ExpiresAt = expiresAt,
+                User = userProfile
+            };
+
+            // Return success response with tokens and redirect URL for Angular to handle
             return Ok(new AdopterRegistrationResponse
             {
                 Message = "Registration successful",
                 UserId = userId,
-                RedirectUrl = "https://localhost:4201"
+                RedirectUrl = "https://localhost:4201",
+                Success = true,
+                Data = tokenData
             });
         }
         catch (UsernameExistsException)
         {
             _logger.LogWarning("Registration attempted for existing email: {Email}", registrationRequest.Email);
-            return Conflict(new { Message = "An account with this email already exists" });
+            return Conflict(new AdopterRegistrationResponse
+            {
+                Success = false,
+                Message = "An account with this email already exists",
+                UserId = string.Empty
+            });
         }
         catch (InvalidPasswordException ex)
         {
             _logger.LogWarning("Invalid password during registration for email: {Email}. Error: {Error}", registrationRequest.Email, ex.Message);
-            return BadRequest(new { Message = $"Password does not meet requirements: {ex.Message}" });
+            return BadRequest(new AdopterRegistrationResponse
+            {
+                Success = false,
+                Message = $"Password does not meet requirements: {ex.Message}",
+                UserId = string.Empty
+            });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error during adopter registration for email: {Email}", registrationRequest.Email);
-            return StatusCode(500, new { Message = "An error occurred during registration. Please try again." });
+            return StatusCode(500, new AdopterRegistrationResponse
+            {
+                Success = false,
+                Message = "An error occurred during registration. Please try again.",
+                UserId = string.Empty
+            });
         }
     }
 
@@ -245,7 +311,9 @@ public class AdopterRegistrationRequest
 
 public class AdopterRegistrationResponse
 {
+    public bool Success { get; set; }
     public string Message { get; set; } = string.Empty;
     public string UserId { get; set; } = string.Empty;
     public string? RedirectUrl { get; set; }
+    public TokenData? Data { get; set; }
 }

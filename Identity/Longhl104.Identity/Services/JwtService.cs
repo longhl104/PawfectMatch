@@ -27,9 +27,9 @@ public class JwtService : IJwtService
     private readonly int _accessTokenExpiryMinutes;
     private readonly int _refreshTokenExpiryDays;
 
-    public JwtService()
+    public JwtService(IConfiguration configuration)
     {
-        _secretKey = Environment.GetEnvironmentVariable("JWT_SECRET") ?? "dev-jwt-secret-key";
+        _secretKey = configuration["JWT:Key"] ?? throw new InvalidOperationException("JWT:Key configuration is required");
         _accessTokenExpiryMinutes = int.Parse(Environment.GetEnvironmentVariable("JWT_EXPIRES_IN") ?? "60");
         _refreshTokenExpiryDays = int.Parse(Environment.GetEnvironmentVariable("REFRESH_TOKEN_EXPIRES_IN") ?? "30");
     }

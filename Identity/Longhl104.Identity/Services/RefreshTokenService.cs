@@ -23,11 +23,10 @@ public class RefreshTokenService : IRefreshTokenService
     private readonly IAmazonDynamoDB _dynamoClient;
     private readonly string _tableName;
 
-    public RefreshTokenService()
+    public RefreshTokenService(IHostEnvironment environment)
     {
         _dynamoClient = new AmazonDynamoDBClient();
-        var stage = Environment.GetEnvironmentVariable("STAGE") ?? "dev";
-        _tableName = $"pawfect-match-refresh-tokens-{stage}";
+        _tableName = $"pawfect-match-refresh-tokens-{environment.EnvironmentName.ToLowerInvariant()}";
     }
 
     public RefreshTokenService(IAmazonDynamoDB dynamoClient, string tableName)
