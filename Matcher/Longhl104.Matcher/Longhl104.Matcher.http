@@ -1,0 +1,6 @@
+@Longhl104.Matcher_HostAddress = http://localhost:5245
+
+GET {{Longhl104.Matcher_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
