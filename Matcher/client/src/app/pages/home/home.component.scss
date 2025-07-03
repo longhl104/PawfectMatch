@@ -1,3 +1,5 @@
+@use "sass:color";
+
 // Variables
 $primary-color: #4f46e5;
 $secondary-color: #10b981;
@@ -7,8 +9,12 @@ $text-light: #6b7280;
 $bg-light: #f9fafb;
 $white: #ffffff;
 $shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-$shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-$shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+$shadow-md:
+  0 4px 6px -1px rgb(0 0 0 / 0.1),
+  0 2px 4px -2px rgb(0 0 0 / 0.1);
+$shadow-lg:
+  0 10px 15px -3px rgb(0 0 0 / 0.1),
+  0 4px 6px -4px rgb(0 0 0 / 0.1);
 
 // Mixins
 @mixin flex-center {
@@ -51,7 +57,7 @@ $shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
     color: $white;
 
     &:hover {
-      background-color: darken($primary-color, 10%);
+      background-color: color.adjust($primary-color, $lightness: -10%);
     }
   }
 
@@ -88,7 +94,7 @@ $shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   overflow: hidden;
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
@@ -298,7 +304,11 @@ $shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 // Statistics Section
 .stats-section {
   padding: 4rem 0;
-  background: linear-gradient(135deg, $secondary-color 0%, lighten($secondary-color, 10%) 100%);
+  background: linear-gradient(
+    135deg,
+    $secondary-color 0%,
+    color.adjust($secondary-color, $lightness: 10%) 100%
+  );
   color: $white;
 
   .stats-grid {
@@ -327,7 +337,11 @@ $shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 // Call to Action Section
 .cta-section {
   padding: 5rem 0;
-  background: linear-gradient(135deg, $primary-color 0%, darken($primary-color, 15%) 100%);
+  background: linear-gradient(
+    135deg,
+    $primary-color 0%,
+    color.adjust($primary-color, $lightness: -15%) 100%
+  );
   color: $white;
   text-align: center;
 
