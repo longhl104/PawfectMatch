@@ -67,9 +67,6 @@ public class RegistrationController : ControllerBase
             // Save adopter profile to DynamoDB
             await SaveAdopterProfile(registrationRequest, userId);
 
-            // Set cookies for the registered user
-            _cookieService.SetSimpleAuthenticationCookies(HttpContext, userId, registrationRequest.Email);
-
             _logger.LogInformation("Adopter registration successful for email: {Email}, UserId: {UserId}", registrationRequest.Email, userId);
 
             // Return success response with redirect URL for Angular to handle
