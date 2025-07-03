@@ -3,6 +3,7 @@ export interface Environment {
   googleMapsApiKey: string;
   apiUrl: string;
   identityServiceUrl: string;
+  identityUrl: string;
   appName: string;
   version: string;
 }

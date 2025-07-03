@@ -28,8 +28,21 @@
         </ul>
 
         <div class="nav-actions">
-          <button class="btn btn-outline">Sign In</button>
-          <button class="btn btn-primary">Sign Up</button>
+          <!-- Show different actions based on authentication status -->
+          <ng-container *ngIf="isAuthenticated$ | async as authStatus">
+            <ng-container *ngIf="authStatus.isAuthenticated; else notAuthenticated">
+              <!-- Authenticated user actions -->
+              <div class="user-menu" *ngIf="currentUser$ | async as user">
+                <span class="user-greeting">Hi, {{ user.fullName.split(' ')[0] }}!</span>
+                <button class="btn btn-outline" (click)="onLogout()">Logout</button>
+              </div>
+            </ng-container>
+            <ng-template #notAuthenticated>
+              <!-- Not authenticated actions -->
+              <button class="btn btn-outline" (click)="onLogin()">Sign In</button>
+              <button class="btn btn-primary" (click)="onLogin()">Sign Up</button>
+            </ng-template>
+          </ng-container>
         </div>
       </div>
 

@@ -1,11 +1,23 @@
 <!-- Hero Section -->
 <div class="hero-section">
   <div class="hero-content">
-    <h1 class="hero-title">Find Your Perfect Companion</h1>
-    <p class="hero-subtitle">
-      Welcome to PawfectMatch - where loving pets meet loving families.
-      Discover your ideal furry friend today!
-    </p>
+    <!-- Personalized greeting for authenticated users -->
+    <ng-container *ngIf="isAuthenticated$ | async as authStatus">
+      <ng-container *ngIf="authStatus.isAuthenticated && (currentUser$ | async) as user; else defaultTitle">
+        <h1 class="hero-title">Welcome back, {{ user.fullName.split(' ')[0] }}!</h1>
+        <p class="hero-subtitle">
+          Ready to find your perfect companion? Let's continue your journey to find the ideal furry friend!
+        </p>
+      </ng-container>
+      <ng-template #defaultTitle>
+        <h1 class="hero-title">Find Your Perfect Companion</h1>
+        <p class="hero-subtitle">
+          Welcome to PawfectMatch - where loving pets meet loving families.
+          Discover your ideal furry friend today!
+        </p>
+      </ng-template>
+    </ng-container>
+
     <div class="hero-buttons">
       <button class="btn btn-primary" (click)="onFindMatch()">
         Find My Match

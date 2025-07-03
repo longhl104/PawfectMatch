@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { AuthService, UserProfile } from '../../services/auth.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -10,6 +12,10 @@ import { RouterModule } from '@angular/router';
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent {
+  private authService = inject(AuthService);
+
+  currentUser$: Observable<UserProfile | null> = this.authService.currentUser$;
+  isAuthenticated$ = this.authService.authStatus$;
   featuredPets = [
     {
       id: 1,
@@ -73,13 +79,21 @@ export class HomeComponent {
   ];
 
   onFindMatch() {
-    // Navigate to pet matching page
-    console.log('Navigating to pet matching...');
+    // Check if user is authenticated before proceeding
+    if (this.authService.isAuthenticated()) {
+      // Navigate to pet matching page
+      console.log('Navigating to pet matching...');
+      // TODO: Implement navigation to matching page
+    } else {
+      // Redirect to login
+      this.authService.redirectToLogin();
+    }
   }
 
   onBrowsePets() {
-    // Navigate to browse pets page
+    // Browse pets doesn't require authentication
     console.log('Navigating to browse pets...');
+    // TODO: Implement navigation to browse pets page
   }
 
   onViewPet(petId: number) {
