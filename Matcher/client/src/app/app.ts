@@ -1,9 +1,8 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ToastContainerComponent } from '@longhl104/pawfect-match-ng';
 import { HeaderComponent } from './components/header/header.component';
 import { FooterComponent } from './components/footer/footer.component';
-import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -13,11 +12,10 @@ import { AuthService } from './services/auth.service';
 })
 export class App implements OnInit {
   protected title = 'client';
-  private authService = inject(AuthService);
 
   ngOnInit() {
-    // Auth service is automatically initialized and checks authentication status
-    // The authentication check is triggered in the AuthService constructor
+    // Authentication is now handled by APP_INITIALIZER before app startup
+    // This ensures auth status is checked before any components load
     console.log('PawfectMatch Matcher app initialized');
   }
 }

@@ -40,7 +40,8 @@ export class AuthService {
   public currentUser$ = this.currentUserSubject.asObservable();
 
   constructor() {
-    this.checkAuthStatus();
+    // Authentication check is now handled by APP_INITIALIZER
+    // in app.config.ts for better control over app startup
   }
 
   /**
