@@ -21,7 +21,7 @@ export interface AuthStatusResponse {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private http = inject(HttpClient);
@@ -31,7 +31,7 @@ export class AuthService {
 
   private authStatusSubject = new BehaviorSubject<AuthStatusResponse>({
     isAuthenticated: false,
-    message: 'Not checked yet'
+    message: 'Not checked yet',
   });
 
   public authStatus$ = this.authStatusSubject.asObservable();
@@ -47,25 +47,27 @@ export class AuthService {
    * Check authentication status with the backend
    */
   checkAuthStatus(): Observable<AuthStatusResponse> {
-    return this.http.get<AuthStatusResponse>(`${this.apiUrl}/status`, {
-      withCredentials: true
-    }).pipe(
-      tap(response => {
-        this.authStatusSubject.next(response);
-        this.currentUserSubject.next(response.user || null);
-      }),
-      catchError(error => {
-        console.error('Auth status check failed:', error);
-        const errorResponse: AuthStatusResponse = {
-          isAuthenticated: false,
-          message: 'Authentication check failed',
-          redirectUrl: `${this.identityUrl}/auth/login`
-        };
-        this.authStatusSubject.next(errorResponse);
-        this.currentUserSubject.next(null);
-        return of(errorResponse);
+    return this.http
+      .get<AuthStatusResponse>(`${this.apiUrl}/status`, {
+        withCredentials: true,
       })
-    );
+      .pipe(
+        tap((response) => {
+          this.authStatusSubject.next(response);
+          this.currentUserSubject.next(response.user || null);
+        }),
+        catchError((error) => {
+          console.error('Auth status check failed:', error);
+          const errorResponse: AuthStatusResponse = {
+            isAuthenticated: false,
+            message: 'Authentication check failed',
+            redirectUrl: `${this.identityUrl}/auth/login`,
+          };
+          this.authStatusSubject.next(errorResponse);
+          this.currentUserSubject.next(null);
+          return of(errorResponse);
+        }),
+      );
   }
 
   /**
@@ -93,30 +95,36 @@ export class AuthService {
    * Logout user
    */
   logout(): Observable<AuthStatusResponse> {
-    return this.http.post<AuthStatusResponse>(`${this.apiUrl}/logout`, {}, {
-      withCredentials: true
-    }).pipe(
-      tap(response => {
-        this.authStatusSubject.next(response);
-        this.currentUserSubject.next(null);
-        // Redirect to login page
-        if (response.redirectUrl) {
-          window.location.href = response.redirectUrl;
-        }
-      }),
-      catchError(error => {
-        console.error('Logout failed:', error);
-        // Clear local state anyway
-        const errorResponse: AuthStatusResponse = {
-          isAuthenticated: false,
-          message: 'Logout failed',
-          redirectUrl: `${this.identityUrl}/auth/login`
-        };
-        this.authStatusSubject.next(errorResponse);
-        this.currentUserSubject.next(null);
-        return of(errorResponse);
-      })
-    );
+    return this.http
+      .post<AuthStatusResponse>(
+        `${this.apiUrl}/logout`,
+        {},
+        {
+          withCredentials: true,
+        },
+      )
+      .pipe(
+        tap((response) => {
+          this.authStatusSubject.next(response);
+          this.currentUserSubject.next(null);
+          // Redirect to login page
+          if (response.redirectUrl) {
+            window.location.href = response.redirectUrl;
+          }
+        }),
+        catchError((error) => {
+          console.error('Logout failed:', error);
+          // Clear local state anyway
+          const errorResponse: AuthStatusResponse = {
+            isAuthenticated: false,
+            message: 'Logout failed',
+            redirectUrl: `${this.identityUrl}/auth/login`,
+          };
+          this.authStatusSubject.next(errorResponse);
+          this.currentUserSubject.next(null);
+          return of(errorResponse);
+        }),
+      );
   }
 
   /**
