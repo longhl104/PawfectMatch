@@ -1,8 +1,8 @@
 using Amazon.CognitoIdentityProvider;
 using Amazon.CognitoIdentityProvider.Model;
-using Longhl104.PawfectMatch.Models.Identity;
+using Longhl104.Identity.Models;
 
-namespace Longhl104.PawfectMatch.Services;
+namespace Longhl104.Identity.Services;
 
 /// <summary>
 /// Interface for Cognito user authentication and management
@@ -22,11 +22,11 @@ public class CognitoService : ICognitoService
     private readonly string _userPoolId;
     private readonly string _clientId;
 
-    public CognitoService()
+    public CognitoService(IConfiguration configuration)
     {
         _cognitoClient = new AmazonCognitoIdentityProviderClient();
-        _userPoolId = Environment.GetEnvironmentVariable("USER_POOL_ID") ?? throw new InvalidOperationException("USER_POOL_ID environment variable is required");
-        _clientId = Environment.GetEnvironmentVariable("USER_POOL_CLIENT_ID") ?? throw new InvalidOperationException("USER_POOL_CLIENT_ID environment variable is required");
+        _userPoolId = configuration["AWS:UserPoolId"] ?? throw new InvalidOperationException("AWS:UserPoolId configuration is required");
+        _clientId = configuration["AWS:UserPoolClientId"] ?? throw new InvalidOperationException("AWS:UserPoolClientId configuration is required");
     }
 
     public CognitoService(IAmazonCognitoIdentityProvider cognitoClient, string userPoolId, string clientId)

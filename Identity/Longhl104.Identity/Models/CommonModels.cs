@@ -1,4 +1,4 @@
-namespace Longhl104.PawfectMatch.Models.Identity;
+namespace Longhl104.Identity.Models;
 
 /// <summary>
 /// Represents a user profile in the system

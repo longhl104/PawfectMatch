@@ -1,9 +1,9 @@
 using Amazon.DynamoDBv2;
 using Amazon.CognitoIdentityProvider;
-using Longhl104.PawfectMatch.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Longhl104.Identity.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

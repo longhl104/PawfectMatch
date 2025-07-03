@@ -1,3 +1,5 @@
+@use "sass:color";
+
 // Variables
 $primary-color: #4f46e5;
 $secondary-color: #10b981;
@@ -5,7 +7,9 @@ $text-dark: #1f2937;
 $text-light: #6b7280;
 $white: #ffffff;
 $shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-$shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+$shadow-md:
+  0 4px 6px -1px rgb(0 0 0 / 0.1),
+  0 2px 4px -2px rgb(0 0 0 / 0.1);
 
 // Header styles
 .header {
@@ -46,7 +50,7 @@ $shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 
         &:hover {
           .brand-text {
-            color: darken($primary-color, 10%);
+            color: color.adjust($primary-color, $lightness: -10%);
           }
         }
       }
@@ -129,7 +133,7 @@ $shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
             color: $white;
 
             &:hover {
-              background: darken($primary-color, 10%);
+              background: color.adjust($primary-color, $lightness: -10%);
             }
           }
         }

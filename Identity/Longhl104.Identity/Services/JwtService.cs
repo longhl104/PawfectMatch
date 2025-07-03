@@ -3,9 +3,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using Longhl104.PawfectMatch.Models.Identity;
+using Longhl104.Identity.Models;
 
-namespace Longhl104.PawfectMatch.Services;
+namespace Longhl104.Identity.Services;
 
 /// <summary>
 /// Interface for JWT token operations

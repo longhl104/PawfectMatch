@@ -271,12 +271,22 @@ export class IdentityStack extends BaseStack {
     );
 
     // Store User Pool ID in Parameter Store
-    new ssm.StringParameter(this, 'UserPoolIdParameter', {
-      parameterName: `/PawfectMatch/${BaseStack.getCapitalizedStage(
-        stage
-      )}/Identity/AWS/UserPoolId`,
-      stringValue: this.userPool.userPoolId,
-      description: `User Pool ID for ${stage} environment`,
-    });
+    this.createSsmParameter(
+      'UserPoolIdParameter',
+      stage,
+      'Identity',
+      'AWS/UserPoolId',
+      this.userPool.userPoolId,
+      `User Pool ID for ${stage} environment`
+    );
+
+    this.createSsmParameter(
+      'UserPoolClientIdParameter',
+      stage,
+      'Identity',
+      'AWS/UserPoolClientId',
+      this.userPoolClient.userPoolClientId,
+      `User Pool Client ID for ${stage} environment`
+    );
   }
 }

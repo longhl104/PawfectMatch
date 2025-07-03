@@ -26,7 +26,7 @@ export interface AuthStatusResponse {
 export class AuthService {
   private http = inject(HttpClient);
 
-  private readonly apiUrl = `${environment.apiUrl}/authcheck`;
+  private readonly apiUrl = `${environment.apiUrl}/api/authcheck`;
   private readonly identityUrl = environment.identityUrl;
 
   private authStatusSubject = new BehaviorSubject<AuthStatusResponse>({

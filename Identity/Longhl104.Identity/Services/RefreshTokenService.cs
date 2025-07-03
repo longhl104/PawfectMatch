@@ -1,7 +1,7 @@
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 
-namespace Longhl104.PawfectMatch.Services;
+namespace Longhl104.Identity.Services;
 
 /// <summary>
 /// Interface for refresh token management
