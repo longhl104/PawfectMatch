@@ -1,0 +1,109 @@
+<!-- Hero Section -->
+<div class="hero-section">
+  <div class="hero-content">
+    <h1 class="hero-title">Find Your Perfect Companion</h1>
+    <p class="hero-subtitle">
+      Welcome to PawfectMatch - where loving pets meet loving families.
+      Discover your ideal furry friend today!
+    </p>
+    <div class="hero-buttons">
+      <button class="btn btn-primary" (click)="onFindMatch()">
+        Find My Match
+      </button>
+      <button class="btn btn-secondary" (click)="onBrowsePets()">
+        Browse All Pets
+      </button>
+    </div>
+  </div>
+  <div class="hero-image">
+    <img src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=600&h=400&fit=crop"
+         alt="Happy family with adopted dog"
+         class="hero-img">
+  </div>
+</div>
+
+<!-- Featured Pets Section -->
+<section class="featured-pets">
+  <div class="container">
+    <h2 class="section-title">Featured Pets</h2>
+    <p class="section-subtitle">Meet some of our wonderful pets looking for their forever homes</p>
+
+    <div class="pets-grid">
+      <div class="pet-card" *ngFor="let pet of featuredPets"
+           (click)="onViewPet(pet.id)"
+           (keyup.enter)="onViewPet(pet.id)"
+           (keyup.space)="onViewPet(pet.id)"
+           tabindex="0"
+           role="button"
+           [attr.aria-label]="'View details for ' + pet.name">
+        <div class="pet-image">
+          <img [src]="pet.image" [alt]="pet.name" />
+          <div class="pet-overlay">
+            <button class="btn btn-small">View Details</button>
+          </div>
+        </div>
+        <div class="pet-info">
+          <h3 class="pet-name">{{ pet.name }}</h3>
+          <p class="pet-breed">{{ pet.breed }} • {{ pet.age }} years old</p>
+          <p class="pet-description">{{ pet.description }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="how-it-works">
+  <div class="container">
+    <h2 class="section-title">How It Works</h2>
+    <p class="section-subtitle">Simple steps to find your perfect pet companion</p>
+
+    <div class="steps-grid">
+      <div class="step-card" *ngFor="let step of adoptionSteps">
+        <div class="step-icon">{{ step.icon }}</div>
+        <div class="step-number">{{ step.step }}</div>
+        <h3 class="step-title">{{ step.title }}</h3>
+        <p class="step-description">{{ step.description }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="stats-section">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number">500+</div>
+        <div class="stat-label">Happy Adoptions</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">200+</div>
+        <div class="stat-label">Pets Available</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">50+</div>
+        <div class="stat-label">Partner Shelters</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">98%</div>
+        <div class="stat-label">Success Rate</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Call to Action Section -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-content">
+      <h2 class="cta-title">Ready to Find Your Perfect Match?</h2>
+      <p class="cta-subtitle">
+        Join thousands of happy families who found their furry companions through PawfectMatch
+      </p>
+      <button class="btn btn-primary btn-large" (click)="onFindMatch()">
+        Start Your Journey
+      </button>
+    </div>
+  </div>
+</section>
