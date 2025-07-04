@@ -1,6 +1,7 @@
 using Amazon.CognitoIdentityProvider;
 using Amazon.CognitoIdentityProvider.Model;
 using Longhl104.Identity.Models;
+using Longhl104.PawfectMatch.Models.Identity;
 
 namespace Longhl104.Identity.Services;
 

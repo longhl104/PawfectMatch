@@ -1,5 +1,6 @@
 using Longhl104.Identity.Models;
 using Longhl104.Identity.Services;
+using Longhl104.PawfectMatch.Models.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
@@ -12,7 +13,6 @@ public class AuthController(
     ICognitoService cognitoService,
     IRefreshTokenService refreshTokenService,
     ICookieService cookieService,
-    IJwtService jwtService,
     ILogger<AuthController> logger
     ) : ControllerBase
 {
@@ -185,130 +185,6 @@ public class AuthController(
         catch (Exception ex)
         {
             logger.LogError(ex, "Unexpected error during logout");
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "Internal server error",
-                Data = null
-            });
-        }
-    }
-
-    /// <summary>
-    /// Get current authenticated user information
-    /// </summary>
-    [HttpGet("me")]
-    public async Task<IActionResult> GetCurrentUser()
-    {
-        try
-        {
-            logger.LogInformation("Getting current user information");
-
-            // Get access token from cookies
-            var accessToken = HttpContext.Request.Cookies["accessToken"];
-            if (string.IsNullOrEmpty(accessToken))
-            {
-                logger.LogWarning("No access token found in cookies");
-                return Unauthorized(new ApiResponse<object>
-                {
-                    Success = false,
-                    Message = "No authentication token found",
-                    Data = null
-                });
-            }
-
-            // Get user info from cookies (faster than token validation)
-            var userInfoCookie = HttpContext.Request.Cookies["userInfo"];
-            if (!string.IsNullOrEmpty(userInfoCookie))
-            {
-                try
-                {
-                    var userInfoJson = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(userInfoCookie));
-                    var userProfile = JsonSerializer.Deserialize<UserProfile>(userInfoJson, CamelCaseOptions);
-
-                    if (userProfile != null)
-                    {
-                        // Validate the token to ensure it's still valid
-                        var principal = jwtService.ValidateToken(accessToken);
-                        if (principal == null)
-                        {
-                            logger.LogWarning("Invalid or expired access token");
-                            return Unauthorized(new ApiResponse<object>
-                            {
-                                Success = false,
-                                Message = "Token has expired or is invalid",
-                                Data = null
-                            });
-                        }
-
-                        logger.LogInformation("Retrieved user information for: {Email}", userProfile.Email);
-                        return Ok(new ApiResponse<UserProfile>
-                        {
-                            Success = true,
-                            Message = "User information retrieved successfully",
-                            Data = userProfile
-                        });
-                    }
-                }
-                catch (Exception ex)
-                {
-                    logger.LogWarning(ex, "Failed to decode user info cookie, falling back to token validation");
-                }
-            }
-
-            // Fallback: validate token and get user from Cognito
-            var tokenPrincipal = jwtService.ValidateToken(accessToken);
-            if (tokenPrincipal == null)
-            {
-                logger.LogWarning("Invalid or expired access token");
-                return Unauthorized(new ApiResponse<object>
-                {
-                    Success = false,
-                    Message = "Token has expired or is invalid",
-                    Data = null
-                });
-            }
-
-            // Extract user information from token claims
-            var userId = tokenPrincipal.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            var email = tokenPrincipal.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
-            var userType = tokenPrincipal.FindFirst("user_type")?.Value;
-
-            if (string.IsNullOrEmpty(email))
-            {
-                logger.LogWarning("No email found in token claims");
-                return Unauthorized(new ApiResponse<object>
-                {
-                    Success = false,
-                    Message = "Invalid token claims",
-                    Data = null
-                });
-            }
-
-            // Get full user profile from Cognito
-            var fullUserProfile = await cognitoService.GetUserProfileAsync(email);
-            if (fullUserProfile == null)
-            {
-                logger.LogWarning("User profile not found for email: {Email}", email);
-                return NotFound(new ApiResponse<object>
-                {
-                    Success = false,
-                    Message = "User profile not found",
-                    Data = null
-                });
-            }
-
-            logger.LogInformation("Retrieved user information from Cognito for: {Email}", email);
-            return Ok(new ApiResponse<UserProfile>
-            {
-                Success = true,
-                Message = "User information retrieved successfully",
-                Data = fullUserProfile
-            });
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error retrieving current user information");
             return StatusCode(500, new ApiResponse<object>
             {
                 Success = false,

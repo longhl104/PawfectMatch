@@ -1,17 +1,6 @@
-namespace Longhl104.Identity.Models;
+using Longhl104.PawfectMatch.Models.Identity;
 
-/// <summary>
-/// Represents a user profile in the system
-/// </summary>
-public class UserProfile
-{
-    public string UserId { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
-    public string UserType { get; set; } = string.Empty;
-    public string? PhoneNumber { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime LastLoginAt { get; set; }
-}
+namespace Longhl104.Identity.Models;
 
 /// <summary>
 /// Contains token data for authentication

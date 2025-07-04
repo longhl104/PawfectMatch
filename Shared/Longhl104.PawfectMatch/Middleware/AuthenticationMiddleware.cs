@@ -1,13 +1,17 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json;
 using Longhl104.PawfectMatch.Models.Identity;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
-namespace Longhl104.Matcher.Middleware;
+namespace Longhl104.PawfectMatch.Middleware;
 
-public class AuthenticationMiddleware(RequestDelegate next, ILogger<AuthenticationMiddleware> logger)
+public class AuthenticationMiddleware(
+    RequestDelegate _next,
+    ILogger<AuthenticationMiddleware> _logger
+    )
 {
-    private readonly RequestDelegate _next = next;
-    private readonly ILogger<AuthenticationMiddleware> _logger = logger;
+    private static readonly string IdentityUrl = "https://localhost:4200"; // Default identity URL, can be overridden by configuration
 
     public async Task InvokeAsync(HttpContext context)
     {
@@ -32,11 +36,7 @@ public class AuthenticationMiddleware(RequestDelegate next, ILogger<Authenticati
             }
 
             // For web requests, redirect to login
-            var identityUrl = context.RequestServices
-                .GetRequiredService<IConfiguration>()
-                .GetValue<string>("IdentityUrl") ?? "https://localhost:4200";
-
-            var loginUrl = $"{identityUrl}/auth/login";
+            var loginUrl = $"{IdentityUrl}/auth/login";
 
             _logger.LogInformation("Redirecting to login: {LoginUrl}", loginUrl);
             context.Response.Redirect(loginUrl);
@@ -161,16 +161,12 @@ public class AuthenticationMiddleware(RequestDelegate next, ILogger<Authenticati
         context.Response.StatusCode = 401;
         context.Response.ContentType = "application/json";
 
-        var identityUrl = context.RequestServices
-            .GetRequiredService<IConfiguration>()
-            .GetValue<string>("IdentityUrl") ?? "https://localhost:4200";
-
         var response = new
         {
             success = false,
             message = result.Message,
             isAuthenticated = false,
-            redirectUrl = $"{identityUrl}/auth/login",
+            redirectUrl = $"{IdentityUrl}/auth/login",
             requiresRefresh = result.RequiresRefresh
         };
 

@@ -84,7 +84,7 @@ public class RegistrationController : ControllerBase
             _logger.LogInformation("Adopter registration successful for email: {Email}, UserId: {UserId}", registrationRequest.Email, userId);
 
             // Auto-login the user after successful registration using shared authentication service
-            var authResult = await _authenticationService.AuthenticateAndSetCookiesAsync<AdopterRegistrationResponse>(
+            var authResult = await _authenticationService.AuthenticateAndSetCookiesAsync(
                 registrationRequest.Email,
                 registrationRequest.Password,
                 HttpContext,
@@ -204,7 +204,6 @@ public class RegistrationController : ControllerBase
         var userAttributes = new List<AttributeType>
         {
             new() { Name = "email", Value = request.Email },
-            new() { Name = "given_name", Value = request.FullName },
             new() { Name = "custom:user_type", Value = "adopter" },
             new() { Name = "email_verified", Value = "true" } // Assuming email is verified at registration
         };

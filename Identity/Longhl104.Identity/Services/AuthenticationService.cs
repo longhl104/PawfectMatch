@@ -62,20 +62,18 @@ public class AuthenticationService : IAuthenticationService
                 return new UnauthorizedObjectResult(failureResponse);
             }
 
-            // Set OIDC cookies
-            _cookieService.SetOidcAuthenticationCookies(httpContext, cognitoTokens, userProfile);
+            // Set JWT cookies
+            _cookieService.SetJwtAuthenticationCookies(httpContext, cognitoTokens.AccessToken, userProfile);
 
-            // Create token data for response with OIDC tokens
+            // Create token data for response with JWT tokens
             var tokenData = new TokenData
             {
                 AccessToken = cognitoTokens.AccessToken,
-                IdToken = cognitoTokens.IdToken, // OIDC ID Token
-                RefreshToken = cognitoTokens.RefreshToken,
                 ExpiresAt = cognitoTokens.ExpiresAt,
                 User = userProfile
             };
 
-            logger.LogInformation("User {Email} authenticated successfully with OIDC tokens", email);
+            logger.LogInformation("User {Email} authenticated successfully with JWT tokens", email);
 
             var successResponse = createSuccessResponse(tokenData);
             return new OkObjectResult(successResponse);

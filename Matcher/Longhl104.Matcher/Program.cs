@@ -1,4 +1,5 @@
-using Longhl104.Matcher.Middleware;
+
+using Longhl104.PawfectMatch.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +45,9 @@ app.UseCors();
 
 // Add authentication middleware
 app.UseMiddleware<AuthenticationMiddleware>();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

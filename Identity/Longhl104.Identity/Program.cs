@@ -37,8 +37,6 @@ builder.Services.AddSingleton<AmazonCognitoIdentityProviderClient>();
 
 // Configure Identity services
 builder.Services.AddScoped<ICognitoService, CognitoService>();
-builder.Services.AddScoped<IJwtService, JwtService>();
-builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 builder.Services.AddScoped<ICookieService, CookieService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
