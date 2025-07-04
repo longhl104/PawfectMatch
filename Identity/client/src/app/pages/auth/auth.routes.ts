@@ -18,6 +18,11 @@ export const authRoutes: Routes = [
       import('./adopter/adopter.routes').then((m) => m.adopterRoutes),
   },
   {
+    path: 'shelter-admin',
+    loadChildren: () =>
+      import('./shelter-admin/shelter-admin.routes').then((m) => m.shelterAdminRoutes),
+  },
+  {
     path: 'login',
     loadComponent: () => import('./login/login').then((m) => m.Login),
     title: 'Sign In',

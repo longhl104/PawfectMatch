@@ -21,6 +21,24 @@
         "/Views": "${workspaceFolder}/Views"
       },
       "justMyCode": false
+    },
+    {
+      "name": "Start ${input:project} Angular Client",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/${input:project}/client",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "start"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "serverReadyAction": {
+        "pattern": "Local:.*?(https?://\\S+)",
+        "uriFormat": "%s",
+        "action": "openExternally"
+      }
     }
   ],
   "inputs": [

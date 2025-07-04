@@ -21,6 +21,8 @@ export class Choice {
 
   selectShelter(): void {
     // Navigate to shelter admin registration page
-    this.router.navigate(['/register/shelter']);
+    this.router.navigate(['shelter-admin', 'register'], {
+      relativeTo: this.route.parent,
+    });
   }
 }
