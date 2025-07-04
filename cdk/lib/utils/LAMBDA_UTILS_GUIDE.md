@@ -132,7 +132,7 @@ const myFunction = new lambda.Function(this, 'MyFunction', {
   runtime: lambda.Runtime.DOTNET_8,
   handler: 'MyFunction::MyFunction.Function::FunctionHandler',
   code: lambda.Code.fromAsset(
-    path.join(__dirname, '../../path/to/function/bin/Release/net8.0/publish')
+    path.join(__dirname, '../../path/to/function/bin/Release/net9.0/publish')
   ),
   timeout: Duration.seconds(30),
   environment: {

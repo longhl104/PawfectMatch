@@ -1,6 +1,5 @@
 using Longhl104.Identity.Models;
 using Longhl104.Identity.Services;
-using Longhl104.PawfectMatch.Models.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
@@ -10,7 +9,6 @@ namespace Longhl104.Identity.Controllers;
 [Route("api/[controller]")]
 public class AuthController(
     IAuthenticationService authenticationService,
-    ICognitoService cognitoService,
     ICookieService cookieService,
     ILogger<AuthController> logger
     ) : ControllerBase

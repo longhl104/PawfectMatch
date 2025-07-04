@@ -20,16 +20,8 @@ public interface IAuthenticationService
 /// <summary>
 /// Service for handling common authentication workflows
 /// </summary>
-public class AuthenticationService : IAuthenticationService
+public class AuthenticationService(ICognitoService cognitoService, ICookieService cookieService) : IAuthenticationService
 {
-    private readonly ICognitoService _cognitoService;
-    private readonly ICookieService _cookieService;
-
-    public AuthenticationService(ICognitoService cognitoService, ICookieService cookieService)
-    {
-        _cognitoService = cognitoService;
-        _cookieService = cookieService;
-    }
 
     /// <summary>
     /// Authenticates user with Cognito OIDC and sets cookies
@@ -53,7 +45,7 @@ public class AuthenticationService : IAuthenticationService
         try
         {
             // Authenticate user with Cognito using OIDC tokens
-            var (authSuccess, authMessage, cognitoTokens, userProfile) = await _cognitoService.AuthenticateWithTokensAsync(email, password);
+            var (authSuccess, authMessage, cognitoTokens, userProfile) = await cognitoService.AuthenticateWithTokensAsync(email, password);
 
             if (!authSuccess || cognitoTokens == null || userProfile == null)
             {
@@ -63,7 +55,7 @@ public class AuthenticationService : IAuthenticationService
             }
 
             // Set JWT cookies
-            _cookieService.SetJwtAuthenticationCookies(httpContext, cognitoTokens.AccessToken, userProfile);
+            cookieService.SetJwtAuthenticationCookies(httpContext, cognitoTokens.AccessToken, userProfile);
 
             // Create token data for response with JWT tokens
             var tokenData = new TokenData

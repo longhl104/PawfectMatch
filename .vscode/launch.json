@@ -1,0 +1,37 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch ${input:project}",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/${input:project}/Longhl104.${input:project}/bin/Debug/net9.0/Longhl104.${input:project}.dll",
+      "args": [
+        "run",
+        "--launchprofile",
+        "https"
+      ],
+      "cwd": "${workspaceFolder}/${input:project}/Longhl104.${input:project}",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "sourceFileMap": {
+        "/Views": "${workspaceFolder}/Views"
+      },
+      "justMyCode": false
+    }
+  ],
+  "inputs": [
+    {
+      "id": "project",
+      "type": "pickString",
+      "description": "Select the project to launch",
+      "options": [
+        "Identity",
+        "Matcher"
+      ]
+    }
+  ]
+}

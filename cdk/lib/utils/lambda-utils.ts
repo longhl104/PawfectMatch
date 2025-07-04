@@ -33,7 +33,7 @@ export class LambdaUtils {
       code: lambda.Code.fromAsset(
         path.join(
           __dirname,
-          `../../../${serviceGroup}/Lambdas/${config.functionName}/src/${config.functionName}/bin/Release/net8.0/publish`
+          `../../../${serviceGroup}/Lambdas/${config.functionName}/src/${config.functionName}/bin/Release/net9.0/publish`
         )
       ),
       timeout: config.timeout ?? Duration.seconds(30),

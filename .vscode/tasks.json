@@ -1,19 +1,27 @@
 {
-	"version": "2.0.0",
-	"tasks": [
+  "version": "2.0.0",
+  "tasks": [
     {
-      "label": "Run Longhl104.Identity",
+      "label": "build",
       "type": "shell",
-      "command": "dotnet",
-      "args": [
-        "run",
-        "--project",
-        "Identity/Longhl104.Identity/Longhl104.Identity.csproj"
-      ],
+      "command": "dotnet build",
       "group": "build",
-      "isBackground": true,
       "problemMatcher": [
         "$msCompile"
+      ],
+      "options": {
+        "cwd": "${input:project}/Longhl104.${input:project}"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "project",
+      "type": "pickString",
+      "description": "Select the project to build",
+      "options": [
+        "Identity",
+        "Matcher"
       ]
     }
   ]

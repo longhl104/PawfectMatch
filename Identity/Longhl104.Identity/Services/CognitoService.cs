@@ -1,6 +1,5 @@
 using Amazon.CognitoIdentityProvider;
 using Amazon.CognitoIdentityProvider.Model;
-using Longhl104.Identity.Models;
 using Longhl104.PawfectMatch.Models.Identity;
 
 namespace Longhl104.Identity.Services;
@@ -220,7 +219,8 @@ public class CognitoService : ICognitoService
                 UserId = getUserResponse.Username,
                 Email = email,
                 CreatedAt = getUserResponse.UserCreateDate.Value,
-                LastLoginAt = DateTime.UtcNow
+                LastLoginAt = DateTime.UtcNow,
+                FullName = getUserResponse.UserAttributes.FirstOrDefault(attr => attr.Name == "given_name")?.Value ?? string.Empty
             };
 
             // Extract user attributes
