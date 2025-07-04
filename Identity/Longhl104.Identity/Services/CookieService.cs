@@ -31,7 +31,7 @@ public class CookieService : ICookieService
         {
             Path = "/",
             Domain = cookieDomain.Equals("localhost", StringComparison.OrdinalIgnoreCase) ? null : cookieDomain,
-            MaxAge = TimeSpan.FromHours(1),
+            MaxAge = TimeSpan.FromDays(7),
             HttpOnly = true,
             Secure = isSecure,
             SameSite = sameSite
@@ -44,7 +44,7 @@ public class CookieService : ICookieService
         {
             Path = "/",
             Domain = cookieDomain.Equals("localhost", StringComparison.OrdinalIgnoreCase) ? null : cookieDomain,
-            MaxAge = TimeSpan.FromHours(1),
+            MaxAge = TimeSpan.FromDays(7),
             HttpOnly = false,
             Secure = isSecure,
             SameSite = sameSite
