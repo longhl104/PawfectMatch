@@ -26,7 +26,7 @@ export interface AuthStatusResponse {
 export class AuthService {
   private http = inject(HttpClient);
 
-  private readonly apiUrl = `${environment.apiUrl}/api/auth`;
+  private readonly apiUrl = `${environment.apiUrl}/api/authcheck`;
   private readonly identityUrl = environment.identityUrl;
 
   private authStatusSubject = new BehaviorSubject<AuthStatusResponse>({
@@ -49,7 +49,7 @@ export class AuthService {
    */
   checkAuthStatus(): Observable<AuthStatusResponse> {
     return this.http
-      .get<AuthStatusResponse>(`${this.apiUrl}/me`, {
+      .get<AuthStatusResponse>(`${this.apiUrl}/status`, {
         withCredentials: true,
       })
       .pipe(

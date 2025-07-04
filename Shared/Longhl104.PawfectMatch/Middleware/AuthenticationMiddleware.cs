@@ -59,7 +59,6 @@ public class AuthenticationMiddleware(
         var skipPaths = new[]
         {
             "/health",
-            "/api/authcheck",
             "/swagger",
             "/openapi",
             "/.well-known"

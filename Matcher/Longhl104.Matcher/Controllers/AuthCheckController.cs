@@ -1,0 +1,107 @@
+using Microsoft.AspNetCore.Mvc;
+using Longhl104.PawfectMatch.Models.Identity;
+
+namespace Longhl104.Matcher.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class AuthCheckController(ILogger<AuthCheckController> logger) : ControllerBase
+{
+    /// <summary>
+    /// Check if the current user is authenticated based on cookies
+    /// </summary>
+    [HttpGet("status")]
+    public IActionResult CheckAuthStatus()
+    {
+        logger.LogInformation("Checking authentication status for user");
+
+        try
+        {
+            if (HttpContext.Items["User"] is not UserProfile user)
+            {
+                logger.LogWarning("User not found in context.");
+                return Unauthorized(new { Message = "User not authenticated." });
+            }
+
+            // User is authenticated
+            logger.LogInformation("User is authenticated: {Email}", user.Email);
+            return Ok(new AuthStatusResponse
+            {
+                IsAuthenticated = true,
+                Message = "User is authenticated",
+                User = user,
+            });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error checking authentication status");
+            return Ok(new AuthStatusResponse
+            {
+                IsAuthenticated = false,
+                Message = "Authentication check failed",
+                RedirectUrl = GetIdentityLoginUrl()
+            });
+        }
+    }
+
+
+    /// <summary>
+    /// Clear authentication cookies and redirect to login
+    /// </summary>
+    [HttpPost("logout")]
+    public IActionResult Logout()
+    {
+        logger.LogInformation("Logging out user");
+
+        // Clear authentication cookies
+        var cookieOptions = new CookieOptions
+        {
+            Path = "/",
+            HttpOnly = true,
+            Secure = Request.IsHttps,
+            SameSite = Request.IsHttps ? SameSiteMode.None : SameSiteMode.Lax,
+            Expires = DateTime.UtcNow.AddDays(-1) // Set expiration to past date
+        };
+
+        Response.Cookies.Append("accessToken", "", cookieOptions);
+        Response.Cookies.Append("refreshToken", "", cookieOptions);
+        Response.Cookies.Append("userInfo", "", new CookieOptions
+        {
+            Path = "/",
+            HttpOnly = false,
+            Secure = Request.IsHttps,
+            SameSite = Request.IsHttps ? SameSiteMode.None : SameSiteMode.Lax,
+            Expires = DateTime.UtcNow.AddDays(-1)
+        });
+
+        return Ok(new AuthStatusResponse
+        {
+            IsAuthenticated = false,
+            Message = "Logged out successfully",
+            RedirectUrl = GetIdentityLoginUrl()
+        });
+    }
+
+    private string GetIdentityLoginUrl()
+    {
+        // Get the Identity application URL from configuration
+        var identityUrl = HttpContext.RequestServices
+            .GetRequiredService<IConfiguration>()
+            .GetValue<string>("IdentityUrl") ?? "https://localhost:4200";
+
+        return $"{identityUrl}/auth/login";
+    }
+}
+
+/// <summary>
+/// Response model for authentication status check
+/// </summary>
+public class AuthStatusResponse
+{
+    public bool IsAuthenticated { get; set; }
+    public string Message { get; set; } = string.Empty;
+    public string? RedirectUrl { get; set; }
+    public bool RequiresRefresh { get; set; } = false;
+    public UserProfile? User { get; set; }
+    public DateTime? TokenExpiresAt { get; set; }
+}
