@@ -11,7 +11,6 @@ namespace Longhl104.Identity.Controllers;
 public class AuthController(
     IAuthenticationService authenticationService,
     ICognitoService cognitoService,
-    IRefreshTokenService refreshTokenService,
     ICookieService cookieService,
     ILogger<AuthController> logger
     ) : ControllerBase
@@ -45,7 +44,7 @@ public class AuthController(
             }
 
             // Use shared authentication service
-            return await authenticationService.AuthenticateAndSetCookiesAsync<LoginResponse>(
+            return await authenticationService.AuthenticateAndSetCookiesAsync(
                 loginRequest.Email,
                 loginRequest.Password,
                 HttpContext,
@@ -67,92 +66,6 @@ public class AuthController(
         catch (Exception ex)
         {
             logger.LogError(ex, "Unexpected error during login for user: {Email}", loginRequest.Email);
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "Internal server error",
-                Data = null
-            });
-        }
-    }
-
-    /// <summary>
-    /// Refresh access token using refresh token
-    /// </summary>
-    [HttpPost("refresh")]
-    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest refreshTokenRequest)
-    {
-        logger.LogInformation("Refresh token request");
-
-        try
-        {
-            // Validate input
-            if (string.IsNullOrWhiteSpace(refreshTokenRequest.RefreshToken))
-            {
-                return BadRequest(new ApiResponse<object>
-                {
-                    Success = false,
-                    Message = "Refresh token is required",
-                    Data = null
-                });
-            }
-
-            // Get user ID from refresh token
-            var userId = await refreshTokenService.GetUserIdFromRefreshTokenAsync(refreshTokenRequest.RefreshToken);
-            if (string.IsNullOrEmpty(userId))
-            {
-                logger.LogWarning("Invalid or expired refresh token");
-                return Unauthorized(new ApiResponse<object>
-                {
-                    Success = false,
-                    Message = "Invalid or expired refresh token",
-                    Data = null
-                });
-            }
-
-            // Validate refresh token
-            var isValidToken = await refreshTokenService.ValidateRefreshTokenAsync(userId, refreshTokenRequest.RefreshToken);
-            if (!isValidToken)
-            {
-                logger.LogWarning("Invalid refresh token for user {UserId}", userId);
-                return Unauthorized(new ApiResponse<object>
-                {
-                    Success = false,
-                    Message = "Invalid or expired refresh token",
-                    Data = null
-                });
-            }
-
-            // Get user profile
-            var userProfile = await cognitoService.GetUserProfileAsync(userId);
-            if (userProfile == null)
-            {
-                logger.LogWarning("User profile not found for user {UserId}", userId);
-                return NotFound(new ApiResponse<object>
-                {
-                    Success = false,
-                    Message = "User not found",
-                    Data = null
-                });
-            }
-
-            // Note: For OIDC workflow, we would need to implement Cognito's refresh token flow
-            // For now, returning an error to prompt re-authentication
-            logger.LogWarning("Refresh token functionality not implemented for OIDC workflow. User should re-authenticate.");
-            return Unauthorized(new ApiResponse<object>
-            {
-                Success = false,
-                Message = "Token refresh not available. Please log in again.",
-                Data = null
-            });
-
-            // TODO: Implement Cognito refresh token flow using:
-            // - AdminInitiateAuthRequest with AuthFlow = REFRESH_TOKEN_AUTH
-            // - Pass the refresh token in AuthParameters["REFRESH_TOKEN"]
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Unexpected error during token refresh");
             return StatusCode(500, new ApiResponse<object>
             {
                 Success = false,
