@@ -16,8 +16,7 @@ public class RegistrationController : ControllerBase
     private readonly AmazonCognitoIdentityProviderClient _cognitoClient;
     private readonly ILogger<RegistrationController> _logger;
     private readonly IConfiguration _configuration;
-    private readonly ICookieService _cookieService;
-    private readonly IJwtService _jwtService;
+    private readonly IAuthenticationService _authenticationService; // Use shared authentication service
     private readonly IRefreshTokenService _refreshTokenService;
     private readonly string _tableName;
     private readonly string _userPoolId;
@@ -27,8 +26,7 @@ public class RegistrationController : ControllerBase
         AmazonCognitoIdentityProviderClient cognitoClient,
         ILogger<RegistrationController> logger,
         IConfiguration configuration,
-        ICookieService cookieService,
-        IJwtService jwtService,
+        IAuthenticationService authenticationService, // Inject shared authentication service
         IRefreshTokenService refreshTokenService,
         IHostEnvironment hostEnvironment
         )
@@ -37,8 +35,7 @@ public class RegistrationController : ControllerBase
         _cognitoClient = cognitoClient;
         _logger = logger;
         _configuration = configuration;
-        _cookieService = cookieService;
-        _jwtService = jwtService;
+        _authenticationService = authenticationService;
         _refreshTokenService = refreshTokenService;
         _tableName = $"pawfect-match-adopters-{hostEnvironment.EnvironmentName.ToLowerInvariant()}";
         _userPoolId = _configuration["AWS:UserPoolId"] ?? throw new InvalidOperationException("AWS:UserPoolId configuration is required");
@@ -86,47 +83,29 @@ public class RegistrationController : ControllerBase
 
             _logger.LogInformation("Adopter registration successful for email: {Email}, UserId: {UserId}", registrationRequest.Email, userId);
 
-            // Auto-login the user after successful registration
-            var userProfile = new UserProfile
-            {
-                UserId = userId,
-                Email = registrationRequest.Email,
-                UserType = "adopter",
-                PhoneNumber = registrationRequest.PhoneNumber,
-                CreatedAt = DateTime.UtcNow,
-                LastLoginAt = DateTime.UtcNow
-            };
+            // Auto-login the user after successful registration using shared authentication service
+            var authResult = await _authenticationService.AuthenticateAndSetCookiesAsync<AdopterRegistrationResponse>(
+                registrationRequest.Email,
+                registrationRequest.Password,
+                HttpContext,
+                _logger,
+                tokenData => new AdopterRegistrationResponse
+                {
+                    Message = "Registration successful",
+                    UserId = userId,
+                    RedirectUrl = "https://localhost:4201",
+                    Success = true,
+                    Data = tokenData
+                },
+                errorMessage => new AdopterRegistrationResponse
+                {
+                    Message = "Registration successful, but auto-login failed. Please login manually.",
+                    UserId = userId,
+                    Success = true
+                }
+            );
 
-            // Generate tokens
-            var accessToken = _jwtService.GenerateAccessToken(userProfile);
-            var refreshToken = _jwtService.GenerateRefreshToken();
-            var expiresAt = DateTime.UtcNow.AddMinutes(60); // 1 hour for access token
-
-            // Store refresh token
-            var refreshTokenExpiresAt = DateTime.UtcNow.AddDays(30); // 30 days for refresh token
-            await _refreshTokenService.StoreRefreshTokenAsync(userId, refreshToken, refreshTokenExpiresAt);
-
-            // Set authentication cookies
-            _cookieService.SetJwtAuthenticationCookies(HttpContext, accessToken, refreshToken, userProfile);
-
-            // Create token data for response
-            var tokenData = new TokenData
-            {
-                AccessToken = accessToken,
-                RefreshToken = refreshToken,
-                ExpiresAt = expiresAt,
-                User = userProfile
-            };
-
-            // Return success response with tokens and redirect URL for Angular to handle
-            return Ok(new AdopterRegistrationResponse
-            {
-                Message = "Registration successful",
-                UserId = userId,
-                RedirectUrl = "https://localhost:4201",
-                Success = true,
-                Data = tokenData
-            });
+            return authResult;
         }
         catch (UsernameExistsException)
         {

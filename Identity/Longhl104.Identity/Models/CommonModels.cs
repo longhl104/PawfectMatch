@@ -19,6 +19,7 @@ public class UserProfile
 public class TokenData
 {
     public string AccessToken { get; set; } = string.Empty;
+    public string IdToken { get; set; } = string.Empty; // OIDC ID Token
     public string RefreshToken { get; set; } = string.Empty;
     public DateTime ExpiresAt { get; set; }
     public UserProfile? User { get; set; }

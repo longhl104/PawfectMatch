@@ -8,8 +8,8 @@ namespace Longhl104.Identity.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 public class AuthController(
+    IAuthenticationService authenticationService,
     ICognitoService cognitoService,
-    IJwtService jwtService,
     IRefreshTokenService refreshTokenService,
     ICookieService cookieService,
     ILogger<AuthController> logger
@@ -43,53 +43,25 @@ public class AuthController(
                 });
             }
 
-            // Authenticate user with Cognito
-            var (success, message, user) = await cognitoService.AuthenticateUserAsync(
+            // Use shared authentication service
+            return await authenticationService.AuthenticateAndSetCookiesAsync<LoginResponse>(
                 loginRequest.Email,
-                loginRequest.Password);
-
-            if (!success || user == null)
-            {
-                logger.LogWarning("Authentication failed for user {Email}: {Message}", loginRequest.Email, message);
-                return Unauthorized(new ApiResponse<object>
+                loginRequest.Password,
+                HttpContext,
+                logger,
+                tokenData => new LoginResponse
+                {
+                    Success = true,
+                    Message = "Login successful",
+                    Data = tokenData
+                },
+                errorMessage => new LoginResponse
                 {
                     Success = false,
-                    Message = message,
+                    Message = errorMessage,
                     Data = null
-                });
-            }
-
-            // Generate tokens
-            var accessToken = jwtService.GenerateAccessToken(user);
-            var refreshToken = jwtService.GenerateRefreshToken();
-            var expiresAt = DateTime.UtcNow.AddMinutes(60); // 1 hour for access token
-
-            // Store refresh token
-            var refreshTokenExpiresAt = DateTime.UtcNow.AddDays(30); // 30 days for refresh token
-            await refreshTokenService.StoreRefreshTokenAsync(user.UserId, refreshToken, refreshTokenExpiresAt);
-
-            // Create response
-            var tokenData = new TokenData
-            {
-                AccessToken = accessToken,
-                RefreshToken = refreshToken,
-                ExpiresAt = expiresAt,
-                User = user
-            };
-
-            var loginResponse = new LoginResponse
-            {
-                Success = true,
-                Message = "Login successful",
-                Data = tokenData
-            };
-
-            logger.LogInformation("User {Email} logged in successfully", loginRequest.Email);
-
-            // Set cookies
-            cookieService.SetJwtAuthenticationCookies(HttpContext, accessToken, refreshToken, user);
-
-            return Ok(loginResponse);
+                }
+            );
         }
         catch (Exception ex)
         {
@@ -163,38 +135,19 @@ public class AuthController(
                 });
             }
 
-            // Generate new tokens
-            var newAccessToken = jwtService.GenerateAccessToken(userProfile);
-            var newRefreshToken = jwtService.GenerateRefreshToken();
-            var expiresAt = DateTime.UtcNow.AddMinutes(60); // 1 hour for access token
-
-            // Revoke old refresh token and store new one
-            var refreshTokenExpiresAt = DateTime.UtcNow.AddDays(30); // 30 days for new refresh token
-            await refreshTokenService.RevokeRefreshTokenAsync(userId, refreshTokenRequest.RefreshToken);
-            await refreshTokenService.StoreRefreshTokenAsync(userId, newRefreshToken, refreshTokenExpiresAt);
-
-            // Create response
-            var tokenData = new TokenData
+            // Note: For OIDC workflow, we would need to implement Cognito's refresh token flow
+            // For now, returning an error to prompt re-authentication
+            logger.LogWarning("Refresh token functionality not implemented for OIDC workflow. User should re-authenticate.");
+            return Unauthorized(new ApiResponse<object>
             {
-                AccessToken = newAccessToken,
-                RefreshToken = newRefreshToken,
-                ExpiresAt = expiresAt,
-                User = userProfile
-            };
+                Success = false,
+                Message = "Token refresh not available. Please log in again.",
+                Data = null
+            });
 
-            var refreshResponse = new RefreshTokenResponse
-            {
-                Success = true,
-                Message = "Token refreshed successfully",
-                Data = tokenData
-            };
-
-            logger.LogInformation("Tokens refreshed successfully for user {UserId}", userId);
-
-            // Set new cookies
-            cookieService.SetJwtAuthenticationCookies(HttpContext, newAccessToken, newRefreshToken, userProfile);
-
-            return Ok(refreshResponse);
+            // TODO: Implement Cognito refresh token flow using:
+            // - AdminInitiateAuthRequest with AuthFlow = REFRESH_TOKEN_AUTH
+            // - Pass the refresh token in AuthParameters["REFRESH_TOKEN"]
         }
         catch (Exception ex)
         {
