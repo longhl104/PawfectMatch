@@ -1,7 +1,6 @@
 using Longhl104.Identity.Models;
 using Longhl104.Identity.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
 
 namespace Longhl104.Identity.Controllers;
 
@@ -13,12 +12,6 @@ public class AuthController(
     ILogger<AuthController> logger
     ) : ControllerBase
 {
-
-    private static readonly JsonSerializerOptions CamelCaseOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-    };
-
     /// <summary>
     /// Authenticate user and return tokens
     /// </summary>
