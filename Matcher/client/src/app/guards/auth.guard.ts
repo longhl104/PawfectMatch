@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { CanActivate } from '@angular/router';
 import { Observable, map, take } from 'rxjs';
-import { AuthService, AuthStatusResponse } from '../services/auth.service';
+import { AuthService, AuthStatusResponse } from 'shared/services/auth.service';
 import { ToastService } from '@longhl104/pawfect-match-ng';
 
 @Injectable({

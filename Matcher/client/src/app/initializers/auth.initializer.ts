@@ -1,6 +1,6 @@
 import { inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { AuthService } from '../services/auth.service';
+import { AuthService } from 'shared/services/auth.service';
 import { firstValueFrom } from 'rxjs';
 
 /**

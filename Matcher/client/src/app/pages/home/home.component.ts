@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { AuthService, UserProfile } from '../../services/auth.service';
+import { AuthService, UserProfile } from 'shared/services/auth.service';
 import { Observable } from 'rxjs';
 
 @Component({
