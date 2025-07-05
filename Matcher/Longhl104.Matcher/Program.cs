@@ -1,5 +1,6 @@
 
 using Longhl104.PawfectMatch.Middleware;
+using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,21 @@ Console.WriteLine($"Environment: {environmentName}");
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+
+// Add authentication and authorization services
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorizationBuilder()
+    .SetFallbackPolicy(new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .RequireClaim("UserType", "Adopter")
+        .Build())
+    .SetDefaultPolicy(new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .RequireClaim("UserType", "Adopter")
+        .Build())
+    .AddPolicy("AdopterOnly", policy =>
+        policy.RequireAuthenticatedUser()
+            .RequireClaim("UserType", "Adopter"));
 
 // Configure CORS
 builder.Services.AddCors(options =>

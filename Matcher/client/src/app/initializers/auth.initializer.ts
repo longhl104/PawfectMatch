@@ -9,10 +9,10 @@ import { firstValueFrom } from 'rxjs';
  * Only runs on browser platform (not during SSR)
  */
 export function authInitializer(): () => Promise<void> {
-  const authService = inject(AuthService);
-  const platformId = inject(PLATFORM_ID);
+  return async () => {
+    const authService = inject(AuthService);
+    const platformId = inject(PLATFORM_ID);
 
-  return () => {
     // Only check auth status in browser environment
     if (!isPlatformBrowser(platformId)) {
       console.log('Skipping auth initialization on server');
@@ -20,13 +20,11 @@ export function authInitializer(): () => Promise<void> {
     }
 
     console.log('Initializing authentication...');
-    return firstValueFrom(authService.checkAuthStatus())
-      .then(() => {
-        console.log('Authentication initialization completed');
-      })
-      .catch((error) => {
-        console.error('Authentication initialization failed:', error);
-        // Don't block app startup even if auth check fails
-      });
+    try {
+      await firstValueFrom(authService.checkAuthStatus());
+      console.log('Authentication initialization completed');
+    } catch (error) {
+      console.error('Authentication initialization failed:', error);
+    }
   };
 }

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Longhl104.PawfectMatch.Models.Identity;
 
@@ -5,6 +6,7 @@ namespace Longhl104.Matcher.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize] // This will use the global policy requiring Adopter role
 public class AuthCheckController(ILogger<AuthCheckController> logger) : ControllerBase
 {
     /// <summary>
@@ -42,6 +44,27 @@ public class AuthCheckController(ILogger<AuthCheckController> logger) : Controll
                 RedirectUrl = GetIdentityLoginUrl()
             });
         }
+    }
+
+    /// <summary>
+    /// Test endpoint that demonstrates role-based authorization
+    /// Only users with Adopter role can access this endpoint
+    /// </summary>
+    [HttpGet("adopter-only")]
+    public IActionResult AdopterOnlyEndpoint()
+    {
+        logger.LogInformation("Adopter-only endpoint accessed by user: {Email}", User?.FindFirst("Email")?.Value);
+
+        var userType = User?.FindFirst("UserType")?.Value;
+        var email = User?.FindFirst("Email")?.Value;
+
+        return Ok(new
+        {
+            Message = "Success! You have access to this Adopter-only endpoint.",
+            UserType = userType,
+            Email = email,
+            Timestamp = DateTime.UtcNow
+        });
     }
 
 

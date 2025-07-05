@@ -48,7 +48,8 @@
       "description": "Select the project to launch",
       "options": [
         "Identity",
-        "Matcher"
+        "Matcher",
+        "ShelterHub"
       ]
     }
   ]

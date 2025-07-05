@@ -2,12 +2,14 @@ import { Injectable, inject } from '@angular/core';
 import { CanActivate } from '@angular/router';
 import { Observable, map, take } from 'rxjs';
 import { AuthService, AuthStatusResponse } from '../services/auth.service';
+import { ToastService } from '@longhl104/pawfect-match-ng';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthGuard implements CanActivate {
   private authService = inject(AuthService);
+  private toastService = inject(ToastService);
 
   canActivate(): Observable<boolean> {
     return this.authService.authStatus$.pipe(
@@ -22,6 +24,10 @@ export class AuthGuard implements CanActivate {
           } else {
             this.authService.redirectToLogin();
           }
+
+          this.toastService.error(
+            "You don't have permission to access this page. Please log in.",
+          );
 
           return false;
         }

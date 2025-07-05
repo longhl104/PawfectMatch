@@ -1,6 +1,19 @@
 @Longhl104.Matcher_HostAddress = http://localhost:5245
 
-GET {{Longhl104.Matcher_HostAddress}}/weatherforecast/
+### Check authentication status
+GET {{Longhl104.Matcher_HostAddress}}/api/AuthCheck/status
+Accept: application/json
+
+### Test adopter-only endpoint
+GET {{Longhl104.Matcher_HostAddress}}/api/AuthCheck/adopter-only
+Accept: application/json
+
+### Health check (should work without authentication)
+GET {{Longhl104.Matcher_HostAddress}}/health
+Accept: application/json
+
+### Logout
+POST {{Longhl104.Matcher_HostAddress}}/api/AuthCheck/logout
 Accept: application/json
 
 ###

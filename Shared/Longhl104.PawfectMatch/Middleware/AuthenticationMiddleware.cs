@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text.Json;
 using Longhl104.PawfectMatch.Models.Identity;
 using Microsoft.AspNetCore.Http;
@@ -31,7 +32,7 @@ public class AuthenticationMiddleware(
             // For API requests, return JSON response
             if (context.Request.Path.StartsWithSegments("/api"))
             {
-                await WriteJsonResponse(context, authResult);
+                await WriteJsonResponse(context, authResult, 401);
                 return;
             }
 
@@ -43,12 +44,48 @@ public class AuthenticationMiddleware(
             return;
         }
 
+        // Check if user has the required role for API endpoints
+        if (context.Request.Path.StartsWithSegments("/api") &&
+            !ShouldSkipAuthCheck(context.Request.Path) &&
+            authResult.User != null &&
+            !string.Equals(authResult.User.UserType, "Adopter", StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogWarning("User {Email} with role {UserType} attempted to access API endpoint {Path}",
+                authResult.User.Email, authResult.User.UserType, context.Request.Path);
+
+            var forbiddenResult = new AuthCheckResult
+            {
+                IsAuthenticated = true,
+                Message = "Access denied. Only users with Adopter role can access this service.",
+                User = authResult.User
+            };
+
+            await WriteJsonResponse(context, forbiddenResult, 403);
+            return;
+        }
+
         // Add user information to context for downstream use
         if (authResult.User != null)
         {
             context.Items["User"] = authResult.User;
             context.Items["UserId"] = authResult.User.UserId;
             context.Items["UserEmail"] = authResult.User.Email;
+
+            // Create claims identity for authorization
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.NameIdentifier, authResult.User.UserId),
+                new(ClaimTypes.Email, authResult.User.Email),
+                new("UserType", authResult.User.UserType)
+            };
+
+            if (!string.IsNullOrEmpty(authResult.User.FullName))
+            {
+                claims.Add(new Claim(ClaimTypes.Name, authResult.User.FullName));
+            }
+
+            var identity = new ClaimsIdentity(claims, "PawfectMatch");
+            context.User = new ClaimsPrincipal(identity);
         }
 
         await _next(context);
@@ -155,17 +192,17 @@ public class AuthenticationMiddleware(
         }
     }
 
-    private static async Task WriteJsonResponse(HttpContext context, AuthCheckResult result)
+    private static async Task WriteJsonResponse(HttpContext context, AuthCheckResult result, int statusCode = 401)
     {
-        context.Response.StatusCode = 401;
+        context.Response.StatusCode = statusCode;
         context.Response.ContentType = "application/json";
 
         var response = new
         {
             success = false,
             message = result.Message,
-            isAuthenticated = false,
-            redirectUrl = $"{IdentityUrl}/auth/login",
+            isAuthenticated = result.IsAuthenticated,
+            redirectUrl = statusCode == 401 ? $"{IdentityUrl}/auth/login" : null,
             requiresRefresh = result.RequiresRefresh
         };
 

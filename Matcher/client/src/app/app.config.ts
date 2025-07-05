@@ -3,7 +3,7 @@ import {
   ErrorHandler,
   provideBrowserGlobalErrorListeners,
   provideZoneChangeDetection,
-  APP_INITIALIZER,
+  provideAppInitializer,
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
 
@@ -28,10 +28,6 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(withEventReplay()),
     provideHttpClient(withFetch(), withInterceptorsFromDi()),
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
-    {
-      provide: APP_INITIALIZER,
-      useFactory: authInitializer,
-      multi: true,
-    },
+    provideAppInitializer(authInitializer()),
   ],
 };
