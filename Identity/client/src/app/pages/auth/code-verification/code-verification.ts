@@ -2,14 +2,13 @@
 import {
   Component,
   OnInit,
-  ViewChildren,
-  QueryList,
   ElementRef,
   OnDestroy,
   inject,
   NgZone,
   signal,
   computed,
+  viewChildren
 } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
@@ -44,7 +43,7 @@ export class CodeVerification implements OnInit, OnDestroy {
   private resendTimer: any;
   private userType: 'adopter' | 'shelter' = 'adopter';
 
-  @ViewChildren('codeInput') codeInputs!: QueryList<ElementRef>;
+  readonly codeInputs = viewChildren<ElementRef>('codeInput');
 
   email = signal<string>('');
   code = signal<string[]>(['', '', '', '', '', '']);
@@ -108,7 +107,7 @@ export class CodeVerification implements OnInit, OnDestroy {
 
     // Move to next input if digit entered
     if (value && index < 5) {
-      const nextInput = this.codeInputs.toArray()[index + 1];
+      const nextInput = this.codeInputs[index + 1];
       if (nextInput) {
         nextInput.nativeElement.focus();
       }
@@ -123,7 +122,7 @@ export class CodeVerification implements OnInit, OnDestroy {
   onKeyDown(event: KeyboardEvent, index: number): void {
     // Handle backspace
     if (event.key === 'Backspace' && !this.code()[index] && index > 0) {
-      const prevInput = this.codeInputs.toArray()[index - 1];
+      const prevInput = this.codeInputs[index - 1];
       if (prevInput) {
         prevInput.nativeElement.focus();
       }
@@ -146,7 +145,7 @@ export class CodeVerification implements OnInit, OnDestroy {
           return newCode;
         });
 
-        const input = this.codeInputs.toArray()[i];
+        const input = this.codeInputs[i];
         if (input) {
           input.nativeElement.value = pastedData[i];
         }
@@ -246,7 +245,7 @@ export class CodeVerification implements OnInit, OnDestroy {
 
   clearCode(): void {
     this.code.set(['', '', '', '', '', '']);
-    this.codeInputs.toArray().forEach((input, index) => {
+    this.codeInputs.forEach((input, index) => {
       input.nativeElement.value = '';
       if (index === 0) {
         input.nativeElement.focus();

@@ -1,9 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Component,
-  Output,
-  EventEmitter,
-  ViewChild,
   ElementRef,
   NgZone,
   inject,
@@ -11,6 +8,8 @@ import {
   forwardRef,
   OnDestroy,
   input,
+  output,
+  viewChild,
 } from '@angular/core';
 
 import {
@@ -59,7 +58,7 @@ export class AddressInputComponent implements ControlValueAccessor, OnDestroy {
   private googleMapsService = inject(GoogleMapsService);
   private errorHandlingService = inject(ErrorHandlingService);
 
-  @ViewChild('addressInput', { static: false }) addressInputRef!: ElementRef;
+  readonly addressInputRef = viewChild.required<ElementRef>('addressInput');
 
   readonly label = input('Address');
   readonly placeholder = input('Enter your full address');
@@ -74,8 +73,8 @@ export class AddressInputComponent implements ControlValueAccessor, OnDestroy {
 
   private _disabled = false;
 
-  @Output() addressSelected = new EventEmitter<AddressDetails | null>();
-  @Output() validationChange = new EventEmitter<Record<string, any> | null>();
+  readonly addressSelected = output<AddressDetails | null>();
+  readonly validationChange = output<Record<string, any> | null>();
 
   addressControl = new FormControl('');
   isGoogleMapsLoading = true;
@@ -132,7 +131,8 @@ export class AddressInputComponent implements ControlValueAccessor, OnDestroy {
   }
 
   private initializeAutocomplete() {
-    if (!this.addressInputRef?.nativeElement) {
+    const addressInputRef = this.addressInputRef();
+    if (!addressInputRef?.nativeElement) {
       setTimeout(() => this.initializeAutocomplete(), 100);
       return;
     }
@@ -144,7 +144,7 @@ export class AddressInputComponent implements ControlValueAccessor, OnDestroy {
     };
 
     this.autocomplete = new google.maps.places.Autocomplete(
-      this.addressInputRef.nativeElement,
+      addressInputRef.nativeElement,
       options,
     );
 
@@ -210,18 +210,18 @@ export class AddressInputComponent implements ControlValueAccessor, OnDestroy {
       });
     };
 
-    this.addressInputRef.nativeElement.addEventListener('input', inputListener);
-    this.addressInputRef.nativeElement.addEventListener('blur', blurListener);
+    addressInputRef.nativeElement.addEventListener('input', inputListener);
+    addressInputRef.nativeElement.addEventListener('blur', blurListener);
 
     // Store removal functions for cleanup
     this.eventListeners.push(
       () =>
-        this.addressInputRef.nativeElement.removeEventListener(
+        this.addressInputRef().nativeElement.removeEventListener(
           'input',
           inputListener,
         ),
       () =>
-        this.addressInputRef.nativeElement.removeEventListener(
+        this.addressInputRef().nativeElement.removeEventListener(
           'blur',
           blurListener,
         ),
