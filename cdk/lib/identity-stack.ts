@@ -1,7 +1,6 @@
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
-import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 import { PawfectMatchStackProps } from './utils';
 import { BaseStack } from './base-stack';
@@ -12,8 +11,6 @@ export interface IdentityStackProps extends PawfectMatchStackProps {}
 export class IdentityStack extends BaseStack {
   public readonly userPool: cognito.UserPool;
   public readonly userPoolClient: cognito.UserPoolClient;
-  public readonly adoptersTable: dynamodb.Table;
-  public readonly refreshTokensTable: dynamodb.Table;
 
   constructor(scope: Construct, id: string, props: IdentityStackProps) {
     super(scope, id, props);
@@ -171,50 +168,6 @@ export class IdentityStack extends BaseStack {
       }
     );
 
-    // Create DynamoDB table for Adopters with stream enabled
-    this.adoptersTable = new dynamodb.Table(this, 'AdoptersTable', {
-      tableName: `pawfect-match-adopters-${stage}`,
-      partitionKey: {
-        name: 'UserId',
-        type: dynamodb.AttributeType.STRING,
-      },
-      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      stream: dynamodb.StreamViewType.NEW_AND_OLD_IMAGES, // Enable DynamoDB streams
-      pointInTimeRecoverySpecification:
-        stage === 'production'
-          ? {
-              pointInTimeRecoveryEnabled: true,
-            }
-          : undefined,
-      deletionProtection: stage === 'production',
-      removalPolicy:
-        stage === 'production' ? RemovalPolicy.RETAIN : RemovalPolicy.DESTROY,
-    });
-
-    // Create DynamoDB table for Refresh Tokens
-    this.refreshTokensTable = new dynamodb.Table(this, 'RefreshTokensTable', {
-      tableName: `pawfect-match-refresh-tokens-${stage}`,
-      partitionKey: {
-        name: 'UserId',
-        type: dynamodb.AttributeType.STRING,
-      },
-      sortKey: {
-        name: 'RefreshToken',
-        type: dynamodb.AttributeType.STRING,
-      },
-      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      timeToLiveAttribute: 'ExpiresAt', // Auto-delete expired tokens
-      pointInTimeRecoverySpecification:
-        stage === 'production'
-          ? {
-              pointInTimeRecoveryEnabled: true,
-            }
-          : undefined,
-      deletionProtection: stage === 'production',
-      removalPolicy:
-        stage === 'production' ? RemovalPolicy.RETAIN : RemovalPolicy.DESTROY,
-    });
-
     // Create User Pool Domain (optional, for hosted UI)
     const userPoolDomain = new cognito.UserPoolDomain(
       this,
@@ -242,22 +195,6 @@ export class IdentityStack extends BaseStack {
 
     this.exportValue(this.userPool.userPoolArn, {
       name: `${stage}UserPoolArn`,
-    });
-
-    this.exportValue(this.adoptersTable.tableName, {
-      name: `${stage}AdoptersTableName`,
-    });
-
-    this.exportValue(this.adoptersTable.tableArn, {
-      name: `${stage}AdoptersTableArn`,
-    });
-
-    this.exportValue(this.refreshTokensTable.tableName, {
-      name: `${stage}RefreshTokensTableName`,
-    });
-
-    this.exportValue(this.refreshTokensTable.tableArn, {
-      name: `${stage}RefreshTokensTableArn`,
     });
 
     // Use API Gateway from environment stack

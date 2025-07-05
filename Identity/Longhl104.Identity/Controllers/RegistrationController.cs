@@ -1,6 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Amazon.DynamoDBv2;
-using Amazon.DynamoDBv2.Model;
 using Amazon.CognitoIdentityProvider;
 using Amazon.CognitoIdentityProvider.Model;
 using Longhl104.Identity.Services;
@@ -12,34 +10,24 @@ namespace Longhl104.Identity.Controllers;
 [Route("api/[controller]")]
 public class RegistrationController : ControllerBase
 {
-    private readonly AmazonDynamoDBClient _dynamoDbClient;
     private readonly AmazonCognitoIdentityProviderClient _cognitoClient;
     private readonly ILogger<RegistrationController> _logger;
     private readonly IConfiguration _configuration;
     private readonly IAuthenticationService _authenticationService; // Use shared authentication service
-    private readonly IRefreshTokenService _refreshTokenService;
-    private readonly string _tableName;
     private readonly string _userPoolId;
-    private readonly string _shelterAdminTableName;
 
     public RegistrationController(
-        AmazonDynamoDBClient dynamoDbClient,
         AmazonCognitoIdentityProviderClient cognitoClient,
         ILogger<RegistrationController> logger,
         IConfiguration configuration,
         IAuthenticationService authenticationService, // Inject shared authentication service
-        IRefreshTokenService refreshTokenService,
         IHostEnvironment hostEnvironment
         )
     {
-        _dynamoDbClient = dynamoDbClient;
         _cognitoClient = cognitoClient;
         _logger = logger;
         _configuration = configuration;
         _authenticationService = authenticationService;
-        _refreshTokenService = refreshTokenService;
-        _tableName = $"pawfect-match-adopters-{hostEnvironment.EnvironmentName.ToLowerInvariant()}";
-        _shelterAdminTableName = $"pawfect-match-shelter-admins-{hostEnvironment.EnvironmentName.ToLowerInvariant()}";
         _userPoolId = _configuration["AWS:UserPoolId"] ?? throw new InvalidOperationException("AWS:UserPoolId configuration is required");
     }
 
@@ -81,7 +69,7 @@ public class RegistrationController : ControllerBase
             var userId = await CreateCognitoUser(registrationRequest);
 
             // Save adopter profile to DynamoDB
-            await SaveAdopterProfile(registrationRequest, userId);
+            // await SaveAdopterProfile(registrationRequest, userId);
 
             _logger.LogInformation("Adopter registration successful for email: {Email}, UserId: {UserId}", registrationRequest.Email, userId);
 
@@ -140,105 +128,6 @@ public class RegistrationController : ControllerBase
             });
         }
     }
-
-    /// <summary>
-    /// Register a new shelter admin
-    /// </summary>
-    [HttpPost("shelter-admin")]
-    public async Task<IActionResult> RegisterShelterAdmin([FromBody] ShelterAdminRegistrationRequest registrationRequest)
-    {
-        try
-        {
-            _logger.LogInformation("Processing shelter admin registration request for email: {Email}", registrationRequest.Email);
-
-            // Validate required fields
-            var validationError = ValidateShelterAdminRegistrationRequest(registrationRequest);
-            if (!string.IsNullOrEmpty(validationError))
-            {
-                return BadRequest(new ShelterAdminRegistrationResponse
-                {
-                    Success = false,
-                    Message = validationError,
-                    UserId = string.Empty
-                });
-            }
-
-            // Check if email already exists
-            var existingUser = await CheckIfEmailExists(registrationRequest.Email);
-            if (existingUser)
-            {
-                return Conflict(new ShelterAdminRegistrationResponse
-                {
-                    Success = false,
-                    Message = "An account with this email already exists",
-                    UserId = string.Empty
-                });
-            }
-
-            // Create user in Cognito
-            var userId = await CreateCognitoShelterAdmin(registrationRequest);
-
-            // Save shelter admin profile to DynamoDB
-            await SaveShelterAdminProfile(registrationRequest, userId);
-
-            _logger.LogInformation("Shelter admin registration successful for email: {Email}, UserId: {UserId}", registrationRequest.Email, userId);
-
-            // Auto-login the user after successful registration using shared authentication service
-            var authResult = await _authenticationService.AuthenticateAndSetCookiesAsync(
-                registrationRequest.Email,
-                registrationRequest.Password,
-                HttpContext,
-                _logger,
-                tokenData => new ShelterAdminRegistrationResponse
-                {
-                    Message = "Registration successful",
-                    UserId = userId,
-                    RedirectUrl = "https://localhost:4201",
-                    Success = true,
-                    Data = tokenData
-                },
-                errorMessage => new ShelterAdminRegistrationResponse
-                {
-                    Message = "Registration successful, but auto-login failed. Please login manually.",
-                    UserId = userId,
-                    Success = true
-                }
-            );
-
-            return authResult;
-        }
-        catch (UsernameExistsException)
-        {
-            _logger.LogWarning("Registration attempted for existing email: {Email}", registrationRequest.Email);
-            return Conflict(new ShelterAdminRegistrationResponse
-            {
-                Success = false,
-                Message = "An account with this email already exists",
-                UserId = string.Empty
-            });
-        }
-        catch (InvalidPasswordException ex)
-        {
-            _logger.LogWarning("Invalid password during shelter admin registration for email: {Email}. Error: {Error}", registrationRequest.Email, ex.Message);
-            return BadRequest(new ShelterAdminRegistrationResponse
-            {
-                Success = false,
-                Message = $"Password does not meet requirements: {ex.Message}",
-                UserId = string.Empty
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error during shelter admin registration for email: {Email}", registrationRequest.Email);
-            return StatusCode(500, new ShelterAdminRegistrationResponse
-            {
-                Success = false,
-                Message = "An error occurred during registration. Please try again.",
-                UserId = string.Empty
-            });
-        }
-    }
-
     private static string ValidateRegistrationRequest(AdopterRegistrationRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.FullName))
@@ -252,32 +141,6 @@ public class RegistrationController : ControllerBase
 
         if (string.IsNullOrWhiteSpace(request.Address))
             return "Address is required";
-
-        if (!IsValidEmail(request.Email))
-            return "Invalid email format";
-
-        if (request.Password.Length < 8)
-            return "Password must be at least 8 characters long";
-
-        return string.Empty;
-    }
-
-    private static string ValidateShelterAdminRegistrationRequest(ShelterAdminRegistrationRequest request)
-    {
-        if (string.IsNullOrWhiteSpace(request.Email))
-            return "Email is required";
-
-        if (string.IsNullOrWhiteSpace(request.Password))
-            return "Password is required";
-
-        if (string.IsNullOrWhiteSpace(request.ShelterName))
-            return "Shelter name is required";
-
-        if (string.IsNullOrWhiteSpace(request.ShelterContactNumber))
-            return "Shelter contact number is required";
-
-        if (string.IsNullOrWhiteSpace(request.ShelterAddress))
-            return "Shelter address is required";
 
         if (!IsValidEmail(request.Email))
             return "Invalid email format";
@@ -367,117 +230,6 @@ public class RegistrationController : ControllerBase
         _logger.LogInformation("Created Cognito user for email: {Email}", request.Email);
 
         return response.User.Username;
-    }
-
-    private async Task<string> CreateCognitoShelterAdmin(ShelterAdminRegistrationRequest request)
-    {
-        var userAttributes = new List<AttributeType>
-        {
-            new() { Name = "email", Value = request.Email },
-            new() { Name = "custom:user_type", Value = "shelter_admin" },
-            new() { Name = "email_verified", Value = "true" }
-        };
-
-        var adminCreateUserRequest = new AdminCreateUserRequest
-        {
-            UserPoolId = _userPoolId,
-            Username = request.Email,
-            UserAttributes = userAttributes,
-            TemporaryPassword = request.Password,
-            MessageAction = MessageActionType.SUPPRESS,
-            DesiredDeliveryMediums = ["EMAIL"]
-        };
-
-        var response = await _cognitoClient.AdminCreateUserAsync(adminCreateUserRequest);
-
-        // Set permanent password
-        var setPasswordRequest = new AdminSetUserPasswordRequest
-        {
-            UserPoolId = _userPoolId,
-            Username = request.Email,
-            Password = request.Password,
-            Permanent = true
-        };
-
-        await _cognitoClient.AdminSetUserPasswordAsync(setPasswordRequest);
-
-        _logger.LogInformation("Created Cognito shelter admin user for email: {Email}", request.Email);
-
-        return response.User.Username;
-    }
-
-    private async Task SaveAdopterProfile(AdopterRegistrationRequest request, string userId)
-    {
-        var adopterItem = new Dictionary<string, AttributeValue>
-        {
-            ["UserId"] = new() { S = userId },
-            ["FullName"] = new() { S = request.FullName },
-            ["Email"] = new() { S = request.Email },
-            ["Address"] = new() { S = request.Address },
-            ["CreatedAt"] = new() { S = DateTime.UtcNow.ToString("O") },
-            ["UserType"] = new() { S = "adopter" }
-        };
-
-        if (!string.IsNullOrWhiteSpace(request.PhoneNumber))
-        {
-            adopterItem["PhoneNumber"] = new AttributeValue { S = request.PhoneNumber };
-        }
-
-        if (!string.IsNullOrWhiteSpace(request.Bio))
-        {
-            adopterItem["Bio"] = new AttributeValue { S = request.Bio };
-        }
-
-        var putItemRequest = new PutItemRequest
-        {
-            TableName = _tableName,
-            Item = adopterItem
-        };
-
-        await _dynamoDbClient.PutItemAsync(putItemRequest);
-
-        _logger.LogInformation("Saved adopter profile to DynamoDB for UserId: {UserId}", userId);
-    }
-
-    private async Task SaveShelterAdminProfile(ShelterAdminRegistrationRequest request, string userId)
-    {
-        var shelterAdminItem = new Dictionary<string, AttributeValue>
-        {
-            ["UserId"] = new() { S = userId },
-            ["Email"] = new() { S = request.Email },
-            ["ShelterName"] = new() { S = request.ShelterName },
-            ["ShelterContactNumber"] = new() { S = request.ShelterContactNumber },
-            ["ShelterAddress"] = new() { S = request.ShelterAddress },
-            ["CreatedAt"] = new() { S = DateTime.UtcNow.ToString("O") },
-            ["UserType"] = new() { S = "shelter_admin" }
-        };
-
-        if (!string.IsNullOrWhiteSpace(request.ShelterWebsiteUrl))
-        {
-            shelterAdminItem["ShelterWebsiteUrl"] = new AttributeValue { S = request.ShelterWebsiteUrl };
-        }
-
-        if (!string.IsNullOrWhiteSpace(request.ShelterAbn))
-        {
-            shelterAdminItem["ShelterAbn"] = new AttributeValue { S = request.ShelterAbn };
-        }
-
-        if (!string.IsNullOrWhiteSpace(request.ShelterDescription))
-        {
-            shelterAdminItem["ShelterDescription"] = new AttributeValue { S = request.ShelterDescription };
-        }
-
-        var shelterTableName = _shelterAdminTableName;
-
-        var putItemRequest = new PutItemRequest
-        {
-            TableName = shelterTableName,
-            Item = shelterAdminItem
-        };
-
-        await _dynamoDbClient.PutItemAsync(putItemRequest);
-
-        _logger.LogInformation("Saved shelter admin profile to DynamoDB for UserId: {UserId}", userId);
     }
 }
 
