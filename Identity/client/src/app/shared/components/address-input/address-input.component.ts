@@ -11,6 +11,7 @@ import {
   afterNextRender,
   forwardRef,
   OnDestroy,
+  input,
 } from '@angular/core';
 
 import {
@@ -61,16 +62,16 @@ export class AddressInputComponent implements ControlValueAccessor, OnDestroy {
 
   @ViewChild('addressInput', { static: false }) addressInputRef!: ElementRef;
 
-  @Input() label = 'Address';
-  @Input() placeholder = 'Enter your full address';
-  @Input() required = false;
-  @Input() readonly = false;
-  @Input() id = 'address';
-  @Input() showHelperText = true;
-  @Input() errorMessages: Record<string, string> = {
+  readonly label = input('Address');
+  readonly placeholder = input('Enter your full address');
+  readonly required = input(false);
+  readonly readonly = input(false);
+  readonly id = input('address');
+  readonly showHelperText = input(true);
+  readonly errorMessages = input<Record<string, string>>({
     required: 'Address is required',
     invalidAddress: 'Please select a valid address from the suggestions',
-  };
+  });
 
   private _disabled = false;
   @Input()
@@ -193,7 +194,7 @@ export class AddressInputComponent implements ControlValueAccessor, OnDestroy {
         if (!currentValue) {
           this.selectedAddress = null;
           this.addressSelected.emit(null);
-          if (this.required) {
+          if (this.required()) {
             this.setValidationError({ required: true });
           } else {
             this.setValidationError(null);
@@ -330,6 +331,6 @@ export class AddressInputComponent implements ControlValueAccessor, OnDestroy {
   }
 
   getErrorMessage(errorType: string): string {
-    return this.errorMessages[errorType] || '';
+    return this.errorMessages()[errorType] || '';
   }
 }

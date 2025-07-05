@@ -1,45 +1,43 @@
 <div class="address-input-container">
   <div class="form-group">
-    <label [for]="id">
-      {{ label }}
-      @if (required) {
+    <label [for]="id()">
+      {{ label() }}
+      @if (required()) {
         <span class="required-indicator">*</span>
       }
     </label>
 
     <input
-      [id]="id"
+      [id]="id()"
       #addressInput
       type="text"
       [formControl]="addressControl"
-      [placeholder]="placeholder"
+      [placeholder]="placeholder()"
       [class.error]="addressControl.invalid && addressControl.touched"
-      [readonly]="readonly"
+      [readonly]="readonly()"
       autocomplete="off"
-      />
+    />
 
-    @if (showHelperText && !isGoogleMapsLoading) {
+    @if (showHelperText() && !isGoogleMapsLoading) {
       <div class="help-text">
         Start typing your address and select from the suggestions
       </div>
     }
 
-    @if (showHelperText && isGoogleMapsLoading) {
-      <div class="help-text">
-        Loading address suggestions...
-      </div>
+    @if (showHelperText() && isGoogleMapsLoading) {
+      <div class="help-text">Loading address suggestions...</div>
     }
 
     @if (addressControl.invalid && addressControl.touched) {
       <div class="error-message">
-        @if (addressControl.hasError('required')) {
+        @if (addressControl.hasError("required")) {
           <span>
-            {{ getErrorMessage('required') }}
+            {{ getErrorMessage("required") }}
           </span>
         }
-        @if (addressControl.hasError('invalidAddress')) {
+        @if (addressControl.hasError("invalidAddress")) {
           <span>
-            {{ getErrorMessage('invalidAddress') }}
+            {{ getErrorMessage("invalidAddress") }}
           </span>
         }
       </div>

@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { Choice } from './choice/choice';
 
 export const authRoutes: Routes = [
   {
@@ -9,7 +8,7 @@ export const authRoutes: Routes = [
   },
   {
     path: 'choice',
-    component: Choice,
+    loadComponent: () => import('./choice/choice').then((m) => m.Choice),
     title: 'Choose Registration Type',
   },
   {
@@ -20,7 +19,9 @@ export const authRoutes: Routes = [
   {
     path: 'shelter-admin',
     loadChildren: () =>
-      import('./shelter-admin/shelter-admin.routes').then((m) => m.shelterAdminRoutes),
+      import('./shelter-admin/shelter-admin.routes').then(
+        (m) => m.shelterAdminRoutes,
+      ),
   },
   {
     path: 'login',
@@ -31,7 +32,7 @@ export const authRoutes: Routes = [
     path: 'code-verification',
     loadComponent: () =>
       import('./code-verification/code-verification').then(
-        (m) => m.CodeVerification
+        (m) => m.CodeVerification,
       ),
     title: 'Code Verification',
   },
