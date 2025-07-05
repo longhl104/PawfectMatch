@@ -1,16 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  AdopterRegistrationRequest,
-  AdoptersService,
-} from 'shared/services/adopters.service';
-import {
-  Component,
-  NgZone,
-  ViewChild,
-  ElementRef,
-  afterNextRender,
-  inject,
-} from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -23,194 +11,48 @@ import {
 import { Router, RouterModule } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import {
-  GoogleMapsService,
   ToastService,
   ErrorHandlingService,
 } from '@longhl104/pawfect-match-ng';
-import { environment } from 'environments/environment';
-
-declare const google: any;
+import {
+  AddressInputComponent,
+  AddressDetails,
+} from '../../../../shared/components/address-input/address-input.component';
+import {
+  AdopterRegistrationRequest,
+  AdoptersService,
+} from 'shared/services/adopters.service';
 
 @Component({
   selector: 'app-registration',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    AddressInputComponent,
+  ],
   templateUrl: './registration.html',
   styleUrl: './registration.scss',
 })
 export class Registration {
   private formBuilder = inject(FormBuilder);
   private router = inject(Router);
-  private ngZone = inject(NgZone);
-  private googleMapsService = inject(GoogleMapsService);
   private adoptersService = inject(AdoptersService);
   private toastService = inject(ToastService);
   private errorHandlingService = inject(ErrorHandlingService);
 
-  @ViewChild('addressInput', { static: false }) addressInputRef!: ElementRef;
-
   registrationForm: FormGroup;
   showPassword = false;
   isSubmitting = false;
-  isGoogleMapsLoading = true;
-
-  private autocomplete: any;
-  selectedAddress: any = null;
+  selectedAddress: AddressDetails | null = null;
 
   constructor() {
     this.registrationForm = this.createForm();
-
-    afterNextRender(async () => {
-      try {
-        await this.googleMapsService.loadGoogleMaps(
-          environment.googleMapsApiKey,
-        );
-
-        this.isGoogleMapsLoading = false;
-
-        // Enable the address field when Google Maps is loaded
-        this.registrationForm.get('address')?.enable();
-
-        // Wait for view to be ready
-        setTimeout(() => this.initializeAutocomplete(), 100);
-      } catch (error) {
-        console.error('Failed to load Google Maps:', error);
-        this.isGoogleMapsLoading = false;
-
-        // Use the global error handler with context
-        this.errorHandlingService.handleErrorWithComponent(
-          error,
-          this,
-          'loadGoogleMaps',
-        );
-
-        // Still enable the field even if Google Maps fails to load
-        this.registrationForm.get('address')?.enable();
-      }
-    });
   }
 
-  private initializeAutocomplete() {
-    if (!this.addressInputRef?.nativeElement) {
-      setTimeout(() => this.initializeAutocomplete(), 100);
-      return;
-    }
-
-    const options = {
-      componentRestrictions: { country: 'AU' },
-      fields: ['formatted_address', 'address_components', 'geometry'],
-      types: ['geocode'],
-    };
-
-    this.autocomplete = new google.maps.places.Autocomplete(
-      this.addressInputRef.nativeElement,
-      options,
-    );
-
-    this.autocomplete.addListener('place_changed', () => {
-      this.ngZone.run(() => {
-        const place = this.autocomplete.getPlace();
-
-        if (!place.address_components) {
-          this.registrationForm
-            .get('address')
-            ?.setErrors({ invalidAddress: true });
-          this.selectedAddress = null;
-          return;
-        }
-
-        this.selectedAddress = this.extractAddressComponents(place);
-        this.registrationForm.get('address')?.setValue(place.formatted_address);
-        this.registrationForm.get('address')?.setErrors(null);
-      });
-    });
-
-    // Add input event listener to validate manual typing
-    this.addressInputRef.nativeElement.addEventListener(
-      'input',
-      (event: any) => {
-        this.ngZone.run(() => {
-          const currentValue = event.target.value;
-          const addressControl = this.registrationForm.get('address');
-
-          // If user is typing and the current value doesn't match our selected address,
-          // mark as invalid
-          if (
-            currentValue &&
-            (!this.selectedAddress ||
-              this.selectedAddress.formattedAddress !== currentValue)
-          ) {
-            addressControl?.setErrors({ invalidAddress: true });
-          }
-
-          // If field is empty, only show required error
-          if (!currentValue) {
-            this.selectedAddress = null;
-            addressControl?.setErrors({ required: true });
-          }
-        });
-      },
-    );
-
-    // Add blur event to validate when user leaves the field
-    this.addressInputRef.nativeElement.addEventListener('blur', () => {
-      this.ngZone.run(() => {
-        const addressControl = this.registrationForm.get('address');
-        const currentValue = addressControl?.value;
-
-        if (
-          currentValue &&
-          (!this.selectedAddress ||
-            this.selectedAddress.formattedAddress !== currentValue)
-        ) {
-          addressControl?.setErrors({ invalidAddress: true });
-        }
-      });
-    });
-  }
-
-  private extractAddressComponents(place: any) {
-    const components = place.address_components;
-    const result = {
-      streetNumber: '',
-      streetName: '',
-      suburb: '',
-      city: '',
-      state: '',
-      postcode: '',
-      country: '',
-      formattedAddress: place.formatted_address,
-      latitude: place.geometry?.location?.lat(),
-      longitude: place.geometry?.location?.lng(),
-    };
-
-    components.forEach((component: any) => {
-      const types = component.types;
-
-      if (types.includes('street_number')) {
-        result.streetNumber = component.long_name;
-      }
-      if (types.includes('route')) {
-        result.streetName = component.long_name;
-      }
-      if (types.includes('locality')) {
-        result.suburb = component.long_name;
-      }
-      if (types.includes('administrative_area_level_2')) {
-        result.city = component.long_name;
-      }
-      if (types.includes('administrative_area_level_1')) {
-        result.state = component.short_name; // NSW, VIC, etc.
-      }
-      if (types.includes('postal_code')) {
-        result.postcode = component.long_name;
-      }
-      if (types.includes('country')) {
-        result.country = component.short_name;
-      }
-    });
-
-    return result;
+  onAddressSelected(addressDetails: AddressDetails | null): void {
+    this.selectedAddress = addressDetails;
   }
 
   private createForm(): FormGroup {
@@ -228,10 +70,7 @@ export class Registration {
         ],
         confirmPassword: ['', [Validators.required]],
         phoneNumber: ['', [this.australianPhoneValidator]],
-        address: [
-          { value: '', disabled: this.isGoogleMapsLoading },
-          [Validators.required],
-        ], // Initialize with disabled state
+        address: ['', [Validators.required]],
         bio: [''],
         agreeToTerms: [false, [Validators.requiredTrue]],
       },

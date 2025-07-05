@@ -199,21 +199,18 @@
       </div>
 
       <!-- Shelter Address -->
-      <div class="form-group">
-        <label for="shelterAddress">Shelter Address *</label>
-        <input
-          type="text"
-          id="shelterAddress"
-          formControlName="shelterAddress"
-          placeholder="Enter your shelter's full address"
-          [class.error]="isFieldInvalid('shelterAddress')"
-        />
-        <div class="error-message" *ngIf="isFieldInvalid('shelterAddress')">
-          <span *ngIf="registrationForm.get('shelterAddress')?.errors?.['required']">
-            Shelter address is required
-          </span>
-        </div>
-      </div>
+      <app-address-input
+        label="Shelter Address"
+        placeholder="Enter your shelter's full address"
+        [required]="true"
+        id="shelterAddress"
+        formControlName="shelterAddress"
+        (addressSelected)="onAddressSelected($event)"
+        [errorMessages]="{
+          required: 'Shelter address is required',
+          invalidAddress: 'Please select a valid address from the suggestions'
+        }"
+      ></app-address-input>
 
       <!-- Website URL (Optional) -->
       <div class="form-group">

@@ -1,0 +1,36 @@
+<div class="address-input-container">
+  <div class="form-group">
+    <label [for]="id">
+      {{ label }}
+      <span *ngIf="required" class="required-indicator">*</span>
+    </label>
+
+    <input
+      [id]="id"
+      #addressInput
+      type="text"
+      [formControl]="addressControl"
+      [placeholder]="placeholder"
+      [class.error]="addressControl.invalid && addressControl.touched"
+      [readonly]="readonly"
+      autocomplete="off"
+    />
+
+    <div class="help-text" *ngIf="showHelperText && !isGoogleMapsLoading">
+      Start typing your address and select from the suggestions
+    </div>
+
+    <div class="help-text" *ngIf="showHelperText && isGoogleMapsLoading">
+      Loading address suggestions...
+    </div>
+
+    <div class="error-message" *ngIf="addressControl.invalid && addressControl.touched">
+      <span *ngIf="addressControl.hasError('required')">
+        {{ getErrorMessage('required') }}
+      </span>
+      <span *ngIf="addressControl.hasError('invalidAddress')">
+        {{ getErrorMessage('invalidAddress') }}
+      </span>
+    </div>
+  </div>
+</div>

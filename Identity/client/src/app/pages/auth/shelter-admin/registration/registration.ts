@@ -19,11 +19,12 @@ import {
   ShelterAdminService,
   ShelterAdminRegistrationResponse,
 } from '../../../../shared/services/shelter-admin.service';
+import { AddressInputComponent, AddressDetails } from '../../../../shared/components/address-input/address-input.component';
 
 @Component({
   selector: 'app-shelter-admin-registration',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, AddressInputComponent],
   templateUrl: './registration.html',
   styleUrl: './registration.scss',
 })
@@ -38,6 +39,7 @@ export class ShelterAdminRegistration {
   showPassword = false;
   showConfirmPassword = false;
   isSubmitting = false;
+  selectedAddress: AddressDetails | null = null;
 
   constructor() {
     this.registrationForm = this.createForm();
@@ -177,7 +179,13 @@ export class ShelterAdminRegistration {
   }
 
   async onSubmit(): Promise<void> {
-    if (this.registrationForm.valid) {
+    // Add additional validation for address
+    const addressControl = this.registrationForm.get('shelterAddress');
+    if (addressControl?.value && !this.selectedAddress) {
+      addressControl.setErrors({ invalidAddress: true });
+    }
+
+    if (this.registrationForm.valid && this.selectedAddress) {
       this.isSubmitting = true;
 
       const formData = this.registrationForm.value;
@@ -187,6 +195,8 @@ export class ShelterAdminRegistration {
 
       const finalData: ShelterAdminRegistrationRequest = {
         ...registrationData,
+        shelterAddress: this.selectedAddress.formattedAddress,
+        shelterAddressDetails: this.selectedAddress,
       };
 
       try {
@@ -225,5 +235,9 @@ export class ShelterAdminRegistration {
 
   goBack(): void {
     this.router.navigate(['/auth/choice']);
+  }
+
+  onAddressSelected(addressDetails: AddressDetails | null): void {
+    this.selectedAddress = addressDetails;
   }
 }
