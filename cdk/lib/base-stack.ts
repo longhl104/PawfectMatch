@@ -2,7 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import { RemovalPolicy } from 'aws-cdk-lib';
-import { PawfectMatchStackProps, StageType } from './utils';
+import { PawfectMatchBaseStackProps, StageType } from './utils';
 import { Construct } from 'constructs';
 
 export interface DynamoDbTableConfig {
@@ -34,13 +34,15 @@ export class BaseStack extends cdk.Stack {
   protected readonly stage: StageType;
   protected readonly sharedStack: cdk.Stack;
   protected readonly environmentStack: cdk.Stack;
+  protected readonly serviceName: string;
 
-  constructor(scope: Construct, id: string, props: PawfectMatchStackProps) {
+  constructor(scope: Construct, id: string, props: PawfectMatchBaseStackProps) {
     super(scope, id, props);
 
     this.stage = props.stage;
     this.sharedStack = props.sharedStack;
     this.environmentStack = props.environmentStack;
+    this.serviceName = props.serviceName;
   }
 
   static getCapitalizedStage(stage: StageType): string {
@@ -52,25 +54,24 @@ export class BaseStack extends cdk.Stack {
    * @param id The construct ID for the parameter
    * @param stage The deployment stage
    * @param service The service name (e.g., 'Identity', 'Matcher')
-   * @param parameterName The parameter name (e.g., 'UserPoolId', 'ApiKey')
+   * @param parameterPath The parameter name (e.g., 'UserPoolId', 'ApiKey')
    * @param value The parameter value
    * @param description Optional description for the parameter
    * @returns The created SSM StringParameter
    */
   protected createSsmParameter(
-    id: string,
-    stage: StageType,
-    service: string,
-    parameterName: string,
+    parameterPath: string,
     value: string,
     description?: string
   ): ssm.StringParameter {
+    const id = `${this.stackName}-${parameterPath.replace(/\//g, '-')}`;
     return new ssm.StringParameter(this, id, {
       parameterName: `/PawfectMatch/${BaseStack.getCapitalizedStage(
-        stage
-      )}/${service}/${parameterName}`,
+        this.stage
+      )}/${this.serviceName}/${parameterPath}`,
       stringValue: value,
-      description: description || `${parameterName} for ${stage} environment`,
+      description:
+        description || `${parameterPath} for ${this.stage} environment`,
     });
   }
 

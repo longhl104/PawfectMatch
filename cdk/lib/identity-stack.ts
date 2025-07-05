@@ -1,11 +1,10 @@
 import * as cognito from 'aws-cdk-lib/aws-cognito';
-import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import { Construct } from 'constructs';
-import { PawfectMatchStackProps } from './utils';
+import { PawfectMatchBaseStackProps } from './utils';
 import { BaseStack } from './base-stack';
-import { Duration, Fn, RemovalPolicy } from 'aws-cdk-lib';
+import { Duration, RemovalPolicy } from 'aws-cdk-lib';
 
-export interface IdentityStackProps extends PawfectMatchStackProps {}
+export interface IdentityStackProps extends PawfectMatchBaseStackProps {}
 
 export class IdentityStack extends BaseStack {
   public readonly userPool: cognito.UserPool;
@@ -14,11 +13,11 @@ export class IdentityStack extends BaseStack {
   constructor(scope: Construct, id: string, props: IdentityStackProps) {
     super(scope, id, props);
 
-    const { stage, sharedStack, environmentStack } = props;
+    const { stage } = props;
 
     // Create Cognito User Pool
-    this.userPool = new cognito.UserPool(this, 'PawfectMatchUserPool', {
-      userPoolName: `pawfect-match-user-pool-${stage}`,
+    this.userPool = new cognito.UserPool(this, `${this.stackName}-user-pool`, {
+      userPoolName: `${this.stackName}-user-pool`,
 
       // Sign-in configuration
       signInAliases: {
@@ -94,10 +93,10 @@ export class IdentityStack extends BaseStack {
     // Create User Pool Client
     this.userPoolClient = new cognito.UserPoolClient(
       this,
-      'PawfectMatchUserPoolClient',
+      `${this.stackName}-user-pool-client`,
       {
         userPool: this.userPool,
-        userPoolClientName: `pawfect-match-client-${stage}`,
+        userPoolClientName: `${this.stackName}-user-pool-client`,
 
         // Auth flows
         authFlows: {
@@ -167,60 +166,15 @@ export class IdentityStack extends BaseStack {
       }
     );
 
-    // Create User Pool Domain (optional, for hosted UI)
-    const userPoolDomain = new cognito.UserPoolDomain(
-      this,
-      'PawfectMatchUserPoolDomain',
-      {
-        userPool: this.userPool,
-        cognitoDomain: {
-          domainPrefix: `pawfect-match-auth-${stage}`,
-        },
-      }
-    );
-
-    // Export important values
-    this.exportValue(this.userPool.userPoolId, {
-      name: `${stage}UserPoolId`,
-    });
-
-    this.exportValue(this.userPoolClient.userPoolClientId, {
-      name: `${stage}UserPoolClientId`,
-    });
-
-    this.exportValue(userPoolDomain.baseUrl(), {
-      name: `${stage}UserPoolDomain`,
-    });
-
-    this.exportValue(this.userPool.userPoolArn, {
-      name: `${stage}UserPoolArn`,
-    });
-
-    // Use API Gateway from environment stack
-    const api = apigateway.RestApi.fromRestApiAttributes(
-      this,
-      'PawfectMatchApi',
-      {
-        restApiId: Fn.importValue(`${stage}ApiGatewayId`),
-        rootResourceId: Fn.importValue(`${stage}ApiGatewayRootResourceId`),
-      }
-    );
-
     // Store User Pool ID in Parameter Store
     this.createSsmParameter(
-      'UserPoolIdParameter',
-      stage,
-      'Identity',
-      'AWS/UserPoolId',
+      'UserPoolId',
       this.userPool.userPoolId,
       `User Pool ID for ${stage} environment`
     );
 
     this.createSsmParameter(
-      'UserPoolClientIdParameter',
-      stage,
-      'Identity',
-      'AWS/UserPoolClientId',
+      'UserPoolClientId',
       this.userPoolClient.userPoolClientId,
       `User Pool Client ID for ${stage} environment`
     );

@@ -1,9 +1,9 @@
 import { Construct } from 'constructs';
 import { BaseStack } from './base-stack';
-import { PawfectMatchStackProps } from './utils';
+import { PawfectMatchBaseStackProps } from './utils';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 
-export interface ShelterHubStackProps extends PawfectMatchStackProps {}
+export interface ShelterHubStackProps extends PawfectMatchBaseStackProps {}
 
 export class ShelterHubStack extends BaseStack {
   public readonly shelterAdminsTable: dynamodb.Table;
