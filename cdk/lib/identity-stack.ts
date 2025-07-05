@@ -1,5 +1,4 @@
 import * as cognito from 'aws-cdk-lib/aws-cognito';
-import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import { Construct } from 'constructs';
 import { PawfectMatchStackProps } from './utils';

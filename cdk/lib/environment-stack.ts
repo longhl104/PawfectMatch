@@ -16,7 +16,7 @@ export class EnvironmentStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: EnvironmentStackProps) {
     super(scope, id, props);
 
-    const { stage, sharedStack } = props;
+    const { stage } = props;
 
     // Create VPC
     this.vpc = new ec2.Vpc(this, 'PawfectMatchVpc', {
@@ -39,16 +39,6 @@ export class EnvironmentStack extends cdk.Stack {
           subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
         },
       ],
-    });
-
-    new cdk.CfnOutput(this, 'developmentApiGatewayId', {
-      value: 'inb3ebm6ie',
-      exportName: 'developmentApiGatewayId',
-    });
-
-    new cdk.CfnOutput(this, 'developmentApiGatewayRootResourceId', {
-      value: '0h9s1i54jl',
-      exportName: 'developmentApiGatewayRootResourceId',
     });
   }
 }

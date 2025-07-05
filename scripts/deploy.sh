@@ -173,7 +173,7 @@ deploy_cdk() {
 
 	# Deploy all stacks
 	print_info "Deploying all CDK stacks..."
-	if cdk deploy --all --require-approval never --profile $AWS_PROFILE; then
+	if cdk deploy --all --require-approval never --profile $AWS_PROFILE --no-notices; then
 		print_success "CDK deployment completed successfully"
 		cd "$ROOT_DIR/scripts"
 		return 0
@@ -262,9 +262,9 @@ main() {
 	# Build and deploy
 	build_project
 
-	if [ "$skip_lambda_build" = false ]; then
-		build_lambda_functions
-	fi
+	# if [ "$skip_lambda_build" = false ]; then
+	# 	build_lambda_functions
+	# fi
 
 	if deploy_cdk; then
 		print_success "CDK deployment completed successfully!"
