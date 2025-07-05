@@ -14,10 +14,7 @@ import {
   ToastService,
   ErrorHandlingService,
 } from '@longhl104/pawfect-match-ng';
-import {
-  AddressInputComponent,
-  AddressDetails,
-} from '../../../../shared/components/address-input/address-input.component';
+import { AddressInputComponent, AddressDetails } from 'shared/components';
 import {
   AdopterRegistrationRequest,
   AdoptersService,
