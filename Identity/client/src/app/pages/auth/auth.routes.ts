@@ -28,12 +28,4 @@ export const authRoutes: Routes = [
     loadComponent: () => import('./login/login').then((m) => m.Login),
     title: 'Sign In',
   },
-  {
-    path: 'code-verification',
-    loadComponent: () =>
-      import('./code-verification/code-verification').then(
-        (m) => m.CodeVerification,
-      ),
-    title: 'Code Verification',
-  },
 ];
