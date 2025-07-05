@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Component,
-  Input,
   Output,
   EventEmitter,
   ViewChild,
@@ -74,14 +73,6 @@ export class AddressInputComponent implements ControlValueAccessor, OnDestroy {
   });
 
   private _disabled = false;
-  @Input()
-  set disabled(value: boolean) {
-    this._disabled = value;
-    this.updateDisabledState();
-  }
-  get disabled(): boolean {
-    return this._disabled;
-  }
 
   @Output() addressSelected = new EventEmitter<AddressDetails | null>();
   @Output() validationChange = new EventEmitter<Record<string, any> | null>();
