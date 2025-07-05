@@ -11,7 +11,7 @@ import {
   signal,
   computed,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { AdoptersService } from 'shared/services/adopters.service';
@@ -29,7 +29,7 @@ import {
 @Component({
   selector: 'app-code-verification',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [FormsModule, RouterModule],
   templateUrl: './code-verification.html',
   styleUrl: './code-verification.scss',
 })

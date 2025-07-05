@@ -2,7 +2,9 @@
   <div class="form-group">
     <label [for]="id">
       {{ label }}
-      <span *ngIf="required" class="required-indicator">*</span>
+      @if (required) {
+        <span class="required-indicator">*</span>
+      }
     </label>
 
     <input
@@ -14,23 +16,33 @@
       [class.error]="addressControl.invalid && addressControl.touched"
       [readonly]="readonly"
       autocomplete="off"
-    />
+      />
 
-    <div class="help-text" *ngIf="showHelperText && !isGoogleMapsLoading">
-      Start typing your address and select from the suggestions
-    </div>
+    @if (showHelperText && !isGoogleMapsLoading) {
+      <div class="help-text">
+        Start typing your address and select from the suggestions
+      </div>
+    }
 
-    <div class="help-text" *ngIf="showHelperText && isGoogleMapsLoading">
-      Loading address suggestions...
-    </div>
+    @if (showHelperText && isGoogleMapsLoading) {
+      <div class="help-text">
+        Loading address suggestions...
+      </div>
+    }
 
-    <div class="error-message" *ngIf="addressControl.invalid && addressControl.touched">
-      <span *ngIf="addressControl.hasError('required')">
-        {{ getErrorMessage('required') }}
-      </span>
-      <span *ngIf="addressControl.hasError('invalidAddress')">
-        {{ getErrorMessage('invalidAddress') }}
-      </span>
-    </div>
+    @if (addressControl.invalid && addressControl.touched) {
+      <div class="error-message">
+        @if (addressControl.hasError('required')) {
+          <span>
+            {{ getErrorMessage('required') }}
+          </span>
+        }
+        @if (addressControl.hasError('invalidAddress')) {
+          <span>
+            {{ getErrorMessage('invalidAddress') }}
+          </span>
+        }
+      </div>
+    }
   </div>
 </div>

@@ -12,7 +12,7 @@ import {
   forwardRef,
   OnDestroy,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import {
   ControlValueAccessor,
   NG_VALUE_ACCESSOR,
@@ -43,7 +43,7 @@ export interface AddressDetails {
 @Component({
   selector: 'app-address-input',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './address-input.component.html',
   styleUrl: './address-input.component.scss',
   providers: [

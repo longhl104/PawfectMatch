@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import {
   FormBuilder,
   FormGroup,
@@ -24,11 +24,10 @@ import {
   selector: 'app-registration',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     RouterModule,
-    AddressInputComponent,
-  ],
+    AddressInputComponent
+],
   templateUrl: './registration.html',
   styleUrl: './registration.scss',
 })

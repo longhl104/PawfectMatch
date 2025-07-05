@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import {
   FormBuilder,
   FormGroup,
@@ -24,7 +24,7 @@ import { AddressInputComponent, AddressDetails } from '../../../../shared/compon
 @Component({
   selector: 'app-shelter-admin-registration',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, AddressInputComponent],
+  imports: [ReactiveFormsModule, RouterModule, AddressInputComponent],
   templateUrl: './registration.html',
   styleUrl: './registration.scss',
 })
