@@ -1,0 +1,54 @@
+<div class="choice-container">
+  <div class="choice-header">
+    <h1>Join PawfectMatch</h1>
+    <p>Choose how you'd like to get started</p>
+  </div>
+
+  <div class="choice-options">
+    <div class="choice-card">
+      <div class="choice-icon">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          height="48"
+          viewBox="0 -960 960 960"
+          width="48"
+          fill="currentColor"
+        >
+          <path
+            d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Z"
+          />
+        </svg>
+      </div>
+      <h2>I'm Looking to Adopt</h2>
+      <p>Find your perfect companion and give a pet a loving home</p>
+      <button class="choice-btn adopter-btn" (click)="selectAdopter()">
+        Register as Adopter
+      </button>
+    </div>
+
+    <div class="choice-card">
+      <div class="choice-icon">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          height="48"
+          viewBox="0 -960 960 960"
+          width="48"
+          fill="currentColor"
+        >
+          <path
+            d="M120-120v-80l80-80v160h-80Zm160 0v-200l80-80v280h-80Zm160 0v-280l80 81v199h-80Zm160 0v-199l80-80v279h-80Zm160 0v-320l80-80v400h-80ZM120-327v-113l280-280 160 160 280-280v113L560-447 400-607 120-327Z"
+          />
+        </svg>
+      </div>
+      <h2>I'm a Shelter Admin</h2>
+      <p>Manage your shelter and help pets find their forever homes</p>
+      <button class="choice-btn shelter-btn" (click)="selectShelter()">
+        Register as Shelter Admin
+      </button>
+    </div>
+  </div>
+
+  <div class="choice-footer">
+    <p>Already have an account? <a routerLink="/auth/login">Sign in here</a></p>
+  </div>
+</div>

@@ -180,7 +180,7 @@ public partial class RegistrationController : ControllerBase
                 {
                     Message = "Registration successful",
                     UserId = userId,
-                    RedirectUrl = "https://localhost:4201",
+                    RedirectUrl = "https://localhost:4202",
                     Success = true,
                     Data = tokenData
                 },
