@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Amazon.CognitoIdentityProvider;
 using Amazon.CognitoIdentityProvider.Model;
 using Longhl104.Identity.Services;
 using Longhl104.Identity.Models;
@@ -10,11 +9,9 @@ namespace Longhl104.Identity.Controllers;
 [Route("api/[controller]")]
 public partial class RegistrationController : ControllerBase
 {
-    private readonly AmazonCognitoIdentityProviderClient _cognitoClient;
     private readonly ILogger<RegistrationController> _logger;
-    private readonly IConfiguration _configuration;
     private readonly IAuthenticationService _authenticationService; // Use shared authentication service
-    private readonly string _userPoolId;
+    private readonly ICognitoService _cognitoService;
 
 
     [System.Text.RegularExpressions.GeneratedRegex(@"^\d{11}$")]
@@ -23,18 +20,14 @@ public partial class RegistrationController : ControllerBase
     private static partial System.Text.RegularExpressions.Regex AustralianPhoneNumberRegex();
 
     public RegistrationController(
-        AmazonCognitoIdentityProviderClient cognitoClient,
         ILogger<RegistrationController> logger,
-        IConfiguration configuration,
-        IAuthenticationService authenticationService, // Inject shared authentication service
-        IHostEnvironment hostEnvironment
+        IAuthenticationService authenticationService,
+        ICognitoService cognitoService
         )
     {
-        _cognitoClient = cognitoClient;
         _logger = logger;
-        _configuration = configuration;
         _authenticationService = authenticationService;
-        _userPoolId = _configuration["AWS:UserPoolId"] ?? throw new InvalidOperationException("AWS:UserPoolId configuration is required");
+        _cognitoService = cognitoService;
     }
 
     /// <summary>
@@ -60,7 +53,7 @@ public partial class RegistrationController : ControllerBase
             }
 
             // Check if email already exists
-            var existingUser = await CheckIfEmailExists(registrationRequest.Email);
+            var existingUser = await _cognitoService.CheckIfEmailExistsAsync(registrationRequest.Email);
             if (existingUser)
             {
                 return Conflict(new AdopterRegistrationResponse
@@ -72,7 +65,7 @@ public partial class RegistrationController : ControllerBase
             }
 
             // Create user in Cognito
-            var userId = await CreateCognitoUser(registrationRequest);
+            var userId = await _cognitoService.CreateCognitoAdopterUserAsync(registrationRequest);
 
             // Save adopter profile to DynamoDB
             // await SaveAdopterProfile(registrationRequest, userId);
@@ -158,7 +151,7 @@ public partial class RegistrationController : ControllerBase
             }
 
             // Check if email already exists
-            var existingUser = await CheckIfEmailExists(registrationRequest.Email);
+            var existingUser = await _cognitoService.CheckIfEmailExistsAsync(registrationRequest.Email);
             if (existingUser)
             {
                 return Conflict(new ShelterAdminRegistrationResponse
@@ -170,7 +163,7 @@ public partial class RegistrationController : ControllerBase
             }
 
             // Create user in Cognito
-            var userId = await CreateCognitoShelterAdminUser(registrationRequest);
+            var userId = await _cognitoService.CreateCognitoShelterAdminUserAsync(registrationRequest);
 
             // Save shelter admin profile to DynamoDB
             // await SaveShelterAdminProfile(registrationRequest, userId);
@@ -317,149 +310,4 @@ public partial class RegistrationController : ControllerBase
             return false;
         }
     }
-
-    private async Task<bool> CheckIfEmailExists(string email)
-    {
-        try
-        {
-            var request = new AdminGetUserRequest
-            {
-                UserPoolId = _userPoolId,
-                Username = email
-            };
-
-            await _cognitoClient.AdminGetUserAsync(request);
-            return true; // User exists
-        }
-        catch (UserNotFoundException)
-        {
-            return false; // User doesn't exist
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error checking if email exists: {Email}", email);
-            throw;
-        }
-    }
-
-    private async Task<string> CreateCognitoUser(AdopterRegistrationRequest request)
-    {
-        var userAttributes = new List<AttributeType>
-        {
-            new() { Name = "email", Value = request.Email },
-            new() { Name = "custom:user_type", Value = "adopter" },
-            new() { Name = "email_verified", Value = "true" } // Assuming email is verified at registration
-        };
-
-        if (!string.IsNullOrWhiteSpace(request.PhoneNumber))
-        {
-            userAttributes.Add(new AttributeType { Name = "phone_number_verified", Value = "true" });
-            var australianPhoneNumber = request.PhoneNumber.StartsWith("+61") ? request.PhoneNumber : $"+61{request.PhoneNumber.TrimStart('0')}";
-            userAttributes.Add(new AttributeType { Name = "phone_number", Value = australianPhoneNumber });
-        }
-
-        var adminCreateUserRequest = new AdminCreateUserRequest
-        {
-            UserPoolId = _userPoolId,
-            Username = request.Email,
-            UserAttributes = userAttributes,
-            TemporaryPassword = request.Password,
-            MessageAction = MessageActionType.SUPPRESS, // Don't send welcome email
-            DesiredDeliveryMediums = ["EMAIL"]
-        };
-
-        var response = await _cognitoClient.AdminCreateUserAsync(adminCreateUserRequest);
-
-        // Set permanent password
-        var setPasswordRequest = new AdminSetUserPasswordRequest
-        {
-            UserPoolId = _userPoolId,
-            Username = request.Email,
-            Password = request.Password,
-            Permanent = true
-        };
-
-        await _cognitoClient.AdminSetUserPasswordAsync(setPasswordRequest);
-
-        _logger.LogInformation("Created Cognito user for email: {Email}", request.Email);
-
-        return response.User.Username;
-    }
-
-    private async Task<string> CreateCognitoShelterAdminUser(ShelterAdminRegistrationRequest request)
-    {
-        var userAttributes = new List<AttributeType>
-        {
-            new() { Name = "email", Value = request.Email },
-            new() { Name = "custom:user_type", Value = "shelter_admin" },
-            new() { Name = "email_verified", Value = "true" } // Assuming email is verified at registration
-        };
-
-        var adminCreateUserRequest = new AdminCreateUserRequest
-        {
-            UserPoolId = _userPoolId,
-            Username = request.Email,
-            UserAttributes = userAttributes,
-            TemporaryPassword = request.Password,
-            MessageAction = MessageActionType.SUPPRESS, // Don't send welcome email
-            DesiredDeliveryMediums = ["EMAIL"]
-        };
-
-        var response = await _cognitoClient.AdminCreateUserAsync(adminCreateUserRequest);
-
-        // Set permanent password
-        var setPasswordRequest = new AdminSetUserPasswordRequest
-        {
-            UserPoolId = _userPoolId,
-            Username = request.Email,
-            Password = request.Password,
-            Permanent = true
-        };
-
-        await _cognitoClient.AdminSetUserPasswordAsync(setPasswordRequest);
-
-        _logger.LogInformation("Created Cognito shelter admin user for email: {Email}", request.Email);
-
-        return response.User.Username;
-    }
-}
-
-public class AdopterRegistrationRequest
-{
-    public string FullName { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
-    public string Password { get; set; } = string.Empty;
-    public string? PhoneNumber { get; set; }
-    public string Address { get; set; } = string.Empty;
-    public string? Bio { get; set; }
-}
-
-public class AdopterRegistrationResponse
-{
-    public bool Success { get; set; }
-    public string Message { get; set; } = string.Empty;
-    public string UserId { get; set; } = string.Empty;
-    public string? RedirectUrl { get; set; }
-    public TokenData? Data { get; set; }
-}
-
-public class ShelterAdminRegistrationRequest
-{
-    public string Email { get; set; } = string.Empty;
-    public string Password { get; set; } = string.Empty;
-    public string ShelterName { get; set; } = string.Empty;
-    public string ShelterContactNumber { get; set; } = string.Empty;
-    public string ShelterAddress { get; set; } = string.Empty;
-    public string? ShelterWebsiteUrl { get; set; }
-    public string? ShelterAbn { get; set; }
-    public string? ShelterDescription { get; set; }
-}
-
-public class ShelterAdminRegistrationResponse
-{
-    public bool Success { get; set; }
-    public string Message { get; set; } = string.Empty;
-    public string UserId { get; set; } = string.Empty;
-    public string? RedirectUrl { get; set; }
-    public TokenData? Data { get; set; }
 }

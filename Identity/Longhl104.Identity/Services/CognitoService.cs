@@ -1,6 +1,7 @@
 using Amazon.CognitoIdentityProvider;
 using Amazon.CognitoIdentityProvider.Model;
 using Longhl104.PawfectMatch.Models.Identity;
+using Longhl104.Identity.Models;
 
 namespace Longhl104.Identity.Services;
 
@@ -12,6 +13,9 @@ public interface ICognitoService
     Task<(bool Success, string Message, UserProfile? User)> AuthenticateUserAsync(string email, string password);
     Task<UserProfile?> GetUserProfileAsync(string email);
     Task<(bool Success, string Message, CognitoTokens? Tokens, UserProfile? User)> AuthenticateWithTokensAsync(string email, string password);
+    Task<bool> CheckIfEmailExistsAsync(string email);
+    Task<string> CreateCognitoAdopterUserAsync(AdopterRegistrationRequest request);
+    Task<string> CreateCognitoShelterAdminUserAsync(ShelterAdminRegistrationRequest request);
 }
 
 /// <summary>
@@ -38,8 +42,8 @@ public class CognitoService : ICognitoService
     public CognitoService(IConfiguration configuration)
     {
         _cognitoClient = new AmazonCognitoIdentityProviderClient();
-        _userPoolId = configuration["AWS:UserPoolId"] ?? throw new InvalidOperationException("AWS:UserPoolId configuration is required");
-        _clientId = configuration["AWS:UserPoolClientId"] ?? throw new InvalidOperationException("AWS:UserPoolClientId configuration is required");
+        _userPoolId = configuration["UserPoolId"] ?? throw new InvalidOperationException("UserPoolId configuration is required");
+        _clientId = configuration["UserPoolClientId"] ?? throw new InvalidOperationException("UserPoolClientId configuration is required");
     }
 
     public CognitoService(IAmazonCognitoIdentityProvider cognitoClient, string userPoolId, string clientId)
@@ -247,5 +251,125 @@ public class CognitoService : ICognitoService
             Console.WriteLine($"Error getting user profile: {ex.Message}");
             return null;
         }
+    }
+
+    /// <summary>
+    /// Checks if an email already exists in Cognito
+    /// </summary>
+    /// <param name="email">Email to check</param>
+    /// <returns>True if email exists, false otherwise</returns>
+    public async Task<bool> CheckIfEmailExistsAsync(string email)
+    {
+        try
+        {
+            var request = new AdminGetUserRequest
+            {
+                UserPoolId = _userPoolId,
+                Username = email
+            };
+
+            await _cognitoClient.AdminGetUserAsync(request);
+            return true; // User exists
+        }
+        catch (UserNotFoundException)
+        {
+            return false; // User doesn't exist
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error checking if email exists: {ex.Message}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Creates a new adopter user in Cognito
+    /// </summary>
+    /// <param name="request">Adopter registration details</param>
+    /// <returns>User ID of the created user</returns>
+    public async Task<string> CreateCognitoAdopterUserAsync(AdopterRegistrationRequest request)
+    {
+        var userAttributes = new List<AttributeType>
+        {
+            new() { Name = "email", Value = request.Email },
+            new() { Name = "custom:user_type", Value = "adopter" },
+            new() { Name = "email_verified", Value = "true" } // Assuming email is verified at registration
+        };
+
+        if (!string.IsNullOrWhiteSpace(request.PhoneNumber))
+        {
+            userAttributes.Add(new AttributeType { Name = "phone_number_verified", Value = "true" });
+            var australianPhoneNumber = request.PhoneNumber.StartsWith("+61") ? request.PhoneNumber : $"+61{request.PhoneNumber.TrimStart('0')}";
+            userAttributes.Add(new AttributeType { Name = "phone_number", Value = australianPhoneNumber });
+        }
+
+        var adminCreateUserRequest = new AdminCreateUserRequest
+        {
+            UserPoolId = _userPoolId,
+            Username = request.Email,
+            UserAttributes = userAttributes,
+            TemporaryPassword = request.Password,
+            MessageAction = MessageActionType.SUPPRESS, // Don't send welcome email
+            DesiredDeliveryMediums = ["EMAIL"]
+        };
+
+        var response = await _cognitoClient.AdminCreateUserAsync(adminCreateUserRequest);
+
+        // Set permanent password
+        var setPasswordRequest = new AdminSetUserPasswordRequest
+        {
+            UserPoolId = _userPoolId,
+            Username = request.Email,
+            Password = request.Password,
+            Permanent = true
+        };
+
+        await _cognitoClient.AdminSetUserPasswordAsync(setPasswordRequest);
+
+        Console.WriteLine($"Created Cognito user for email: {request.Email}");
+
+        return response.User.Username;
+    }
+
+    /// <summary>
+    /// Creates a new shelter admin user in Cognito
+    /// </summary>
+    /// <param name="request">Shelter admin registration details</param>
+    /// <returns>User ID of the created user</returns>
+    public async Task<string> CreateCognitoShelterAdminUserAsync(ShelterAdminRegistrationRequest request)
+    {
+        var userAttributes = new List<AttributeType>
+        {
+            new() { Name = "email", Value = request.Email },
+            new() { Name = "custom:user_type", Value = "shelter_admin" },
+            new() { Name = "email_verified", Value = "true" } // Assuming email is verified at registration
+        };
+
+        var adminCreateUserRequest = new AdminCreateUserRequest
+        {
+            UserPoolId = _userPoolId,
+            Username = request.Email,
+            UserAttributes = userAttributes,
+            TemporaryPassword = request.Password,
+            MessageAction = MessageActionType.SUPPRESS, // Don't send welcome email
+            DesiredDeliveryMediums = ["EMAIL"]
+        };
+
+        var response = await _cognitoClient.AdminCreateUserAsync(adminCreateUserRequest);
+
+        // Set permanent password
+        var setPasswordRequest = new AdminSetUserPasswordRequest
+        {
+            UserPoolId = _userPoolId,
+            Username = request.Email,
+            Password = request.Password,
+            Permanent = true
+        };
+
+        await _cognitoClient.AdminSetUserPasswordAsync(setPasswordRequest);
+
+        Console.WriteLine($"Created Cognito shelter admin user for email: {request.Email}");
+
+        return response.User.Username;
     }
 }

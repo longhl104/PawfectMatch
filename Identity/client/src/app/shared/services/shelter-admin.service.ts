@@ -28,7 +28,7 @@ export interface ShelterAdminRegistrationResponse {
 export class ShelterAdminService {
   private http = inject(HttpClient);
 
-  private readonly apiUrl = `${environment.identityServiceUrl}/api/registration`;
+  private readonly apiUrl = `${environment.apiUrl}/registration`;
 
   /**
    * Register a new shelter admin
