@@ -48,7 +48,9 @@ public class AuthenticationMiddleware(
         if (context.Request.Path.StartsWithSegments("/api") &&
             !ShouldSkipAuthCheck(context.Request.Path) &&
             authResult.User != null &&
-            !string.Equals(authResult.User.UserType, "Adopter", StringComparison.OrdinalIgnoreCase))
+            !string.Equals(authResult.User.UserType, "Adopter", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(authResult.User.UserType, "Shelter_Admin", StringComparison.OrdinalIgnoreCase)
+            )
         {
             _logger.LogWarning("User {Email} with role {UserType} attempted to access API endpoint {Path}",
                 authResult.User.Email, authResult.User.UserType, context.Request.Path);
@@ -56,7 +58,7 @@ public class AuthenticationMiddleware(
             var forbiddenResult = new AuthCheckResult
             {
                 IsAuthenticated = true,
-                Message = "Access denied. Only users with Adopter role can access this service.",
+                Message = "Access denied. You do not have permission to access this resource.",
                 User = authResult.User
             };
 

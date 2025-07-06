@@ -1,4 +1,3 @@
-
 using Longhl104.PawfectMatch.Middleware;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -14,24 +13,22 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 // Add authentication and authorization services
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultForbidScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-});
+// Since AuthenticationMiddleware handles the actual authentication and sets ClaimsPrincipal,
+// we just need to configure a scheme that matches what the middleware uses
+builder.Services.AddAuthentication();
 
 builder.Services.AddAuthorizationBuilder()
     .SetFallbackPolicy(new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
-        .RequireClaim("UserType", "Adopter")
+        .RequireClaim("UserType", "shelter_admin")
         .Build())
     .SetDefaultPolicy(new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
-        .RequireClaim("UserType", "Adopter")
+        .RequireClaim("UserType", "shelter_admin")
         .Build())
-    .AddPolicy("AdopterOnly", policy =>
+    .AddPolicy("ShelterAdminOnly", policy =>
         policy.RequireAuthenticatedUser()
-            .RequireClaim("UserType", "Adopter"));
+            .RequireClaim("UserType", "shelter_admin"));
 
 // Configure CORS
 builder.Services.AddCors(options =>

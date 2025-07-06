@@ -21,7 +21,8 @@
       "description": "Select the project to build",
       "options": [
         "Identity",
-        "Matcher"
+        "Matcher",
+        "ShelterHub"
       ]
     }
   ]
