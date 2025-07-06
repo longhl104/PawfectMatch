@@ -85,7 +85,7 @@ export class GlobalErrorHandler implements ErrorHandler {
     } else if (this.isChunkLoadError(originalMessage)) {
       message = 'Application update detected. Please refresh the page.';
       type = 'ChunkLoadError';
-    } else if (originalMessage.length > 0 && originalMessage.length < 100) {
+    } else if (originalMessage.length > 0 && originalMessage.length < 150) {
       // Use original message if it's reasonable length and descriptive
       message = originalMessage;
     }

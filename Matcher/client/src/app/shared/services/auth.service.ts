@@ -18,6 +18,7 @@ export interface AuthStatusResponse {
   requiresRefresh?: boolean;
   user?: UserProfile;
   tokenExpiresAt?: string;
+  throwError?: boolean; // Added for error handling
 }
 
 @Injectable({
@@ -59,11 +60,20 @@ export class AuthService {
         }),
         catchError((error) => {
           console.error('Auth status check failed:', error);
+
+          const message =
+            error.status === 403
+              ? 'Access denied. You do not have permission to access this service. Please log in with an adopter account.'
+              : 'Authentication check failed';
+
+          // For other errors (401, network issues, etc.), handle gracefully
           const errorResponse: AuthStatusResponse = {
             isAuthenticated: false,
-            message: 'Authentication check failed',
+            message,
             redirectUrl: `${this.identityUrl}/auth/login`,
+            throwError: error.status === 403,
           };
+
           this.authStatusSubject.next(errorResponse);
           this.currentUserSubject.next(null);
           return of(errorResponse);

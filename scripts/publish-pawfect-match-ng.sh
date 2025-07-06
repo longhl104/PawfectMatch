@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 # Configuration
 LIBRARY_NAME="pawfect-match-ng"
 PACKAGE_NAME="@longhl104/pawfect-match-ng"
-WORKSPACE_DIR="../Shared/pawfect-match-angular"
+WORKSPACE_DIR="/Volumes/T7Shield/Projects/PawfectMatch/Shared/pawfect-match-angular"
 DIST_DIR="$WORKSPACE_DIR/dist/longhl104/pawfect-match-ng"
 
 # Function to print colored output

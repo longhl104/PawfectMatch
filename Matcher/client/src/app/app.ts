@@ -25,15 +25,10 @@ export class App implements OnInit {
     // This ensures auth status is checked before any components load
     console.log('PawfectMatch Matcher app initialized');
 
-    // this.authService.authStatus$.subscribe((status) => {
-    //   if (status.isAuthenticated) {
-    //     console.log('User is authenticated:', status.user);
-    //   } else {
-    //     console.log('User is not authenticated');
-    //     throw new Error(
-    //       'User is neither authenticated nor authorized to access the app. Please log in.',
-    //     );
-    //   }
-    // });
+    this.authService.authStatus$.subscribe((status) => {
+      if (status.throwError) {
+        throw new Error(status.message);
+      }
+    });
   }
 }
