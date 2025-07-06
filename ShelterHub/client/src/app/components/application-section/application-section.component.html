@@ -1,0 +1,62 @@
+<div class="applications-container">
+  <div class="applications-list" *ngIf="applications.length > 0">
+    <div 
+      class="application-item"
+      *ngFor="let application of applications; trackBy: trackByApplicationId">
+      
+      <div class="application-header">
+        <div class="applicant-info">
+          <h4 class="applicant-name">{{application.applicantName}}</h4>
+          <p class="applicant-email">{{application.applicantEmail}}</p>
+        </div>
+        <div class="status-badge" [style.background-color]="getStatusColor(application.status)">
+          <span class="status-icon">{{getStatusIcon(application.status)}}</span>
+          <span class="status-text">{{application.status | titlecase}}</span>
+        </div>
+      </div>
+
+      <div class="application-details">
+        <div class="detail-row">
+          <span class="label">Pet:</span>
+          <span class="value pet-name">{{application.petName}}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Submitted:</span>
+          <span class="value">{{formatDate(application.submittedDate)}}</span>
+        </div>
+      </div>
+
+      <div class="application-notes" *ngIf="application.notes">
+        <p class="notes-label">Notes:</p>
+        <p class="notes-text">{{application.notes}}</p>
+      </div>
+
+      <div class="application-actions">
+        <select 
+          class="status-select"
+          [value]="application.status"
+          (change)="onStatusSelectChange($event, application.id)">
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+        </select>
+        
+        <button class="btn btn-outline">
+          <span class="icon">👁️</span>
+          View Full Application
+        </button>
+        
+        <button class="btn btn-primary" *ngIf="application.status === 'pending'">
+          <span class="icon">💬</span>
+          Contact Applicant
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-applications" *ngIf="applications.length === 0">
+    <div class="empty-icon">📋</div>
+    <h3>No recent applications</h3>
+    <p>New adoption applications will appear here</p>
+  </div>
+</div>

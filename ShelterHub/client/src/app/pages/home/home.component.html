@@ -1,0 +1,75 @@
+<div class="home-container">
+  <header class="home-header">
+    <h1>ShelterHub Dashboard</h1>
+    <div class="action-buttons">
+      <button
+        class="btn btn-primary"
+        (click)="onAddPet()"
+        [disabled]="isLoading">
+        <i class="icon-plus"></i>
+        Add Pet
+      </button>
+      <button
+        class="btn btn-secondary"
+        (click)="onRunMatching()"
+        [disabled]="isLoading">
+        <i class="icon-heart"></i>
+        Run Matching
+        <span class="loading-spinner" *ngIf="isLoading"></span>
+      </button>
+    </div>
+  </header>
+
+  <div class="dashboard-content">
+    <!-- Pet Cards Section -->
+    <section class="pets-section">
+      <div class="section-header">
+        <h2>Current Pets</h2>
+        <div class="pet-stats">
+          <span class="stat available">Available: {{getPetCountByStatus('available')}}</span>
+          <span class="stat pending">Pending: {{getPetCountByStatus('pending')}}</span>
+          <span class="stat adopted">Adopted: {{getPetCountByStatus('adopted')}}</span>
+        </div>
+      </div>
+
+      <div class="pets-grid" *ngIf="!isLoading">
+        <app-pet-card
+          *ngFor="let pet of pets; trackBy: trackByPetId"
+          [pet]="pet"
+          (statusChange)="onPetStatusChange($event.petId, $event.newStatus)">
+        </app-pet-card>
+      </div>
+
+      <div class="loading-container" *ngIf="isLoading">
+        <div class="loading-spinner large"></div>
+        <p>Loading pets...</p>
+      </div>
+
+      <div class="empty-state" *ngIf="!isLoading && pets.length === 0">
+        <i class="icon-paw"></i>
+        <h3>No pets yet</h3>
+        <p>Add your first pet to get started</p>
+        <button class="btn btn-primary" (click)="onAddPet()">Add Pet</button>
+      </div>
+    </section>
+
+    <!-- Applications Section -->
+    <section class="applications-section">
+      <div class="section-header">
+        <h2>Recent Applications</h2>
+        <a href="/applications" class="view-all-link">View All Applications</a>
+      </div>
+
+      <app-application-section
+        [applications]="recentApplications"
+        (statusChange)="onApplicationStatusChange($event.applicationId, $event.newStatus)">
+      </app-application-section>
+
+      <div class="empty-state" *ngIf="recentApplications.length === 0">
+        <i class="icon-file"></i>
+        <h3>No applications yet</h3>
+        <p>Applications will appear here once people start applying for pets</p>
+      </div>
+    </section>
+  </div>
+</div>
