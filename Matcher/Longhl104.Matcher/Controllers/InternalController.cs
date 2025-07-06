@@ -8,15 +8,10 @@ namespace Longhl104.Matcher.Controllers;
 /// Example controller demonstrating internal-only endpoints for service communication
 /// </summary>
 [ApiController]
-[Route("api/internal/[controller]")]
-public class InternalController : ControllerBase
+[Route("api/[controller]")]
+public class InternalController(ILogger<InternalController> logger) : ControllerBase
 {
-    private readonly ILogger<InternalController> _logger;
-
-    public InternalController(ILogger<InternalController> logger)
-    {
-        _logger = logger;
-    }
+    private readonly ILogger<InternalController> _logger = logger;
 
     /// <summary>
     /// Internal endpoint for getting matcher service status
