@@ -1,121 +1,210 @@
-<!-- Hero Section -->
-<div class="hero-section">
-  <div class="hero-content">
-    <!-- Personalized greeting for authenticated users -->
-    <ng-container *ngIf="isAuthenticated$ | async as authStatus">
-      <ng-container *ngIf="authStatus.isAuthenticated && (currentUser$ | async) as user; else defaultTitle">
-        <h1 class="hero-title">Welcome back, {{ user.fullName.split(' ')[0] }}!</h1>
-        <p class="hero-subtitle">
-          Ready to find your perfect companion? Let's continue your journey to find the ideal furry friend!
-        </p>
-      </ng-container>
-      <ng-template #defaultTitle>
-        <h1 class="hero-title">Find Your Perfect Companion</h1>
-        <p class="hero-subtitle">
-          Welcome to PawfectMatch - where loving pets meet loving families.
-          Discover your ideal furry friend today!
-        </p>
-      </ng-template>
-    </ng-container>
+<!-- ShelterHub Dashboard Header -->
+<div class="dashboard-header">
+  <div class="container">
+    <div class="header-content">
+      <div class="welcome-section">
+        <ng-container *ngIf="isAuthenticated$ | async as authStatus">
+          <ng-container *ngIf="authStatus.isAuthenticated && (currentUser$ | async) as user; else defaultTitle">
+            <h1 class="dashboard-title">Welcome to ShelterHub, {{ user.fullName.split(' ')[0] }}!</h1>
+            <p class="dashboard-subtitle">
+              Manage your shelter's pets, applications, and matching process from your admin dashboard.
+            </p>
+          </ng-container>
+          <ng-template #defaultTitle>
+            <h1 class="dashboard-title">ShelterHub Admin Dashboard</h1>
+            <p class="dashboard-subtitle">
+              Your central hub for managing pets, applications, and adoptions.
+            </p>
+          </ng-template>
+        </ng-container>
+      </div>
 
-    <div class="hero-buttons">
-      <button class="btn btn-primary" (click)="onFindMatch()">
-        Find My Match
-      </button>
-      <button class="btn btn-secondary" (click)="onBrowsePets()">
-        Browse All Pets
-      </button>
+      <div class="admin-actions">
+        <button class="btn btn-primary" (click)="onAddPet()">
+          <span class="btn-icon">➕</span>
+          Add New Pet
+        </button>
+        <button class="btn btn-secondary" (click)="onRunMatching()">
+          <span class="btn-icon">🎯</span>
+          Run Matching
+        </button>
+      </div>
     </div>
-  </div>
-  <div class="hero-image">
-    <img src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=600&h=400&fit=crop"
-         alt="Happy family with adopted dog"
-         class="hero-img">
   </div>
 </div>
 
-<!-- Featured Pets Section -->
-<section class="featured-pets">
-  <div class="container">
-    <h2 class="section-title">Featured Pets</h2>
-    <p class="section-subtitle">Meet some of our wonderful pets looking for their forever homes</p>
-
-    <div class="pets-grid">
-      <div class="pet-card" *ngFor="let pet of featuredPets"
-           (click)="onViewPet(pet.id)"
-           (keyup.enter)="onViewPet(pet.id)"
-           (keyup.space)="onViewPet(pet.id)"
-           tabindex="0"
-           role="button"
-           [attr.aria-label]="'View details for ' + pet.name">
-        <div class="pet-image">
-          <img [src]="pet.image" [alt]="pet.name" />
-          <div class="pet-overlay">
-            <button class="btn btn-small">View Details</button>
-          </div>
-        </div>
-        <div class="pet-info">
-          <h3 class="pet-name">{{ pet.name }}</h3>
-          <p class="pet-breed">{{ pet.breed }} • {{ pet.age }} years old</p>
-          <p class="pet-description">{{ pet.description }}</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- How It Works Section -->
-<section class="how-it-works">
-  <div class="container">
-    <h2 class="section-title">How It Works</h2>
-    <p class="section-subtitle">Simple steps to find your perfect pet companion</p>
-
-    <div class="steps-grid">
-      <div class="step-card" *ngFor="let step of adoptionSteps">
-        <div class="step-icon">{{ step.icon }}</div>
-        <div class="step-number">{{ step.step }}</div>
-        <h3 class="step-title">{{ step.title }}</h3>
-        <p class="step-description">{{ step.description }}</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Statistics Section -->
-<section class="stats-section">
+<!-- Dashboard Statistics -->
+<section class="dashboard-stats">
   <div class="container">
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-number">500+</div>
-        <div class="stat-label">Happy Adoptions</div>
+        <div class="stat-icon">🐕</div>
+        <div class="stat-number">{{ dashboardStats.totalPets }}</div>
+        <div class="stat-label">Total Pets</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-number">200+</div>
-        <div class="stat-label">Pets Available</div>
+      <div class="stat-card available">
+        <div class="stat-icon">✅</div>
+        <div class="stat-number">{{ dashboardStats.availablePets }}</div>
+        <div class="stat-label">Available</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-number">50+</div>
-        <div class="stat-label">Partner Shelters</div>
+      <div class="stat-card pending">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-number">{{ dashboardStats.pendingAdoptions }}</div>
+        <div class="stat-label">Pending</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-number">98%</div>
-        <div class="stat-label">Success Rate</div>
+      <div class="stat-card applications">
+        <div class="stat-icon">📋</div>
+        <div class="stat-number">{{ dashboardStats.newApplications }}</div>
+        <div class="stat-label">New Applications</div>
+      </div>
+      <div class="stat-card adopted">
+        <div class="stat-icon">🏠</div>
+        <div class="stat-number">{{ dashboardStats.adoptedThisMonth }}</div>
+        <div class="stat-label">Adopted This Month</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Call to Action Section -->
-<section class="cta-section">
+<!-- Pet Management Section -->
+<section class="pets-section">
   <div class="container">
-    <div class="cta-content">
-      <h2 class="cta-title">Ready to Find Your Perfect Match?</h2>
-      <p class="cta-subtitle">
-        Join thousands of happy families who found their furry companions through PawfectMatch
-      </p>
-      <button class="btn btn-primary btn-large" (click)="onFindMatch()">
-        Start Your Journey
-      </button>
+    <div class="section-header">
+      <h2 class="section-title">Shelter Pets</h2>
+      <p class="section-subtitle">Manage your pets and track their adoption status</p>
+    </div>
+
+    <div class="pets-grid">
+      <div class="pet-card" *ngFor="let pet of shelterPets">
+        <div class="pet-image">
+          <img [src]="pet.image" [alt]="pet.name" />
+          <div class="pet-status" [ngClass]="getStatusClass(pet.status)">
+            {{ pet.status }}
+          </div>
+        </div>
+
+        <div class="pet-info">
+          <div class="pet-header">
+            <h3 class="pet-name">{{ pet.name }}</h3>
+            <div class="pet-applications">{{ pet.applications }} applications</div>
+          </div>
+
+          <div class="pet-details">
+            <p class="pet-breed">{{ pet.breed }} • {{ pet.age }} years old</p>
+            <p class="pet-description">{{ pet.description }}</p>
+
+            <div class="pet-meta">
+              <span class="date-added">Added: {{ pet.dateAdded }}</span>
+              <span class="medical-status" [ngClass]="{
+                'up-to-date': pet.medicalStatus === 'Up to date',
+                'needs-attention': pet.medicalStatus !== 'Up to date'
+              }">{{ pet.medicalStatus }}</span>
+            </div>
+          </div>
+
+          <div class="pet-actions">
+            <button class="btn btn-small btn-outline" (click)="onViewPet(pet.id)">
+              View Details
+            </button>
+            <button class="btn btn-small btn-primary" (click)="onManagePet(pet.id)">
+              Manage
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Recent Applications Section -->
+<section class="applications-section">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">Recent Applications</h2>
+      <p class="section-subtitle">Review and manage adoption applications</p>
+    </div>
+
+    <div class="applications-table">
+      <div class="table-header">
+        <div class="header-cell">Applicant</div>
+        <div class="header-cell">Pet</div>
+        <div class="header-cell">Date</div>
+        <div class="header-cell">Status</div>
+        <div class="header-cell">Actions</div>
+      </div>
+
+      <div class="table-row" *ngFor="let application of recentApplications">
+        <div class="table-cell">
+          <div class="applicant-info">
+            <div class="applicant-name">{{ application.applicantName }}</div>
+            <div class="applicant-contact">{{ application.contactInfo }}</div>
+          </div>
+        </div>
+        <div class="table-cell">
+          <div class="pet-name-cell">{{ application.petName }}</div>
+        </div>
+        <div class="table-cell">
+          <div class="date-cell">{{ application.submittedDate }}</div>
+        </div>
+        <div class="table-cell">
+          <div class="status-badge" [ngClass]="getStatusClass(application.status)">
+            {{ application.status }}
+          </div>
+        </div>
+        <div class="table-cell">
+          <button class="btn btn-small btn-outline" (click)="onViewApplication(application.id)">
+            Review
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-footer">
+      <button class="btn btn-outline">View All Applications</button>
+    </div>
+  </div>
+</section>
+
+<!-- Quick Actions Section -->
+<section class="quick-actions">
+  <div class="container">
+    <h2 class="section-title">Quick Actions</h2>
+    <div class="actions-grid">
+      <div class="action-card"
+           (click)="onAddPet()"
+           (keyup.enter)="onAddPet()"
+           (keyup.space)="onAddPet()"
+           tabindex="0"
+           role="button"
+           aria-label="Add new pet">
+        <div class="action-icon">➕</div>
+        <h3 class="action-title">Add New Pet</h3>
+        <p class="action-description">Register a new pet in the system</p>
+      </div>
+
+      <div class="action-card"
+           (click)="onRunMatching()"
+           (keyup.enter)="onRunMatching()"
+           (keyup.space)="onRunMatching()"
+           tabindex="0"
+           role="button"
+           aria-label="Run matching algorithm">
+        <div class="action-icon">🎯</div>
+        <h3 class="action-title">Run Matching</h3>
+        <p class="action-description">Find potential matches for available pets</p>
+      </div>
+
+      <div class="action-card">
+        <div class="action-icon">📊</div>
+        <h3 class="action-title">View Reports</h3>
+        <p class="action-description">Access adoption and shelter statistics</p>
+      </div>
+
+      <div class="action-card">
+        <div class="action-icon">⚙️</div>
+        <h3 class="action-title">Settings</h3>
+        <p class="action-description">Configure shelter and system settings</p>
+      </div>
     </div>
   </div>
 </section>
