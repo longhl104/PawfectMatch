@@ -9,10 +9,10 @@
 
     <!-- Package Metadata -->
     <PackageId>Longhl104.PawfectMatch</PackageId>
-    <Version>1.2.0</Version>
+    <Version>1.3.0</Version>
     <Authors>Longhl104</Authors>
-    <Description>Shared services and models for PawfectMatch application with internal service authorization</Description>
-    <PackageTags>PawfectMatch;AWS;Cognito;JWT;DynamoDB;Authorization;Internal</PackageTags>
+    <Description>Shared services and models for PawfectMatch application with internal service authorization and HTTP client factory</Description>
+    <PackageTags>PawfectMatch;AWS;Cognito;JWT;DynamoDB;Authorization;Internal;HttpClient</PackageTags>
     <RepositoryUrl>https://github.com/longhl104/PawfectMatch</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
@@ -26,10 +26,21 @@
     <PackageReference Include="AWSSDK.CognitoIdentityProvider" Version="4.0.1.10" />
     <PackageReference Include="AWSSDK.DynamoDBv2" Version="4.0.2.1" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.6" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.6" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.12.1" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.12.1" />
+    <PackageReference Include="System.Text.Json" Version="9.0.6" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
+    <PackageReference Include="Moq" Version="4.20.70" />
+    <PackageReference Include="xunit" Version="2.8.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.0" />
   </ItemGroup>
 </Project>

@@ -33,7 +33,9 @@ public static class BuilderServicesExtensions
                     .RequireAuthenticatedUser()
                     .RequireClaim("UserType", "Internal"));
 
-        // Register your services here
+        // Add internal HTTP client for service-to-service communication
+        services.AddInternalHttpClient();
+
         return services;
     }
 }
