@@ -11,3 +11,7 @@ cdk.out
 .env
 .env.local
 .env.*.local
+
+# Don't ignore bin and lib directories
+!bin/
+!lib/
