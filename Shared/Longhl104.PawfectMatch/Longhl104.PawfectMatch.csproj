@@ -23,9 +23,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.CognitoIdentityProvider" Version="4.0.1.9" />
-    <PackageReference Include="AWSSDK.DynamoDBv2" Version="4.0.1.9" />
+    <PackageReference Include="AWSSDK.CognitoIdentityProvider" Version="4.0.1.10" />
+    <PackageReference Include="AWSSDK.DynamoDBv2" Version="4.0.2.1" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.6" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.6" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.12.1" />

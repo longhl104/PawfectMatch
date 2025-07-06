@@ -1,34 +1,38 @@
 // Variables
 $primary-color: #4f46e5;
+$secondary-color: #10b981;
 $text-dark: #1f2937;
 $text-light: #6b7280;
 $text-lighter: #9ca3af;
 $bg-dark: #111827;
 $bg-darker: #0f172a;
 $border-color: #374151;
+$status-online: #10b981;
+$white: #ffffff;
 
 .footer {
   background: linear-gradient(135deg, $bg-dark 0%, $bg-darker 100%);
   color: $text-light;
   padding: 3rem 0 1rem;
+  border-top: 1px solid $border-color;
 
   .container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
-    padding: 0 1rem;
+    padding: 0 1.5rem;
   }
 
   .footer-content {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
+    gap: 2.5rem;
     margin-bottom: 2rem;
 
     .footer-section {
       .footer-brand {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.75rem;
         font-size: 1.5rem;
         font-weight: 700;
         margin-bottom: 1rem;
@@ -48,36 +52,41 @@ $border-color: #374151;
         color: $text-lighter;
       }
 
-      .social-links {
-        display: flex;
-        gap: 1rem;
-
-        .social-link {
+      .admin-info {
+        .system-status {
           display: flex;
           align-items: center;
-          justify-content: center;
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          background: rgba(79, 70, 229, 0.1);
-          color: $primary-color;
-          text-decoration: none;
-          font-size: 1.25rem;
-          transition: all 0.3s ease;
+          gap: 0.5rem;
+          margin-bottom: 0.5rem;
+          font-size: 0.875rem;
 
-          &:hover {
-            background: $primary-color;
-            color: white;
-            transform: translateY(-2px);
+          .status-indicator {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+
+            &.online {
+              background-color: $status-online;
+              color: $white;
+            }
           }
+        }
+
+        .last-backup {
+          font-size: 0.875rem;
+          color: $text-lighter;
+          margin: 0;
         }
       }
 
       .footer-title {
+        color: $white;
         font-size: 1.125rem;
         font-weight: 600;
         margin-bottom: 1rem;
-        color: white;
+        margin-top: 0;
       }
 
       .footer-links {
@@ -92,6 +101,7 @@ $border-color: #374151;
             color: $text-lighter;
             text-decoration: none;
             transition: color 0.3s ease;
+            font-size: 0.875rem;
 
             &:hover {
               color: $primary-color;
@@ -105,17 +115,37 @@ $border-color: #374151;
   .footer-bottom {
     border-top: 1px solid $border-color;
     padding-top: 2rem;
-    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
 
     .footer-copyright {
       color: $text-lighter;
-      margin-bottom: 0.5rem;
+      margin: 0;
+      font-size: 0.875rem;
     }
 
-    .footer-tagline {
+    .footer-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
       color: $text-lighter;
       font-size: 0.875rem;
-      margin: 0;
+
+      .version-info {
+        color: $primary-color;
+        font-weight: 500;
+      }
+
+      .separator {
+        opacity: 0.5;
+      }
+
+      .shelter-info {
+        font-weight: 500;
+      }
     }
   }
 }
@@ -123,9 +153,53 @@ $border-color: #374151;
 // Responsive Design
 @media (max-width: 768px) {
   .footer {
+    padding: 2rem 0 1rem;
+
+    .container {
+      padding: 0 1rem;
+    }
+
+    .footer-content {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
+
+      .footer-section {
+        .footer-brand {
+          font-size: 1.25rem;
+        }
+
+        .admin-info {
+          .system-status {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.25rem;
+          }
+        }
+      }
+    }
+
+    .footer-bottom {
+      flex-direction: column;
+      text-align: center;
+      gap: 1rem;
+
+      .footer-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .footer {
+    .container {
+      padding: 0 0.75rem;
+    }
+
     .footer-content {
       grid-template-columns: 1fr;
-      gap: 2rem;
+      gap: 1.5rem;
 
       .footer-section {
         text-align: center;
@@ -134,24 +208,12 @@ $border-color: #374151;
           justify-content: center;
         }
 
-        .social-links {
-          justify-content: center;
+        .admin-info {
+          .system-status {
+            align-items: center;
+          }
         }
       }
-    }
-  }
-}
-
-@media (max-width: 480px) {
-  .footer {
-    padding: 2rem 0 1rem;
-
-    .footer-content {
-      gap: 1.5rem;
-    }
-
-    .footer-bottom {
-      padding-top: 1.5rem;
     }
   }
 }

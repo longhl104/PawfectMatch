@@ -11,4 +11,7 @@ import { RouterModule } from '@angular/router';
 })
 export class FooterComponent {
   currentYear = new Date().getFullYear();
+  systemVersion = '2.1.3';
+  shelterName = 'Happy Paws';
+  lastBackupDate = '2024-12-23 03:00 AM';
 }

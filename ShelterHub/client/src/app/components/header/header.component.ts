@@ -33,4 +33,14 @@ export class HeaderComponent {
   onLogout() {
     this.authService.logout().subscribe();
   }
+
+  onAddPet() {
+    console.log('Navigating to add pet form...');
+    // TODO: Navigate to add pet form
+  }
+
+  onRunMatching() {
+    console.log('Running matching algorithm...');
+    // TODO: Trigger matching algorithm
+  }
 }

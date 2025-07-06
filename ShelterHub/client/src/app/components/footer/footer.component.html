@@ -3,58 +3,62 @@
     <div class="footer-content">
       <div class="footer-section">
         <div class="footer-brand">
-          <span class="brand-icon">🐾</span>
-          <span class="brand-text">PawfectMatch</span>
+          <span class="brand-icon">🏠</span>
+          <span class="brand-text">ShelterHub</span>
         </div>
         <p class="footer-description">
-          Connecting loving pets with loving families.
-          Your perfect companion is waiting for you.
+          Comprehensive shelter management system for administrators.
+          Streamline pet care, adoptions, and operations.
         </p>
-        <div class="social-links">
-          <a href="#" class="social-link" aria-label="Facebook">📘</a>
-          <a href="#" class="social-link" aria-label="Twitter">🐦</a>
-          <a href="#" class="social-link" aria-label="Instagram">📷</a>
+        <div class="admin-info">
+          <p class="system-status">System Status: <span class="status-indicator online">Online</span></p>
+          <p class="last-backup">Last Backup: {{ lastBackupDate }}</p>
         </div>
       </div>
 
       <div class="footer-section">
-        <h4 class="footer-title">Quick Links</h4>
+        <h4 class="footer-title">Management</h4>
         <ul class="footer-links">
-          <li><a routerLink="/home" class="footer-link">Home</a></li>
-          <li><a routerLink="/browse" class="footer-link">Browse Pets</a></li>
-          <li><a routerLink="/match" class="footer-link">Find Match</a></li>
-          <li><a routerLink="/about" class="footer-link">About Us</a></li>
+          <li><a routerLink="/home" class="footer-link">Dashboard</a></li>
+          <li><a routerLink="/pets" class="footer-link">Pet Management</a></li>
+          <li><a routerLink="/applications" class="footer-link">Applications</a></li>
+          <li><a routerLink="/adoptions" class="footer-link">Adoptions</a></li>
+          <li><a routerLink="/reports" class="footer-link">Reports</a></li>
         </ul>
       </div>
 
       <div class="footer-section">
-        <h4 class="footer-title">Support</h4>
+        <h4 class="footer-title">Tools & Resources</h4>
         <ul class="footer-links">
-          <li><a routerLink="/contact" class="footer-link">Contact Us</a></li>
+          <li><a routerLink="/matching" class="footer-link">Matching Algorithm</a></li>
+          <li><a routerLink="/analytics" class="footer-link">Analytics</a></li>
+          <li><a routerLink="/export" class="footer-link">Data Export</a></li>
+          <li><a routerLink="/backup" class="footer-link">Backup & Restore</a></li>
           <li><a routerLink="/help" class="footer-link">Help Center</a></li>
-          <li><a routerLink="/faq" class="footer-link">FAQ</a></li>
-          <li><a routerLink="/support" class="footer-link">Support</a></li>
         </ul>
       </div>
 
       <div class="footer-section">
-        <h4 class="footer-title">Legal</h4>
+        <h4 class="footer-title">System & Support</h4>
         <ul class="footer-links">
-          <li><a routerLink="/privacy" class="footer-link">Privacy Policy</a></li>
-          <li><a routerLink="/terms" class="footer-link">Terms of Service</a></li>
-          <li><a routerLink="/cookies" class="footer-link">Cookie Policy</a></li>
-          <li><a routerLink="/disclaimer" class="footer-link">Disclaimer</a></li>
+          <li><a routerLink="/settings" class="footer-link">Settings</a></li>
+          <li><a routerLink="/users" class="footer-link">User Management</a></li>
+          <li><a routerLink="/audit" class="footer-link">Audit Logs</a></li>
+          <li><a routerLink="/support" class="footer-link">Technical Support</a></li>
+          <li><a routerLink="/documentation" class="footer-link">Documentation</a></li>
         </ul>
       </div>
     </div>
 
     <div class="footer-bottom">
       <p class="footer-copyright">
-        © {{ currentYear }} PawfectMatch. All rights reserved.
+        © {{ currentYear }} ShelterHub Admin System. All rights reserved.
       </p>
-      <p class="footer-tagline">
-        Made with ❤️ for pets and their families
-      </p>
+      <div class="footer-meta">
+        <span class="version-info">Version {{ systemVersion }}</span>
+        <span class="separator">•</span>
+        <span class="shelter-info">{{ shelterName }} Shelter Management</span>
+      </div>
     </div>
   </div>
 </footer>
