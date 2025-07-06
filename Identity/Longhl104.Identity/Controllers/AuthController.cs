@@ -16,7 +16,7 @@ public class AuthController(
     /// Authenticate user and return tokens
     /// </summary>
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
+    public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest loginRequest)
     {
         logger.LogInformation("Login request for user: {Email}", loginRequest.Email);
 

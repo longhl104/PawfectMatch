@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch ${input:project}",
+      "name": "${input:project} API",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
@@ -23,7 +23,7 @@
       "justMyCode": false
     },
     {
-      "name": "Start ${input:project} Angular Client",
+      "name": "${input:project} Angular",
       "type": "node",
       "request": "launch",
       "cwd": "${workspaceFolder}/${input:project}/client",

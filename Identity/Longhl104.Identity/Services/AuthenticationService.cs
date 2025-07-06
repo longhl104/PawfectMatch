@@ -8,7 +8,7 @@ namespace Longhl104.Identity.Services;
 /// </summary>
 public interface IAuthenticationService
 {
-    Task<IActionResult> AuthenticateAndSetCookiesAsync<T>(
+    Task<ActionResult<T>> AuthenticateAndSetCookiesAsync<T>(
         string email,
         string password,
         HttpContext httpContext,
@@ -34,7 +34,7 @@ public class AuthenticationService(ICognitoService cognitoService, ICookieServic
     /// <param name="createSuccessResponse">Function to create success response with token data</param>
     /// <param name="createFailureResponse">Function to create failure response with error message</param>
     /// <returns>Action result with authentication response</returns>
-    public async Task<IActionResult> AuthenticateAndSetCookiesAsync<T>(
+    public async Task<ActionResult<T>> AuthenticateAndSetCookiesAsync<T>(
         string email,
         string password,
         HttpContext httpContext,

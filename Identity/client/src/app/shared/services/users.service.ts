@@ -19,23 +19,29 @@ export interface ResendCodeRequest {
   userType: 'adopter' | 'shelter';
 }
 
-export interface LoginRequest {
-  email: string;
-  password: string;
-  userType: 'adopter' | 'shelter';
-}
-
-export interface LoginResponse {
-  message: string;
+export interface TokenData {
   accessToken: string;
+  idToken: string;
   refreshToken: string;
+  expiresAt: string; // ISO date string
   user: {
     id: string;
     email: string;
     fullName: string;
-    userType: 'adopter' | 'shelter';
+    userType: 'adopter' | 'shelter_admin';
     verified: boolean;
-  };
+  } | null;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  success: boolean;
+  message: string;
+  data: TokenData | null;
 }
 
 @Injectable({

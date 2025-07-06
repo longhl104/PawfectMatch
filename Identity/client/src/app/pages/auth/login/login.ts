@@ -67,16 +67,27 @@ export class Login {
       const loginRequest: LoginRequest = {
         email: formData.email,
         password: formData.password,
-        userType: formData.userType,
       };
 
       try {
-        await firstValueFrom(this.usersService.login(loginRequest));
+        const response = await firstValueFrom(
+          this.usersService.login(loginRequest),
+        );
 
         this.toastService.success(`Welcome back!`);
 
-        // Navigate to localhost:4201 (Matcher application)
-        window.location.href = 'https://localhost:4201';
+        switch (response.data?.user?.userType) {
+          case 'adopter':
+            window.location.href = 'https://localhost:4201';
+            break;
+          case 'shelter_admin':
+            window.location.href = 'https://localhost:4202';
+            break;
+          default:
+            throw new Error(
+              `Unknown user type: ${response.data?.user?.userType}`,
+            );
+        }
       } catch (error: unknown) {
         // Handle specific error cases
         const httpError = error as HttpError;

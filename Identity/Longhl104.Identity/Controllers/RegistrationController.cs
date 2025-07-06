@@ -34,7 +34,7 @@ public partial class RegistrationController : ControllerBase
     /// Register a new adopter
     /// </summary>
     [HttpPost("adopter")]
-    public async Task<IActionResult> RegisterAdopter([FromBody] AdopterRegistrationRequest registrationRequest)
+    public async Task<ActionResult<AdopterRegistrationResponse>> RegisterAdopter([FromBody] AdopterRegistrationRequest registrationRequest)
     {
         try
         {
@@ -132,7 +132,7 @@ public partial class RegistrationController : ControllerBase
     /// Register a new shelter admin
     /// </summary>
     [HttpPost("shelter-admin")]
-    public async Task<IActionResult> RegisterShelterAdmin([FromBody] ShelterAdminRegistrationRequest registrationRequest)
+    public async Task<ActionResult<ShelterAdminRegistrationResponse>> RegisterShelterAdmin([FromBody] ShelterAdminRegistrationRequest registrationRequest)
     {
         try
         {
