@@ -1,5 +1,4 @@
 using Longhl104.PawfectMatch.Middleware;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,8 +12,7 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 // Add authentication and authorization services
-// Since AuthenticationMiddleware handles the actual authentication and sets ClaimsPrincipal,
-// we just need to configure a scheme that matches what the middleware uses
+// Note: AuthenticationMiddleware handles JWT validation and sets ClaimsPrincipal
 builder.Services.AddAuthentication();
 
 builder.Services.AddAuthorizationBuilder()
@@ -63,7 +61,7 @@ app.UseHttpsRedirection();
 app.UseCors();
 
 // Add authentication middleware
-app.UseMiddleware<AuthenticationMiddleware>();
+app.UseMiddleware<Longhl104.PawfectMatch.Middleware.AuthenticationMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();

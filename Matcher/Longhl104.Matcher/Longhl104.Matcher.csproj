@@ -11,12 +11,12 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.12.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.6" />
-    <PackageReference Include="Longhl104.PawfectMatch" Version="1.0.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../Shared/Longhl104.PawfectMatch/Longhl104.PawfectMatch.csproj" />
-    <!-- <PackageReference Include="Longhl104.PawfectMatch" Version="1.0.1" /> -->
+    <!-- <ProjectReference
+    Include="../../Shared/Longhl104.PawfectMatch/Longhl104.PawfectMatch.csproj" /> -->
+    <PackageReference Include="Longhl104.PawfectMatch" Version="1.1.0" />
   </ItemGroup>
 
 </Project>
