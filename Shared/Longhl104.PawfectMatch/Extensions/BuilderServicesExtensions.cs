@@ -12,7 +12,9 @@ public static class BuilderServicesExtensions
         // Configure custom authentication scheme to work with the AuthenticationMiddleware
         services.AddAuthentication("PawfectMatch")
             .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, PawfectMatchAuthenticationHandler>(
-                "PawfectMatch", options => { });
+                "PawfectMatch", options => { })
+            .AddScheme<InternalAuthenticationOptions, InternalAuthenticationHandler>(
+                "Internal", options => { });
 
         services.AddAuthorizationBuilder()
             .SetFallbackPolicy(new AuthorizationPolicyBuilder("PawfectMatch")
@@ -25,7 +27,11 @@ public static class BuilderServicesExtensions
                 .Build())
             .AddPolicy("AdopterOnly", policy =>
                 policy.RequireAuthenticatedUser()
-                    .RequireClaim("UserType", userType));
+                    .RequireClaim("UserType", userType))
+            .AddPolicy("InternalOnly", policy =>
+                policy.AddAuthenticationSchemes("Internal")
+                    .RequireAuthenticatedUser()
+                    .RequireClaim("UserType", "Internal"));
 
         // Register your services here
         return services;

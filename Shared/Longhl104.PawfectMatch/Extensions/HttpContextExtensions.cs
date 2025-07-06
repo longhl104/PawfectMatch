@@ -36,4 +36,21 @@ public static class HttpContextExtensions
     {
         return context.GetCurrentUser() != null;
     }
+
+    /// <summary>
+    /// Checks if the current request is from an internal service
+    /// </summary>
+    public static bool IsInternalRequest(this HttpContext context)
+    {
+        return context.User?.FindFirst("AuthenticationType")?.Value == "Internal";
+    }
+
+    /// <summary>
+    /// Gets the authentication type of the current request
+    /// </summary>
+    public static string? GetAuthenticationType(this HttpContext context)
+    {
+        return context.User?.FindFirst("AuthenticationType")?.Value ??
+               (context.User?.Identity?.AuthenticationType);
+    }
 }

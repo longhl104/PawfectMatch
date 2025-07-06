@@ -9,10 +9,10 @@
 
     <!-- Package Metadata -->
     <PackageId>Longhl104.PawfectMatch</PackageId>
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
     <Authors>Longhl104</Authors>
-    <Description>Shared services and models for PawfectMatch application</Description>
-    <PackageTags>PawfectMatch;AWS;Cognito;JWT;DynamoDB</PackageTags>
+    <Description>Shared services and models for PawfectMatch application with internal service authorization</Description>
+    <PackageTags>PawfectMatch;AWS;Cognito;JWT;DynamoDB;Authorization;Internal</PackageTags>
     <RepositoryUrl>https://github.com/longhl104/PawfectMatch</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
 

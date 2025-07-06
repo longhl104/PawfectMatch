@@ -23,6 +23,14 @@ public class AuthenticationMiddleware(
             return;
         }
 
+        // Check for internal authentication first
+        if (context.Request.Headers.ContainsKey("X-Internal-API-Key"))
+        {
+            // Let the internal authentication handler handle this
+            await _next(context);
+            return;
+        }
+
         var authResult = CheckAuthentication(context);
 
         if (!authResult.IsAuthenticated)

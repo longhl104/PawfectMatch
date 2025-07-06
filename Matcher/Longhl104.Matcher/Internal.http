@@ -1,0 +1,42 @@
+@Matcher_HostAddress = https://localhost:7001
+@Internal_API_Key = dev-internal-key-12345
+
+### Test internal status endpoint with valid API key
+GET {{Matcher_HostAddress}}/api/internal/Internal/status
+X-Internal-API-Key: {{Internal_API_Key}}
+Accept: application/json
+
+### Test internal status endpoint without API key (should fail)
+GET {{Matcher_HostAddress}}/api/internal/Internal/status
+Accept: application/json
+
+### Test internal status endpoint with invalid API key (should fail)
+GET {{Matcher_HostAddress}}/api/internal/Internal/status
+X-Internal-API-Key: invalid-key
+Accept: application/json
+
+### Test batch match trigger with valid API key
+POST {{Matcher_HostAddress}}/api/internal/Internal/batch-match
+X-Internal-API-Key: {{Internal_API_Key}}
+Content-Type: application/json
+
+{
+  "shelterId": "shelter-123",
+  "maxMatches": 50,
+  "includeInactive": false
+}
+
+### Test mixed statistics endpoint with internal authentication
+GET {{Matcher_HostAddress}}/api/internal/Internal/statistics
+X-Internal-API-Key: {{Internal_API_Key}}
+Accept: application/json
+
+### Test mixed statistics endpoint as regular user (needs user authentication)
+GET {{Matcher_HostAddress}}/api/internal/Internal/statistics
+Accept: application/json
+
+### Compare with regular AuthCheck endpoint (should work with user auth)
+GET {{Matcher_HostAddress}}/api/AuthCheck/status
+Accept: application/json
+
+###
