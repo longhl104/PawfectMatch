@@ -7,28 +7,16 @@ namespace Longhl104.Identity.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public partial class RegistrationController : ControllerBase
+public partial class RegistrationController(
+    ILogger<RegistrationController> _logger,
+    IAuthenticationService _authenticationService,
+    ICognitoService _cognitoService
+    ) : ControllerBase
 {
-    private readonly ILogger<RegistrationController> _logger;
-    private readonly IAuthenticationService _authenticationService; // Use shared authentication service
-    private readonly ICognitoService _cognitoService;
-
-
     [System.Text.RegularExpressions.GeneratedRegex(@"^\d{11}$")]
     private static partial System.Text.RegularExpressions.Regex AbnRegex();
     [System.Text.RegularExpressions.GeneratedRegex(@"^(\+61|0)[2-9][0-9]{8}$")]
     private static partial System.Text.RegularExpressions.Regex AustralianPhoneNumberRegex();
-
-    public RegistrationController(
-        ILogger<RegistrationController> logger,
-        IAuthenticationService authenticationService,
-        ICognitoService cognitoService
-        )
-    {
-        _logger = logger;
-        _authenticationService = authenticationService;
-        _cognitoService = cognitoService;
-    }
 
     /// <summary>
     /// Register a new adopter
