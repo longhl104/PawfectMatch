@@ -1,5 +1,5 @@
-import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, OnDestroy, Renderer2 } from '@angular/core';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService, UserProfile } from 'shared/services/auth.service';
 import { Observable } from 'rxjs';
@@ -11,19 +11,37 @@ import { Observable } from 'rxjs';
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnDestroy {
   private authService = inject(AuthService);
+  private document = inject(DOCUMENT);
+  private renderer = inject(Renderer2);
 
   isMenuOpen = false;
   currentUser$: Observable<UserProfile | null> = this.authService.currentUser$;
   isAuthenticated$ = this.authService.authStatus$;
 
+  ngOnDestroy() {
+    // Ensure body scroll is restored when component is destroyed
+    if (this.isMenuOpen) {
+      this.renderer.removeClass(this.document.body, 'menu-open');
+    }
+  }
+
   toggleMenu() {
     this.isMenuOpen = !this.isMenuOpen;
+
+    if (this.isMenuOpen) {
+      this.renderer.addClass(this.document.body, 'menu-open');
+    } else {
+      this.renderer.removeClass(this.document.body, 'menu-open');
+    }
   }
 
   closeMenu() {
-    this.isMenuOpen = false;
+    if (this.isMenuOpen) {
+      this.isMenuOpen = false;
+      this.renderer.removeClass(this.document.body, 'menu-open');
+    }
   }
 
   onLogin() {

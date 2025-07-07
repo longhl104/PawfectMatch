@@ -24,7 +24,11 @@
             </a>
           </li>
           <li class="nav-item">
-            <a routerLink="/applications" class="nav-link" (click)="closeMenu()">
+            <a
+              routerLink="/applications"
+              class="nav-link"
+              (click)="closeMenu()"
+            >
               <span class="nav-icon">📋</span>
               Applications
             </a>
@@ -52,38 +56,57 @@
         <div class="nav-actions">
           <!-- Show different actions based on authentication status -->
           <ng-container *ngIf="isAuthenticated$ | async as authStatus">
-            <ng-container *ngIf="authStatus.isAuthenticated; else notAuthenticated">
+            <ng-container
+              *ngIf="authStatus.isAuthenticated; else notAuthenticated"
+            >
               <!-- Authenticated admin actions -->
               <div class="admin-menu" *ngIf="currentUser$ | async as user">
                 <div class="admin-info">
                   <span class="admin-role">Admin</span>
-                  <span class="admin-name">{{ user.fullName.split(' ')[0] }}</span>
+                  <span class="admin-name">{{
+                    user.fullName.split(" ")[0]
+                  }}</span>
                 </div>
                 <div class="admin-actions">
-                  <button class="btn btn-outline btn-small" (click)="onAddPet()">
+                  <button
+                    class="btn btn-outline btn-small"
+                    (click)="onAddPet(); closeMenu()"
+                  >
                     <span class="btn-icon">➕</span>
-                    Add Pet
+                    <span class="btn-text">Add Pet</span>
                   </button>
-                  <button class="btn btn-secondary btn-small" (click)="onRunMatching()">
+                  <button
+                    class="btn btn-secondary btn-small"
+                    (click)="onRunMatching(); closeMenu()"
+                  >
                     <span class="btn-icon">🎯</span>
-                    Run Match
+                    <span class="btn-text">Run Match</span>
                   </button>
-                  <button class="btn btn-outline btn-small" (click)="onLogout()">
+                  <button
+                    class="btn btn-outline btn-small"
+                    (click)="onLogout(); closeMenu()"
+                  >
                     <span class="btn-icon">🚪</span>
-                    Logout
+                    <span class="btn-text">Logout</span>
                   </button>
                 </div>
               </div>
             </ng-container>
             <ng-template #notAuthenticated>
               <!-- Not authenticated actions -->
-              <button class="btn btn-outline" (click)="onLogin()">Admin Sign In</button>
+              <button class="btn btn-outline" (click)="onLogin(); closeMenu()">
+                Admin Sign In
+              </button>
             </ng-template>
           </ng-container>
         </div>
       </div>
 
-      <button class="mobile-menu-toggle" (click)="toggleMenu()" [attr.aria-expanded]="isMenuOpen">
+      <button
+        class="mobile-menu-toggle"
+        (click)="toggleMenu()"
+        [attr.aria-expanded]="isMenuOpen"
+      >
         <span class="hamburger-line"></span>
         <span class="hamburger-line"></span>
         <span class="hamburger-line"></span>
