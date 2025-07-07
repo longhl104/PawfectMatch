@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Longhl104.Identity.Services;
 using Longhl104.PawfectMatch.Extensions;
+using Longhl104.PawfectMatch.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,10 @@ builder.AddPawfectMatchSystemsManager("Identity");
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddPawfectMatchInternalHttpClients(
+    [
+        PawfectMatchServices.Matcher,
+    ]);
 
 // Configure CORS
 builder.Services.AddCors(options =>
