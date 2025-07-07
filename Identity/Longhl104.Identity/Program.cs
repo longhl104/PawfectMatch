@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Longhl104.Identity.Services;
+using Longhl104.PawfectMatch.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +12,7 @@ var environmentName = builder.Environment.EnvironmentName;
 
 Console.WriteLine($"Environment: {environmentName}");
 
-builder.Configuration.AddSystemsManager($"/PawfectMatch/{environmentName}/Identity");
+builder.AddPawfectMatchSystemsManager("Identity");
 
 // Add services to the container
 builder.Services.AddControllers();

@@ -7,6 +7,8 @@ A shared library containing common services and models for the PawfectMatch appl
 - **CognitoService**: AWS Cognito user authentication and profile management
 - **JwtService**: JWT token generation and validation
 - **RefreshTokenService**: Refresh token management with DynamoDB storage
+- **Configuration Extensions**: AWS Systems Manager Parameter Store integration
+- **Authentication Extensions**: Standardized authentication and authorization setup
 - **Common Models**: Shared data models across the application
 
 ## Installation
