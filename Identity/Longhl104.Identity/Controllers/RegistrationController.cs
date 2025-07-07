@@ -56,7 +56,7 @@ public partial class RegistrationController(
             var userId = await _cognitoService.CreateCognitoAdopterUserAsync(registrationRequest);
 
             // Save adopter profile to DynamoDB
-            // await SaveAdopterProfile(registrationRequest, userId);
+            await SaveAdopterProfile(registrationRequest, userId);
 
             _logger.LogInformation("Adopter registration successful for email: {Email}, UserId: {UserId}", registrationRequest.Email, userId);
 
@@ -114,6 +114,14 @@ public partial class RegistrationController(
                 UserId = string.Empty
             });
         }
+    }
+
+    private async Task SaveAdopterProfile(AdopterRegistrationRequest request, string userId)
+    {
+        // Implement logic to save adopter profile to DynamoDB
+        // This is a placeholder for actual implementation
+        _logger.LogInformation("Saving adopter profile for UserId: {UserId}", userId);
+        // await _dynamoDbService.SaveAdopterProfileAsync(request, userId);
     }
 
     /// <summary>

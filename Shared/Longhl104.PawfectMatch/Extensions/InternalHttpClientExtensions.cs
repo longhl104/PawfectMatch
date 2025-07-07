@@ -1,6 +1,6 @@
 using Longhl104.PawfectMatch.HttpClient;
+using Longhl104.PawfectMatch.Models;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Longhl104.PawfectMatch.Extensions;
 
@@ -22,9 +22,6 @@ public static class InternalHttpClientExtensions
 
         // Register our internal HTTP client factory
         services.AddScoped<IInternalHttpClientFactory, InternalHttpClientFactory>();
-
-        // Register the convenience API client
-        services.AddScoped<IInternalApiClient, InternalApiClient>();
 
         return services;
     }
@@ -55,10 +52,11 @@ public static class InternalHttpClientExtensions
     /// <param name="serviceName">Name of the service</param>
     /// <param name="baseUrl">Base URL of the service</param>
     /// <returns>The service collection for chaining</returns>
-    public static IServiceCollection AddInternalHttpClientForService(
+    private static IServiceCollection AddInternalHttpClientForService(
         this IServiceCollection services,
         string serviceName,
-        string baseUrl)
+        string baseUrl
+        )
     {
         if (string.IsNullOrWhiteSpace(serviceName))
             throw new ArgumentException("Service name cannot be null or empty", nameof(serviceName));
@@ -89,27 +87,19 @@ public static class InternalHttpClientExtensions
     /// <returns>The service collection for chaining</returns>
     public static IServiceCollection AddPawfectMatchInternalHttpClients(
         this IServiceCollection services,
-        string? identityServiceUrl = null,
-        string? matcherServiceUrl = null,
-        string? shelterHubServiceUrl = null)
+        List<PawfectMatchServices> serviceNames
+        )
     {
         // Add the basic internal HTTP client factory
         services.AddInternalHttpClient();
 
         // Register named clients for known services
-        if (!string.IsNullOrWhiteSpace(identityServiceUrl))
+        foreach (var service in serviceNames)
         {
-            services.AddInternalHttpClientForService("Identity", identityServiceUrl);
-        }
+            var serviceName = service.GetServiceName();
+            var baseUrl = service.GetBaseUrl();
 
-        if (!string.IsNullOrWhiteSpace(matcherServiceUrl))
-        {
-            services.AddInternalHttpClientForService("Matcher", matcherServiceUrl);
-        }
-
-        if (!string.IsNullOrWhiteSpace(shelterHubServiceUrl))
-        {
-            services.AddInternalHttpClientForService("ShelterHub", shelterHubServiceUrl);
+            services.AddInternalHttpClientForService(serviceName, baseUrl);
         }
 
         return services;
