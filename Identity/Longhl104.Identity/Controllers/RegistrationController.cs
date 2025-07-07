@@ -241,14 +241,15 @@ public partial class RegistrationController(
 
     private async Task SaveShelterAdminProfile(ShelterAdminRegistrationRequest request, string userId)
     {
-        var response = await _shelterHubHttpClient.PostAsJsonAsync("shelter-admins", new
+        var response = await _shelterHubHttpClient.PostAsJsonAsync("shelteradmins", new
         {
             UserId = userId,
             request.ShelterName,
             request.ShelterContactNumber,
             request.ShelterAddress,
             request.ShelterWebsiteUrl,
-            request.ShelterAbn
+            request.ShelterAbn,
+            request.ShelterDescription
         });
 
         if (!response.IsSuccessStatusCode)

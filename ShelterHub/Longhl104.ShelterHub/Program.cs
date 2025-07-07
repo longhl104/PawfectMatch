@@ -16,10 +16,11 @@ builder.AddPawfectMatchSystemsManager("ShelterHub");
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddPawfectMatchInternalHttpClients();
+builder.Services.AddPawfectMatchAuthenticationAndAuthorization("shelter_admin");
 
 // Configure AWS services
 builder.Services.AddSingleton<IAmazonDynamoDB, AmazonDynamoDBClient>();
-builder.Services.AddPawfectMatchInternalHttpClients();
 
 // Register ShelterHub services
 builder.Services.AddScoped<IShelterService, ShelterService>();

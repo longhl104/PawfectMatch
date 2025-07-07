@@ -23,6 +23,7 @@ public class ShelterAdminsController(
     /// <param name="request">The shelter admin creation request</param>
     /// <returns>Response indicating success or failure</returns>
     [HttpPost]
+    [Route("~/api/internal/[controller]")]
     [Authorize(Policy = "InternalOnly")] // Only allow internal service calls
     public async Task<ActionResult<ShelterAdminResponse>> CreateShelterAdmin([FromBody] CreateShelterAdminRequest request)
     {

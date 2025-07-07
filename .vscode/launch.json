@@ -34,12 +34,7 @@
         "start"
       ],
       "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "serverReadyAction": {
-        "pattern": "Local:.*?(https?://\\S+)",
-        "uriFormat": "%s",
-        "action": "openExternally"
-      }
+      "internalConsoleOptions": "neverOpen"
     }
   ],
   "inputs": [
