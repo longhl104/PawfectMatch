@@ -27,16 +27,6 @@ public enum PawfectMatchServices
 public static class PawfectMatchServiceExtensions
 {
     /// <summary>
-    /// Gets the configuration key for the service URL
-    /// </summary>
-    /// <param name="service">The service enum value</param>
-    /// <returns>Configuration key for the service URL</returns>
-    public static string GetUrlConfigKey(this PawfectMatchServices service)
-    {
-        return $"ServiceUrls:{service}";
-    }
-
-    /// <summary>
     /// Gets the service name as a string
     /// </summary>
     /// <param name="service">The service enum value</param>
@@ -51,7 +41,7 @@ public static class PawfectMatchServiceExtensions
     /// </summary>
     /// <param name="service">The service enum value</param>
     /// <returns>Default development URL</returns>
-    public static string GetDefaultDevelopmentUrl(this PawfectMatchServices service)
+    public static string GetBaseUrl(this PawfectMatchServices service)
     {
         return service switch
         {

@@ -60,12 +60,9 @@ public class InternalHttpClientFactory : IInternalHttpClientFactory
     /// <param name="baseUrl">Base URL of the target service</param>
     /// <param name="serviceName">Name of the target service (optional)</param>
     /// <returns>HttpClient configured with internal authentication headers</returns>
-    private System.Net.Http.HttpClient CreateClient(string baseUrl, string? serviceName = null)
+    private System.Net.Http.HttpClient CreateClient(string baseUrl, string serviceName)
     {
-        if (string.IsNullOrWhiteSpace(baseUrl))
-            throw new ArgumentException("Base URL cannot be null or empty", nameof(baseUrl));
-
-        var httpClient = _httpClientFactory.CreateClient(serviceName ?? "internal");
+        var httpClient = _httpClientFactory.CreateClient(serviceName);
 
         ConfigureInternalHeaders(httpClient, serviceName);
 
@@ -73,7 +70,7 @@ public class InternalHttpClientFactory : IInternalHttpClientFactory
         {
             httpClient.BaseAddress = new Uri(baseUrl);
             _logger.LogDebug("Created internal HTTP client for service: {ServiceName} at {BaseUrl}",
-                serviceName ?? "unnamed", baseUrl);
+                serviceName, baseUrl);
         }
         catch (UriFormatException ex)
         {
@@ -91,18 +88,9 @@ public class InternalHttpClientFactory : IInternalHttpClientFactory
     /// <returns>Service URL</returns>
     private string GetServiceUrl(PawfectMatchServices service)
     {
-        var configKey = service.GetUrlConfigKey();
-        var configuredUrl = _configuration[configKey];
-
-        if (!string.IsNullOrWhiteSpace(configuredUrl))
-        {
-            _logger.LogDebug("Using configured URL for {Service}: {Url}", service, configuredUrl);
-            return configuredUrl;
-        }
-
-        var defaultUrl = service.GetDefaultDevelopmentUrl();
-        _logger.LogDebug("Using default development URL for {Service}: {Url}", service, defaultUrl);
-        return defaultUrl;
+        var baseUrl = service.GetBaseUrl();
+        _logger.LogDebug("Using default development URL for {Service}: {Url}", service, baseUrl);
+        return baseUrl;
     }
 
     /// <summary>
@@ -110,7 +98,7 @@ public class InternalHttpClientFactory : IInternalHttpClientFactory
     /// </summary>
     /// <param name="httpClient">The HTTP client to configure</param>
     /// <param name="serviceName">Name of the target service (optional)</param>
-    private void ConfigureInternalHeaders(System.Net.Http.HttpClient httpClient, string? serviceName)
+    private void ConfigureInternalHeaders(System.Net.Http.HttpClient httpClient, string serviceName)
     {
         // Add the internal API key header for authentication
         httpClient.DefaultRequestHeaders.Add("X-Internal-API-Key", _internalApiKey);
@@ -133,6 +121,6 @@ public class InternalHttpClientFactory : IInternalHttpClientFactory
         httpClient.DefaultRequestHeaders.Add("X-Request-Source", "internal-service");
 
         _logger.LogDebug("Configured internal HTTP client with authentication headers for service: {ServiceName}",
-            serviceName ?? "unnamed");
+            serviceName);
     }
 }
