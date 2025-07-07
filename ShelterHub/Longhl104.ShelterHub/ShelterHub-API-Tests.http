@@ -1,0 +1,50 @@
+### Create Shelter Admin (Internal API - called by Identity service during registration)
+POST https://localhost:7002/api/shelter-admins
+Content-Type: application/json
+X-Internal-API-Key: your-internal-api-key
+
+{
+  "userId": "12345678-1234-1234-1234-123456789012",
+  "shelterName": "Happy Paws Animal Shelter",
+  "shelterContactNumber": "0412345678",
+  "shelterAddress": "123 Pet Street, Sydney NSW 2000",
+  "shelterWebsiteUrl": "https://happypaws.com.au",
+  "shelterAbn": "12345678901",
+  "shelterDescription": "A loving shelter dedicated to finding homes for abandoned pets."
+}
+
+###
+
+### Get Current Shelter Admin Profile (requires authentication)
+GET https://localhost:7002/api/shelter-admins/profile
+Content-Type: application/json
+# Cookie: auth-token=your-jwt-token
+
+###
+
+### Get My Shelter (requires authentication)
+GET https://localhost:7002/api/shelters/my-shelter
+Content-Type: application/json
+# Cookie: auth-token=your-jwt-token
+
+###
+
+### Get Shelter by ID (Internal API)
+GET https://localhost:7002/api/shelters/12345678-1234-1234-1234-123456789012
+Content-Type: application/json
+X-Internal-API-Key: your-internal-api-key
+
+###
+
+### Get Shelter Admin by ID (Internal API)
+GET https://localhost:7002/api/shelter-admins/12345678-1234-1234-1234-123456789012
+Content-Type: application/json
+X-Internal-API-Key: your-internal-api-key
+
+###
+
+### Health Check
+GET https://localhost:7002/health
+Content-Type: application/json
+
+###

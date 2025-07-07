@@ -1,5 +1,7 @@
 using Longhl104.PawfectMatch.Middleware;
 using Microsoft.AspNetCore.Authorization;
+using Amazon.DynamoDBv2;
+using Longhl104.PawfectMatch.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,9 +9,19 @@ var environmentName = builder.Environment.EnvironmentName;
 
 Console.WriteLine($"Environment: {environmentName}");
 
+// Add AWS Systems Manager configuration
+builder.AddPawfectMatchSystemsManager("ShelterHub");
+
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+
+// Configure AWS services
+builder.Services.AddSingleton<IAmazonDynamoDB, AmazonDynamoDBClient>();
+builder.Services.AddPawfectMatchInternalHttpClients();
+
+// Register ShelterHub services
+builder.Services.AddScoped<Longhl104.ShelterHub.Services.IShelterService, Longhl104.ShelterHub.Services.ShelterService>();
 
 // Add authentication and authorization services
 // Note: AuthenticationMiddleware handles JWT validation and sets ClaimsPrincipal

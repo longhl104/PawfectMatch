@@ -23,6 +23,7 @@ public partial class RegistrationController(
     private static partial System.Text.RegularExpressions.Regex AustralianPhoneNumberRegex();
 
     private readonly HttpClient _matcherHttpClient = _internalHttpClientFactory.CreateClient(PawfectMatchServices.Matcher);
+    private readonly HttpClient _shelterHubHttpClient = _internalHttpClientFactory.CreateClient(PawfectMatchServices.ShelterHub);
 
     /// <summary>
     /// Register a new adopter
@@ -178,7 +179,7 @@ public partial class RegistrationController(
             var userId = await _cognitoService.CreateCognitoShelterAdminUserAsync(registrationRequest);
 
             // Save shelter admin profile to DynamoDB
-            // await SaveShelterAdminProfile(registrationRequest, userId);
+            await SaveShelterAdminProfile(registrationRequest, userId);
 
             _logger.LogInformation("Shelter admin registration successful for email: {Email}, UserId: {UserId}", registrationRequest.Email, userId);
 
@@ -236,6 +237,28 @@ public partial class RegistrationController(
                 UserId = string.Empty
             });
         }
+    }
+
+    private async Task SaveShelterAdminProfile(ShelterAdminRegistrationRequest request, string userId)
+    {
+        var response = await _shelterHubHttpClient.PostAsJsonAsync("shelter-admins", new
+        {
+            UserId = userId,
+            request.ShelterName,
+            request.ShelterContactNumber,
+            request.ShelterAddress,
+            request.ShelterWebsiteUrl,
+            request.ShelterAbn
+        });
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            _logger.LogError("Failed to save shelter admin profile for UserId: {UserId}. Error: {Error}", userId, errorMessage);
+            throw new InvalidOptionException($"Failed to save shelter admin profile: {errorMessage}");
+        }
+
+        _logger.LogInformation("Shelter admin profile saved successfully for UserId: {UserId}", userId);
     }
 
     private static string ValidateRegistrationRequest(AdopterRegistrationRequest request)
