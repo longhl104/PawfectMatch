@@ -11,7 +11,8 @@
     <PackageId>Longhl104.PawfectMatch</PackageId>
     <Version>1.4.0</Version>
     <Authors>Longhl104</Authors>
-    <Description>Shared services and models for PawfectMatch application with internal service authorization and HTTP client factory</Description>
+    <Description>Shared services and models for PawfectMatch application with internal service
+      authorization and HTTP client factory</Description>
     <PackageTags>PawfectMatch;AWS;Cognito;JWT;DynamoDB;Authorization;Internal;HttpClient</PackageTags>
     <RepositoryUrl>https://github.com/longhl104/PawfectMatch</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -37,11 +38,5 @@
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.12.1" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.12.1" />
     <PackageReference Include="System.Text.Json" Version="9.0.6" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
-    <PackageReference Include="Moq" Version="4.20.70" />
-    <PackageReference Include="xunit" Version="2.8.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.0" />
   </ItemGroup>
 </Project>
