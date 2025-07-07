@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 using Amazon.CognitoIdentityProvider.Model;
 using Longhl104.Identity.Services;
 using Longhl104.Identity.Models;
+using Longhl104.PawfectMatch.HttpClient;
+using Longhl104.PawfectMatch.Models;
+using Amazon.SimpleSystemsManagement.Model;
 
 namespace Longhl104.Identity.Controllers;
 
@@ -10,13 +13,16 @@ namespace Longhl104.Identity.Controllers;
 public partial class RegistrationController(
     ILogger<RegistrationController> _logger,
     IAuthenticationService _authenticationService,
-    ICognitoService _cognitoService
+    ICognitoService _cognitoService,
+    IInternalHttpClientFactory _internalHttpClientFactory
     ) : ControllerBase
 {
     [System.Text.RegularExpressions.GeneratedRegex(@"^\d{11}$")]
     private static partial System.Text.RegularExpressions.Regex AbnRegex();
     [System.Text.RegularExpressions.GeneratedRegex(@"^(\+61|0)[2-9][0-9]{8}$")]
     private static partial System.Text.RegularExpressions.Regex AustralianPhoneNumberRegex();
+
+    private readonly HttpClient _matcherHttpClient = _internalHttpClientFactory.CreateClient(PawfectMatchServices.Matcher);
 
     /// <summary>
     /// Register a new adopter
@@ -118,10 +124,20 @@ public partial class RegistrationController(
 
     private async Task SaveAdopterProfile(AdopterRegistrationRequest request, string userId)
     {
-        // Implement logic to save adopter profile to DynamoDB
-        // This is a placeholder for actual implementation
-        _logger.LogInformation("Saving adopter profile for UserId: {UserId}", userId);
-        // await _dynamoDbService.SaveAdopterProfileAsync(request, userId);
+        var response = await _matcherHttpClient.PostAsJsonAsync("adopters", new
+        {
+            UserId = userId,
+            request.FullName
+        });
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            _logger.LogError("Failed to save adopter profile for UserId: {UserId}. Error: {Error}", userId, errorMessage);
+            throw new InvalidOptionException($"Failed to save adopter profile: {errorMessage}");
+        }
+
+        _logger.LogInformation("Adopter profile saved successfully for UserId: {UserId}", userId);
     }
 
     /// <summary>

@@ -19,7 +19,7 @@ public static class ConfigurationExtensions
     {
 
         builder.Configuration.AddSystemsManager(
-            $"/PawfectMatch/{builder.Environment.EnvironmentName}"
+            $"/PawfectMatch/{builder.Environment.EnvironmentName}/Common"
         );
 
         builder.Configuration.AddSystemsManager($"/PawfectMatch/{builder.Environment.EnvironmentName}/{serviceName}");

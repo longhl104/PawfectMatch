@@ -87,14 +87,14 @@ public static class InternalHttpClientExtensions
     /// <returns>The service collection for chaining</returns>
     public static IServiceCollection AddPawfectMatchInternalHttpClients(
         this IServiceCollection services,
-        List<PawfectMatchServices> serviceNames
+        List<PawfectMatchServices>? serviceNames = null
         )
     {
         // Add the basic internal HTTP client factory
         services.AddInternalHttpClient();
 
         // Register named clients for known services
-        foreach (var service in serviceNames)
+        foreach (var service in serviceNames ?? [])
         {
             var serviceName = service.GetServiceName();
             var baseUrl = service.GetBaseUrl();

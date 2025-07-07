@@ -12,7 +12,7 @@ public class AdoptersController(
     IAmazonDynamoDB dynamoDbClient
 ) : ControllerBase
 {
-    private readonly string _adoptersTableName = $"pawfectmatch-{hostEnvironment.EnvironmentName.ToLowerInvariant()}-adopters";
+    private readonly string _adoptersTableName = $"pawfectmatch-{hostEnvironment.EnvironmentName.ToLowerInvariant()}-matcher-adopters";
 
     [HttpPost()]
     [Authorize(Policy = "InternalOnly")]

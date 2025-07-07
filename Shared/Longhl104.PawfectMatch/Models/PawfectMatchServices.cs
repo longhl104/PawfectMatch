@@ -43,7 +43,7 @@ public static class PawfectMatchServiceExtensions
     /// <returns>Default development URL</returns>
     public static string GetBaseUrl(this PawfectMatchServices service)
     {
-        const string apiSuffix = "/api/internal";
+        const string apiSuffix = "/api/internal/";
 
         return service switch
         {

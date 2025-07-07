@@ -1,7 +1,5 @@
-
-using Longhl104.PawfectMatch.Middleware;
-using Microsoft.AspNetCore.Authorization;
 using Longhl104.PawfectMatch.Extensions;
+using Amazon.DynamoDBv2;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,9 +7,12 @@ var environmentName = builder.Environment.EnvironmentName;
 
 Console.WriteLine($"Environment: {environmentName}");
 
+builder.AddPawfectMatchSystemsManager("Matcher");
+
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddPawfectMatchInternalHttpClients();
 
 // Add authentication and authorization services
 // Configure custom authentication scheme to work with the AuthenticationMiddleware
@@ -30,6 +31,9 @@ builder.Services.AddCors(options =>
             .AllowCredentials();
     });
 });
+
+// Configure AWS services
+builder.Services.AddSingleton<IAmazonDynamoDB, AmazonDynamoDBClient>();
 
 // Configure logging
 builder.Logging.ClearProviders();
