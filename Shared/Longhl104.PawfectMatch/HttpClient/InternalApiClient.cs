@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using Longhl104.PawfectMatch.Models;
 using Microsoft.Extensions.Logging;
 
 namespace Longhl104.PawfectMatch.HttpClient;
@@ -65,17 +66,6 @@ public class InternalApiClient : IInternalApiClient, IDisposable
     private readonly JsonSerializerOptions _jsonOptions;
     private bool _disposed;
 
-    public InternalApiClient(IInternalHttpClientFactory httpClientFactory, ILogger<InternalApiClient> logger)
-    {
-        _httpClient = httpClientFactory.CreateClient("InternalApiClient");
-        _logger = logger;
-        _jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = false
-        };
-    }
-
     /// <summary>
     /// Constructor that accepts a specific service name and base URL
     /// </summary>
@@ -85,9 +75,9 @@ public class InternalApiClient : IInternalApiClient, IDisposable
     /// <param name="logger">Logger instance</param>
     public InternalApiClient(
         IInternalHttpClientFactory httpClientFactory,
-        string baseUrl,
-        string serviceName,
-        ILogger<InternalApiClient> logger)
+        PawfectMatchServices serviceName,
+        ILogger<InternalApiClient> logger
+        )
     {
         _logger = logger;
         _jsonOptions = new JsonSerializerOptions
@@ -95,7 +85,8 @@ public class InternalApiClient : IInternalApiClient, IDisposable
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             WriteIndented = false
         };
-        _httpClient = httpClientFactory.CreateClient(baseUrl, serviceName);
+
+        _httpClient = httpClientFactory.CreateClient(serviceName);
     }
 
     /// <summary>

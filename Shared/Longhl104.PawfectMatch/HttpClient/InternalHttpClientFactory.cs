@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Headers;
+using Longhl104.PawfectMatch.Models;
 
 namespace Longhl104.PawfectMatch.HttpClient;
 
@@ -10,19 +11,11 @@ namespace Longhl104.PawfectMatch.HttpClient;
 public interface IInternalHttpClientFactory
 {
     /// <summary>
-    /// Creates an HTTP client configured for internal service communication
+    /// Creates an HTTP client configured for a specific PawfectMatch service
     /// </summary>
-    /// <param name="serviceName">Name of the target service (optional)</param>
-    /// <returns>HttpClient configured with internal authentication headers</returns>
-    System.Net.Http.HttpClient CreateClient(string? serviceName = null);
-
-    /// <summary>
-    /// Creates an HTTP client configured for a specific service URL
-    /// </summary>
-    /// <param name="baseUrl">Base URL of the target service</param>
-    /// <param name="serviceName">Name of the target service (optional)</param>
-    /// <returns>HttpClient configured with internal authentication headers</returns>
-    System.Net.Http.HttpClient CreateClient(string baseUrl, string? serviceName = null);
+    /// <param name="service">The target service</param>
+    /// <returns>HttpClient configured with internal authentication headers and service URL</returns>
+    System.Net.Http.HttpClient CreateClient(PawfectMatchServices service);
 }
 
 /// <summary>
@@ -49,32 +42,32 @@ public class InternalHttpClientFactory : IInternalHttpClientFactory
     }
 
     /// <summary>
-    /// Creates an HTTP client configured for internal service communication
+    /// Creates an HTTP client configured for a specific PawfectMatch service
     /// </summary>
-    /// <param name="serviceName">Name of the target service (optional)</param>
-    /// <returns>HttpClient configured with internal authentication headers</returns>
-    public System.Net.Http.HttpClient CreateClient(string? serviceName = null)
+    /// <param name="service">The target service</param>
+    /// <returns>HttpClient configured with internal authentication headers and service URL</returns>
+    public System.Net.Http.HttpClient CreateClient(PawfectMatchServices service)
     {
-        var clientName = serviceName ?? "internal-client";
-        var httpClient = _httpClientFactory.CreateClient(clientName);
+        var serviceName = service.GetServiceName();
+        var baseUrl = GetServiceUrl(service);
 
-        ConfigureInternalHeaders(httpClient, serviceName);
-
-        return httpClient;
+        return CreateClient(baseUrl, serviceName);
     }
 
     /// <summary>
-    /// Creates an HTTP client configured for a specific service URL
+    /// Creates an HTTP client configured for a custom service URL
     /// </summary>
     /// <param name="baseUrl">Base URL of the target service</param>
     /// <param name="serviceName">Name of the target service (optional)</param>
     /// <returns>HttpClient configured with internal authentication headers</returns>
-    public System.Net.Http.HttpClient CreateClient(string baseUrl, string? serviceName = null)
+    private System.Net.Http.HttpClient CreateClient(string baseUrl, string? serviceName = null)
     {
         if (string.IsNullOrWhiteSpace(baseUrl))
             throw new ArgumentException("Base URL cannot be null or empty", nameof(baseUrl));
 
-        var httpClient = CreateClient(serviceName);
+        var httpClient = _httpClientFactory.CreateClient(serviceName ?? "internal");
+
+        ConfigureInternalHeaders(httpClient, serviceName);
 
         try
         {
@@ -89,6 +82,27 @@ public class InternalHttpClientFactory : IInternalHttpClientFactory
         }
 
         return httpClient;
+    }
+
+    /// <summary>
+    /// Gets the service URL from configuration with fallback to default development URL
+    /// </summary>
+    /// <param name="service">The service to get URL for</param>
+    /// <returns>Service URL</returns>
+    private string GetServiceUrl(PawfectMatchServices service)
+    {
+        var configKey = service.GetUrlConfigKey();
+        var configuredUrl = _configuration[configKey];
+
+        if (!string.IsNullOrWhiteSpace(configuredUrl))
+        {
+            _logger.LogDebug("Using configured URL for {Service}: {Url}", service, configuredUrl);
+            return configuredUrl;
+        }
+
+        var defaultUrl = service.GetDefaultDevelopmentUrl();
+        _logger.LogDebug("Using default development URL for {Service}: {Url}", service, defaultUrl);
+        return defaultUrl;
     }
 
     /// <summary>
