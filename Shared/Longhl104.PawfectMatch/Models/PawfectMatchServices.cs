@@ -43,11 +43,13 @@ public static class PawfectMatchServiceExtensions
     /// <returns>Default development URL</returns>
     public static string GetBaseUrl(this PawfectMatchServices service)
     {
+        const string apiSuffix = "/api/internal";
+
         return service switch
         {
-            PawfectMatchServices.Identity => "https://localhost:7000",
-            PawfectMatchServices.Matcher => "https://localhost:7001",
-            PawfectMatchServices.ShelterHub => "https://localhost:7002",
+            PawfectMatchServices.Identity => "https://localhost:7000" + apiSuffix,
+            PawfectMatchServices.Matcher => "https://localhost:7001" + apiSuffix,
+            PawfectMatchServices.ShelterHub => "https://localhost:7002" + apiSuffix,
             _ => throw new ArgumentOutOfRangeException(nameof(service), service, "Unknown service")
         };
     }
