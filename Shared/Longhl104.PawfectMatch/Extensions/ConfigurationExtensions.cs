@@ -17,8 +17,14 @@ public static class ConfigurationExtensions
         string serviceName
         )
     {
-        var parameterPath = $"/PawfectMatch/{builder.Environment.EnvironmentName}/{serviceName}";
-        return builder.Configuration.AddSystemsManager(parameterPath);
+
+        builder.Configuration.AddSystemsManager(
+            $"/PawfectMatch/{builder.Environment.EnvironmentName}"
+        );
+
+        builder.Configuration.AddSystemsManager($"/PawfectMatch/{builder.Environment.EnvironmentName}/{serviceName}");
+
+        return builder.Configuration;
     }
 
     /// <summary>
