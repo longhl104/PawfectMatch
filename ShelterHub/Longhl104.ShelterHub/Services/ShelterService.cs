@@ -29,6 +29,18 @@ public interface IShelterService
     /// <param name="shelterId">The shelter ID</param>
     /// <returns>The shelter or null if not found</returns>
     Task<Shelter?> GetShelterAsync(string shelterId);
+
+    /// <summary>
+    /// Checks if a shelter admin exists for the given user ID
+    /// </summary>
+    /// <param name="userId">The user ID</param>
+    /// <returns>True if shelter admin exists, false otherwise</returns>
+    /// <remarks>
+    /// This method is optimized for existence checking only. It uses ProjectionExpression
+    /// to retrieve only the key attributes, minimizing data transfer and improving performance
+    /// compared to retrieving the full shelter admin record.
+    /// </remarks>
+    Task<bool> ShelterAdminExistsAsync(string userId);
 }
 
 /// <summary>
@@ -45,7 +57,8 @@ public class ShelterService : IShelterService
     public ShelterService(
         IAmazonDynamoDB dynamoDbClient,
         IHostEnvironment environment,
-        ILogger<ShelterService> logger)
+        ILogger<ShelterService> logger
+        )
     {
         _dynamoDbClient = dynamoDbClient;
         _environment = environment;
@@ -76,16 +89,15 @@ public class ShelterService : IShelterService
             }
 
             // Check if shelter admin already exists
-            var existingShelterAdmin = await GetShelterAdminAsync(request.UserId);
-            if (existingShelterAdmin != null)
+            var shelterAdminExists = await ShelterAdminExistsAsync(request.UserId);
+            if (shelterAdminExists)
             {
                 _logger.LogWarning("Shelter admin already exists for UserId: {UserId}", request.UserId);
                 return new ShelterAdminResponse
                 {
                     Success = false,
                     Message = "Shelter admin profile already exists for this user",
-                    UserId = request.UserId,
-                    ShelterId = existingShelterAdmin.ShelterId
+                    UserId = request.UserId
                 };
             }
 
@@ -198,6 +210,33 @@ public class ShelterService : IShelterService
         {
             _logger.LogError(ex, "Error retrieving shelter for ShelterId: {ShelterId}", shelterId);
             return null;
+        }
+    }
+
+    public async Task<bool> ShelterAdminExistsAsync(string userId)
+    {
+        try
+        {
+            var request = new GetItemRequest
+            {
+                TableName = _shelterAdminsTableName,
+                Key = new Dictionary<string, AttributeValue>
+                {
+                    ["UserId"] = new AttributeValue { S = userId }
+                },
+                // Only retrieve the key attributes to minimize data transfer
+                ProjectionExpression = "UserId"
+            };
+
+            var response = await _dynamoDbClient.GetItemAsync(request);
+
+            return response.IsItemSet;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error checking if shelter admin exists for UserId: {UserId}", userId);
+            // In case of error, assume it doesn't exist to allow creation attempt
+            return false;
         }
     }
 

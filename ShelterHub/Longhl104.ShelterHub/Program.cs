@@ -1,7 +1,8 @@
-using Longhl104.PawfectMatch.Middleware;
 using Microsoft.AspNetCore.Authorization;
 using Amazon.DynamoDBv2;
 using Longhl104.PawfectMatch.Extensions;
+using Longhl104.ShelterHub.Services;
+using Longhl104.PawfectMatch.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +22,7 @@ builder.Services.AddSingleton<IAmazonDynamoDB, AmazonDynamoDBClient>();
 builder.Services.AddPawfectMatchInternalHttpClients();
 
 // Register ShelterHub services
-builder.Services.AddScoped<Longhl104.ShelterHub.Services.IShelterService, Longhl104.ShelterHub.Services.ShelterService>();
+builder.Services.AddScoped<IShelterService, ShelterService>();
 
 // Add authentication and authorization services
 // Note: AuthenticationMiddleware handles JWT validation and sets ClaimsPrincipal
@@ -73,7 +74,7 @@ app.UseHttpsRedirection();
 app.UseCors();
 
 // Add authentication middleware
-app.UseMiddleware<Longhl104.PawfectMatch.Middleware.AuthenticationMiddleware>();
+app.UseMiddleware<AuthenticationMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();
