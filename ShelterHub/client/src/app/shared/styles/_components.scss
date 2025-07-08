@@ -4,29 +4,12 @@
 .p-button {
   font-weight: 500;
   letter-spacing: 0.025em;
-  transition: all var(--p-transition-duration) var(--p-transition-timing-function);
+  transition: all var(--p-transition-duration)
+    var(--p-transition-timing-function);
 
   &:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  }
-
-  &.p-button-success {
-    background: linear-gradient(135deg, var(--green-500), var(--green-600));
-    border-color: var(--green-600);
-
-    &:hover {
-      background: linear-gradient(135deg, var(--green-600), var(--green-700));
-    }
-  }
-
-  &.p-button-info {
-    background: linear-gradient(135deg, var(--blue-500), var(--blue-600));
-    border-color: var(--blue-600);
-
-    &:hover {
-      background: linear-gradient(135deg, var(--blue-600), var(--blue-700));
-    }
   }
 }
 
@@ -34,10 +17,13 @@
 .p-card {
   border: 1px solid var(--p-content-border-color);
   box-shadow: var(--p-card-shadow);
-  transition: all var(--p-transition-duration) var(--p-transition-timing-function);
+  transition: all var(--p-transition-duration)
+    var(--p-transition-timing-function);
 
   &:hover {
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow:
+      0 10px 25px -5px rgba(0, 0, 0, 0.1),
+      0 10px 10px -5px rgba(0, 0, 0, 0.04);
     transform: translateY(-2px);
   }
 
@@ -94,7 +80,8 @@
 // Avatar customizations
 .p-avatar {
   font-weight: 600;
-  transition: all var(--p-transition-duration) var(--p-transition-timing-function);
+  transition: all var(--p-transition-duration)
+    var(--p-transition-timing-function);
 
   &.cursor-pointer:hover {
     transform: scale(1.05);
@@ -104,12 +91,15 @@
 // Menu customizations
 .p-menu {
   border: 1px solid var(--p-content-border-color);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
   border-radius: 12px;
   overflow: hidden;
 
   .p-menuitem-link {
-    transition: all var(--p-transition-duration) var(--p-transition-timing-function);
+    transition: all var(--p-transition-duration)
+      var(--p-transition-timing-function);
 
     &:hover {
       background: var(--p-surface-100);
@@ -132,22 +122,28 @@
 }
 
 // Input field customizations
-.p-inputtext, .p-inputnumber-input, .p-dropdown, .p-multiselect {
+.p-inputtext,
+.p-inputnumber-input,
+.p-dropdown,
+.p-multiselect {
   border-radius: 8px;
   border: 2px solid var(--p-content-border-color);
-  transition: all var(--p-transition-duration) var(--p-transition-timing-function);
+  transition: all var(--p-transition-duration)
+    var(--p-transition-timing-function);
 
   &:focus {
     border-color: var(--pawfect-primary);
     box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.1);
   }
 
-  &.ng-invalid.ng-touched, &.ng-invalid.ng-dirty {
+  &.ng-invalid.ng-touched,
+  &.ng-invalid.ng-dirty {
     border-color: var(--pawfect-error);
     box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
   }
 
-  &.ng-valid.ng-touched, &.ng-valid.ng-dirty {
+  &.ng-valid.ng-touched,
+  &.ng-valid.ng-dirty {
     border-color: var(--pawfect-success);
     box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
   }
@@ -157,7 +153,9 @@
 .p-toast {
   .p-toast-message {
     border-radius: 12px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow:
+      0 20px 25px -5px rgba(0, 0, 0, 0.1),
+      0 10px 10px -5px rgba(0, 0, 0, 0.04);
 
     &.p-toast-message-success {
       background: var(--green-50);
@@ -202,10 +200,13 @@
 
 // Hover effects for interactive elements
 .interactive-hover {
-  transition: all var(--p-transition-duration) var(--p-transition-timing-function);
+  transition: all var(--p-transition-duration)
+    var(--p-transition-timing-function);
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow:
+      0 10px 25px -5px rgba(0, 0, 0, 0.1),
+      0 10px 10px -5px rgba(0, 0, 0, 0.04);
   }
 }
