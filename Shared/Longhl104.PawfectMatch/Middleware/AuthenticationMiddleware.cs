@@ -84,7 +84,7 @@ public class AuthenticationMiddleware(
             // Create claims identity for authorization
             var claims = new List<Claim>
             {
-                new(ClaimTypes.NameIdentifier, authResult.User.UserId),
+                new(ClaimTypes.NameIdentifier, authResult.User.UserId.ToString()),
                 new(ClaimTypes.Email, authResult.User.Email),
                 new("UserType", authResult.User.UserType)
             };

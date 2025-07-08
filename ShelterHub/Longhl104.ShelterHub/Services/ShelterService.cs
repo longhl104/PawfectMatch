@@ -21,14 +21,14 @@ public interface IShelterService
     /// </summary>
     /// <param name="userId">The user ID</param>
     /// <returns>The shelter admin profile or null if not found</returns>
-    Task<ShelterAdmin?> GetShelterAdminAsync(string userId);
+    Task<ShelterAdmin?> GetShelterAdminAsync(Guid userId);
 
     /// <summary>
     /// Gets a shelter by shelter ID
     /// </summary>
     /// <param name="shelterId">The shelter ID</param>
     /// <returns>The shelter or null if not found</returns>
-    Task<Shelter?> GetShelterAsync(string shelterId);
+    Task<Shelter?> GetShelterAsync(Guid shelterId);
 
     /// <summary>
     /// Checks if a shelter admin exists for the given user ID
@@ -40,7 +40,7 @@ public interface IShelterService
     /// to retrieve only the key attributes, minimizing data transfer and improving performance
     /// compared to retrieving the full shelter admin record.
     /// </remarks>
-    Task<bool> ShelterAdminExistsAsync(string userId);
+    Task<bool> ShelterAdminExistsAsync(Guid userId);
 }
 
 /// <summary>
@@ -102,7 +102,7 @@ public class ShelterService : IShelterService
             }
 
             // Generate unique shelter ID
-            var shelterId = Guid.NewGuid().ToString();
+            var shelterId = Guid.NewGuid();
 
             // Create shelter record
             var shelter = new Shelter
@@ -155,7 +155,7 @@ public class ShelterService : IShelterService
         }
     }
 
-    public async Task<ShelterAdmin?> GetShelterAdminAsync(string userId)
+    public async Task<ShelterAdmin?> GetShelterAdminAsync(Guid userId)
     {
         try
         {
@@ -164,7 +164,7 @@ public class ShelterService : IShelterService
                 TableName = _shelterAdminsTableName,
                 Key = new Dictionary<string, AttributeValue>
                 {
-                    ["UserId"] = new AttributeValue { S = userId }
+                    ["UserId"] = new AttributeValue { S = userId.ToString() }
                 }
             };
 
@@ -184,7 +184,7 @@ public class ShelterService : IShelterService
         }
     }
 
-    public async Task<Shelter?> GetShelterAsync(string shelterId)
+    public async Task<Shelter?> GetShelterAsync(Guid shelterId)
     {
         try
         {
@@ -193,7 +193,7 @@ public class ShelterService : IShelterService
                 TableName = _sheltersTableName,
                 Key = new Dictionary<string, AttributeValue>
                 {
-                    ["ShelterId"] = new AttributeValue { S = shelterId }
+                    ["ShelterId"] = new AttributeValue { S = shelterId.ToString() }
                 }
             };
 
@@ -213,7 +213,7 @@ public class ShelterService : IShelterService
         }
     }
 
-    public async Task<bool> ShelterAdminExistsAsync(string userId)
+    public async Task<bool> ShelterAdminExistsAsync(Guid userId)
     {
         try
         {
@@ -222,7 +222,7 @@ public class ShelterService : IShelterService
                 TableName = _shelterAdminsTableName,
                 Key = new Dictionary<string, AttributeValue>
                 {
-                    ["UserId"] = new AttributeValue { S = userId }
+                    ["UserId"] = new AttributeValue { S = userId.ToString() }
                 },
                 // Only retrieve the key attributes to minimize data transfer
                 ProjectionExpression = "UserId"
@@ -244,7 +244,7 @@ public class ShelterService : IShelterService
     {
         var item = new Dictionary<string, AttributeValue>
         {
-            ["ShelterId"] = new AttributeValue { S = shelter.ShelterId },
+            ["ShelterId"] = new AttributeValue { S = shelter.ShelterId.ToString() },
             ["ShelterName"] = new AttributeValue { S = shelter.ShelterName },
             ["ShelterContactNumber"] = new AttributeValue { S = shelter.ShelterContactNumber },
             ["ShelterAddress"] = new AttributeValue { S = shelter.ShelterAddress },
@@ -276,8 +276,8 @@ public class ShelterService : IShelterService
     {
         var item = new Dictionary<string, AttributeValue>
         {
-            ["UserId"] = new AttributeValue { S = shelterAdmin.UserId },
-            ["ShelterId"] = new AttributeValue { S = shelterAdmin.ShelterId },
+            ["UserId"] = new AttributeValue { S = shelterAdmin.UserId.ToString() },
+            ["ShelterId"] = new AttributeValue { S = shelterAdmin.ShelterId.ToString() },
             ["CreatedAt"] = new AttributeValue { S = shelterAdmin.CreatedAt.ToString("O") },
             ["UpdatedAt"] = new AttributeValue { S = shelterAdmin.UpdatedAt.ToString("O") }
         };
@@ -295,8 +295,8 @@ public class ShelterService : IShelterService
     {
         return new ShelterAdmin
         {
-            UserId = item["UserId"].S,
-            ShelterId = item["ShelterId"].S,
+            UserId = Guid.Parse(item["UserId"].S),
+            ShelterId = Guid.Parse(item["ShelterId"].S),
             CreatedAt = DateTime.Parse(item["CreatedAt"].S),
             UpdatedAt = DateTime.Parse(item["UpdatedAt"].S)
         };
@@ -306,7 +306,7 @@ public class ShelterService : IShelterService
     {
         return new Shelter
         {
-            ShelterId = item["ShelterId"].S,
+            ShelterId = Guid.Parse(item["ShelterId"].S),
             ShelterName = item["ShelterName"].S,
             ShelterContactNumber = item["ShelterContactNumber"].S,
             ShelterAddress = item["ShelterAddress"].S,
@@ -321,9 +321,6 @@ public class ShelterService : IShelterService
 
     private static string ValidateCreateShelterAdminRequest(CreateShelterAdminRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.UserId))
-            return "UserId is required";
-
         if (string.IsNullOrWhiteSpace(request.ShelterName))
             return "Shelter name is required";
 

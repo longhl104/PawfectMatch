@@ -99,7 +99,7 @@ public class ShelterAdminsController(
     /// <returns>The shelter admin profile</returns>
     [HttpGet("{userId}")]
     [Authorize(Policy = "InternalOnly")] // Only allow internal service calls
-    public async Task<ActionResult<ShelterAdmin>> GetShelterAdmin(string userId)
+    public async Task<ActionResult<ShelterAdmin>> GetShelterAdmin(Guid userId)
     {
         try
         {

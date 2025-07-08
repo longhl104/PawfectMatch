@@ -8,7 +8,7 @@ public class CreateShelterAdminRequest
     /// <summary>
     /// The user ID from Cognito
     /// </summary>
-    public string UserId { get; set; } = string.Empty;
+    public required Guid UserId { get; set; }
 
     /// <summary>
     /// Name of the shelter
@@ -59,12 +59,12 @@ public class ShelterAdminResponse
     /// <summary>
     /// The shelter admin user ID
     /// </summary>
-    public string UserId { get; set; } = string.Empty;
+    public Guid UserId { get; set; }
 
     /// <summary>
     /// The created shelter ID
     /// </summary>
-    public string? ShelterId { get; set; }
+    public Guid ShelterId { get; set; }
 }
 
 /// <summary>
@@ -75,12 +75,12 @@ public class ShelterAdmin
     /// <summary>
     /// The user ID from Cognito (Primary Key)
     /// </summary>
-    public string UserId { get; set; } = string.Empty;
+    public required Guid UserId { get; set; }
 
     /// <summary>
     /// The associated shelter ID
     /// </summary>
-    public string ShelterId { get; set; } = string.Empty;
+    public required Guid ShelterId { get; set; }
 
     /// <summary>
     /// When the profile was created
@@ -101,7 +101,7 @@ public class Shelter
     /// <summary>
     /// Unique shelter ID (Primary Key)
     /// </summary>
-    public string ShelterId { get; set; } = string.Empty;
+    public required Guid ShelterId { get; set; }
 
     /// <summary>
     /// Name of the shelter

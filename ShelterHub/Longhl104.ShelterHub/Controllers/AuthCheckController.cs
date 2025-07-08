@@ -22,6 +22,17 @@ public class AuthCheckController(ILogger<AuthCheckController> logger) : Controll
         {
             var user = HttpContext.GetCurrentUser();
 
+            if (user == null)
+            {
+                logger.LogInformation("User is not authenticated");
+                return Ok(new AuthStatusResponse
+                {
+                    IsAuthenticated = false,
+                    Message = "User is not authenticated",
+                    RedirectUrl = GetIdentityLoginUrl()
+                });
+            }
+
             // User is authenticated
             logger.LogInformation("User is authenticated: {Email}", user.Email);
             return Ok(new AuthStatusResponse

@@ -60,33 +60,4 @@ public class SheltersController(
         }
     }
 
-    /// <summary>
-    /// Gets a shelter by ID (internal use)
-    /// </summary>
-    /// <param name="shelterId">The shelter ID</param>
-    /// <returns>The shelter information</returns>
-    [HttpGet("{shelterId}")]
-    [Authorize(Policy = "InternalOnly")] // Only allow internal service calls
-    public async Task<ActionResult<Shelter>> GetShelter(string shelterId)
-    {
-        try
-        {
-            _logger.LogInformation("Getting shelter for ShelterId: {ShelterId}", shelterId);
-
-            var shelter = await _shelterService.GetShelterAsync(shelterId);
-
-            if (shelter == null)
-            {
-                _logger.LogWarning("Shelter not found for ShelterId: {ShelterId}", shelterId);
-                return NotFound(new { Message = "Shelter not found" });
-            }
-
-            return Ok(shelter);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting shelter for ShelterId: {ShelterId}", shelterId);
-            return StatusCode(500, new { Message = "An error occurred while retrieving the shelter" });
-        }
-    }
 }
