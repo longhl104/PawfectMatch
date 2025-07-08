@@ -1,0 +1,46 @@
+<p-toolbar styleClass="border-none shadow-2 px-4">
+  <ng-template pTemplate="start">
+    <div class="flex align-items-center gap-3">
+      <i class="pi pi-heart-fill text-primary text-2xl"></i>
+      <h2 class="m-0 text-xl font-bold text-primary">PawfectMatch</h2>
+      <span class="text-sm text-600 bg-orange-100 text-orange-800 px-2 py-1 border-round">
+        Shelter Hub
+      </span>
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="end">
+    <div class="flex align-items-center gap-3">
+      <!-- Authenticated User Menu -->
+      <div *ngIf="(authStatus$ | async)?.isAuthenticated; else loginButton"
+           class="flex align-items-center gap-2">
+
+        <span class="text-sm text-600 hidden md:inline">
+          Welcome, {{ getUserDisplayName((authStatus$ | async)?.user) }}
+        </span>
+
+        <p-avatar
+          [label]="getUserInitials((authStatus$ | async)?.user)"
+          styleClass="cursor-pointer"
+          size="normal"
+          shape="circle"
+          [style]="{'background-color': 'var(--primary-color)', 'color': 'white'}"
+          (click)="menu.toggle($event)"
+          #avatar>
+        </p-avatar>
+
+        <p-menu #menu [popup]="true" [model]="userMenuItems"></p-menu>
+      </div>
+
+      <!-- Login Button Template -->
+      <ng-template #loginButton>
+        <p-button
+          label="Login"
+          icon="pi pi-sign-in"
+          severity="info"
+          (onClick)="onLogin()">
+        </p-button>
+      </ng-template>
+    </div>
+  </ng-template>
+</p-toolbar>

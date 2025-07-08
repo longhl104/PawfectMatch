@@ -2,10 +2,11 @@ import { Component, inject, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ToastContainerComponent } from '@longhl104/pawfect-match-ng';
 import { AuthService } from 'shared/services/auth.service';
+import { HeaderComponent } from './components/header/header.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, ToastContainerComponent],
+  imports: [RouterOutlet, ToastContainerComponent, HeaderComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
