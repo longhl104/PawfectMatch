@@ -3,7 +3,9 @@
     <div class="flex align-items-center gap-3">
       <i class="pi pi-heart-fill text-primary text-2xl"></i>
       <h2 class="m-0 text-xl font-bold text-primary">PawfectMatch</h2>
-      <span class="text-sm text-600 bg-orange-100 text-orange-800 px-2 py-1 border-round">
+      <span
+        class="text-sm text-600 bg-orange-100 text-orange-800 px-2 py-1 border-round"
+      >
         Shelter Hub
       </span>
     </div>
@@ -12,9 +14,10 @@
   <ng-template pTemplate="end">
     <div class="flex align-items-center gap-3">
       <!-- Authenticated User Menu -->
-      <div *ngIf="(authStatus$ | async)?.isAuthenticated; else loginButton"
-           class="flex align-items-center gap-2">
-
+      <div
+        *ngIf="(authStatus$ | async)?.isAuthenticated; else loginButton"
+        class="flex align-items-center gap-2"
+      >
         <span class="text-sm text-600 hidden md:inline">
           Welcome, {{ getUserDisplayName((authStatus$ | async)?.user) }}
         </span>
@@ -24,10 +27,26 @@
           styleClass="cursor-pointer"
           size="normal"
           shape="circle"
-          [style]="{'background-color': 'var(--primary-color)', 'color': 'white'}"
+          [style]="{
+            'background-color': 'var(--primary-color)',
+            color: 'white',
+          }"
           (click)="menu.toggle($event)"
-          #avatar>
+          #avatar
+        >
         </p-avatar>
+
+        <p-button
+          icon="pi pi-sign-out"
+          severity="secondary"
+          [text]="true"
+          [rounded]="true"
+          pTooltip="Logout"
+          tooltipPosition="bottom"
+          (onClick)="onLogout()"
+          styleClass="ml-2"
+        >
+        </p-button>
 
         <p-menu #menu [popup]="true" [model]="userMenuItems"></p-menu>
       </div>
@@ -38,7 +57,8 @@
           label="Login"
           icon="pi pi-sign-in"
           severity="info"
-          (onClick)="onLogin()">
+          (onClick)="onLogin()"
+        >
         </p-button>
       </ng-template>
     </div>

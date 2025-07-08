@@ -4,6 +4,7 @@ import { ToolbarModule } from 'primeng/toolbar';
 import { ButtonModule } from 'primeng/button';
 import { AvatarModule } from 'primeng/avatar';
 import { MenuModule } from 'primeng/menu';
+import { TooltipModule } from 'primeng/tooltip';
 import { MenuItem } from 'primeng/api';
 import {
   AuthService,
@@ -21,6 +22,7 @@ import { Observable } from 'rxjs';
     ButtonModule,
     AvatarModule,
     MenuModule,
+    TooltipModule,
   ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
