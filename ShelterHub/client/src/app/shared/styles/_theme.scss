@@ -1,0 +1,143 @@
+// Custom PrimeNG Theme Configuration
+// This file contains custom CSS variables to override the default Aura theme
+
+:root {
+  // Primary Brand Colors
+  --primary-50: #fef2f2;
+  --primary-100: #fee2e2;
+  --primary-200: #fecaca;
+  --primary-300: #fca5a5;
+  --primary-400: #f87171;
+  --primary-500: #ef4444;
+  --primary-600: #dc2626;
+  --primary-700: #b91c1c;
+  --primary-800: #991b1b;
+  --primary-900: #7f1d1d;
+
+  // Secondary Colors (Orange for pets/warmth)
+  --surface-50: #fff7ed;
+  --surface-100: #ffedd5;
+  --surface-200: #fed7aa;
+  --surface-300: #fdba74;
+  --surface-400: #fb923c;
+  --surface-500: #f97316;
+  --surface-600: #ea580c;
+  --surface-700: #c2410c;
+  --surface-800: #9a3412;
+  --surface-900: #7c2d12;
+
+  // Semantic Colors
+  --green-50: #f0fdf4;
+  --green-100: #dcfce7;
+  --green-200: #bbf7d0;
+  --green-300: #86efac;
+  --green-400: #4ade80;
+  --green-500: #22c55e;
+  --green-600: #16a34a;
+  --green-700: #15803d;
+  --green-800: #166534;
+  --green-900: #14532d;
+
+  --blue-50: #eff6ff;
+  --blue-100: #dbeafe;
+  --blue-200: #bfdbfe;
+  --blue-300: #93c5fd;
+  --blue-400: #60a5fa;
+  --blue-500: #3b82f6;
+  --blue-600: #2563eb;
+  --blue-700: #1d4ed8;
+  --blue-800: #1e40af;
+  --blue-900: #1e3a8a;
+
+  --yellow-50: #fefce8;
+  --yellow-100: #fef3c7;
+  --yellow-200: #fde68a;
+  --yellow-300: #fcd34d;
+  --yellow-400: #fbbf24;
+  --yellow-500: #f59e0b;
+  --yellow-600: #d97706;
+  --yellow-700: #b45309;
+  --yellow-800: #92400e;
+  --yellow-900: #78350f;
+
+  // Custom PawfectMatch Brand Colors
+  --pawfect-primary: #e11d48; // Rose pink for hearts/love
+  --pawfect-secondary: #f97316; // Orange for warmth/pets
+  --pawfect-accent: #8b5cf6; // Purple for premium feel
+  --pawfect-success: #10b981; // Green for success states
+  --pawfect-warning: #f59e0b; // Amber for warnings
+  --pawfect-error: #ef4444; // Red for errors
+
+  // Override PrimeNG primary color
+  --p-primary-color: var(--pawfect-primary);
+  --p-primary-contrast-color: #ffffff;
+  --p-primary-50: #fdf2f8;
+  --p-primary-100: #fce7f3;
+  --p-primary-200: #fbcfe8;
+  --p-primary-300: #f9a8d4;
+  --p-primary-400: #f472b6;
+  --p-primary-500: var(--pawfect-primary);
+  --p-primary-600: #be185d;
+  --p-primary-700: #9d174d;
+  --p-primary-800: #831843;
+  --p-primary-900: #701a75;
+
+  // Surface colors for better contrast
+  --p-surface-0: #ffffff;
+  --p-surface-50: #f8fafc;
+  --p-surface-100: #f1f5f9;
+  --p-surface-200: #e2e8f0;
+  --p-surface-300: #cbd5e1;
+  --p-surface-400: #94a3b8;
+  --p-surface-500: #64748b;
+  --p-surface-600: #475569;
+  --p-surface-700: #334155;
+  --p-surface-800: #1e293b;
+  --p-surface-900: #0f172a;
+
+  // Text colors
+  --p-text-color: #1e293b;
+  --p-text-color-secondary: #64748b;
+  --p-text-color-muted: #94a3b8;
+
+  // Border and focus colors
+  --p-content-border-color: #e2e8f0;
+  --p-content-border-radius: 8px;
+  --p-focus-ring-color: var(--pawfect-primary);
+  --p-focus-ring-width: 2px;
+  --p-focus-ring-style: solid;
+  --p-focus-ring-offset: 2px;
+
+  // Component specific overrides
+  --p-button-border-radius: 8px;
+  --p-card-border-radius: 12px;
+  --p-card-shadow:
+    0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --p-dialog-border-radius: 16px;
+  --p-overlay-background: rgba(0, 0, 0, 0.4);
+
+  // Custom transitions
+  --p-transition-duration: 150ms;
+  --p-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// Dark mode overrides
+[data-theme="dark"] {
+  --p-surface-0: #0f172a;
+  --p-surface-50: #1e293b;
+  --p-surface-100: #334155;
+  --p-surface-200: #475569;
+  --p-surface-300: #64748b;
+  --p-surface-400: #94a3b8;
+  --p-surface-500: #cbd5e1;
+  --p-surface-600: #e2e8f0;
+  --p-surface-700: #f1f5f9;
+  --p-surface-800: #f8fafc;
+  --p-surface-900: #ffffff;
+
+  --p-text-color: #f8fafc;
+  --p-text-color-secondary: #cbd5e1;
+  --p-text-color-muted: #94a3b8;
+
+  --p-content-border-color: #334155;
+}

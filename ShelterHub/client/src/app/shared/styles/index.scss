@@ -1,0 +1,69 @@
+// PawfectMatch ShelterHub Custom Styles
+// Import all custom styling modules in the correct order
+
+// 1. Theme variables and overrides (must be first)
+@use "theme";
+
+// 3. Component customizations
+@use "components";
+
+// 4. Utility classes
+@use "utilities";
+
+// Global application styles
+body {
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    sans-serif;
+  line-height: 1.6;
+  color: var(--p-text-color);
+  background-color: var(--p-surface-ground, var(--p-surface-50));
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Smooth scrolling
+html {
+  scroll-behavior: smooth;
+}
+
+// Custom scrollbar
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--p-surface-100);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--p-surface-400);
+  border-radius: 4px;
+
+  &:hover {
+    background: var(--p-surface-500);
+  }
+}
+
+// Focus styles for accessibility
+*:focus {
+  outline: var(--p-focus-ring-width) var(--p-focus-ring-style)
+    var(--p-focus-ring-color);
+  outline-offset: var(--p-focus-ring-offset);
+}
+
+// Remove default focus for mouse users
+*:focus:not(:focus-visible) {
+  outline: none;
+}
