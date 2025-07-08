@@ -6,6 +6,7 @@ import {
   provideAppInitializer,
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 import { routes } from './app.routes';
 import {
@@ -19,6 +20,8 @@ import {
 } from '@angular/common/http';
 import { GlobalErrorHandler } from '@longhl104/pawfect-match-ng';
 import { authInitializer } from './initializers/auth.initializer';
+import { providePrimeNG } from 'primeng/config';
+import Aura from '@primeuix/themes/aura';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -27,6 +30,17 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideClientHydration(withEventReplay()),
     provideHttpClient(withFetch(), withInterceptorsFromDi()),
+    provideAnimationsAsync(),
+    providePrimeNG({
+      theme: {
+        preset: Aura,
+        options: {
+          prefix: 'p',
+          darkModeSelector: 'system',
+          cssLayer: false
+        }
+      }
+    }),
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
     provideAppInitializer(authInitializer()),
   ],

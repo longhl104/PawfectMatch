@@ -8,32 +8,32 @@
       </div>
     </div>
   </ng-template>
-  
+
   <ng-template pTemplate="end">
     <div class="flex align-items-center gap-3">
       <ng-container *ngIf="isAuthenticated$ | async as authStatus">
         <ng-container *ngIf="authStatus.isAuthenticated && (currentUser$ | async) as user; else notAuthenticated">
           <!-- Authenticated admin actions -->
-          <p-button 
-            icon="pi pi-plus" 
+          <p-button
+            icon="pi pi-plus"
             label="Add Pet"
             size="small"
             severity="success"
             [raised]="true"
             (onClick)="onAddPet()">
           </p-button>
-          
-          <p-button 
-            icon="pi pi-search" 
+
+          <p-button
+            icon="pi pi-search"
             label="Run Match"
             size="small"
             severity="warn"
             [raised]="true"
             (onClick)="onRunMatching()">
           </p-button>
-          
+
           <div class="flex align-items-center gap-2 ml-3">
-            <p-avatar 
+            <p-avatar
               [label]="user.fullName.split(' ')[0][0] + (user.fullName.split(' ')[1] || '')[0]"
               styleClass="bg-white text-primary"
               size="normal">
@@ -42,9 +42,9 @@
               <span class="text-sm font-bold">{{ user.fullName.split(' ')[0] }}</span>
               <span class="text-xs opacity-80">Admin</span>
             </div>
-            
-            <p-button 
-              icon="pi pi-sign-out" 
+
+            <p-button
+              icon="pi pi-sign-out"
               severity="danger"
               [text]="true"
               size="small"
@@ -53,10 +53,10 @@
             </p-button>
           </div>
         </ng-container>
-        
+
         <ng-template #notAuthenticated>
-          <p-button 
-            label="Admin Sign In" 
+          <p-button
+            label="Admin Sign In"
             icon="pi pi-sign-in"
             [outlined]="true"
             severity="info"

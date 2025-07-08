@@ -1,0 +1,654 @@
+@use "sass:color";
+
+// Variables
+$primary-color: #4f46e5;
+$secondary-color: #10b981;
+$accent-color: #f59e0b;
+$text-dark: #1f2937;
+$text-light: #6b7280;
+$bg-light: #f9fafb;
+$white: #ffffff;
+$border-color: #e5e7eb;
+$shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+$shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+$shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+// Status colors
+$status-available: #10b981;
+$status-pending: #f59e0b;
+$status-adopted: #8b5cf6;
+$status-medical: #ef4444;
+$status-review: #3b82f6;
+$status-approved: #059669;
+$status-interview: #7c3aed;
+$status-pending-info: #d97706;
+
+// Mixins
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin card-hover {
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow-lg;
+  }
+}
+
+// Base styles
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+// Button styles
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: inherit;
+
+  &:focus {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
+  }
+
+  &.btn-primary {
+    background-color: $primary-color;
+    color: $white;
+
+    &:hover {
+      background-color: color.adjust($primary-color, $lightness: -10%);
+    }
+  }
+
+  &.btn-secondary {
+    background-color: $secondary-color;
+    color: $white;
+
+    &:hover {
+      background-color: color.adjust($secondary-color, $lightness: -10%);
+    }
+  }
+
+  &.btn-outline {
+    background-color: transparent;
+    color: $primary-color;
+    border: 2px solid $primary-color;
+
+    &:hover {
+      background-color: $primary-color;
+      color: $white;
+    }
+  }
+
+  &.btn-small {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .btn-icon {
+    font-size: 1.1em;
+  }
+}
+
+// Dashboard Header
+.dashboard-header {
+  background: linear-gradient(135deg, $primary-color 0%, color.adjust($primary-color, $lightness: 10%) 100%);
+  color: $white;
+  padding: 3rem 0;
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .welcome-section {
+    flex: 1;
+  }
+
+  .dashboard-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    margin-top: 0;
+  }
+
+  .dashboard-subtitle {
+    font-size: 1.125rem;
+    opacity: 0.9;
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  .admin-actions {
+    display: flex;
+    gap: 1rem;
+  }
+}
+
+// Dashboard Statistics
+.dashboard-stats {
+  padding: 2rem 0;
+  background-color: $bg-light;
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .stat-card {
+    background: $white;
+    padding: 2rem;
+    border-radius: 1rem;
+    text-align: center;
+    box-shadow: $shadow-sm;
+    border: 1px solid $border-color;
+    @include card-hover;
+
+    .stat-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: $text-dark;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+      color: $text-light;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    &.available {
+      border-left: 4px solid $status-available;
+    }
+
+    &.pending {
+      border-left: 4px solid $status-pending;
+    }
+
+    &.applications {
+      border-left: 4px solid $status-review;
+    }
+
+    &.adopted {
+      border-left: 4px solid $status-adopted;
+    }
+  }
+}
+
+// Section styles
+.section-header {
+  text-align: center;
+  margin-bottom: 3rem;
+
+  .section-title {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: $text-dark;
+    margin-bottom: 1rem;
+    margin-top: 0;
+  }
+
+  .section-subtitle {
+    font-size: 1.125rem;
+    color: $text-light;
+    margin: 0;
+    line-height: 1.6;
+  }
+}
+
+// Pet Cards Section
+.pets-section {
+  padding: 4rem 0;
+
+  .pets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+  }
+
+  .pet-card {
+    background: $white;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: $shadow-md;
+    @include card-hover;
+  }
+
+  .pet-image {
+    position: relative;
+    width: 100%;
+    height: 200px;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .pet-status {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: $white;
+
+      &.status-available {
+        background-color: $status-available;
+      }
+
+      &.status-pending {
+        background-color: $status-pending;
+      }
+
+      &.status-adopted {
+        background-color: $status-adopted;
+      }
+
+      &.status-medical {
+        background-color: $status-medical;
+      }
+    }
+  }
+
+  .pet-info {
+    padding: 1.5rem;
+  }
+
+  .pet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .pet-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: $text-dark;
+    margin: 0;
+  }
+
+  .pet-applications {
+    background-color: $bg-light;
+    color: $text-light;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .pet-breed {
+    color: $text-light;
+    margin-bottom: 0.5rem;
+    margin-top: 0;
+  }
+
+  .pet-description {
+    color: $text-dark;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    margin-top: 0;
+  }
+
+  .pet-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    font-size: 0.875rem;
+
+    .date-added {
+      color: $text-light;
+    }
+
+    .medical-status {
+      font-weight: 500;
+
+      &.up-to-date {
+        color: $status-available;
+      }
+
+      &.needs-attention {
+        color: $status-medical;
+      }
+    }
+  }
+
+  .pet-actions {
+    display: flex;
+    gap: 0.75rem;
+  }
+}
+
+// Applications Section
+.applications-section {
+  padding: 4rem 0;
+  background-color: $bg-light;
+
+  .applications-table {
+    background: $white;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: $shadow-sm;
+    border: 1px solid $border-color;
+  }
+
+  .table-header {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1.5fr 1fr;
+    gap: 1rem;
+    padding: 1.5rem;
+    background-color: $bg-light;
+    font-weight: 600;
+    color: $text-dark;
+    border-bottom: 1px solid $border-color;
+  }
+
+  .header-cell {
+    font-weight: 600;
+    color: $text-dark;
+  }
+
+  .table-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1.5fr 1fr;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-bottom: 1px solid $border-color;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: $bg-light;
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .table-cell {
+    display: flex;
+    align-items: center;
+  }
+
+  .applicant-info {
+    .applicant-name {
+      font-weight: 600;
+      color: $text-dark;
+      margin-bottom: 0.25rem;
+      margin-top: 0;
+    }
+
+    .applicant-contact {
+      font-size: 0.875rem;
+      color: $text-light;
+      margin: 0;
+    }
+  }
+
+  .pet-name-cell {
+    color: $text-dark;
+    font-weight: 500;
+  }
+
+  .date-cell {
+    color: $text-light;
+    font-size: 0.875rem;
+  }
+
+  .status-badge {
+    padding: 0.375rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: $white;
+
+    &.status-review {
+      background-color: $status-review;
+    }
+
+    &.status-approved {
+      background-color: $status-approved;
+    }
+
+    &.status-interview {
+      background-color: $status-interview;
+    }
+
+    &.status-pending-info {
+      background-color: $status-pending-info;
+    }
+  }
+
+  .section-footer {
+    text-align: center;
+    margin-top: 2rem;
+  }
+}
+
+// Quick Actions Section
+.quick-actions {
+  padding: 4rem 0;
+
+  .actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+
+  .action-card {
+    background: $white;
+    padding: 2rem;
+    border-radius: 1rem;
+    text-align: center;
+    box-shadow: $shadow-md;
+    cursor: pointer;
+    border: 2px solid transparent;
+    @include card-hover;
+
+    &:focus {
+      outline: none;
+      border-color: $primary-color;
+    }
+
+    .action-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .action-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: $text-dark;
+      margin-bottom: 0.75rem;
+      margin-top: 0;
+    }
+
+    .action-description {
+      color: $text-light;
+      line-height: 1.5;
+      margin: 0;
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: 2rem 0;
+
+    .header-content {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .dashboard-title {
+      font-size: 2rem;
+    }
+
+    .admin-actions {
+      flex-direction: column;
+      width: 100%;
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  }
+
+  .dashboard-stats {
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .pets-section {
+    padding: 3rem 0;
+
+    .pets-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .applications-section {
+    padding: 3rem 0;
+
+    .table-header {
+      display: none;
+    }
+
+    .table-row {
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+      padding: 1rem;
+    }
+
+    .table-cell {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid $border-color;
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    .applicant-info::before {
+      content: "Applicant: ";
+      font-weight: 600;
+      color: $text-dark;
+    }
+
+    .pet-name-cell::before {
+      content: "Pet: ";
+      font-weight: 600;
+      color: $text-dark;
+    }
+
+    .date-cell::before {
+      content: "Date: ";
+      font-weight: 600;
+      color: $text-dark;
+    }
+  }
+
+  .quick-actions {
+    padding: 3rem 0;
+
+    .actions-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 0.5rem;
+  }
+
+  .dashboard-header {
+    padding: 1.5rem 0;
+
+    .dashboard-title {
+      font-size: 1.75rem;
+    }
+
+    .dashboard-subtitle {
+      font-size: 1rem;
+    }
+  }
+
+  .dashboard-stats {
+    padding: 1.5rem 0;
+
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .stat-card {
+      padding: 1.5rem;
+    }
+  }
+
+  .pets-section {
+    padding: 2rem 0;
+
+    .pets-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .applications-section {
+    padding: 2rem 0;
+  }
+
+  .quick-actions {
+    padding: 2rem 0;
+
+    .actions-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .action-card {
+      padding: 1.5rem;
+    }
+  }
+
+  .section-header {
+    margin-bottom: 2rem;
+
+    .section-title {
+      font-size: 1.75rem;
+    }
+
+    .section-subtitle {
+      font-size: 1rem;
+    }
+  }
+}

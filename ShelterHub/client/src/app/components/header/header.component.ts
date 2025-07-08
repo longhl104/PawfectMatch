@@ -1,75 +1,94 @@
-import { Component, inject, OnDestroy, Renderer2, HostListener } from '@angular/core';
-import { CommonModule, DOCUMENT } from '@angular/common';
+import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService, UserProfile } from 'shared/services/auth.service';
 import { Observable } from 'rxjs';
 
+// PrimeNG imports
+import { ButtonModule } from 'primeng/button';
+import { MenubarModule } from 'primeng/menubar';
+import { MenuModule } from 'primeng/menu';
+import { AvatarModule } from 'primeng/avatar';
+import { BadgeModule } from 'primeng/badge';
+import { TooltipModule } from 'primeng/tooltip';
+import { MenuItem } from 'primeng/api';
+
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    ButtonModule,
+    MenubarModule,
+    MenuModule,
+    AvatarModule,
+    BadgeModule,
+    TooltipModule
+  ],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
 })
-export class HeaderComponent implements OnDestroy {
+export class HeaderComponent {
   private authService = inject(AuthService);
-  private document = inject(DOCUMENT);
-  private renderer = inject(Renderer2);
 
-  isMenuOpen = false;
-  isManagementDropdownOpen = false;
-  isReportsDropdownOpen = false;
   currentUser$: Observable<UserProfile | null> = this.authService.currentUser$;
   isAuthenticated$ = this.authService.authStatus$;
 
-  ngOnDestroy() {
-    // Ensure body scroll is restored when component is destroyed
-    if (this.isMenuOpen) {
-      this.renderer.removeClass(this.document.body, 'menu-open');
+  menuItems: MenuItem[] = [
+    {
+      label: 'Dashboard',
+      icon: 'pi pi-home',
+      routerLink: '/home'
+    },
+    {
+      label: 'Management',
+      icon: 'pi pi-cog',
+      items: [
+        {
+          label: 'Manage Pets',
+          icon: 'pi pi-heart',
+          routerLink: '/pets'
+        },
+        {
+          label: 'Applications',
+          icon: 'pi pi-file',
+          routerLink: '/applications'
+        },
+        {
+          label: 'Adoptions',
+          icon: 'pi pi-check',
+          routerLink: '/adoptions'
+        }
+      ]
+    },
+    {
+      label: 'Reports',
+      icon: 'pi pi-chart-bar',
+      items: [
+        {
+          label: 'Analytics',
+          icon: 'pi pi-chart-line',
+          routerLink: '/reports'
+        },
+        {
+          label: 'Adoption Reports',
+          icon: 'pi pi-chart-pie',
+          routerLink: '/reports/adoptions'
+        },
+        {
+          label: 'Matching Analytics',
+          icon: 'pi pi-search',
+          routerLink: '/reports/matching'
+        }
+      ]
+    },
+    {
+      label: 'Settings',
+      icon: 'pi pi-wrench',
+      routerLink: '/settings'
     }
-  }
-
-  toggleMenu() {
-    this.isMenuOpen = !this.isMenuOpen;
-
-    if (this.isMenuOpen) {
-      this.renderer.addClass(this.document.body, 'menu-open');
-    } else {
-      this.renderer.removeClass(this.document.body, 'menu-open');
-    }
-  }
-
-  closeMenu() {
-    if (this.isMenuOpen) {
-      this.isMenuOpen = false;
-      this.renderer.removeClass(this.document.body, 'menu-open');
-    }
-    this.closeAllDropdowns();
-  }
-
-  toggleManagementDropdown() {
-    this.isManagementDropdownOpen = !this.isManagementDropdownOpen;
-    this.isReportsDropdownOpen = false;
-  }
-
-  toggleReportsDropdown() {
-    this.isReportsDropdownOpen = !this.isReportsDropdownOpen;
-    this.isManagementDropdownOpen = false;
-  }
-
-  closeAllDropdowns() {
-    this.isManagementDropdownOpen = false;
-    this.isReportsDropdownOpen = false;
-  }
-
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: Event) {
-    // Close dropdowns when clicking outside
-    const target = event.target as HTMLElement;
-    if (!target.closest('.dropdown')) {
-      this.closeAllDropdowns();
-    }
-  }
+  ];
 
   onLogin() {
     this.authService.redirectToLogin();

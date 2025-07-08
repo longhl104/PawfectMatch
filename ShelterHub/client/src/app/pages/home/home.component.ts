@@ -4,10 +4,35 @@ import { RouterModule } from '@angular/router';
 import { AuthService, UserProfile } from 'shared/services/auth.service';
 import { Observable } from 'rxjs';
 
+// PrimeNG imports
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { TableModule } from 'primeng/table';
+import { TagModule } from 'primeng/tag';
+import { AvatarModule } from 'primeng/avatar';
+import { BadgeModule } from 'primeng/badge';
+import { DataViewModule } from 'primeng/dataview';
+import { PanelModule } from 'primeng/panel';
+import { ChipModule } from 'primeng/chip';
+import { SkeletonModule } from 'primeng/skeleton';
+
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    ButtonModule,
+    CardModule,
+    TableModule,
+    TagModule,
+    AvatarModule,
+    BadgeModule,
+    DataViewModule,
+    PanelModule,
+    ChipModule,
+    SkeletonModule
+  ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
 })
@@ -192,6 +217,29 @@ export class HomeComponent {
         return 'status-pending-info';
       default:
         return 'status-default';
+    }
+  }
+
+  getStatusSeverity(status: string): "success" | "info" | "warn" | "danger" | "secondary" | "contrast" | undefined {
+    switch (status.toLowerCase()) {
+      case 'available':
+        return 'success';
+      case 'pending adoption':
+        return 'warn';
+      case 'adopted':
+        return 'info';
+      case 'medical hold':
+        return 'danger';
+      case 'under review':
+        return 'secondary';
+      case 'approved':
+        return 'success';
+      case 'interview scheduled':
+        return 'info';
+      case 'pending information':
+        return 'warn';
+      default:
+        return 'secondary';
     }
   }
 }

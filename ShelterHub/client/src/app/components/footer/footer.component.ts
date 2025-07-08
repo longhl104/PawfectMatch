@@ -2,10 +2,21 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
+// PrimeNG imports
+import { ButtonModule } from 'primeng/button';
+import { DividerModule } from 'primeng/divider';
+import { TagModule } from 'primeng/tag';
+
 @Component({
   selector: 'app-footer',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    ButtonModule,
+    DividerModule,
+    TagModule
+  ],
   templateUrl: './footer.component.html',
   styleUrls: ['./footer.component.scss']
 })

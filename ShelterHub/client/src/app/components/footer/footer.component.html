@@ -1,63 +1,96 @@
-<footer class="footer">
-  <div class="container">
-    <div class="footer-content">
-      <div class="footer-section">
-        <div class="footer-brand">
-          <span class="brand-icon">🏠</span>
-          <span class="brand-text">ShelterHub</span>
+<footer class="bg-primary-900 text-white py-6">
+  <div class="max-w-7xl mx-auto px-3">
+    <div class="grid">
+      <div class="col-12 md:col-4 mb-4">
+        <div class="flex align-items-center gap-2 mb-3">
+          <i class="pi pi-home text-2xl"></i>
+          <span class="font-bold text-xl">ShelterHub</span>
         </div>
-        <p class="footer-description">
+        <p class="text-white-alpha-80 line-height-3 mb-3">
           Comprehensive shelter management system for administrators.
           Streamline pet care, adoptions, and operations.
         </p>
-        <div class="admin-info">
-          <p class="system-status">System Status: <span class="status-indicator online">Online</span></p>
-          <p class="last-backup">Last Backup: {{ lastBackupDate }}</p>
+        <div class="flex align-items-center gap-2 mb-2">
+          <p-tag value="Online" severity="success" icon="pi pi-check"></p-tag>
+          <span class="text-sm">System Status</span>
         </div>
+        <p class="text-sm text-white-alpha-60">Last Backup: {{ lastBackupDate }}</p>
       </div>
 
-      <div class="footer-section">
-        <h4 class="footer-title">Management</h4>
-        <ul class="footer-links">
-          <li><a routerLink="/home" class="footer-link">Dashboard</a></li>
-          <li><a routerLink="/pets" class="footer-link">Pet Management</a></li>
-          <li><a routerLink="/applications" class="footer-link">Applications</a></li>
-          <li><a routerLink="/adoptions" class="footer-link">Adoptions</a></li>
-          <li><a routerLink="/reports" class="footer-link">Reports</a></li>
+      <div class="col-12 md:col-2 mb-4">
+        <h4 class="font-semibold mb-3">Management</h4>
+        <ul class="list-none p-0 m-0">
+          <li class="mb-2">
+            <a routerLink="/home" class="text-white-alpha-80 hover:text-white no-underline">Dashboard</a>
+          </li>
+          <li class="mb-2">
+            <a routerLink="/pets" class="text-white-alpha-80 hover:text-white no-underline">Pet Management</a>
+          </li>
+          <li class="mb-2">
+            <a routerLink="/applications" class="text-white-alpha-80 hover:text-white no-underline">Applications</a>
+          </li>
+          <li class="mb-2">
+            <a routerLink="/adoptions" class="text-white-alpha-80 hover:text-white no-underline">Adoptions</a>
+          </li>
+          <li class="mb-2">
+            <a routerLink="/reports" class="text-white-alpha-80 hover:text-white no-underline">Reports</a>
+          </li>
         </ul>
       </div>
 
-      <div class="footer-section">
-        <h4 class="footer-title">Tools & Resources</h4>
-        <ul class="footer-links">
-          <li><a routerLink="/matching" class="footer-link">Matching Algorithm</a></li>
-          <li><a routerLink="/analytics" class="footer-link">Analytics</a></li>
-          <li><a routerLink="/export" class="footer-link">Data Export</a></li>
-          <li><a routerLink="/backup" class="footer-link">Backup & Restore</a></li>
-          <li><a routerLink="/help" class="footer-link">Help Center</a></li>
+      <div class="col-12 md:col-2 mb-4">
+        <h4 class="font-semibold mb-3">Tools & Resources</h4>
+        <ul class="list-none p-0 m-0">
+          <li class="mb-2">
+            <a routerLink="/matching" class="text-white-alpha-80 hover:text-white no-underline">Matching Algorithm</a>
+          </li>
+          <li class="mb-2">
+            <a routerLink="/analytics" class="text-white-alpha-80 hover:text-white no-underline">Analytics</a>
+          </li>
+          <li class="mb-2">
+            <a routerLink="/export" class="text-white-alpha-80 hover:text-white no-underline">Data Export</a>
+          </li>
+          <li class="mb-2">
+            <a routerLink="/backup" class="text-white-alpha-80 hover:text-white no-underline">Backup & Restore</a>
+          </li>
+          <li class="mb-2">
+            <a routerLink="/help" class="text-white-alpha-80 hover:text-white no-underline">Help Center</a>
+          </li>
         </ul>
       </div>
 
-      <div class="footer-section">
-        <h4 class="footer-title">System & Support</h4>
-        <ul class="footer-links">
-          <li><a routerLink="/settings" class="footer-link">Settings</a></li>
-          <li><a routerLink="/users" class="footer-link">User Management</a></li>
-          <li><a routerLink="/audit" class="footer-link">Audit Logs</a></li>
-          <li><a routerLink="/support" class="footer-link">Technical Support</a></li>
-          <li><a routerLink="/documentation" class="footer-link">Documentation</a></li>
+      <div class="col-12 md:col-4 mb-4">
+        <h4 class="font-semibold mb-3">System & Support</h4>
+        <ul class="list-none p-0 m-0">
+          <li class="mb-2">
+            <a routerLink="/settings" class="text-white-alpha-80 hover:text-white no-underline">Settings</a>
+          </li>
+          <li class="mb-2">
+            <a routerLink="/users" class="text-white-alpha-80 hover:text-white no-underline">User Management</a>
+          </li>
+          <li class="mb-2">
+            <a routerLink="/audit" class="text-white-alpha-80 hover:text-white no-underline">Audit Logs</a>
+          </li>
+          <li class="mb-2">
+            <a routerLink="/support" class="text-white-alpha-80 hover:text-white no-underline">Technical Support</a>
+          </li>
+          <li class="mb-2">
+            <a routerLink="/documentation" class="text-white-alpha-80 hover:text-white no-underline">Documentation</a>
+          </li>
         </ul>
       </div>
     </div>
 
-    <div class="footer-bottom">
-      <p class="footer-copyright">
+    <p-divider styleClass="border-white-alpha-30"></p-divider>
+
+    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-3">
+      <p class="text-white-alpha-60 m-0">
         © {{ currentYear }} ShelterHub Admin System. All rights reserved.
       </p>
-      <div class="footer-meta">
-        <span class="version-info">Version {{ systemVersion }}</span>
-        <span class="separator">•</span>
-        <span class="shelter-info">{{ shelterName }} Shelter Management</span>
+      <div class="flex align-items-center gap-3 text-sm">
+        <span class="text-primary-200 font-semibold">Version {{ systemVersion }}</span>
+        <span class="text-white-alpha-40">•</span>
+        <span class="text-white-alpha-80">{{ shelterName }} Shelter Management</span>
       </div>
     </div>
   </div>
