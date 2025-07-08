@@ -203,6 +203,15 @@
   &-y-hidden { overflow-y: hidden; }
 }
 
+// Object fit utilities
+.object {
+  &-cover { object-fit: cover; }
+  &-contain { object-fit: contain; }
+  &-fill { object-fit: fill; }
+  &-none { object-fit: none; }
+  &-scale-down { object-fit: scale-down; }
+}
+
 // Width and height utilities
 .w {
   &-full { width: 100%; }
