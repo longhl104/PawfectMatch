@@ -4,8 +4,8 @@ import { inject, Injectable } from '@angular/core';
 import { environment } from 'environments/environment';
 
 export interface ShelterInfo {
-  id: string;
-  name: string;
+  shelterId: string;
+  shelterName: string;
   address: string;
   phone: string;
   email: string;

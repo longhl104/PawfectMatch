@@ -37,9 +37,9 @@ export const appConfig: ApplicationConfig = {
         options: {
           prefix: 'p',
           darkModeSelector: 'system',
-          cssLayer: false
-        }
-      }
+          cssLayer: false,
+        },
+      },
     }),
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
     provideAppInitializer(authInitializer()),
