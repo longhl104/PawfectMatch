@@ -41,7 +41,7 @@ export class GlobalErrorHandler implements ErrorHandler {
     this.showUserFriendlyError(errorInfo);
 
     // Log to external service if needed (implement as needed)
-    this.logToExternalService(error, errorInfo, context);
+    // this.logToExternalService(error, errorInfo, context);
   }
 
   private extractErrorInfo(error: any): {

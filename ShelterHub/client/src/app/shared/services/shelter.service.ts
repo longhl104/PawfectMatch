@@ -1,4 +1,7 @@
-import { Injectable } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+import { environment } from 'environments/environment';
 
 export interface ShelterInfo {
   id: string;
@@ -11,24 +14,30 @@ export interface ShelterInfo {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ShelterService {
+  private http = inject(HttpClient);
 
   async getShelterInfo(): Promise<ShelterInfo> {
-    // TODO: Replace with actual API call
-    return Promise.resolve({
-      id: '1',
-      name: 'Happy Paws Animal Shelter',
-      address: '123 Main St, Anytown, ST 12345',
-      phone: '(555) 123-4567',
-      email: 'info@happypaws.org',
-      capacity: 50,
-      currentPets: 32
-    });
+    const response = await firstValueFrom(
+      this.http.post<ShelterInfo>(
+        `${environment.apiUrl}/api/shelters/my-shelter/query`,
+        {
+          attributesToGet: ['ShelterName'],
+        },
+        {
+          withCredentials: true,
+        },
+      ),
+    );
+
+    return response;
   }
 
-  async updateShelterInfo(shelterInfo: Partial<ShelterInfo>): Promise<ShelterInfo> {
+  async updateShelterInfo(
+    shelterInfo: Partial<ShelterInfo>,
+  ): Promise<ShelterInfo> {
     // TODO: Replace with actual API call
     console.log('Updating shelter info:', shelterInfo);
     return this.getShelterInfo();

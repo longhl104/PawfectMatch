@@ -18,11 +18,12 @@ public class SheltersController(
     ) : ControllerBase
 {
     /// <summary>
-    /// Gets the shelter associated with the current shelter admin
+    /// Queries the shelter associated with the current shelter admin with specific attributes
     /// </summary>
-    /// <returns>The shelter information</returns>
-    [HttpGet("my-shelter")]
-    public async Task<ActionResult<Shelter>> GetMyShelter()
+    /// <param name="request">The query request containing attributes to retrieve</param>
+    /// <returns>The shelter information with only the requested attributes</returns>
+    [HttpPost("my-shelter/query")]
+    public async Task<ActionResult<Shelter>> QueryMyShelter([FromBody] QueryShelterRequest request)
     {
         try
         {
@@ -33,18 +34,27 @@ public class SheltersController(
                 return Unauthorized(new { Message = "User not authenticated" });
             }
 
-            _logger.LogInformation("Getting shelter for shelter admin UserId: {UserId}", user.UserId);
+            _logger.LogInformation("Querying shelter for shelter admin UserId: {UserId} with attributes: {Attributes}",
+                user.UserId, request?.AttributesToGet != null ? string.Join(", ", request.AttributesToGet) : "all");
 
             // First get the shelter admin to find the shelter ID
-            var shelterAdmin = await _shelterService.GetShelterAdminAsync(user.UserId);
+            var shelterAdmin = await _shelterService.GetShelterAdminAsync(
+                user.UserId,
+                ["ShelterId"]
+                );
+
             if (shelterAdmin == null)
             {
                 _logger.LogWarning("Shelter admin profile not found for UserId: {UserId}", user.UserId);
                 return NotFound(new { Message = "Shelter admin profile not found" });
             }
 
-            // Get the shelter information
-            var shelter = await _shelterService.GetShelterAsync(shelterAdmin.ShelterId);
+            // Get the shelter information with specified attributes
+            var shelter = await _shelterService.GetShelterAsync(
+                shelterAdmin.ShelterId,
+                request?.AttributesToGet
+                );
+
             if (shelter == null)
             {
                 _logger.LogWarning("Shelter not found for ShelterId: {ShelterId}", shelterAdmin.ShelterId);
@@ -55,9 +65,8 @@ public class SheltersController(
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting shelter for current user");
+            _logger.LogError(ex, "Error querying shelter for current user");
             return StatusCode(500, new { Message = "An error occurred while retrieving the shelter information" });
         }
     }
-
 }

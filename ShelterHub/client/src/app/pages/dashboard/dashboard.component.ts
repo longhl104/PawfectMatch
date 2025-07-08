@@ -7,12 +7,17 @@ import { DataViewModule } from 'primeng/dataview';
 import { PanelModule } from 'primeng/panel';
 import { TableModule } from 'primeng/table';
 import { DialogModule } from 'primeng/dialog';
-import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
-import { ShelterService, type ShelterInfo } from '../../shared/services/shelter.service';
+import {
+  ShelterService,
+  type ShelterInfo,
+} from '../../shared/services/shelter.service';
 import { PetService, type Pet } from '../../shared/services/pet.service';
-import { ApplicationService, type Application } from '../../shared/services/application.service';
+import {
+  ApplicationService,
+  type Application,
+} from '../../shared/services/application.service';
 import { AddPetFormComponent } from './add-pet-form/add-pet-form.component';
+import { ToastService } from '@longhl104/pawfect-match-ng';
 
 @Component({
   selector: 'app-dashboard',
@@ -26,18 +31,16 @@ import { AddPetFormComponent } from './add-pet-form/add-pet-form.component';
     PanelModule,
     TableModule,
     DialogModule,
-    ToastModule,
-    AddPetFormComponent
+    AddPetFormComponent,
   ],
-  providers: [MessageService],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.scss'
+  styleUrl: './dashboard.component.scss',
 })
 export class DashboardComponent implements OnInit {
   private shelterService = inject(ShelterService);
   private petService = inject(PetService);
   private applicationService = inject(ApplicationService);
-  private messageService = inject(MessageService);
+  private toastService = inject(ToastService);
 
   shelterInfo: ShelterInfo | null = null;
   pets: Pet[] = [];
@@ -61,15 +64,8 @@ export class DashboardComponent implements OnInit {
       this.pets = await this.petService.getAllPets();
 
       // Load recent applications
-      this.recentApplications = await this.applicationService.getRecentApplications();
-
-    } catch (error) {
-      console.error('Error loading dashboard data:', error);
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to load dashboard data'
-      });
+      this.recentApplications =
+        await this.applicationService.getRecentApplications();
     } finally {
       this.isLoading = false;
     }
@@ -90,7 +86,9 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  getApplicationStatusSeverity(status: string): 'success' | 'info' | 'warning' | 'danger' {
+  getApplicationStatusSeverity(
+    status: string,
+  ): 'success' | 'info' | 'warning' | 'danger' {
     switch (status) {
       case 'approved':
         return 'success';
@@ -110,30 +108,15 @@ export class DashboardComponent implements OnInit {
   async onRunMatching() {
     try {
       this.isRunningMatcher = true;
-      this.messageService.add({
-        severity: 'info',
-        summary: 'Matching Started',
-        detail: 'Running pet matching algorithm...'
-      });
+      this.toastService.info('Matching Started');
 
       await this.applicationService.runMatching();
 
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Matching Complete',
-        detail: 'Pet matching has been completed successfully'
-      });
+      this.toastService.success('Matching Complete');
 
       // Reload applications to show updated match scores
-      this.recentApplications = await this.applicationService.getRecentApplications();
-
-    } catch (error) {
-      console.error('Error running matcher:', error);
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Matching Failed',
-        detail: 'Failed to run pet matching algorithm'
-      });
+      this.recentApplications =
+        await this.applicationService.getRecentApplications();
     } finally {
       this.isRunningMatcher = false;
     }
@@ -142,11 +125,7 @@ export class DashboardComponent implements OnInit {
   onPetAdded() {
     this.showAddPetDialog = false;
     this.loadDashboardData(); // Refresh the data
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Pet Added',
-      detail: 'New pet has been added successfully'
-    });
+    this.toastService.success('New pet has been added successfully');
   }
 
   formatDate(date: Date): string {

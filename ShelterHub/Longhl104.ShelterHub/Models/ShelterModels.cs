@@ -148,3 +148,15 @@ public class Shelter
     /// </summary>
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
+
+/// <summary>
+/// Request model for querying shelter with specific attributes
+/// </summary>
+public class QueryShelterRequest
+{
+    /// <summary>
+    /// List of attributes to retrieve from the shelter
+    /// If null or empty, all attributes will be returned
+    /// </summary>
+    public List<string>? AttributesToGet { get; set; }
+}

@@ -21,14 +21,14 @@ public interface IShelterService
     /// </summary>
     /// <param name="userId">The user ID</param>
     /// <returns>The shelter admin profile or null if not found</returns>
-    Task<ShelterAdmin?> GetShelterAdminAsync(Guid userId);
+    Task<ShelterAdmin?> GetShelterAdminAsync(Guid userId, List<string>? attributesToGet = null);
 
     /// <summary>
     /// Gets a shelter by shelter ID
     /// </summary>
     /// <param name="shelterId">The shelter ID</param>
     /// <returns>The shelter or null if not found</returns>
-    Task<Shelter?> GetShelterAsync(Guid shelterId);
+    Task<Shelter?> GetShelterAsync(Guid shelterId, List<string>? attributesToGet = null);
 
     /// <summary>
     /// Checks if a shelter admin exists for the given user ID
@@ -155,8 +155,11 @@ public class ShelterService : IShelterService
         }
     }
 
-    public async Task<ShelterAdmin?> GetShelterAdminAsync(Guid userId)
+    public async Task<ShelterAdmin?> GetShelterAdminAsync(Guid userId, List<string>? attributesToGet = null)
     {
+        attributesToGet ??= [];
+        attributesToGet.AddRange("UserId");
+
         try
         {
             var request = new GetItemRequest
@@ -165,7 +168,10 @@ public class ShelterService : IShelterService
                 Key = new Dictionary<string, AttributeValue>
                 {
                     ["UserId"] = new AttributeValue { S = userId.ToString() }
-                }
+                },
+                ProjectionExpression = attributesToGet != null && attributesToGet.Count > 0
+                    ? string.Join(", ", attributesToGet)
+                    : null
             };
 
             var response = await _dynamoDbClient.GetItemAsync(request);
@@ -184,8 +190,11 @@ public class ShelterService : IShelterService
         }
     }
 
-    public async Task<Shelter?> GetShelterAsync(Guid shelterId)
+    public async Task<Shelter?> GetShelterAsync(Guid shelterId, List<string>? attributesToGet = null)
     {
+        attributesToGet ??= [];
+        attributesToGet.AddRange("ShelterId");
+
         try
         {
             var request = new GetItemRequest
@@ -194,7 +203,10 @@ public class ShelterService : IShelterService
                 Key = new Dictionary<string, AttributeValue>
                 {
                     ["ShelterId"] = new AttributeValue { S = shelterId.ToString() }
-                }
+                },
+                ProjectionExpression = attributesToGet != null && attributesToGet.Count > 0
+                    ? string.Join(", ", attributesToGet)
+                    : null
             };
 
             var response = await _dynamoDbClient.GetItemAsync(request);
@@ -296,9 +308,9 @@ public class ShelterService : IShelterService
         return new ShelterAdmin
         {
             UserId = Guid.Parse(item["UserId"].S),
-            ShelterId = Guid.Parse(item["ShelterId"].S),
-            CreatedAt = DateTime.Parse(item["CreatedAt"].S),
-            UpdatedAt = DateTime.Parse(item["UpdatedAt"].S)
+            ShelterId = item.TryGetValue("ShelterId", out var shelterIdAttr) ? Guid.Parse(shelterIdAttr.S) : Guid.Empty,
+            CreatedAt = item.TryGetValue("CreatedAt", out var createdAtAttr) ? DateTime.Parse(createdAtAttr.S) : DateTime.UtcNow,
+            UpdatedAt = item.TryGetValue("UpdatedAt", out var updatedAtAttr) ? DateTime.Parse(updatedAtAttr.S) : DateTime.UtcNow
         };
     }
 
@@ -307,15 +319,15 @@ public class ShelterService : IShelterService
         return new Shelter
         {
             ShelterId = Guid.Parse(item["ShelterId"].S),
-            ShelterName = item["ShelterName"].S,
-            ShelterContactNumber = item["ShelterContactNumber"].S,
-            ShelterAddress = item["ShelterAddress"].S,
+            ShelterName = item.TryGetValue("ShelterName", out var shelterNameAttr) ? shelterNameAttr.S : string.Empty,
+            ShelterContactNumber = item.TryGetValue("ShelterContactNumber", out var shelterContactNumberAttr) ? shelterContactNumberAttr.S : string.Empty,
+            ShelterAddress = item.TryGetValue("ShelterAddress", out var shelterAddressAttr) ? shelterAddressAttr.S : string.Empty,
             ShelterWebsiteUrl = item.GetValueOrDefault("ShelterWebsiteUrl")?.S,
             ShelterAbn = item.GetValueOrDefault("ShelterAbn")?.S,
             ShelterDescription = item.GetValueOrDefault("ShelterDescription")?.S,
-            IsActive = item["IsActive"].BOOL ?? true,
-            CreatedAt = DateTime.Parse(item["CreatedAt"].S),
-            UpdatedAt = DateTime.Parse(item["UpdatedAt"].S)
+            IsActive = !item.TryGetValue("IsActive", out var isActiveAttr) || !bool.TryParse(isActiveAttr.BOOL.ToString(), out var isActive) || isActive,
+            CreatedAt = item.TryGetValue("CreatedAt", out var createdAtAttr) ? DateTime.Parse(createdAtAttr.S) : DateTime.UtcNow,
+            UpdatedAt = item.TryGetValue("UpdatedAt", out var updatedAtAttr) ? DateTime.Parse(updatedAtAttr.S) : DateTime.UtcNow
         };
     }
 
