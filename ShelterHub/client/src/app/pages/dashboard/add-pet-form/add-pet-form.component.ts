@@ -1,13 +1,21 @@
 import { Component, EventEmitter, inject, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { SelectModule } from 'primeng/select';
 import { TextareaModule } from 'primeng/textarea';
 import { ButtonModule } from 'primeng/button';
-import { MessageService } from 'primeng/api';
-import { PetService, type CreatePetRequest } from '../../../shared/services/pet.service';
+import {
+  PetService,
+  type CreatePetRequest,
+} from '../../../shared/services/pet.service';
+import { ToastService } from '@longhl104/pawfect-match-ng';
 
 @Component({
   selector: 'app-add-pet-form',
@@ -19,10 +27,10 @@ import { PetService, type CreatePetRequest } from '../../../shared/services/pet.
     InputNumberModule,
     SelectModule,
     TextareaModule,
-    ButtonModule
+    ButtonModule,
   ],
   templateUrl: './add-pet-form.component.html',
-  styleUrl: './add-pet-form.component.scss'
+  styleUrl: './add-pet-form.component.scss',
 })
 export class AddPetFormComponent {
   @Output() petAdded = new EventEmitter<void>();
@@ -30,7 +38,7 @@ export class AddPetFormComponent {
 
   private fb = inject(FormBuilder);
   private petService = inject(PetService);
-  private messageService = inject(MessageService);
+  private toastService = inject(ToastService);
 
   petForm: FormGroup;
   isSubmitting = false;
@@ -40,12 +48,12 @@ export class AddPetFormComponent {
     { label: 'Cat', value: 'Cat' },
     { label: 'Rabbit', value: 'Rabbit' },
     { label: 'Bird', value: 'Bird' },
-    { label: 'Other', value: 'Other' }
+    { label: 'Other', value: 'Other' },
   ];
 
   genderOptions = [
     { label: 'Male', value: 'Male' },
-    { label: 'Female', value: 'Female' }
+    { label: 'Female', value: 'Female' },
   ];
 
   constructor() {
@@ -56,7 +64,7 @@ export class AddPetFormComponent {
       age: [null, [Validators.required, Validators.min(0), Validators.max(30)]],
       gender: ['', Validators.required],
       description: ['', [Validators.required, Validators.minLength(10)]],
-      imageUrl: ['']
+      imageUrl: [''],
     });
   }
 
@@ -72,20 +80,12 @@ export class AddPetFormComponent {
 
       await this.petService.createPet(petData);
 
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Pet added successfully'
-      });
+      this.toastService.success('Pet added successfully!');
 
       this.petAdded.emit();
     } catch (error) {
       console.error('Error adding pet:', error);
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to add pet'
-      });
+      this.toastService.error('Failed to add pet. Please try again later.');
     } finally {
       this.isSubmitting = false;
     }
@@ -127,13 +127,13 @@ export class AddPetFormComponent {
       age: 'Age',
       gender: 'Gender',
       description: 'Description',
-      imageUrl: 'Image URL'
+      imageUrl: 'Image URL',
     };
     return labels[fieldName] || fieldName;
   }
 
   private markFormGroupTouched(formGroup: FormGroup) {
-    Object.keys(formGroup.controls).forEach(key => {
+    Object.keys(formGroup.controls).forEach((key) => {
       const control = formGroup.get(key);
       control?.markAsTouched();
     });
