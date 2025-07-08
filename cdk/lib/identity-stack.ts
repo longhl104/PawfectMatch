@@ -132,8 +132,8 @@ export class IdentityStack extends BaseStack {
         },
 
         // Token validity
-        accessTokenValidity: Duration.hours(1),
-        idTokenValidity: Duration.hours(1),
+        accessTokenValidity: Duration.days(1),
+        idTokenValidity: Duration.days(1),
         refreshTokenValidity: Duration.days(30),
 
         // Prevent user existence errors

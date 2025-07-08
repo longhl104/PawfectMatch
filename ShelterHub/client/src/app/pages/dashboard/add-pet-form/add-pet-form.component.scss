@@ -1,0 +1,60 @@
+.add-pet-form {
+  .field {
+    margin-bottom: 1.5rem;
+  }
+
+  label {
+    color: var(--text-color);
+    font-weight: 500;
+  }
+
+  .p-inputtext,
+  .p-inputnumber,
+  .p-select,
+  .p-textarea {
+    width: 100%;
+
+    &.ng-invalid.ng-dirty,
+    &.ng-invalid.ng-touched {
+      border-color: var(--red-500);
+    }
+  }
+
+  .p-error {
+    color: var(--red-500);
+    font-size: 0.875rem;
+  }
+
+  .p-button {
+    min-width: 100px;
+  }
+}
+
+// Form validation states
+.ng-invalid.ng-touched,
+.ng-invalid.ng-dirty {
+  border-color: var(--red-500) !important;
+}
+
+.ng-valid.ng-touched,
+.ng-valid.ng-dirty {
+  border-color: var(--green-500) !important;
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .add-pet-form {
+    .field {
+      margin-bottom: 1rem;
+    }
+
+    .flex.gap-3 {
+      flex-direction: column;
+      gap: 0.75rem;
+
+      .p-button {
+        width: 100%;
+      }
+    }
+  }
+}

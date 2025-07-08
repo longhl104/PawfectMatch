@@ -1,0 +1,201 @@
+<div class="dashboard-container">
+  <div class="grid">
+    <!-- Shelter Information Section -->
+    <div class="col-12">
+      <p-card header="Shelter Information" styleClass="h-full">
+        <div class="grid" *ngIf="shelterInfo">
+          <div class="col-12 md:col-6">
+            <div class="field">
+              <h2 class="text-lg font-semibold m-0">{{ shelterInfo.name }}</h2>
+              <p class="text-600 m-0">{{ shelterInfo.address }}</p>
+            </div>
+          </div>
+          <div class="col-12 md:col-3">
+            <div class="field">
+              <h3 class="text-sm text-600 m-0 mb-1">Contact</h3>
+              <p class="m-0">{{ shelterInfo.phone }}</p>
+              <p class="m-0">{{ shelterInfo.email }}</p>
+            </div>
+          </div>
+          <div class="col-12 md:col-3">
+            <div class="field">
+              <h3 class="text-sm text-600 m-0 mb-1">Capacity</h3>
+              <p class="m-0 text-lg">
+                {{ shelterInfo.currentPets }} / {{ shelterInfo.capacity }}
+                <span class="text-sm text-600">pets</span>
+              </p>
+              <div class="w-full bg-gray-200 border-round h-1rem mt-2">
+                <div
+                  class="bg-primary border-round h-full transition-all transition-duration-300"
+                  [style.width]="
+                    (shelterInfo.currentPets / shelterInfo.capacity) * 100 + '%'
+                  "
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="isLoading" class="flex justify-content-center">
+          <i class="pi pi-spinner pi-spin text-2xl"></i>
+        </div>
+      </p-card>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="col-12">
+      <div class="flex gap-3 mb-3">
+        <p-button
+          label="Add Pet"
+          icon="pi pi-plus"
+          severity="success"
+          (onClick)="onAddPet()"
+          [disabled]="isLoading"
+        >
+        </p-button>
+        <p-button
+          label="Run Matching"
+          icon="pi pi-sync"
+          severity="info"
+          (onClick)="onRunMatching()"
+          [loading]="isRunningMatcher"
+          [disabled]="isLoading"
+        >
+        </p-button>
+      </div>
+    </div>
+
+    <!-- Pet Cards Section -->
+    <div class="col-12 lg:col-8">
+      <p-card header="Current Pets" styleClass="h-full">
+        <div *ngIf="isLoading" class="flex justify-content-center">
+          <i class="pi pi-spinner pi-spin text-2xl"></i>
+        </div>
+
+        <div
+          *ngIf="!isLoading && pets.length === 0"
+          class="text-center text-600 py-4"
+        >
+          <i class="pi pi-info-circle text-3xl mb-3 block"></i>
+          <p>No pets currently in the shelter.</p>
+        </div>
+
+        <div *ngIf="!isLoading && pets.length > 0" class="grid">
+          <div class="col-12 md:col-6 xl:col-4" *ngFor="let pet of pets">
+            <p-card styleClass="pet-card h-full">
+              <ng-template pTemplate="header">
+                <img
+                  [src]="
+                    pet.imageUrl ||
+                    'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=300&h=200&fit=crop&crop=faces'
+                  "
+                  [alt]="pet.name"
+                  class="w-full h-10rem object-cover"
+                />
+              </ng-template>
+
+              <div class="flex flex-column h-full">
+                <div class="flex-grow-1">
+                  <h3 class="mt-0 mb-2">{{ pet.name }}</h3>
+                  <p class="text-600 text-sm mb-2">
+                    {{ pet.breed }} • {{ pet.age }} years • {{ pet.gender }}
+                  </p>
+                  <p class="text-sm mb-3">{{ pet.description }}</p>
+                </div>
+
+                <div class="flex justify-content-between align-items-center">
+                  <p-tag
+                    [value]="pet.status"
+                    [severity]="getStatusSeverity(pet.status)"
+                    class="text-xs"
+                  >
+                  </p-tag>
+                  <small class="text-600"
+                    >Added {{ formatDate(pet.dateAdded) }}</small
+                  >
+                </div>
+              </div>
+            </p-card>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <!-- New Applications Section -->
+    <div class="col-12 lg:col-4">
+      <p-card header="Recent Applications" styleClass="h-full">
+        <div *ngIf="isLoading" class="flex justify-content-center">
+          <i class="pi pi-spinner pi-spin text-2xl"></i>
+        </div>
+
+        <div
+          *ngIf="!isLoading && recentApplications.length === 0"
+          class="text-center text-600 py-4"
+        >
+          <i class="pi pi-inbox text-3xl mb-3 block"></i>
+          <p>No recent applications.</p>
+        </div>
+
+        <div
+          *ngIf="!isLoading && recentApplications.length > 0"
+          class="flex flex-column gap-3"
+        >
+          <div
+            *ngFor="let application of recentApplications"
+            class="border-1 border-gray-200 border-round p-3 application-item"
+          >
+            <div class="flex justify-content-between align-items-start mb-2">
+              <div class="flex-grow-1">
+                <h4 class="mt-0 mb-1">{{ application.petName }}</h4>
+                <p class="text-600 text-sm mb-1">
+                  {{ application.applicantName }}
+                </p>
+                <p class="text-600 text-xs mb-0">
+                  {{ application.applicantEmail }}
+                </p>
+              </div>
+              <p-tag
+                [value]="application.status"
+                [severity]="getApplicationStatusSeverity(application.status)"
+                class="text-xs"
+              >
+              </p-tag>
+            </div>
+
+            <div class="flex justify-content-between align-items-center">
+              <small class="text-600">{{
+                formatDate(application.submittedDate)
+              }}</small>
+              <div
+                *ngIf="application.matchScore"
+                class="flex align-items-center gap-1"
+              >
+                <i class="pi pi-star-fill text-yellow-500 text-xs"></i>
+                <span class="text-sm font-semibold"
+                  >{{ application.matchScore }}%</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </p-card>
+    </div>
+  </div>
+</div>
+
+<!-- Add Pet Dialog -->
+<p-dialog
+  header="Add New Pet"
+  [(visible)]="showAddPetDialog"
+  [modal]="true"
+  [style]="{ width: '50vw' }"
+  [dismissableMask]="true"
+>
+  <app-add-pet-form
+    *ngIf="showAddPetDialog"
+    (petAdded)="onPetAdded()"
+    (cancelled)="showAddPetDialog = false"
+  >
+  </app-add-pet-form>
+</p-dialog>
+
+<p-toast></p-toast>

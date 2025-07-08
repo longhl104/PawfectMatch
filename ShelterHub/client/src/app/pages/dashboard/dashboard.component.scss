@@ -1,0 +1,125 @@
+.dashboard-container {
+  padding: 1rem;
+  background-color: var(--surface-ground);
+  min-height: 100vh;
+}
+
+.pet-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .p-card-body {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .p-card-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.application-item {
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: var(--surface-hover);
+  }
+}
+
+.field {
+  margin-bottom: 1rem;
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 0.5rem;
+  }
+
+  .pet-card {
+    margin-bottom: 1rem;
+  }
+}
+
+// Custom progress bar styling
+.capacity-progress {
+  .progress-bar {
+    transition: width 0.3s ease;
+  }
+}
+
+// Action buttons section
+.action-buttons {
+  margin-bottom: 1rem;
+
+  .p-button {
+    margin-right: 0.5rem;
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+}
+
+// Loading states
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+// Empty states
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-color-secondary);
+
+  .pi {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
+    opacity: 0.5;
+  }
+
+  p {
+    margin: 0;
+    font-size: 1.1rem;
+  }
+}
+
+// Card headers
+.p-card-header {
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: var(--text-color);
+}
+
+// Status tags
+.p-tag {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+
+// Match score display
+.match-score {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+
+  .pi-star-fill {
+    color: var(--yellow-500);
+  }
+
+  span {
+    font-weight: 600;
+    color: var(--text-color);
+  }
+}
