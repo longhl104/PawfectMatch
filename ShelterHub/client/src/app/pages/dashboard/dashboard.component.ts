@@ -18,6 +18,7 @@ import {
 } from '../../shared/services/application.service';
 import { AddPetFormComponent } from './add-pet-form/add-pet-form.component';
 import { ToastService } from '@longhl104/pawfect-match-ng';
+import { AuthService } from 'shared/services/auth.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -41,6 +42,7 @@ export class DashboardComponent implements OnInit {
   private petService = inject(PetService);
   private applicationService = inject(ApplicationService);
   private toastService = inject(ToastService);
+  public authService = inject(AuthService);
 
   shelterInfo: ShelterInfo | null = null;
   pets: Pet[] = [];

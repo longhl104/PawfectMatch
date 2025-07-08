@@ -9,14 +9,16 @@
               <h2 class="text-lg font-semibold m-0">
                 {{ shelterInfo.shelterName }}
               </h2>
-              <p class="text-600 m-0">{{ shelterInfo.address }}</p>
+              <p class="text-600 m-0">{{ shelterInfo.shelterAddress }}</p>
             </div>
           </div>
           <div class="col-12 md:col-3">
             <div class="field">
               <h3 class="text-sm text-600 m-0 mb-1">Contact</h3>
-              <p class="m-0">{{ shelterInfo.phone }}</p>
-              <p class="m-0">{{ shelterInfo.email }}</p>
+              <p class="m-0">{{ shelterInfo.shelterContactNumber }}</p>
+              <p class="m-0">
+                {{ (authService.currentUser$ | async)?.email }}
+              </p>
             </div>
           </div>
           <div class="col-12 md:col-3">

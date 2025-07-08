@@ -6,9 +6,8 @@ import { environment } from 'environments/environment';
 export interface ShelterInfo {
   shelterId: string;
   shelterName: string;
-  address: string;
-  phone: string;
-  email: string;
+  shelterAddress: string;
+  shelterContactNumber: string;
   capacity: number;
   currentPets: number;
 }
@@ -24,7 +23,11 @@ export class ShelterService {
       this.http.post<ShelterInfo>(
         `${environment.apiUrl}/api/shelters/my-shelter/query`,
         {
-          attributesToGet: ['ShelterName'],
+          attributesToGet: [
+            'ShelterName',
+            'ShelterAddress',
+            'ShelterContactNumber',
+          ],
         },
         {
           withCredentials: true,
