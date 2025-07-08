@@ -17,34 +17,103 @@
               Dashboard
             </a>
           </li>
-          <li class="nav-item">
-            <a routerLink="/pets" class="nav-link" (click)="closeMenu()">
-              <span class="nav-icon">🐕</span>
-              Manage Pets
-            </a>
-          </li>
-          <li class="nav-item">
-            <a
-              routerLink="/applications"
-              class="nav-link"
-              (click)="closeMenu()"
+
+          <!-- Management Dropdown -->
+          <li
+            class="nav-item dropdown"
+            [class.dropdown-open]="isManagementDropdownOpen"
+          >
+            <button
+              class="nav-link dropdown-toggle"
+              (click)="toggleManagementDropdown()"
+              [attr.aria-expanded]="isManagementDropdownOpen"
             >
-              <span class="nav-icon">📋</span>
-              Applications
-            </a>
+              <span class="nav-icon">🐕</span>
+              Management
+              <span class="dropdown-arrow">▼</span>
+            </button>
+            <ul class="dropdown-menu" *ngIf="isManagementDropdownOpen">
+              <li>
+                <a
+                  routerLink="/pets"
+                  class="dropdown-link"
+                  (click)="closeMenu()"
+                >
+                  <span class="dropdown-icon">🐕</span>
+                  Manage Pets
+                </a>
+              </li>
+              <li>
+                <a
+                  routerLink="/applications"
+                  class="dropdown-link"
+                  (click)="closeMenu()"
+                >
+                  <span class="dropdown-icon">📋</span>
+                  Applications
+                </a>
+              </li>
+              <li>
+                <a
+                  routerLink="/adoptions"
+                  class="dropdown-link"
+                  (click)="closeMenu()"
+                >
+                  <span class="dropdown-icon">❤️</span>
+                  Adoptions
+                </a>
+              </li>
+            </ul>
           </li>
-          <li class="nav-item">
-            <a routerLink="/adoptions" class="nav-link" (click)="closeMenu()">
-              <span class="nav-icon">🏠</span>
-              Adoptions
-            </a>
-          </li>
-          <li class="nav-item">
-            <a routerLink="/reports" class="nav-link" (click)="closeMenu()">
-              <span class="nav-icon">📊</span>
+
+          <!-- Reports & Analytics Dropdown -->
+          <li
+            class="nav-item dropdown"
+            [class.dropdown-open]="isReportsDropdownOpen"
+          >
+            <button
+              class="nav-link dropdown-toggle"
+              (click)="toggleReportsDropdown()"
+              [attr.aria-expanded]="isReportsDropdownOpen"
+            >
+              <span class="nav-icon">�</span>
               Reports
-            </a>
+              <span class="dropdown-arrow">▼</span>
+            </button>
+            <ul class="dropdown-menu" *ngIf="isReportsDropdownOpen">
+              <li>
+                <a
+                  routerLink="/reports"
+                  class="dropdown-link"
+                  (click)="closeMenu()"
+                >
+                  <span class="dropdown-icon">📊</span>
+                  Analytics
+                </a>
+              </li>
+              <li>
+                <a
+                  routerLink="/reports/adoptions"
+                  class="dropdown-link"
+                  (click)="closeMenu()"
+                >
+                  <span class="dropdown-icon">📈</span>
+                  Adoption Reports
+                </a>
+              </li>
+              <li>
+                <a
+                  routerLink="/reports/pets"
+                  class="dropdown-link"
+                  (click)="closeMenu()"
+                >
+                  <span class="dropdown-icon">�</span>
+                  Pet Reports
+                </a>
+              </li>
+            </ul>
           </li>
+
           <li class="nav-item">
             <a routerLink="/settings" class="nav-link" (click)="closeMenu()">
               <span class="nav-icon">⚙️</span>
