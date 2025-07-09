@@ -9,7 +9,7 @@ namespace Longhl104.ShelterHub.Services;
 /// <summary>
 /// Service for handling media uploads to S3
 /// </summary>
-public interface IMediaUploadService
+public interface IMediaService
 {
     /// <summary>
     /// Generates a presigned URL for uploading an image to S3
@@ -37,11 +37,11 @@ public interface IMediaUploadService
 /// <summary>
 /// Service for handling media uploads to S3
 /// </summary>
-public class MediaUploadService(IAmazonS3 s3Client, IConfiguration configuration, IHostEnvironment hostEnvironment, ILogger<MediaUploadService> logger) : IMediaUploadService
+public class MediaService(IAmazonS3 s3Client, IConfiguration configuration, IHostEnvironment hostEnvironment, ILogger<MediaService> logger) : IMediaService
 {
     private readonly IAmazonS3 _s3Client = s3Client;
     private readonly IConfiguration _configuration = configuration;
-    private readonly ILogger<MediaUploadService> _logger = logger;
+    private readonly ILogger<MediaService> _logger = logger;
     private readonly string _bucketName = $"pawfectmatch-{hostEnvironment.EnvironmentName.ToLowerInvariant()}-shelter-hub-pet-media";
     private readonly string _bucketRegion = "ap-southeast-2";
 

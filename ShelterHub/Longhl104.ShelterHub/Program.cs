@@ -34,7 +34,7 @@ builder.Services.AddSingleton<IAmazonS3, AmazonS3Client>();
 // Register ShelterHub services
 builder.Services.AddScoped<IShelterService, ShelterService>();
 builder.Services.AddScoped<IPetService, PetService>();
-builder.Services.AddScoped<IMediaUploadService, MediaUploadService>();
+builder.Services.AddScoped<IMediaService, MediaService>();
 
 // Add authentication and authorization services
 // Note: AuthenticationMiddleware handles JWT validation and sets ClaimsPrincipal

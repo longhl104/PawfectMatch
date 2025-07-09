@@ -9,7 +9,7 @@ namespace Longhl104.ShelterHub.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-public class MediaController(IMediaUploadService mediaUploadService) : ControllerBase
+public class MediaController(IMediaService mediaUploadService) : ControllerBase
 {
     /// <summary>
     /// Generates a presigned URL for uploading pet images to S3

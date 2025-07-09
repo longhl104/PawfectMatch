@@ -65,14 +65,14 @@ public class PetService : IPetService
     private readonly IAmazonDynamoDB _dynamoDbClient;
     private readonly IHostEnvironment _environment;
     private readonly ILogger<PetService> _logger;
-    private readonly IMediaUploadService _mediaUploadService;
+    private readonly IMediaService _mediaUploadService;
     private readonly string _tableName;
 
     public PetService(
         IAmazonDynamoDB dynamoDbClient,
         IHostEnvironment environment,
         ILogger<PetService> logger,
-        IMediaUploadService mediaUploadService)
+        IMediaService mediaUploadService)
     {
         _dynamoDbClient = dynamoDbClient;
         _environment = environment;
