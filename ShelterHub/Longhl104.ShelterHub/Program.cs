@@ -3,6 +3,7 @@ using Amazon.DynamoDBv2;
 using Longhl104.PawfectMatch.Extensions;
 using Longhl104.ShelterHub.Services;
 using Longhl104.PawfectMatch.Middleware;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,7 +15,11 @@ Console.WriteLine($"Environment: {environmentName}");
 builder.AddPawfectMatchSystemsManager("ShelterHub");
 
 // Add services to the container
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddOpenApi();

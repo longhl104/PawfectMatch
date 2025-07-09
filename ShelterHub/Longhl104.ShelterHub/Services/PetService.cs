@@ -1,6 +1,7 @@
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using Longhl104.ShelterHub.Models;
+using Longhl104.PawfectMatch.Extensions;
 using System.Globalization;
 
 namespace Longhl104.ShelterHub.Services;
@@ -349,7 +350,7 @@ public class PetService : IPetService
                 },
                 ExpressionAttributeValues = new Dictionary<string, AttributeValue>
                 {
-                    { ":status", new AttributeValue { S = status.ToString() } }
+                    { ":status", new AttributeValue { S = status.GetAmbientValue<string>() } }
                 },
                 ReturnValues = ReturnValue.ALL_NEW
             };
@@ -474,7 +475,7 @@ public class PetService : IPetService
             { "Gender", new AttributeValue { S = pet.Gender } },
             { "Description", new AttributeValue { S = pet.Description } },
             { "ShelterId", new AttributeValue { S = pet.ShelterId.ToString() } },
-            { "Status", new AttributeValue { S = pet.Status.ToString() } },
+            { "Status", new AttributeValue { S = pet.Status.GetAmbientValue<string>() } },
             { "CreatedAt", new AttributeValue { S = pet.CreatedAt.ToString("O") } }
         };
 

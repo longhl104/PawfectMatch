@@ -1,13 +1,21 @@
+using System.ComponentModel;
+using System.Text.Json.Serialization;
+
 namespace Longhl104.ShelterHub.Models;
 
 /// <summary>
 /// Pet status enumeration
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum PetStatus
 {
+    [AmbientValue("Available")]
     Available,
+    [AmbientValue("Pending")]
     Pending,
+    [AmbientValue("Adopted")]
     Adopted,
+    [AmbientValue("MedicalHold")]
     MedicalHold
 }
 
