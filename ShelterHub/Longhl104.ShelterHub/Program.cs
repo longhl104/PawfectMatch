@@ -31,6 +31,9 @@ builder.Services.AddPawfectMatchAuthenticationAndAuthorization("shelter_admin");
 builder.Services.AddSingleton<IAmazonDynamoDB, AmazonDynamoDBClient>();
 builder.Services.AddSingleton<IAmazonS3, AmazonS3Client>();
 
+// Configure caching
+builder.Services.AddMemoryCache();
+
 // Register ShelterHub services
 builder.Services.AddScoped<IShelterService, ShelterService>();
 builder.Services.AddScoped<IPetService, PetService>();
