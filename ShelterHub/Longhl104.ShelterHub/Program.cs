@@ -24,6 +24,7 @@ builder.Services.AddSingleton<IAmazonDynamoDB, AmazonDynamoDBClient>();
 
 // Register ShelterHub services
 builder.Services.AddScoped<IShelterService, ShelterService>();
+builder.Services.AddScoped<PetService>();
 
 // Add authentication and authorization services
 // Note: AuthenticationMiddleware handles JWT validation and sets ClaimsPrincipal

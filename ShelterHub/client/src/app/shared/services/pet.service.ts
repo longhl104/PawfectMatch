@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 
 export interface Pet {
   id: string;
@@ -11,6 +12,7 @@ export interface Pet {
   imageUrl?: string;
   description: string;
   dateAdded: Date;
+  shelterId: string;
 }
 
 export interface CreatePetRequest {
@@ -23,96 +25,91 @@ export interface CreatePetRequest {
   imageUrl?: string;
 }
 
+export interface PetResponse {
+  success: boolean;
+  pet?: Pet;
+  errorMessage?: string;
+}
+
+export interface GetPetsResponse {
+  success: boolean;
+  pets?: Pet[];
+  errorMessage?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class PetService {
+  private readonly apiUrl = '/api/pets';
+  private readonly http = inject(HttpClient);
 
   async getAllPets(): Promise<Pet[]> {
-    // TODO: Replace with actual API call
-    return Promise.resolve([
-      {
-        id: '1',
-        name: 'Buddy',
-        species: 'Dog',
-        breed: 'Golden Retriever',
-        age: 3,
-        gender: 'Male',
-        status: 'available',
-        description: 'Friendly and energetic dog looking for a loving family.',
-        dateAdded: new Date('2024-12-01'),
-        imageUrl: 'https://images.unsplash.com/photo-1552053831-71594a27632d?w=300&h=200&fit=crop&crop=faces'
-      },
-      {
-        id: '2',
-        name: 'Whiskers',
-        species: 'Cat',
-        breed: 'Siamese',
-        age: 2,
-        gender: 'Female',
-        status: 'pending',
-        description: 'Calm and affectionate cat who loves to cuddle.',
-        dateAdded: new Date('2024-11-15'),
-        imageUrl: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=300&h=200&fit=crop&crop=faces'
-      },
-      {
-        id: '3',
-        name: 'Charlie',
-        species: 'Dog',
-        breed: 'Beagle',
-        age: 5,
-        gender: 'Male',
-        status: 'medical_hold',
-        description: 'Sweet beagle recovering from minor surgery.',
-        dateAdded: new Date('2024-11-20'),
-        imageUrl: 'https://images.unsplash.com/photo-1551717743-49959800b1f6?w=300&h=200&fit=crop&crop=faces'
-      },
-      {
-        id: '4',
-        name: 'Luna',
-        species: 'Cat',
-        breed: 'Persian',
-        age: 4,
-        gender: 'Female',
-        status: 'available',
-        description: 'Beautiful Persian cat with a gentle personality.',
-        dateAdded: new Date('2024-12-10'),
-        imageUrl: 'https://images.unsplash.com/photo-1596854407944-bf87f6fdd49e?w=300&h=200&fit=crop&crop=faces'
-      }
-    ]);
+    // TODO: Replace with actual shelter ID from auth context
+    const shelterId = 'shelter-1'; // This should come from authentication context
+
+    try {
+      const response = await this.http.get<GetPetsResponse>(`${this.apiUrl}/shelter/${shelterId}`).toPromise();
+      return response?.pets || [];
+    } catch (error) {
+      console.error('Error fetching pets:', error);
+      return [];
+    }
   }
 
   async getPetById(id: string): Promise<Pet | null> {
-    const pets = await this.getAllPets();
-    return pets.find(pet => pet.id === id) || null;
+    try {
+      const response = await this.http.get<PetResponse>(`${this.apiUrl}/${id}`).toPromise();
+      return response?.pet || null;
+    } catch (error) {
+      console.error('Error fetching pet:', error);
+      return null;
+    }
   }
 
   async createPet(petData: CreatePetRequest): Promise<Pet> {
-    // TODO: Replace with actual API call
-    const newPet: Pet = {
-      id: Date.now().toString(),
-      ...petData,
-      status: 'available',
-      dateAdded: new Date()
-    };
-    console.log('Creating new pet:', newPet);
-    return Promise.resolve(newPet);
+    // TODO: Replace with actual shelter ID from auth context
+    const shelterId = 'shelter-1'; // This should come from authentication context
+
+    try {
+      const response = await this.http.post<PetResponse>(`${this.apiUrl}/shelter/${shelterId}`, petData).toPromise();
+
+      if (!response?.success || !response.pet) {
+        throw new Error(response?.errorMessage || 'Failed to create pet');
+      }
+
+      return response.pet;
+    } catch (error) {
+      console.error('Error creating pet:', error);
+      throw error;
+    }
   }
 
   async updatePetStatus(petId: string, status: Pet['status']): Promise<Pet> {
-    // TODO: Replace with actual API call
-    const pet = await this.getPetById(petId);
-    if (!pet) {
-      throw new Error('Pet not found');
+    try {
+      const response = await this.http.put<PetResponse>(`${this.apiUrl}/${petId}/status`, status).toPromise();
+
+      if (!response?.success || !response.pet) {
+        throw new Error(response?.errorMessage || 'Failed to update pet status');
+      }
+
+      return response.pet;
+    } catch (error) {
+      console.error('Error updating pet status:', error);
+      throw error;
     }
-    pet.status = status;
-    console.log('Updating pet status:', pet);
-    return Promise.resolve(pet);
   }
 
   async deletePet(petId: string): Promise<void> {
-    // TODO: Replace with actual API call
-    console.log('Deleting pet:', petId);
-    return Promise.resolve();
+    try {
+      const response = await this.http.delete<PetResponse>(`${this.apiUrl}/${petId}`).toPromise();
+
+      if (!response?.success) {
+        throw new Error(response?.errorMessage || 'Failed to delete pet');
+      }
+    } catch (error) {
+      console.error('Error deleting pet:', error);
+      throw error;
+    }
   }
 }
