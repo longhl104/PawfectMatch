@@ -220,7 +220,7 @@ public class Pet
     /// <summary>
     /// Date when the pet was added to the shelter
     /// </summary>
-    public DateTime DateAdded { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// ID of the shelter that owns this pet

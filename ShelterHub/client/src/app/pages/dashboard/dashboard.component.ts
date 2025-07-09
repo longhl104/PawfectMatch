@@ -151,9 +151,7 @@ export class DashboardComponent implements OnInit {
   }
 
   onPetAdded() {
-    this.dialogRef?.close(true);
     this.loadDashboardData(); // Refresh the data
-    this.toastService.success('New pet has been added successfully');
   }
 
   formatDate(date: Date): string {

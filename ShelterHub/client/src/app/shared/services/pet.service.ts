@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { environment } from 'environments/environment';
 
 export interface Pet {
   id: string;
@@ -42,7 +43,7 @@ export interface GetPetsResponse {
   providedIn: 'root',
 })
 export class PetService {
-  private readonly apiUrl = '/api/pets';
+  private readonly apiUrl = `${environment.apiUrl}/api/pets`;
   private readonly http = inject(HttpClient);
 
   async getAllPets(): Promise<Pet[]> {

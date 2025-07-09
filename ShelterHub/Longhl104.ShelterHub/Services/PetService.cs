@@ -187,7 +187,7 @@ public class PetService : IPetService
                 Description = request.Description,
                 ShelterId = shelterId,
                 Status = PetStatus.Available,
-                DateAdded = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow
             };
 
             var putRequest = new PutItemRequest
@@ -349,7 +349,7 @@ public class PetService : IPetService
             Description = item["Description"].S,
             ShelterId = Guid.Parse(item["ShelterId"].S),
             Status = Enum.Parse<PetStatus>(item["Status"].S),
-            DateAdded = DateTime.Parse(item["DateAdded"].S)
+            CreatedAt = DateTime.Parse(item["DateAdded"].S)
         };
     }
 
@@ -369,7 +369,7 @@ public class PetService : IPetService
             { "Description", new AttributeValue { S = pet.Description } },
             { "ShelterId", new AttributeValue { S = pet.ShelterId.ToString() } },
             { "Status", new AttributeValue { S = pet.Status.ToString() } },
-            { "DateAdded", new AttributeValue { S = pet.DateAdded.ToString("O") } }
+            { "CreatedAt", new AttributeValue { S = pet.CreatedAt.ToString("O") } }
         };
 
         return item;

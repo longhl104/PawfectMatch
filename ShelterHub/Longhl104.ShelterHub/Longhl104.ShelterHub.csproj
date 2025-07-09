@@ -15,16 +15,14 @@
     <PackageReference Include="AWSSDK.CognitoIdentityProvider" Version="4.0.1.10" />
     <PackageReference Include="AWSSDK.DynamoDBv2" Version="4.0.2.1" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.3" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.12.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.6" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference
-      Include="../../Shared/Longhl104.PawfectMatch/Longhl104.PawfectMatch.csproj"
-      Condition="$(UseProjectReference)" />
-    <PackageReference Include="Longhl104.PawfectMatch" Version="1.1.0"
-      Condition="!$(UseProjectReference)" />
+    <ProjectReference Include="../../Shared/Longhl104.PawfectMatch/Longhl104.PawfectMatch.csproj" Condition="$(UseProjectReference)" />
+    <PackageReference Include="Longhl104.PawfectMatch" Version="1.1.0" Condition="!$(UseProjectReference)" />
   </ItemGroup>
 
 </Project>
