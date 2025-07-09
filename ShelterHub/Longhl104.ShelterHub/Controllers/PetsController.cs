@@ -16,8 +16,8 @@ public class PetsController(IPetService petService) : ControllerBase
     /// </summary>
     /// <param name="shelterId">The shelter ID</param>
     /// <returns>List of pets</returns>
-    [HttpGet("shelter/{shelterId}")]
-    public async Task<ActionResult<GetPetsResponse>> GetPetsByShelterId(string shelterId)
+    [HttpGet("shelter/{shelterId:guid}")]
+    public async Task<ActionResult<GetPetsResponse>> GetPetsByShelterId(Guid shelterId)
     {
         var response = await petService.GetPetsByShelterId(shelterId);
 
@@ -34,8 +34,8 @@ public class PetsController(IPetService petService) : ControllerBase
     /// </summary>
     /// <param name="id">The pet ID</param>
     /// <returns>Pet details</returns>
-    [HttpGet("{id}")]
-    public async Task<ActionResult<PetResponse>> GetPetById(string id)
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<PetResponse>> GetPetById(Guid id)
     {
         var response = await petService.GetPetById(id);
 
@@ -53,8 +53,8 @@ public class PetsController(IPetService petService) : ControllerBase
     /// <param name="request">Pet creation request</param>
     /// <param name="shelterId">The shelter ID that owns the pet</param>
     /// <returns>Created pet</returns>
-    [HttpPost("shelter/{shelterId}")]
-    public async Task<ActionResult<PetResponse>> CreatePet([FromBody] CreatePetRequest request, string shelterId)
+    [HttpPost("shelter/{shelterId:guid}")]
+    public async Task<ActionResult<PetResponse>> CreatePet([FromBody] CreatePetRequest request, Guid shelterId)
     {
         if (!ModelState.IsValid)
         {
@@ -68,7 +68,7 @@ public class PetsController(IPetService petService) : ControllerBase
             return BadRequest(response);
         }
 
-        return CreatedAtAction(nameof(GetPetById), new { id = response.Pet!.Id }, response);
+        return CreatedAtAction(nameof(GetPetById), new { id = response.Pet!.PetId }, response);
     }
 
     /// <summary>
@@ -77,8 +77,8 @@ public class PetsController(IPetService petService) : ControllerBase
     /// <param name="id">The pet ID</param>
     /// <param name="status">New status</param>
     /// <returns>Updated pet</returns>
-    [HttpPut("{id}/status")]
-    public async Task<ActionResult<PetResponse>> UpdatePetStatus(string id, [FromBody] PetStatus status)
+    [HttpPut("{id:guid}/status")]
+    public async Task<ActionResult<PetResponse>> UpdatePetStatus(Guid id, [FromBody] PetStatus status)
     {
         var response = await petService.UpdatePetStatus(id, status);
 
@@ -95,8 +95,8 @@ public class PetsController(IPetService petService) : ControllerBase
     /// </summary>
     /// <param name="id">The pet ID</param>
     /// <returns>Success status</returns>
-    [HttpDelete("{id}")]
-    public async Task<ActionResult<PetResponse>> DeletePet(string id)
+    [HttpDelete("{id:guid}")]
+    public async Task<ActionResult<PetResponse>> DeletePet(Guid id)
     {
         var response = await petService.DeletePet(id);
 

@@ -180,7 +180,7 @@ public class Pet
     /// <summary>
     /// Unique identifier for the pet
     /// </summary>
-    public string Id { get; set; } = string.Empty;
+    public Guid PetId { get; set; } = Guid.NewGuid();
 
     /// <summary>
     /// Name of the pet
@@ -218,11 +218,6 @@ public class Pet
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
-    /// Optional image URL for the pet
-    /// </summary>
-    public string? ImageUrl { get; set; }
-
-    /// <summary>
     /// Date when the pet was added to the shelter
     /// </summary>
     public DateTime DateAdded { get; set; } = DateTime.UtcNow;
@@ -230,7 +225,7 @@ public class Pet
     /// <summary>
     /// ID of the shelter that owns this pet
     /// </summary>
-    public string ShelterId { get; set; } = string.Empty;
+    public Guid ShelterId { get; set; } = Guid.NewGuid();
 }
 
 /// <summary>

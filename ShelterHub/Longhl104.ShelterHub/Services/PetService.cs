@@ -14,14 +14,14 @@ public interface IPetService
     /// </summary>
     /// <param name="shelterId">The shelter ID</param>
     /// <returns>List of pets</returns>
-    Task<GetPetsResponse> GetPetsByShelterId(string shelterId);
+    Task<GetPetsResponse> GetPetsByShelterId(Guid shelterId);
 
     /// <summary>
     /// Gets a specific pet by ID
     /// </summary>
     /// <param name="petId">The pet ID</param>
     /// <returns>Pet details</returns>
-    Task<PetResponse> GetPetById(string petId);
+    Task<PetResponse> GetPetById(Guid petId);
 
     /// <summary>
     /// Creates a new pet
@@ -29,7 +29,7 @@ public interface IPetService
     /// <param name="request">Pet creation request</param>
     /// <param name="shelterId">The shelter ID that owns the pet</param>
     /// <returns>Created pet</returns>
-    Task<PetResponse> CreatePet(CreatePetRequest request, string shelterId);
+    Task<PetResponse> CreatePet(CreatePetRequest request, Guid shelterId);
 
     /// <summary>
     /// Updates a pet's status
@@ -37,14 +37,14 @@ public interface IPetService
     /// <param name="petId">The pet ID</param>
     /// <param name="status">New status</param>
     /// <returns>Updated pet</returns>
-    Task<PetResponse> UpdatePetStatus(string petId, PetStatus status);
+    Task<PetResponse> UpdatePetStatus(Guid petId, PetStatus status);
 
     /// <summary>
     /// Deletes a pet
     /// </summary>
     /// <param name="petId">The pet ID</param>
     /// <returns>Success status</returns>
-    Task<PetResponse> DeletePet(string petId);
+    Task<PetResponse> DeletePet(Guid petId);
 }
 
 /// <summary>
@@ -73,7 +73,7 @@ public class PetService : IPetService
     /// </summary>
     /// <param name="shelterId">The shelter ID</param>
     /// <returns>List of pets</returns>
-    public async Task<GetPetsResponse> GetPetsByShelterId(string shelterId)
+    public async Task<GetPetsResponse> GetPetsByShelterId(Guid shelterId)
     {
         try
         {
@@ -86,7 +86,7 @@ public class PetService : IPetService
                 KeyConditionExpression = "ShelterId = :shelterId",
                 ExpressionAttributeValues = new Dictionary<string, AttributeValue>
                 {
-                    { ":shelterId", new AttributeValue { S = shelterId } }
+                    { ":shelterId", new AttributeValue { S = shelterId.ToString() } }
                 }
             };
 
@@ -117,7 +117,7 @@ public class PetService : IPetService
     /// </summary>
     /// <param name="petId">The pet ID</param>
     /// <returns>Pet details</returns>
-    public async Task<PetResponse> GetPetById(string petId)
+    public async Task<PetResponse> GetPetById(Guid petId)
     {
         try
         {
@@ -128,7 +128,7 @@ public class PetService : IPetService
                 TableName = _tableName,
                 Key = new Dictionary<string, AttributeValue>
                 {
-                    { "Id", new AttributeValue { S = petId } }
+                    { "Id", new AttributeValue { S = petId.ToString() } }
                 }
             };
 
@@ -170,7 +170,7 @@ public class PetService : IPetService
     /// <param name="request">Pet creation request</param>
     /// <param name="shelterId">The shelter ID that owns the pet</param>
     /// <returns>Created pet</returns>
-    public async Task<PetResponse> CreatePet(CreatePetRequest request, string shelterId)
+    public async Task<PetResponse> CreatePet(CreatePetRequest request, Guid shelterId)
     {
         try
         {
@@ -178,14 +178,13 @@ public class PetService : IPetService
 
             var pet = new Pet
             {
-                Id = Guid.NewGuid().ToString(),
+                PetId = Guid.NewGuid(),
                 Name = request.Name,
                 Species = request.Species,
                 Breed = request.Breed,
                 Age = request.Age,
                 Gender = request.Gender,
                 Description = request.Description,
-                ImageUrl = request.ImageUrl,
                 ShelterId = shelterId,
                 Status = PetStatus.Available,
                 DateAdded = DateTime.UtcNow
@@ -199,7 +198,7 @@ public class PetService : IPetService
 
             await _dynamoDbClient.PutItemAsync(putRequest);
 
-            _logger.LogInformation("Successfully created pet with ID: {PetId}", pet.Id);
+            _logger.LogInformation("Successfully created pet with ID: {PetId}", pet.PetId);
 
             return new PetResponse
             {
@@ -224,7 +223,7 @@ public class PetService : IPetService
     /// <param name="petId">The pet ID</param>
     /// <param name="status">New status</param>
     /// <returns>Updated pet</returns>
-    public async Task<PetResponse> UpdatePetStatus(string petId, PetStatus status)
+    public async Task<PetResponse> UpdatePetStatus(Guid petId, PetStatus status)
     {
         try
         {
@@ -235,7 +234,7 @@ public class PetService : IPetService
                 TableName = _tableName,
                 Key = new Dictionary<string, AttributeValue>
                 {
-                    { "Id", new AttributeValue { S = petId } }
+                    { "Id", new AttributeValue { S = petId.ToString() } }
                 },
                 UpdateExpression = "SET #status = :status",
                 ExpressionAttributeNames = new Dictionary<string, string>
@@ -286,7 +285,7 @@ public class PetService : IPetService
     /// </summary>
     /// <param name="petId">The pet ID</param>
     /// <returns>Success status</returns>
-    public async Task<PetResponse> DeletePet(string petId)
+    public async Task<PetResponse> DeletePet(Guid petId)
     {
         try
         {
@@ -297,7 +296,7 @@ public class PetService : IPetService
                 TableName = _tableName,
                 Key = new Dictionary<string, AttributeValue>
                 {
-                    { "Id", new AttributeValue { S = petId } }
+                    { "Id", new AttributeValue { S = petId.ToString() } }
                 },
                 ReturnValues = ReturnValue.ALL_OLD
             };
@@ -341,15 +340,14 @@ public class PetService : IPetService
     {
         return new Pet
         {
-            Id = item["Id"].S,
+            PetId = Guid.Parse(item["Id"].S),
             Name = item["Name"].S,
             Species = item["Species"].S,
             Breed = item["Breed"].S,
             Age = int.Parse(item["Age"].N),
             Gender = item["Gender"].S,
             Description = item["Description"].S,
-            ImageUrl = item.ContainsKey("ImageUrl") ? item["ImageUrl"].S : null,
-            ShelterId = item["ShelterId"].S,
+            ShelterId = Guid.Parse(item["ShelterId"].S),
             Status = Enum.Parse<PetStatus>(item["Status"].S),
             DateAdded = DateTime.Parse(item["DateAdded"].S)
         };
@@ -362,22 +360,17 @@ public class PetService : IPetService
     {
         var item = new Dictionary<string, AttributeValue>
         {
-            { "Id", new AttributeValue { S = pet.Id } },
+            { "Id", new AttributeValue { S = pet.PetId.ToString() } },
             { "Name", new AttributeValue { S = pet.Name } },
             { "Species", new AttributeValue { S = pet.Species } },
             { "Breed", new AttributeValue { S = pet.Breed } },
             { "Age", new AttributeValue { N = pet.Age.ToString() } },
             { "Gender", new AttributeValue { S = pet.Gender } },
             { "Description", new AttributeValue { S = pet.Description } },
-            { "ShelterId", new AttributeValue { S = pet.ShelterId } },
+            { "ShelterId", new AttributeValue { S = pet.ShelterId.ToString() } },
             { "Status", new AttributeValue { S = pet.Status.ToString() } },
             { "DateAdded", new AttributeValue { S = pet.DateAdded.ToString("O") } }
         };
-
-        if (!string.IsNullOrEmpty(pet.ImageUrl))
-        {
-            item["ImageUrl"] = new AttributeValue { S = pet.ImageUrl };
-        }
 
         return item;
     }
