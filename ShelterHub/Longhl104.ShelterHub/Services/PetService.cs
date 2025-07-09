@@ -95,7 +95,8 @@ public class PetService : IPetService
                 ExpressionAttributeValues = new Dictionary<string, AttributeValue>
                 {
                     { ":shelterId", new AttributeValue { S = shelterId.ToString() } }
-                }
+                },
+                ScanIndexForward = false // Get most recent pets first
             };
 
             var response = await _dynamoDbClient.QueryAsync(query);
