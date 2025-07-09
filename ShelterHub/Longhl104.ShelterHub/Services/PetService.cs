@@ -1,6 +1,7 @@
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using Longhl104.ShelterHub.Models;
+using System.Globalization;
 
 namespace Longhl104.ShelterHub.Services;
 
@@ -179,9 +180,9 @@ public class PetService : IPetService
             var pet = new Pet
             {
                 PetId = Guid.NewGuid(),
-                Name = request.Name,
+                Name = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(request.Name.ToLowerInvariant()),
                 Species = request.Species,
-                Breed = request.Breed,
+                Breed = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(request.Breed.ToLowerInvariant()),
                 Age = request.Age,
                 Gender = request.Gender,
                 Description = request.Description,
@@ -303,7 +304,7 @@ public class PetService : IPetService
 
             var response = await _dynamoDbClient.DeleteItemAsync(deleteRequest);
 
-            if (!response.Attributes.Any())
+            if (response.Attributes.Count == 0)
             {
                 _logger.LogWarning("Pet not found for deletion: {PetId}", petId);
                 return new PetResponse
