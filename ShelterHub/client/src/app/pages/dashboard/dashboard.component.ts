@@ -166,7 +166,8 @@ export class DashboardComponent implements OnInit {
     // Show the fallback icon container
     const parent = target.parentElement;
     if (parent) {
-      parent.innerHTML = '<div class="w-full h-full bg-gray-100 flex align-items-center justify-content-center"><i class="pi pi-image text-4xl text-gray-400"></i></div>';
+      parent.innerHTML =
+        '<div class="w-full h-full bg-gray-100 flex align-items-center justify-content-center"><i class="pi pi-image text-4xl text-gray-400"></i></div>';
     }
   }
 }

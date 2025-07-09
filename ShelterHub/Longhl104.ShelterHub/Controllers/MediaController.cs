@@ -52,21 +52,22 @@ public class MediaController(IMediaUploadService mediaUploadService) : Controlle
     /// </summary>
     /// <param name="request">The download request containing the S3 URL</param>
     /// <returns>Presigned download URL</returns>
-    [HttpPost("download-presigned-url")]
-    public async Task<ActionResult<object>> GenerateDownloadPresignedUrl([FromBody] DownloadPresignedUrlRequest request)
+    [HttpGet("presigned-url/{s3Url}")]
+    public async Task<ActionResult<string>> GenerateDownloadPresignedUrl(string s3Url)
     {
-        if (string.IsNullOrEmpty(request.S3Url))
+        s3Url = Uri.UnescapeDataString(s3Url); // Decode URL if necessary
+        if (string.IsNullOrEmpty(s3Url))
         {
             return BadRequest(new { error = "S3 URL is required" });
         }
 
-        var presignedUrl = await mediaUploadService.GenerateDownloadPresignedUrlAsync(request.S3Url);
+        var presignedUrl = await mediaUploadService.GenerateDownloadPresignedUrlAsync(s3Url);
 
         if (string.IsNullOrEmpty(presignedUrl))
         {
             return BadRequest(new { error = "Failed to generate presigned download URL" });
         }
 
-        return Ok(new { presignedUrl });
+        return Ok(presignedUrl);
     }
 }

@@ -65,9 +65,9 @@ export class PetService {
 
   async getAllPets(shelterId: string): Promise<Pet[]> {
     try {
-      const response = await this.http
-        .get<GetPetsResponse>(`${this.apiUrl}/shelter/${shelterId}`)
-        .toPromise();
+      const response = await firstValueFrom(
+        this.http.get<GetPetsResponse>(`${this.apiUrl}/shelter/${shelterId}`),
+      );
       return response?.pets || [];
     } catch (error) {
       console.error('Error fetching pets:', error);
@@ -141,17 +141,21 @@ export class PetService {
     }
   }
 
-  async getPresignedUrl(request: PresignedUrlRequest): Promise<PresignedUrlResponse> {
+  async getPresignedUrl(
+    request: PresignedUrlRequest,
+  ): Promise<PresignedUrlResponse> {
     try {
       const response = await firstValueFrom(
         this.http.post<PresignedUrlResponse>(
           `${this.mediaApiUrl}/presigned-url`,
-          request
-        )
+          request,
+        ),
       );
 
       if (!response?.success) {
-        throw new Error(response?.errorMessage || 'Failed to get presigned URL');
+        throw new Error(
+          response?.errorMessage || 'Failed to get presigned URL',
+        );
       }
 
       return response;
@@ -167,7 +171,7 @@ export class PetService {
         presignedUrl,
         fileName: file.name,
         fileType: file.type,
-        fileSize: file.size
+        fileSize: file.size,
       });
 
       const response = await fetch(presignedUrl, {
@@ -184,9 +188,11 @@ export class PetService {
         console.error('S3 Upload Error:', {
           status: response.status,
           statusText: response.statusText,
-          errorText
+          errorText,
         });
-        throw new Error(`Upload failed: ${response.status} ${response.statusText} - ${errorText}`);
+        throw new Error(
+          `Upload failed: ${response.status} ${response.statusText} - ${errorText}`,
+        );
       }
 
       console.log('S3 Upload successful');
@@ -196,7 +202,11 @@ export class PetService {
     }
   }
 
-  async uploadImageAndCreatePet(shelterId: string, petData: CreatePetRequest, imageFile?: File): Promise<Pet> {
+  async uploadImageAndCreatePet(
+    shelterId: string,
+    petData: CreatePetRequest,
+    imageFile?: File,
+  ): Promise<Pet> {
     try {
       const finalPetData = { ...petData };
 
