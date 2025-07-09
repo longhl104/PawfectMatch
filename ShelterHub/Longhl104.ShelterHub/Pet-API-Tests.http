@@ -1,4 +1,4 @@
-### Pet API Testing
+### Pet API Testing with DynamoDB
 
 ### 1. Get all pets for a shelter
 GET {{baseUrl}}/api/pets/shelter/shelter-1
@@ -46,5 +46,5 @@ Content-Type: application/json
 }
 
 ### Variables
-@baseUrl = https://localhost:5000
+@baseUrl = https://localhost:5001
 @petId = replace-with-actual-pet-id

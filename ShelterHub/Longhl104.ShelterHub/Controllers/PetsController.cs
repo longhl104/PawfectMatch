@@ -9,7 +9,7 @@ namespace Longhl104.ShelterHub.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-public class PetsController(PetService petService) : ControllerBase
+public class PetsController(IPetService petService) : ControllerBase
 {
     /// <summary>
     /// Gets all pets for a specific shelter
