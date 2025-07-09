@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 
 export interface Pet {
   id: string;
@@ -38,7 +39,7 @@ export interface GetPetsResponse {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PetService {
   private readonly apiUrl = '/api/pets';
@@ -49,7 +50,9 @@ export class PetService {
     const shelterId = 'shelter-1'; // This should come from authentication context
 
     try {
-      const response = await this.http.get<GetPetsResponse>(`${this.apiUrl}/shelter/${shelterId}`).toPromise();
+      const response = await this.http
+        .get<GetPetsResponse>(`${this.apiUrl}/shelter/${shelterId}`)
+        .toPromise();
       return response?.pets || [];
     } catch (error) {
       console.error('Error fetching pets:', error);
@@ -59,7 +62,9 @@ export class PetService {
 
   async getPetById(id: string): Promise<Pet | null> {
     try {
-      const response = await this.http.get<PetResponse>(`${this.apiUrl}/${id}`).toPromise();
+      const response = await this.http
+        .get<PetResponse>(`${this.apiUrl}/${id}`)
+        .toPromise();
       return response?.pet || null;
     } catch (error) {
       console.error('Error fetching pet:', error);
@@ -67,12 +72,14 @@ export class PetService {
     }
   }
 
-  async createPet(petData: CreatePetRequest): Promise<Pet> {
-    // TODO: Replace with actual shelter ID from auth context
-    const shelterId = 'shelter-1'; // This should come from authentication context
-
+  async createPet(shelterId: string, petData: CreatePetRequest): Promise<Pet> {
     try {
-      const response = await this.http.post<PetResponse>(`${this.apiUrl}/shelter/${shelterId}`, petData).toPromise();
+      const response = await firstValueFrom(
+        this.http.post<PetResponse>(
+          `${this.apiUrl}/shelter/${shelterId}`,
+          petData,
+        ),
+      );
 
       if (!response?.success || !response.pet) {
         throw new Error(response?.errorMessage || 'Failed to create pet');
@@ -87,10 +94,14 @@ export class PetService {
 
   async updatePetStatus(petId: string, status: Pet['status']): Promise<Pet> {
     try {
-      const response = await this.http.put<PetResponse>(`${this.apiUrl}/${petId}/status`, status).toPromise();
+      const response = await this.http
+        .put<PetResponse>(`${this.apiUrl}/${petId}/status`, status)
+        .toPromise();
 
       if (!response?.success || !response.pet) {
-        throw new Error(response?.errorMessage || 'Failed to update pet status');
+        throw new Error(
+          response?.errorMessage || 'Failed to update pet status',
+        );
       }
 
       return response.pet;
@@ -102,7 +113,9 @@ export class PetService {
 
   async deletePet(petId: string): Promise<void> {
     try {
-      const response = await this.http.delete<PetResponse>(`${this.apiUrl}/${petId}`).toPromise();
+      const response = await this.http
+        .delete<PetResponse>(`${this.apiUrl}/${petId}`)
+        .toPromise();
 
       if (!response?.success) {
         throw new Error(response?.errorMessage || 'Failed to delete pet');

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, inject, Output } from '@angular/core';
+import { Component, EventEmitter, inject, input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -11,10 +11,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { SelectModule } from 'primeng/select';
 import { EditorModule } from 'primeng/editor';
 import { ButtonModule } from 'primeng/button';
-import {
-  PetService,
-  type CreatePetRequest,
-} from '../../../shared/services/pet.service';
+import { PetService, type CreatePetRequest } from 'shared/services/pet.service';
 import { ToastService } from '@longhl104/pawfect-match-ng';
 
 @Component({
@@ -42,6 +39,7 @@ export class AddPetFormComponent {
 
   petForm: FormGroup;
   isSubmitting = false;
+  shelterId = input<string | undefined>(undefined);
 
   speciesOptions = [
     { label: 'Dog', value: 'Dog' },
@@ -50,7 +48,6 @@ export class AddPetFormComponent {
     { label: 'Bird', value: 'Bird' },
     { label: 'Other', value: 'Other' },
   ];
-
   genderOptions = [
     { label: 'Male', value: 'Male' },
     { label: 'Female', value: 'Female' },
@@ -64,11 +61,18 @@ export class AddPetFormComponent {
       age: [null, [Validators.required, Validators.min(0), Validators.max(30)]],
       gender: ['', Validators.required],
       description: [null, [Validators.required]],
-      imageUrl: [''],
     });
+
+    console.log(this.shelterId());
   }
 
   async onSubmit() {
+    const shelterId = this.shelterId();
+    if (!shelterId) {
+      this.toastService.error('Shelter ID is required.');
+      return;
+    }
+
     if (this.petForm.invalid) {
       this.markFormGroupTouched(this.petForm);
       return;
@@ -78,7 +82,7 @@ export class AddPetFormComponent {
       this.isSubmitting = true;
       const petData: CreatePetRequest = this.petForm.value;
 
-      await this.petService.createPet(petData);
+      await this.petService.createPet(shelterId, petData);
 
       this.toastService.success('Pet added successfully!');
 

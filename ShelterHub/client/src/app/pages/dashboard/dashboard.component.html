@@ -193,11 +193,14 @@
   [modal]="true"
   [style]="{ width: '50vw' }"
   [dismissableMask]="true"
+  [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
 >
-  <app-add-pet-form
-    *ngIf="showAddPetDialog"
-    (petAdded)="onPetAdded()"
-    (cancelled)="showAddPetDialog = false"
-  >
-  </app-add-pet-form>
+  @if (showAddPetDialog) {
+    <app-add-pet-form
+      [shelterId]="shelterInfo?.shelterId"
+      (petAdded)="onPetAdded()"
+      (cancelled)="showAddPetDialog = false"
+    >
+    </app-add-pet-form>
+  }
 </p-dialog>

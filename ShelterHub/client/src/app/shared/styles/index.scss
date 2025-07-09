@@ -1,14 +1,10 @@
 // PawfectMatch ShelterHub Custom Styles
 // Import all custom styling modules in the correct order
 
-// 1. Theme variables and overrides (must be first)
 @use "theme";
-
-// 3. Component customizations
 @use "components";
-
-// 4. Utility classes
 @use "utilities";
+@use "quill";
 
 // Global application styles
 body {
