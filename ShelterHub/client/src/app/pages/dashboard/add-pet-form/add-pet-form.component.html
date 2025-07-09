@@ -116,7 +116,7 @@
           #fileUpload
           mode="basic"
           accept="image/*"
-          [maxFileSize]="5000000"
+          [maxFileSize]="10000000"
           [auto]="false"
           chooseLabel="Choose Image"
           chooseIcon="pi pi-image"
@@ -127,7 +127,7 @@
         >
         </p-fileupload>
         <small class="text-600 block mt-1">
-          Maximum file size: 5MB. Supported formats: JPG, PNG, GIF
+          Maximum file size: 10MB. Supported formats: JPG, PNG, GIF
         </small>
         <small *ngIf="imagePreview" class="block mt-2">
           <img

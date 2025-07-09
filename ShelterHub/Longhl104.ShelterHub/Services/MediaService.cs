@@ -98,7 +98,7 @@ public class MediaService(IAmazonS3 s3Client, IConfiguration configuration, IHos
 
     private static readonly string[] AllowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
     private static readonly string[] AllowedMimeTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-    private const int MaxFileSizeBytes = 5 * 1024 * 1024; // 5MB
+    private const int MaxFileSizeBytes = 10 * 1024 * 1024; // 10MB
     private const int PresignedUrlExpirationMinutes = 15;
     private const int CacheExpirationMinutes = 10; // Cache expires 5 minutes before presigned URL expires
 
