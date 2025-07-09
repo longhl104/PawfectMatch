@@ -18,6 +18,14 @@ public interface IPetService
     Task<GetPetsResponse> GetPetsByShelterId(Guid shelterId);
 
     /// <summary>
+    /// Gets paginated pets for a specific shelter
+    /// </summary>
+    /// <param name="shelterId">The shelter ID</param>
+    /// <param name="request">Pagination request parameters</param>
+    /// <returns>Paginated list of pets</returns>
+    Task<GetPaginatedPetsResponse> GetPaginatedPetsByShelterId(Guid shelterId, GetPetsRequest request);
+
+    /// <summary>
     /// Gets a specific pet by ID
     /// </summary>
     /// <param name="petId">The pet ID</param>
@@ -106,6 +114,103 @@ public class PetService : IPetService
         {
             _logger.LogError(ex, "Failed to get pets for shelter {ShelterId}", shelterId);
             return new GetPetsResponse
+            {
+                Success = false,
+                ErrorMessage = $"Failed to retrieve pets: {ex.Message}"
+            };
+        }
+    }
+
+    /// <summary>
+    /// Gets paginated pets for a specific shelter
+    /// </summary>
+    /// <param name="shelterId">The shelter ID</param>
+    /// <param name="request">Pagination request parameters</param>
+    /// <returns>Paginated list of pets</returns>
+    public async Task<GetPaginatedPetsResponse> GetPaginatedPetsByShelterId(Guid shelterId, GetPetsRequest request)
+    {
+        try
+        {
+            _logger.LogInformation("Getting paginated pets for shelter ID: {ShelterId}, PageSize: {PageSize}", shelterId, request.PageSize);
+
+            // Validate page size
+            var pageSize = Math.Min(Math.Max(request.PageSize, 1), 100);
+
+            var query = new QueryRequest
+            {
+                TableName = _tableName,
+                IndexName = "ShelterId-Index", // GSI for querying by shelter ID
+                KeyConditionExpression = "ShelterId = :shelterId",
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                {
+                    { ":shelterId", new AttributeValue { S = shelterId.ToString() } }
+                },
+                Limit = pageSize
+            };
+
+            // Add pagination token if provided
+            if (!string.IsNullOrEmpty(request.NextToken))
+            {
+                try
+                {
+                    var lastKeyBytes = Convert.FromBase64String(request.NextToken);
+                    var lastKeyJson = System.Text.Encoding.UTF8.GetString(lastKeyBytes);
+                    var lastKey = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, AttributeValue>>(lastKeyJson);
+                    query.ExclusiveStartKey = lastKey;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Invalid pagination token provided");
+                    return new GetPaginatedPetsResponse
+                    {
+                        Success = false,
+                        ErrorMessage = "Invalid pagination token"
+                    };
+                }
+            }
+
+            var response = await _dynamoDbClient.QueryAsync(query);
+            var pets = response.Items.Select(ConvertDynamoDbItemToPet).ToList();
+
+            // Get total count with a separate query
+            var countQuery = new QueryRequest
+            {
+                TableName = _tableName,
+                IndexName = "ShelterId-Index",
+                KeyConditionExpression = "ShelterId = :shelterId",
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                {
+                    { ":shelterId", new AttributeValue { S = shelterId.ToString() } }
+                },
+                Select = Select.COUNT
+            };
+
+            var countResponse = await _dynamoDbClient.QueryAsync(countQuery);
+            var totalCount = countResponse.Count ?? 0;
+
+            // Generate next token if there are more items
+            string? nextToken = null;
+            if (response.LastEvaluatedKey != null && response.LastEvaluatedKey.Count > 0)
+            {
+                var lastKeyJson = System.Text.Json.JsonSerializer.Serialize(response.LastEvaluatedKey);
+                var lastKeyBytes = System.Text.Encoding.UTF8.GetBytes(lastKeyJson);
+                nextToken = Convert.ToBase64String(lastKeyBytes);
+            }
+
+            _logger.LogInformation("Found {PetCount} pets for shelter {ShelterId} (Total: {TotalCount})", pets.Count, shelterId, totalCount);
+
+            return new GetPaginatedPetsResponse
+            {
+                Success = true,
+                Pets = pets,
+                NextToken = nextToken,
+                TotalCount = totalCount
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get paginated pets for shelter {ShelterId}", shelterId);
+            return new GetPaginatedPetsResponse
             {
                 Success = false,
                 ErrorMessage = $"Failed to retrieve pets: {ex.Message}"
