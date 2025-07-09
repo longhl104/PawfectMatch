@@ -31,5 +31,19 @@ export class ShelterHubStack extends BaseStack {
       },
       description: 'Table for storing shelter information',
     });
+
+    // Create Pets DynamoDB Table
+    this.createDynamoDbTable({
+      tableName: 'pets',
+      partitionKey: {
+        name: 'ShelterId',
+        type: dynamodb.AttributeType.STRING,
+      },
+      sortKey: {
+        name: 'CreatedAt',
+        type: dynamodb.AttributeType.STRING,
+      },
+      description: 'Table for storing pet information',
+    });
   }
 }
