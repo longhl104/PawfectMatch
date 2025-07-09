@@ -3,7 +3,9 @@
     <!-- Pet Name -->
     <div class="col-12 md:col-6">
       <div class="field">
-        <label for="name" class="block text-sm font-medium mb-2">Pet Name *</label>
+        <label for="name" class="block text-sm font-medium mb-2"
+          >Pet Name *</label
+        >
         <input
           id="name"
           type="text"
@@ -11,9 +13,10 @@
           formControlName="name"
           placeholder="Enter pet name"
           class="w-full"
-          [class.ng-invalid]="isFieldInvalid('name')" />
+          [class.ng-invalid]="isFieldInvalid('name')"
+        />
         <small *ngIf="isFieldInvalid('name')" class="p-error block mt-1">
-          {{ getFieldError('name') }}
+          {{ getFieldError("name") }}
         </small>
       </div>
     </div>
@@ -21,17 +24,20 @@
     <!-- Species -->
     <div class="col-12 md:col-6">
       <div class="field">
-        <label for="species" class="block text-sm font-medium mb-2">Species *</label>
+        <label for="species" class="block text-sm font-medium mb-2"
+          >Species *</label
+        >
         <p-select
           id="species"
           formControlName="species"
           [options]="speciesOptions"
           placeholder="Select species"
           class="w-full"
-          [class.ng-invalid]="isFieldInvalid('species')">
+          [class.ng-invalid]="isFieldInvalid('species')"
+        >
         </p-select>
         <small *ngIf="isFieldInvalid('species')" class="p-error block mt-1">
-          {{ getFieldError('species') }}
+          {{ getFieldError("species") }}
         </small>
       </div>
     </div>
@@ -39,7 +45,9 @@
     <!-- Breed -->
     <div class="col-12 md:col-6">
       <div class="field">
-        <label for="breed" class="block text-sm font-medium mb-2">Breed *</label>
+        <label for="breed" class="block text-sm font-medium mb-2"
+          >Breed *</label
+        >
         <input
           id="breed"
           type="text"
@@ -47,9 +55,10 @@
           formControlName="breed"
           placeholder="Enter breed"
           class="w-full"
-          [class.ng-invalid]="isFieldInvalid('breed')" />
+          [class.ng-invalid]="isFieldInvalid('breed')"
+        />
         <small *ngIf="isFieldInvalid('breed')" class="p-error block mt-1">
-          {{ getFieldError('breed') }}
+          {{ getFieldError("breed") }}
         </small>
       </div>
     </div>
@@ -57,7 +66,9 @@
     <!-- Age -->
     <div class="col-12 md:col-6">
       <div class="field">
-        <label for="age" class="block text-sm font-medium mb-2">Age (years) *</label>
+        <label for="age" class="block text-sm font-medium mb-2"
+          >Age (years) *</label
+        >
         <p-inputnumber
           id="age"
           formControlName="age"
@@ -65,10 +76,11 @@
           [min]="0"
           [max]="30"
           class="w-full"
-          [class.ng-invalid]="isFieldInvalid('age')">
+          [class.ng-invalid]="isFieldInvalid('age')"
+        >
         </p-inputnumber>
         <small *ngIf="isFieldInvalid('age')" class="p-error block mt-1">
-          {{ getFieldError('age') }}
+          {{ getFieldError("age") }}
         </small>
       </div>
     </div>
@@ -76,49 +88,41 @@
     <!-- Gender -->
     <div class="col-12 md:col-6">
       <div class="field">
-        <label for="gender" class="block text-sm font-medium mb-2">Gender *</label>
+        <label for="gender" class="block text-sm font-medium mb-2">
+          Gender *
+        </label>
         <p-select
           id="gender"
           formControlName="gender"
           [options]="genderOptions"
           placeholder="Select gender"
           class="w-full"
-          [class.ng-invalid]="isFieldInvalid('gender')">
+          [class.ng-invalid]="isFieldInvalid('gender')"
+        >
         </p-select>
         <small *ngIf="isFieldInvalid('gender')" class="p-error block mt-1">
-          {{ getFieldError('gender') }}
+          {{ getFieldError("gender") }}
         </small>
-      </div>
-    </div>
-
-    <!-- Image URL -->
-    <div class="col-12 md:col-6">
-      <div class="field">
-        <label for="imageUrl" class="block text-sm font-medium mb-2">Image URL</label>
-        <input
-          id="imageUrl"
-          type="url"
-          pInputText
-          formControlName="imageUrl"
-          placeholder="Enter image URL (optional)"
-          class="w-full" />
       </div>
     </div>
 
     <!-- Description -->
     <div class="col-12">
       <div class="field">
-        <label for="description" class="block text-sm font-medium mb-2">Description *</label>
+        <label for="description" class="block text-sm font-medium mb-2"
+          >Description *</label
+        >
         <p-editor
           id="description"
           formControlName="description"
           placeholder="Enter pet description..."
           [style]="{ height: '200px' }"
           class="w-full"
-          [class.ng-invalid]="isFieldInvalid('description')">
+          [class.ng-invalid]="isFieldInvalid('description')"
+        >
         </p-editor>
         <small *ngIf="isFieldInvalid('description')" class="p-error block mt-1">
-          {{ getFieldError('description') }}
+          {{ getFieldError("description") }}
         </small>
       </div>
     </div>
@@ -130,14 +134,16 @@
       label="Cancel"
       severity="secondary"
       (onClick)="onCancel()"
-      [disabled]="isSubmitting">
+      [disabled]="isSubmitting"
+    >
     </p-button>
     <p-button
       label="Add Pet"
       type="submit"
       severity="success"
       [loading]="isSubmitting"
-      [disabled]="petForm.invalid">
+      [disabled]="petForm.invalid"
+    >
     </p-button>
   </div>
 </form>
