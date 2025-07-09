@@ -9,7 +9,7 @@ import {
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { SelectModule } from 'primeng/select';
-import { TextareaModule } from 'primeng/textarea';
+import { EditorModule } from 'primeng/editor';
 import { ButtonModule } from 'primeng/button';
 import {
   PetService,
@@ -26,7 +26,7 @@ import { ToastService } from '@longhl104/pawfect-match-ng';
     InputTextModule,
     InputNumberModule,
     SelectModule,
-    TextareaModule,
+    EditorModule,
     ButtonModule,
   ],
   templateUrl: './add-pet-form.component.html',
@@ -63,7 +63,7 @@ export class AddPetFormComponent {
       breed: ['', [Validators.required, Validators.minLength(2)]],
       age: [null, [Validators.required, Validators.min(0), Validators.max(30)]],
       gender: ['', Validators.required],
-      description: ['', [Validators.required, Validators.minLength(10)]],
+      description: [null, [Validators.required]],
       imageUrl: [''],
     });
   }

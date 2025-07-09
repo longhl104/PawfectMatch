@@ -109,15 +109,14 @@
     <div class="col-12">
       <div class="field">
         <label for="description" class="block text-sm font-medium mb-2">Description *</label>
-        <textarea
+        <p-editor
           id="description"
-          pTextarea
           formControlName="description"
           placeholder="Enter pet description..."
-          rows="4"
+          [style]="{ height: '200px' }"
           class="w-full"
           [class.ng-invalid]="isFieldInvalid('description')">
-        </textarea>
+        </p-editor>
         <small *ngIf="isFieldInvalid('description')" class="p-error block mt-1">
           {{ getFieldError('description') }}
         </small>
