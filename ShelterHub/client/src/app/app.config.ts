@@ -21,6 +21,7 @@ import {
 import { GlobalErrorHandler } from '@longhl104/pawfect-match-ng';
 import { authInitializer } from './initializers/auth.initializer';
 import { providePrimeNG } from 'primeng/config';
+import { DialogService } from 'primeng/dynamicdialog';
 import Aura from '@primeuix/themes/aura';
 
 export const appConfig: ApplicationConfig = {
@@ -42,6 +43,7 @@ export const appConfig: ApplicationConfig = {
       },
     }),
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
+    DialogService,
     provideAppInitializer(authInitializer()),
   ],
 };

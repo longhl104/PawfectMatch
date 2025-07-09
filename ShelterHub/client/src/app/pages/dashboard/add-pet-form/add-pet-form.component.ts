@@ -1,4 +1,4 @@
-import { Component, EventEmitter, inject, input, Output } from '@angular/core';
+import { Component, EventEmitter, inject, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -11,6 +11,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { SelectModule } from 'primeng/select';
 import { EditorModule } from 'primeng/editor';
 import { ButtonModule } from 'primeng/button';
+import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
 import { PetService, type CreatePetRequest } from 'shared/services/pet.service';
 import { ToastService } from '@longhl104/pawfect-match-ng';
 
@@ -36,10 +37,11 @@ export class AddPetFormComponent {
   private fb = inject(FormBuilder);
   private petService = inject(PetService);
   private toastService = inject(ToastService);
+  private dialogRef = inject(DynamicDialogRef);
+  private config = inject(DynamicDialogConfig);
 
   petForm: FormGroup;
   isSubmitting = false;
-  shelterId = input<string | undefined>(undefined);
 
   speciesOptions = [
     { label: 'Dog', value: 'Dog' },
@@ -62,12 +64,10 @@ export class AddPetFormComponent {
       gender: ['', Validators.required],
       description: [null, [Validators.required]],
     });
-
-    console.log(this.shelterId());
   }
 
   async onSubmit() {
-    const shelterId = this.shelterId();
+    const shelterId = this.config.data?.shelterId;
     if (!shelterId) {
       this.toastService.error('Shelter ID is required.');
       return;
@@ -86,7 +86,7 @@ export class AddPetFormComponent {
 
       this.toastService.success('Pet added successfully!');
 
-      this.petAdded.emit();
+      this.dialogRef.close(true);
     } catch (error) {
       console.error('Error adding pet:', error);
       this.toastService.error('Failed to add pet. Please try again later.');
@@ -96,7 +96,7 @@ export class AddPetFormComponent {
   }
 
   onCancel() {
-    this.cancelled.emit();
+    this.dialogRef.close(false);
   }
 
   isFieldInvalid(fieldName: string): boolean {

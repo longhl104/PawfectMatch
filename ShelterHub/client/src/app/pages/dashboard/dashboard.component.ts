@@ -6,7 +6,11 @@ import { TagModule } from 'primeng/tag';
 import { DataViewModule } from 'primeng/dataview';
 import { PanelModule } from 'primeng/panel';
 import { TableModule } from 'primeng/table';
-import { DialogModule } from 'primeng/dialog';
+import {
+  DynamicDialogModule,
+  DialogService,
+  DynamicDialogRef,
+} from 'primeng/dynamicdialog';
 import {
   ShelterService,
   type ShelterInfo,
@@ -31,8 +35,7 @@ import { AuthService } from 'shared/services/auth.service';
     DataViewModule,
     PanelModule,
     TableModule,
-    DialogModule,
-    AddPetFormComponent,
+    DynamicDialogModule,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
@@ -42,14 +45,15 @@ export class DashboardComponent implements OnInit {
   private petService = inject(PetService);
   private applicationService = inject(ApplicationService);
   private toastService = inject(ToastService);
+  private dialogService = inject(DialogService);
   public authService = inject(AuthService);
 
   shelterInfo: ShelterInfo | null = null;
   pets: Pet[] = [];
   recentApplications: Application[] = [];
   isLoading = true;
-  showAddPetDialog = false;
   isRunningMatcher = false;
+  private dialogRef?: DynamicDialogRef;
 
   ngOnInit() {
     this.loadDashboardData();
@@ -104,7 +108,29 @@ export class DashboardComponent implements OnInit {
   }
 
   onAddPet() {
-    this.showAddPetDialog = true;
+    if (!this.shelterInfo) {
+      throw new Error('Shelter information is not available');
+    }
+
+    this.dialogRef = this.dialogService.open(AddPetFormComponent, {
+      header: 'Add New Pet',
+      width: '50vw',
+      breakpoints: {
+        '1199px': '75vw',
+        '575px': '90vw',
+      },
+      modal: true,
+      dismissableMask: true,
+      data: {
+        shelterId: this.shelterInfo.shelterId,
+      },
+    });
+
+    this.dialogRef.onClose.subscribe((result) => {
+      if (result) {
+        this.onPetAdded();
+      }
+    });
   }
 
   async onRunMatching() {
@@ -125,7 +151,7 @@ export class DashboardComponent implements OnInit {
   }
 
   onPetAdded() {
-    this.showAddPetDialog = false;
+    this.dialogRef?.close(true);
     this.loadDashboardData(); // Refresh the data
     this.toastService.success('New pet has been added successfully');
   }
