@@ -65,16 +65,19 @@ public class PetService : IPetService
     private readonly IAmazonDynamoDB _dynamoDbClient;
     private readonly IHostEnvironment _environment;
     private readonly ILogger<PetService> _logger;
+    private readonly IMediaUploadService _mediaUploadService;
     private readonly string _tableName;
 
     public PetService(
         IAmazonDynamoDB dynamoDbClient,
         IHostEnvironment environment,
-        ILogger<PetService> logger)
+        ILogger<PetService> logger,
+        IMediaUploadService mediaUploadService)
     {
         _dynamoDbClient = dynamoDbClient;
         _environment = environment;
         _logger = logger;
+        _mediaUploadService = mediaUploadService;
         _tableName = $"pawfectmatch-{_environment.EnvironmentName.ToLowerInvariant()}-shelter-hub-pets";
     }
 
@@ -102,6 +105,9 @@ public class PetService : IPetService
 
             var response = await _dynamoDbClient.QueryAsync(query);
             var pets = response.Items.Select(ConvertDynamoDbItemToPet).ToList();
+
+            // Generate presigned URLs for pet images
+            await GeneratePresignedUrlsForPets(pets);
 
             _logger.LogInformation("Found {PetCount} pets for shelter {ShelterId}", pets.Count, shelterId);
 
@@ -172,6 +178,9 @@ public class PetService : IPetService
 
             var response = await _dynamoDbClient.QueryAsync(query);
             var pets = response.Items.Select(ConvertDynamoDbItemToPet).ToList();
+
+            // Generate presigned URLs for pet images
+            await GeneratePresignedUrlsForPets(pets);
 
             // Get total count with a separate query
             var countQuery = new QueryRequest
@@ -252,6 +261,17 @@ public class PetService : IPetService
             }
 
             var pet = ConvertDynamoDbItemToPet(response.Item);
+
+            // Generate presigned URL for pet image if it exists
+            if (!string.IsNullOrEmpty(pet.ImageUrl))
+            {
+                var presignedUrl = await _mediaUploadService.GenerateDownloadPresignedUrlAsync(pet.ImageUrl);
+                if (!string.IsNullOrEmpty(presignedUrl))
+                {
+                    pet.ImageUrl = presignedUrl;
+                }
+            }
+
             _logger.LogInformation("Successfully retrieved pet: {PetId}", petId);
 
             return new PetResponse
@@ -283,6 +303,17 @@ public class PetService : IPetService
         {
             _logger.LogInformation("Creating new pet for shelter {ShelterId}", shelterId);
 
+            // Validate S3 URL if provided
+            if (!string.IsNullOrEmpty(request.ImageUrl) && !_mediaUploadService.IsValidS3Url(request.ImageUrl))
+            {
+                _logger.LogWarning("Invalid S3 URL provided for pet creation: {ImageUrl}", request.ImageUrl);
+                return new PetResponse
+                {
+                    Success = false,
+                    ErrorMessage = "Invalid image URL. Please use a valid S3 URL from the presigned upload endpoint."
+                };
+            }
+
             var pet = new Pet
             {
                 PetId = Guid.NewGuid(),
@@ -294,7 +325,8 @@ public class PetService : IPetService
                 Description = request.Description,
                 ShelterId = shelterId,
                 Status = PetStatus.Available,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                ImageUrl = request.ImageUrl
             };
 
             var putRequest = new PutItemRequest
@@ -456,7 +488,8 @@ public class PetService : IPetService
             Description = item["Description"].S,
             ShelterId = Guid.Parse(item["ShelterId"].S),
             Status = Enum.Parse<PetStatus>(item["Status"].S),
-            CreatedAt = DateTime.Parse(item["CreatedAt"].S)
+            CreatedAt = DateTime.Parse(item["CreatedAt"].S),
+            ImageUrl = item.TryGetValue("ImageUrl", out AttributeValue? value) ? value.S : null
         };
     }
 
@@ -479,6 +512,38 @@ public class PetService : IPetService
             { "CreatedAt", new AttributeValue { S = pet.CreatedAt.ToString("O") } }
         };
 
+        // Add ImageUrl if it exists
+        if (!string.IsNullOrEmpty(pet.ImageUrl))
+        {
+            item.Add("ImageUrl", new AttributeValue { S = pet.ImageUrl });
+        }
+
         return item;
+    }
+
+    /// <summary>
+    /// Generates presigned download URLs for pet images
+    /// </summary>
+    /// <param name="pets">List of pets to generate presigned URLs for</param>
+    private async Task GeneratePresignedUrlsForPets(List<Pet> pets)
+    {
+        var tasks = pets.Where(p => !string.IsNullOrEmpty(p.ImageUrl))
+            .Select(async pet =>
+            {
+                try
+                {
+                    var presignedUrl = await _mediaUploadService.GenerateDownloadPresignedUrlAsync(pet.ImageUrl!);
+                    if (!string.IsNullOrEmpty(presignedUrl))
+                    {
+                        pet.ImageUrl = presignedUrl;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to generate presigned URL for pet {PetId}", pet.PetId);
+                }
+            });
+
+        await Task.WhenAll(tasks);
     }
 }

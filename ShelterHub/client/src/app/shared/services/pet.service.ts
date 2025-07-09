@@ -27,6 +27,22 @@ export interface CreatePetRequest {
   imageUrl?: string;
 }
 
+export interface PresignedUrlRequest {
+  fileName: string;
+  contentType: string;
+  fileSizeBytes: number;
+  shelterId: string;
+}
+
+export interface PresignedUrlResponse {
+  success: boolean;
+  presignedUrl?: string;
+  s3Url?: string;
+  key?: string;
+  expiresAt?: Date;
+  errorMessage?: string;
+}
+
 export interface PetResponse {
   success: boolean;
   pet?: Pet;
@@ -44,6 +60,7 @@ export interface GetPetsResponse {
 })
 export class PetService {
   private readonly apiUrl = `${environment.apiUrl}/api/pets`;
+  private readonly mediaApiUrl = `${environment.apiUrl}/api/media`;
   private readonly http = inject(HttpClient);
 
   async getAllPets(shelterId: string): Promise<Pet[]> {
@@ -120,6 +137,94 @@ export class PetService {
       }
     } catch (error) {
       console.error('Error deleting pet:', error);
+      throw error;
+    }
+  }
+
+  async getPresignedUrl(request: PresignedUrlRequest): Promise<PresignedUrlResponse> {
+    try {
+      const response = await firstValueFrom(
+        this.http.post<PresignedUrlResponse>(
+          `${this.mediaApiUrl}/presigned-url`,
+          request
+        )
+      );
+
+      if (!response?.success) {
+        throw new Error(response?.errorMessage || 'Failed to get presigned URL');
+      }
+
+      return response;
+    } catch (error) {
+      console.error('Error getting presigned URL:', error);
+      throw error;
+    }
+  }
+
+  async uploadToS3(presignedUrl: string, file: File): Promise<void> {
+    try {
+      console.log('Uploading to S3:', {
+        presignedUrl,
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size
+      });
+
+      const response = await fetch(presignedUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        },
+        mode: 'cors', // Explicitly set CORS mode
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('S3 Upload Error:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorText
+        });
+        throw new Error(`Upload failed: ${response.status} ${response.statusText} - ${errorText}`);
+      }
+
+      console.log('S3 Upload successful');
+    } catch (error) {
+      console.error('Error uploading to S3:', error);
+      throw error;
+    }
+  }
+
+  async uploadImageAndCreatePet(shelterId: string, petData: CreatePetRequest, imageFile?: File): Promise<Pet> {
+    try {
+      const finalPetData = { ...petData };
+
+      // If image file is provided, upload it first
+      if (imageFile) {
+        const presignedRequest: PresignedUrlRequest = {
+          fileName: imageFile.name,
+          contentType: imageFile.type,
+          fileSizeBytes: imageFile.size,
+          shelterId: shelterId,
+        };
+
+        const presignedResponse = await this.getPresignedUrl(presignedRequest);
+
+        if (!presignedResponse.presignedUrl || !presignedResponse.s3Url) {
+          throw new Error('Failed to get presigned URL for image upload');
+        }
+
+        await this.uploadToS3(presignedResponse.presignedUrl, imageFile);
+
+        // Add the S3 URL to the pet data
+        finalPetData.imageUrl = presignedResponse.s3Url;
+      }
+
+      // Create the pet with the image URL
+      return await this.createPet(shelterId, finalPetData);
+    } catch (error) {
+      console.error('Error uploading image and creating pet:', error);
       throw error;
     }
   }

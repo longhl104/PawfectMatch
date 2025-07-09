@@ -106,6 +106,39 @@
       </div>
     </div>
 
+    <!-- Main Image Upload -->
+    <div class="col-12 md:col-6">
+      <div class="field">
+        <label for="mainImage" class="block text-sm font-medium mb-2">
+          Main Image
+        </label>
+        <p-fileupload
+          #fileUpload
+          mode="basic"
+          accept="image/*"
+          [maxFileSize]="5000000"
+          [auto]="false"
+          chooseLabel="Choose Image"
+          chooseIcon="pi pi-image"
+          [customUpload]="true"
+          (onSelect)="onImageSelect($event)"
+          (onRemove)="onImageRemove()"
+          class="w-full"
+        >
+        </p-fileupload>
+        <small class="text-600 block mt-1">
+          Maximum file size: 5MB. Supported formats: JPG, PNG, GIF
+        </small>
+        <small *ngIf="imagePreview" class="block mt-2">
+          <img
+            [src]="imagePreview"
+            alt="Image preview"
+            class="w-8rem h-6rem object-cover border-round border-2 border-gray-200"
+          />
+        </small>
+      </div>
+    </div>
+
     <!-- Description -->
     <div class="col-12">
       <div class="field">
@@ -138,7 +171,7 @@
     >
     </p-button>
     <p-button
-      label="Add Pet"
+      [label]="isUploadingImage ? 'Uploading Image...' : 'Add Pet'"
       type="submit"
       severity="success"
       [loading]="isSubmitting"

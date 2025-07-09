@@ -11,6 +11,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { SelectModule } from 'primeng/select';
 import { EditorModule } from 'primeng/editor';
 import { ButtonModule } from 'primeng/button';
+import { FileUploadModule } from 'primeng/fileupload';
 import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
 import { PetService, type CreatePetRequest } from 'shared/services/pet.service';
 import { ToastService } from '@longhl104/pawfect-match-ng';
@@ -26,6 +27,7 @@ import { ToastService } from '@longhl104/pawfect-match-ng';
     SelectModule,
     EditorModule,
     ButtonModule,
+    FileUploadModule,
   ],
   templateUrl: './add-pet-form.component.html',
   styleUrl: './add-pet-form.component.scss',
@@ -42,6 +44,9 @@ export class AddPetFormComponent {
 
   petForm: FormGroup;
   isSubmitting = false;
+  isUploadingImage = false;
+  imagePreview: string | null = null;
+  selectedImageFile: File | null = null;
 
   speciesOptions = [
     { label: 'Dog', value: 'Dog' },
@@ -80,18 +85,30 @@ export class AddPetFormComponent {
 
     try {
       this.isSubmitting = true;
+      this.isUploadingImage = !!this.selectedImageFile;
+
       const petData: CreatePetRequest = this.petForm.value;
 
-      await this.petService.createPet(shelterId, petData);
+      // Use the new upload method that handles S3 upload
+      await this.petService.uploadImageAndCreatePet(
+        shelterId,
+        petData,
+        this.selectedImageFile || undefined,
+      );
 
       this.toastService.success('Pet added successfully!');
 
       this.dialogRef.close(true);
     } catch (error) {
       console.error('Error adding pet:', error);
-      this.toastService.error('Failed to add pet. Please try again later.');
+      if (error instanceof Error) {
+        this.toastService.error(`Failed to add pet: ${error.message}`);
+      } else {
+        this.toastService.error('Failed to add pet. Please try again later.');
+      }
     } finally {
       this.isSubmitting = false;
+      this.isUploadingImage = false;
     }
   }
 
@@ -141,5 +158,24 @@ export class AddPetFormComponent {
       const control = formGroup.get(key);
       control?.markAsTouched();
     });
+  }
+
+  onImageSelect(event: { files: File[] }) {
+    const file = event.files[0];
+    if (file) {
+      this.selectedImageFile = file;
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.imagePreview = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  onImageRemove() {
+    this.selectedImageFile = null;
+    this.imagePreview = null;
   }
 }

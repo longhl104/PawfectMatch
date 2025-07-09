@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Amazon.DynamoDBv2;
+using Amazon.S3;
 using Longhl104.PawfectMatch.Extensions;
 using Longhl104.ShelterHub.Services;
 using Longhl104.PawfectMatch.Middleware;
@@ -28,10 +29,12 @@ builder.Services.AddPawfectMatchAuthenticationAndAuthorization("shelter_admin");
 
 // Configure AWS services
 builder.Services.AddSingleton<IAmazonDynamoDB, AmazonDynamoDBClient>();
+builder.Services.AddSingleton<IAmazonS3, AmazonS3Client>();
 
 // Register ShelterHub services
 builder.Services.AddScoped<IShelterService, ShelterService>();
 builder.Services.AddScoped<IPetService, PetService>();
+builder.Services.AddScoped<IMediaUploadService, MediaUploadService>();
 
 // Add authentication and authorization services
 // Note: AuthenticationMiddleware handles JWT validation and sets ClaimsPrincipal

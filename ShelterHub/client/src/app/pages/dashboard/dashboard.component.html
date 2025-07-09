@@ -87,14 +87,24 @@
           <div class="col-12 md:col-6 xl:col-4" *ngFor="let pet of pets">
             <p-card styleClass="pet-card h-full">
               <ng-template pTemplate="header">
-                <img
-                  [src]="
-                    pet.imageUrl ||
-                    'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=300&h=200&fit=crop&crop=faces'
-                  "
-                  [alt]="pet.name"
-                  class="w-full h-10rem -mb-2 object-cover border-round-top-xl"
-                />
+                <div
+                  class="w-full h-10rem -mb-2 border-round-top-xl overflow-hidden"
+                >
+                  <img
+                    *ngIf="pet.imageUrl; else noImage"
+                    [src]="pet.imageUrl"
+                    [alt]="pet.name"
+                    class="w-full h-full object-cover"
+                    (error)="onImageError($event)"
+                  />
+                  <ng-template #noImage>
+                    <div
+                      class="w-full h-full bg-gray-100 flex align-items-center justify-content-center"
+                    >
+                      <i class="pi pi-image text-4xl text-gray-400"></i>
+                    </div>
+                  </ng-template>
+                </div>
               </ng-template>
 
               <div class="flex flex-column h-full">

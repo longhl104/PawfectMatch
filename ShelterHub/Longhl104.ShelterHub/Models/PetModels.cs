@@ -73,6 +73,11 @@ public class Pet
     /// ID of the shelter that owns this pet
     /// </summary>
     public Guid ShelterId { get; set; } = Guid.NewGuid();
+
+    /// <summary>
+    /// URL of the pet's main image
+    /// </summary>
+    public string? ImageUrl { get; set; }
 }
 
 /// <summary>
@@ -203,4 +208,77 @@ public class GetPetsResponse
     /// Error message (if unsuccessful)
     /// </summary>
     public string? ErrorMessage { get; set; }
+}
+
+/// <summary>
+/// Request model for generating presigned URLs for pet image uploads
+/// </summary>
+public class PresignedUrlRequest
+{
+    /// <summary>
+    /// Name of the file to upload
+    /// </summary>
+    public string FileName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Content type of the file (e.g., image/jpeg)
+    /// </summary>
+    public string ContentType { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Size of the file in bytes
+    /// </summary>
+    public long FileSizeBytes { get; set; }
+
+    /// <summary>
+    /// ID of the shelter uploading the image
+    /// </summary>
+    public Guid ShelterId { get; set; }
+}
+
+/// <summary>
+/// Response model for presigned URL generation
+/// </summary>
+public class PresignedUrlResponse
+{
+    /// <summary>
+    /// Whether the operation was successful
+    /// </summary>
+    public bool Success { get; set; }
+
+    /// <summary>
+    /// The presigned URL for uploading (if successful)
+    /// </summary>
+    public string? PresignedUrl { get; set; }
+
+    /// <summary>
+    /// The final S3 URL where the file will be accessible after upload
+    /// </summary>
+    public string? S3Url { get; set; }
+
+    /// <summary>
+    /// The S3 key/path for the uploaded file
+    /// </summary>
+    public string? Key { get; set; }
+
+    /// <summary>
+    /// When the presigned URL expires
+    /// </summary>
+    public DateTime? ExpiresAt { get; set; }
+
+    /// <summary>
+    /// Error message (if unsuccessful)
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+}
+
+/// <summary>
+/// Request model for generating download presigned URLs
+/// </summary>
+public class DownloadPresignedUrlRequest
+{
+    /// <summary>
+    /// The S3 URL to generate a download presigned URL for
+    /// </summary>
+    public string S3Url { get; set; } = string.Empty;
 }

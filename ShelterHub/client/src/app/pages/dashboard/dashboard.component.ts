@@ -157,4 +157,16 @@ export class DashboardComponent implements OnInit {
   formatDate(date: Date): string {
     return new Date(date).toLocaleDateString();
   }
+
+  onImageError(event: Event) {
+    // Hide the broken image and show the fallback
+    const target = event.target as HTMLImageElement;
+    target.style.display = 'none';
+
+    // Show the fallback icon container
+    const parent = target.parentElement;
+    if (parent) {
+      parent.innerHTML = '<div class="w-full h-full bg-gray-100 flex align-items-center justify-content-center"><i class="pi pi-image text-4xl text-gray-400"></i></div>';
+    }
+  }
 }
