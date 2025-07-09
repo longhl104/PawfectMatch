@@ -91,7 +91,6 @@ public class PetService : IPetService
             var query = new QueryRequest
             {
                 TableName = _tableName,
-                IndexName = "ShelterId-Index", // GSI for querying by shelter ID
                 KeyConditionExpression = "ShelterId = :shelterId",
                 ExpressionAttributeValues = new Dictionary<string, AttributeValue>
                 {
@@ -455,7 +454,7 @@ public class PetService : IPetService
             Description = item["Description"].S,
             ShelterId = Guid.Parse(item["ShelterId"].S),
             Status = Enum.Parse<PetStatus>(item["Status"].S),
-            CreatedAt = DateTime.Parse(item["DateAdded"].S)
+            CreatedAt = DateTime.Parse(item["CreatedAt"].S)
         };
     }
 

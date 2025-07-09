@@ -67,7 +67,7 @@ export class DashboardComponent implements OnInit {
       this.shelterInfo = await this.shelterService.getShelterInfo();
 
       // Load pets
-      this.pets = await this.petService.getAllPets();
+      this.pets = await this.petService.getAllPets(this.shelterInfo.shelterId);
 
       // Load recent applications
       this.recentApplications =

@@ -13,7 +13,7 @@ export interface Pet {
   status: 'available' | 'pending' | 'adopted' | 'medical_hold';
   imageUrl?: string;
   description: string;
-  dateAdded: Date;
+  createdAt: Date;
   shelterId: string;
 }
 
@@ -46,10 +46,7 @@ export class PetService {
   private readonly apiUrl = `${environment.apiUrl}/api/pets`;
   private readonly http = inject(HttpClient);
 
-  async getAllPets(): Promise<Pet[]> {
-    // TODO: Replace with actual shelter ID from auth context
-    const shelterId = 'shelter-1'; // This should come from authentication context
-
+  async getAllPets(shelterId: string): Promise<Pet[]> {
     try {
       const response = await this.http
         .get<GetPetsResponse>(`${this.apiUrl}/shelter/${shelterId}`)
