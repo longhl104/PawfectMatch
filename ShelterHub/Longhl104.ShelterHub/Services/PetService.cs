@@ -537,13 +537,35 @@ public class PetService : IPetService
                     {
                         pet.ImageUrl = presignedUrl;
                     }
+                    return true; // Success
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "Failed to generate presigned URL for pet {PetId}", pet.PetId);
+                    _logger.LogWarning(ex, "Failed to generate presigned URL for pet {PetId}, keeping original URL", pet.PetId);
+                    return false; // Failure, but don't propagate
                 }
             });
 
-        await Task.WhenAll(tasks);
+        try
+        {
+            var results = await Task.WhenAll(tasks);
+            var successCount = results.Count(r => r);
+            var failureCount = results.Length - successCount;
+
+            if (failureCount > 0)
+            {
+                _logger.LogWarning("Generated presigned URLs: {SuccessCount} successful, {FailureCount} failed",
+                    successCount, failureCount);
+            }
+            else
+            {
+                _logger.LogDebug("Successfully generated presigned URLs for all {Count} pet images", successCount);
+            }
+        }
+        catch (Exception ex)
+        {
+            // This should not happen since we're catching exceptions in individual tasks
+            _logger.LogError(ex, "Unexpected error in GeneratePresignedUrlsForPets");
+        }
     }
 }
