@@ -90,13 +90,20 @@
                 <div
                   class="w-full h-10rem -mb-2 border-round-top-xl overflow-hidden"
                 >
-                  <img
-                    *ngIf="pet.imageS3Key; else noImage"
-                    [src]="pet.imageS3Key"
-                    [alt]="pet.name"
-                    class="w-full h-full object-cover"
-                    (error)="onImageError($event)"
-                  />
+                  <ng-container
+                    *ngIf="
+                      petMainImageUrls.get(pet.petId!) as imageUrl;
+                      else noImage
+                    "
+                  >
+                    <img
+                      [src]="imageUrl"
+                      [alt]="pet.name"
+                      class="w-full h-full object-cover"
+                      (error)="onImageError($event)"
+                    />
+                  </ng-container>
+
                   <ng-template #noImage>
                     <div
                       class="w-full h-full bg-gray-100 flex align-items-center justify-content-center"

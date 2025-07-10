@@ -709,7 +709,7 @@ export class PetsApi {
      * @param body (optional) 
      * @return OK
      */
-    downloadUrls(body?: string[] | undefined): Observable<PetImageDownloadUrlsResponse> {
+    downloadUrls(body?: GetPetImageDownloadUrlsRequest | undefined): Observable<PetImageDownloadUrlsResponse> {
         let url_ = this.baseUrl + "/api/Pets/images/download-urls";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -1231,6 +1231,50 @@ export interface IGetPaginatedPetsResponse {
     errorMessage?: string | undefined;
 }
 
+export class GetPetImageDownloadUrlsRequest implements IGetPetImageDownloadUrlsRequest {
+    petRequests?: PetImageDownloadUrlRequest[] | undefined;
+
+    constructor(data?: IGetPetImageDownloadUrlsRequest) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["petRequests"])) {
+                this.petRequests = [] as any;
+                for (let item of _data["petRequests"])
+                    this.petRequests!.push(PetImageDownloadUrlRequest.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): GetPetImageDownloadUrlsRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new GetPetImageDownloadUrlsRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.petRequests)) {
+            data["petRequests"] = [];
+            for (let item of this.petRequests)
+                data["petRequests"].push(item ? item.toJSON() : <any>undefined);
+        }
+        return data;
+    }
+}
+
+export interface IGetPetImageDownloadUrlsRequest {
+    petRequests?: PetImageDownloadUrlRequest[] | undefined;
+}
+
 export class GetPetsResponse implements IGetPetsResponse {
     success?: boolean;
     pets?: Pet[] | undefined;
@@ -1356,6 +1400,46 @@ export interface IPet {
     description?: string | undefined;
     createdAt?: string;
     shelterId?: string;
+    mainImageFileExtension?: string | undefined;
+}
+
+export class PetImageDownloadUrlRequest implements IPetImageDownloadUrlRequest {
+    petId?: string;
+    mainImageFileExtension?: string | undefined;
+
+    constructor(data?: IPetImageDownloadUrlRequest) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.petId = _data["petId"];
+            this.mainImageFileExtension = _data["mainImageFileExtension"];
+        }
+    }
+
+    static fromJS(data: any): PetImageDownloadUrlRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new PetImageDownloadUrlRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["petId"] = this.petId;
+        data["mainImageFileExtension"] = this.mainImageFileExtension;
+        return data;
+    }
+}
+
+export interface IPetImageDownloadUrlRequest {
+    petId?: string;
     mainImageFileExtension?: string | undefined;
 }
 

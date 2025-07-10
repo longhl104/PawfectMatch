@@ -1,3 +1,4 @@
+import { firstValueFrom } from 'rxjs';
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
@@ -23,7 +24,12 @@ import { AddPetFormComponent } from './add-pet-form/add-pet-form.component';
 import { ToastService } from '@longhl104/pawfect-match-ng';
 import { AuthService } from 'shared/services/auth.service';
 import { PetService } from 'shared/services/pet.service';
-import { Pet } from 'shared/apis/generated-apis';
+import {
+  GetPetImageDownloadUrlsRequest,
+  Pet,
+  PetImageDownloadUrlRequest,
+  PetsApi,
+} from 'shared/apis/generated-apis';
 
 @Component({
   selector: 'app-dashboard',
@@ -47,6 +53,7 @@ export class DashboardComponent implements OnInit {
   private applicationService = inject(ApplicationService);
   private toastService = inject(ToastService);
   private dialogService = inject(DialogService);
+  private petsApi = inject(PetsApi);
   public authService = inject(AuthService);
 
   shelterInfo: ShelterInfo | null = null;
@@ -54,6 +61,7 @@ export class DashboardComponent implements OnInit {
   recentApplications: Application[] = [];
   isLoading = true;
   isRunningMatcher = false;
+  petMainImageUrls = new Map<string, string>();
   private dialogRef?: DynamicDialogRef;
 
   ngOnInit() {
@@ -69,6 +77,44 @@ export class DashboardComponent implements OnInit {
 
       // Load pets
       this.pets = await this.petService.getAllPets(this.shelterInfo.shelterId);
+
+      const petIdsAndExtensions = this.pets
+        .map((pet) => ({
+          petId: pet.petId!,
+          mainImageFileExtension: pet.mainImageFileExtension,
+        }))
+        .filter((pet) => pet.mainImageFileExtension);
+
+      if (petIdsAndExtensions.length > 0) {
+        // Fetch main image URLs for all pets
+        const petImagesResponse = await firstValueFrom(
+          this.petsApi.downloadUrls(
+            new GetPetImageDownloadUrlsRequest({
+              petRequests: petIdsAndExtensions.map(
+                (pe) =>
+                  new PetImageDownloadUrlRequest({
+                    petId: pe.petId,
+                    mainImageFileExtension: pe.mainImageFileExtension,
+                  }),
+              ),
+            }),
+          ),
+        );
+
+        if (petImagesResponse.petImageUrls) {
+          for (const [petId, url] of Object.entries(
+            petImagesResponse.petImageUrls,
+          )) {
+            if (url) {
+              this.petMainImageUrls.set(petId, url);
+            }
+          }
+        } else {
+          this.toastService.error(
+            'Failed to load pet images: ' + petImagesResponse.errorMessage,
+          );
+        }
+      }
 
       // Load recent applications
       this.recentApplications =
