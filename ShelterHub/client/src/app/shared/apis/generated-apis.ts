@@ -404,7 +404,7 @@ export class PetsApi {
 
     /**
      * @param body (optional) 
-     * @return OK
+     * @return Created
      */
     shelterPOST(shelterId: string, body?: CreatePetRequest | undefined): Observable<PetResponse> {
         let url_ = this.baseUrl + "/api/Pets/shelter/{shelterId}";
@@ -446,12 +446,12 @@ export class PetsApi {
             (response as any).error instanceof Blob ? (response as any).error : undefined;
 
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
+        if (status === 201) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = PetResponse.fromJS(resultData200);
-            return _observableOf(result200);
+            let result201: any = null;
+            let resultData201 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result201 = PetResponse.fromJS(resultData201);
+            return _observableOf(result201);
             }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
@@ -1010,7 +1010,6 @@ export class CreatePetRequest implements ICreatePetRequest {
     age!: number;
     gender!: string | undefined;
     description!: string | undefined;
-    imageS3Key?: string | undefined;
 
     constructor(data?: ICreatePetRequest) {
         if (data) {
@@ -1029,7 +1028,6 @@ export class CreatePetRequest implements ICreatePetRequest {
             this.age = _data["age"];
             this.gender = _data["gender"];
             this.description = _data["description"];
-            this.imageS3Key = _data["imageS3Key"];
         }
     }
 
@@ -1048,7 +1046,6 @@ export class CreatePetRequest implements ICreatePetRequest {
         data["age"] = this.age;
         data["gender"] = this.gender;
         data["description"] = this.description;
-        data["imageS3Key"] = this.imageS3Key;
         return data;
     }
 }
@@ -1060,7 +1057,6 @@ export interface ICreatePetRequest {
     age: number;
     gender: string | undefined;
     description: string | undefined;
-    imageS3Key?: string | undefined;
 }
 
 export class CreateShelterAdminRequest implements ICreateShelterAdminRequest {

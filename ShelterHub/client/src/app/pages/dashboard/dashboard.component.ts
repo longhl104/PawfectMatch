@@ -15,7 +15,6 @@ import {
   ShelterService,
   type ShelterInfo,
 } from '../../shared/services/shelter.service';
-import { PetService, type Pet } from '../../shared/services/pet.service';
 import {
   ApplicationService,
   type Application,
@@ -23,6 +22,8 @@ import {
 import { AddPetFormComponent } from './add-pet-form/add-pet-form.component';
 import { ToastService } from '@longhl104/pawfect-match-ng';
 import { AuthService } from 'shared/services/auth.service';
+import { PetService } from 'shared/services/pet.service';
+import { Pet } from 'shared/apis/generated-apis';
 
 @Component({
   selector: 'app-dashboard',

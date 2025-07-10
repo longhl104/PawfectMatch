@@ -114,11 +114,6 @@ public class CreatePetRequest
     /// Description of the pet
     /// </summary>
     public required string Description { get; set; }
-
-    /// <summary>
-    /// Optional image URL for the pet
-    /// </summary>
-    public string? ImageS3Key { get; set; }
 }
 
 /// <summary>
@@ -228,7 +223,6 @@ public class PresignedUrlRequest
     /// Size of the file in bytes
     /// </summary>
     public long FileSizeBytes { get; set; }
-
 }
 
 /// <summary>

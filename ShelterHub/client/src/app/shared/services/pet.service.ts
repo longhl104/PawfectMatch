@@ -2,45 +2,18 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from 'environments/environment';
-
-export interface Pet {
-  id: string;
-  name: string;
-  species: string;
-  breed: string;
-  age: number;
-  gender: string;
-  status: 'available' | 'pending' | 'adopted' | 'medical_hold';
-  imageS3Key?: string;
-  description: string;
-  createdAt: Date;
-  shelterId: string;
-}
-
-export interface CreatePetRequest {
-  name: string;
-  species: string;
-  breed: string;
-  age: number;
-  gender: string;
-  description: string;
-  imageS3Key?: string;
-}
+import {
+  CreatePetRequest,
+  Pet,
+  PetsApi,
+  PresignedUrlResponse,
+} from 'shared/apis/generated-apis';
 
 export interface PresignedUrlRequest {
+  petId: string;
   fileName: string;
   contentType: string;
   fileSizeBytes: number;
-  shelterId: string;
-}
-
-export interface PresignedUrlResponse {
-  success: boolean;
-  presignedUrl?: string;
-  s3Url?: string;
-  key?: string;
-  expiresAt?: Date;
-  errorMessage?: string;
 }
 
 export interface PetResponse {
@@ -62,6 +35,7 @@ export class PetService {
   private readonly apiUrl = `${environment.apiUrl}/api/pets`;
   private readonly mediaApiUrl = `${environment.apiUrl}/api/media`;
   private readonly http = inject(HttpClient);
+  private readonly petsApi = inject(PetsApi);
 
   async getAllPets(shelterId: string): Promise<Pet[]> {
     try {
@@ -90,10 +64,7 @@ export class PetService {
   async createPet(shelterId: string, petData: CreatePetRequest): Promise<Pet> {
     try {
       const response = await firstValueFrom(
-        this.http.post<PetResponse>(
-          `${this.apiUrl}/shelter/${shelterId}`,
-          petData,
-        ),
+        this.petsApi.shelterPOST(shelterId, petData),
       );
 
       if (!response?.success || !response.pet) {
@@ -146,9 +117,11 @@ export class PetService {
   ): Promise<PresignedUrlResponse> {
     try {
       const response = await firstValueFrom(
-        this.http.post<PresignedUrlResponse>(
-          `${this.mediaApiUrl}/presigned-url`,
-          request,
+        this.petsApi.uploadUrl(
+          request.petId,
+          request.fileName,
+          request.contentType,
+          request.fileSizeBytes,
         ),
       );
 
@@ -190,6 +163,7 @@ export class PetService {
           statusText: response.statusText,
           errorText,
         });
+
         throw new Error(
           `Upload failed: ${response.status} ${response.statusText} - ${errorText}`,
         );
@@ -202,37 +176,39 @@ export class PetService {
     }
   }
 
-  async uploadImageAndCreatePet(
+  async createPetAndUploadImage(
     shelterId: string,
     petData: CreatePetRequest,
     imageFile?: File,
   ): Promise<Pet> {
     try {
-      const finalPetData = { ...petData };
+      // Create the pet with the image URL
+      const pet = await this.createPet(shelterId, petData);
+      if (!pet.petId) {
+        throw new Error('Pet creation failed, no pet ID returned');
+      }
 
-      // If image file is provided, upload it first
       if (imageFile) {
         const presignedRequest: PresignedUrlRequest = {
+          petId: pet.petId,
           fileName: imageFile.name,
           contentType: imageFile.type,
           fileSizeBytes: imageFile.size,
-          shelterId: shelterId,
         };
 
         const presignedResponse = await this.getPresignedUrl(presignedRequest);
 
-        if (!presignedResponse.presignedUrl || !presignedResponse.s3Url) {
+        if (!presignedResponse.presignedUrl || !presignedResponse.key) {
           throw new Error('Failed to get presigned URL for image upload');
         }
 
         await this.uploadToS3(presignedResponse.presignedUrl, imageFile);
 
-        // Add the S3 URL to the pet data
-        finalPetData.imageS3Key = presignedResponse.s3Url;
+        // Add the S3 key to the pet data
+        pet.imageS3Key = presignedResponse.key;
       }
 
-      // Create the pet with the image URL
-      return await this.createPet(shelterId, finalPetData);
+      return pet;
     } catch (error) {
       console.error('Error uploading image and creating pet:', error);
       throw error;

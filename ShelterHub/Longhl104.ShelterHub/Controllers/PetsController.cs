@@ -83,6 +83,7 @@ public class PetsController(IPetService petService) : ControllerBase
     /// <param name="shelterId">The shelter ID that owns the pet</param>
     /// <returns>Created pet</returns>
     [HttpPost("shelter/{shelterId:guid}")]
+    [ProducesResponseType(typeof(PetResponse), StatusCodes.Status201Created)]
     public async Task<ActionResult<PetResponse>> CreatePet([FromBody] CreatePetRequest request, Guid shelterId)
     {
         if (!ModelState.IsValid)

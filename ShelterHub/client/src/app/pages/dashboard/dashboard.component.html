@@ -134,7 +134,9 @@
                     >
                       <i
                         class="pi pi-{{
-                          pet.gender.toLowerCase() === 'male' ? 'mars' : 'venus'
+                          pet.gender?.toLowerCase() === 'male'
+                            ? 'mars'
+                            : 'venus'
                         }}"
                       ></i>
                       {{ pet.gender }}
@@ -144,8 +146,10 @@
 
                 <div class="flex justify-content-between align-items-center">
                   <p-tag
-                    [value]="pet.status"
-                    [severity]="getStatusSeverity(pet.status)"
+                    [value]="pet.status ?? 'unknown'"
+                    [severity]="
+                      pet.status ? getStatusSeverity(pet.status) : 'secondary'
+                    "
                     class="text-xs capitalize"
                   >
                   </p-tag>

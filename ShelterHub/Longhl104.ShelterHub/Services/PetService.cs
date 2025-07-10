@@ -290,17 +290,6 @@ public class PetService : IPetService
         {
             _logger.LogInformation("Creating new pet for shelter {ShelterId}", shelterId);
 
-            // Validate S3 Key if provided
-            if (!string.IsNullOrEmpty(request.ImageS3Key))
-            {
-                _logger.LogWarning("Invalid S3 Key provided for pet creation: {ImageS3Key}", request.ImageS3Key);
-                return new PetResponse
-                {
-                    Success = false,
-                    ErrorMessage = "Invalid image S3 Key. Please use a valid S3 Key from the presigned upload endpoint."
-                };
-            }
-
             var pet = new Pet
             {
                 PetId = Guid.NewGuid(),
@@ -313,7 +302,6 @@ public class PetService : IPetService
                 ShelterId = shelterId,
                 Status = PetStatus.Available,
                 CreatedAt = DateTime.UtcNow,
-                ImageS3Key = request.ImageS3Key
             };
 
             var putRequest = new PutItemRequest

@@ -13,8 +13,9 @@ import { EditorModule } from 'primeng/editor';
 import { ButtonModule } from 'primeng/button';
 import { FileUploadModule } from 'primeng/fileupload';
 import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
-import { PetService, type CreatePetRequest } from 'shared/services/pet.service';
+import { PetService } from 'shared/services/pet.service';
 import { ToastService } from '@longhl104/pawfect-match-ng';
+import { CreatePetRequest } from 'shared/apis/generated-apis';
 
 @Component({
   selector: 'app-add-pet-form',
@@ -90,7 +91,7 @@ export class AddPetFormComponent {
       const petData: CreatePetRequest = this.petForm.value;
 
       // Use the new upload method that handles S3 upload
-      await this.petService.uploadImageAndCreatePet(
+      await this.petService.createPetAndUploadImage(
         shelterId,
         petData,
         this.selectedImageFile || undefined,
