@@ -55,6 +55,7 @@ public interface IPetService
     /// <param name="petId">The pet ID</param>
     /// <returns>Success status</returns>
     Task<PetResponse> DeletePet(Guid petId);
+    Task<PresignedUrlResponse> GenerateUploadUrl(Guid petId, string fileName, string contentType, long fileSizeBytes);
 }
 
 /// <summary>
@@ -67,6 +68,7 @@ public class PetService : IPetService
     private readonly ILogger<PetService> _logger;
     private readonly IMediaService _mediaUploadService;
     private readonly string _tableName;
+    private readonly string _bucketName;
 
     public PetService(
         IAmazonDynamoDB dynamoDbClient,
@@ -79,6 +81,7 @@ public class PetService : IPetService
         _logger = logger;
         _mediaUploadService = mediaUploadService;
         _tableName = $"pawfectmatch-{_environment.EnvironmentName.ToLowerInvariant()}-shelter-hub-pets";
+        _bucketName = $"pawfectmatch-{_environment.EnvironmentName.ToLowerInvariant()}-shelter-hub-pet-media";
     }
 
     /// <summary>
@@ -503,5 +506,28 @@ public class PetService : IPetService
         }
 
         return item;
+    }
+
+    public Task<PresignedUrlResponse> GenerateUploadUrl(Guid petId, string fileName, string contentType, long fileSizeBytes)
+    {
+        if (string.IsNullOrWhiteSpace(contentType))
+        {
+            throw new ArgumentException("Content type must be provided", nameof(contentType));
+        }
+
+        var extension = Path.GetExtension(fileName);
+        if (string.IsNullOrWhiteSpace(extension))
+        {
+            throw new ArgumentException("File name must have an extension", nameof(fileName));
+        }
+
+        // Generate a presigned URL for uploading pet images
+        return _mediaUploadService.GeneratePresignedUrlAsync(new PresignedUrlRequest
+        {
+            BucketName = _bucketName,
+            Key = $"pets/{petId}/main-image{extension}",
+            ContentType = contentType,
+            FileSizeBytes = fileSizeBytes,
+        });
     }
 }

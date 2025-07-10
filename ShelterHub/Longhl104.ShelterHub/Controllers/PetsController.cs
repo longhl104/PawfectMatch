@@ -136,4 +136,34 @@ public class PetsController(IPetService petService) : ControllerBase
 
         return Ok(response);
     }
+
+    /// <summary>
+    /// Generates a presigned URL for uploading pet images
+    /// </summary>
+    /// <param name="petId">The pet ID</param>
+    /// <param name="fileName">The name of the file to upload</param>
+    /// <param name="contentType">The content type of the file</param>
+    /// <returns>Presigned URL for upload</returns>
+    [HttpPost("{petId:guid}/upload-url")]
+    public async Task<ActionResult<PresignedUrlResponse>> GenerateUploadUrl(
+        Guid petId,
+        [FromQuery] string fileName,
+        [FromQuery] string contentType,
+        [FromQuery] long fileSizeBytes
+        )
+    {
+        if (string.IsNullOrWhiteSpace(contentType))
+        {
+            return BadRequest(new { error = "Content type is required" });
+        }
+
+        var response = await petService.GenerateUploadUrl(petId, fileName, contentType, fileSizeBytes);
+
+        if (!response.Success)
+        {
+            return BadRequest(response);
+        }
+
+        return Ok(response);
+    }
 }

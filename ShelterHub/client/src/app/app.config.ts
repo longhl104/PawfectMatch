@@ -23,6 +23,8 @@ import { authInitializer } from './initializers/auth.initializer';
 import { providePrimeNG } from 'primeng/config';
 import { DialogService } from 'primeng/dynamicdialog';
 import Aura from '@primeuix/themes/aura';
+import { API_BASE_URL } from 'shared/apis/generated-apis';
+import { environment } from 'environments/environment';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -45,5 +47,9 @@ export const appConfig: ApplicationConfig = {
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
     DialogService,
     provideAppInitializer(authInitializer()),
+    {
+      provide: API_BASE_URL,
+      useValue: environment.apiUrl,
+    },
   ],
 };
