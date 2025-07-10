@@ -167,4 +167,28 @@ public class PetsController(IPetService petService) : ControllerBase
 
         return Ok(response);
     }
+
+    /// <summary>
+    /// Gets download presigned URLs for pet images
+    /// </summary>
+    /// <param name="request">Request containing pet IDs and their file extensions</param>
+    /// <returns>Dictionary of pet IDs to their download presigned URLs</returns>
+    [HttpPost("images/download-urls")]
+    public async Task<ActionResult<PetImageDownloadUrlsResponse>> GetPetImageDownloadUrls(
+        [FromBody] GetPetImageDownloadUrlsRequest request)
+    {
+        if (request == null || request.PetRequests == null || request.PetRequests.Count == 0)
+        {
+            return BadRequest(new { error = "Request must contain at least one pet request" });
+        }
+
+        var response = await petService.GetPetImageDownloadUrls(request);
+
+        if (!response.Success)
+        {
+            return BadRequest(response);
+        }
+
+        return Ok(response);
+    }
 }

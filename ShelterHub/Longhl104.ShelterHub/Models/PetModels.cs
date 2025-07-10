@@ -265,6 +265,33 @@ public class DownloadPresignedUrlRequest
 }
 
 /// <summary>
+/// Pet image download URL request item
+/// </summary>
+public class PetImageDownloadUrlRequest
+{
+    /// <summary>
+    /// Pet ID
+    /// </summary>
+    public Guid PetId { get; set; }
+
+    /// <summary>
+    /// Main image file extension (e.g., .jpg, .png)
+    /// </summary>
+    public string MainImageFileExtension { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Request model for getting download presigned URLs for multiple pets
+/// </summary>
+public class GetPetImageDownloadUrlsRequest
+{
+    /// <summary>
+    /// List of pets with their image file extensions
+    /// </summary>
+    public List<PetImageDownloadUrlRequest> PetRequests { get; set; } = new();
+}
+
+/// <summary>
 /// Response model for multiple download presigned URLs
 /// </summary>
 public class PetImageDownloadUrlsResponse

@@ -72,6 +72,13 @@ public interface IPetService
     /// <param name="petIds">List of pet IDs to get image URLs for</param>
     /// <returns>Dictionary of pet IDs to their download presigned URLs</returns>
     Task<PetImageDownloadUrlsResponse> GetPetImageDownloadUrls(List<Guid> petIds);
+
+    /// <summary>
+    /// Gets download presigned URLs for main images of multiple pets with their file extensions
+    /// </summary>
+    /// <param name="request">Request containing pet IDs and their file extensions</param>
+    /// <returns>Dictionary of pet IDs to their download presigned URLs</returns>
+    Task<PetImageDownloadUrlsResponse> GetPetImageDownloadUrls(GetPetImageDownloadUrlsRequest request);
 }
 
 /// <summary>
@@ -616,46 +623,26 @@ public class PetService : IPetService
 
             var result = new Dictionary<Guid, string?>();
 
-            // Batch get pets from DynamoDB to get their file extensions
-            var batchGetRequest = new BatchGetItemRequest
-            {
-                RequestItems = new Dictionary<string, KeysAndAttributes>
-                {
-                    {
-                        _tableName,
-                        new KeysAndAttributes
-                        {
-                            Keys = [.. petIds.Select(petId => new Dictionary<string, AttributeValue>
-                            {
-                                { "PetId", new AttributeValue { S = petId.ToString() } }
-                            })],
-                            ProjectionExpression = "PetId, MainImageFileExtension"
-                        }
-                    }
-                }
-            };
-
-            var batchGetResponse = await _dynamoDbClient.BatchGetItemAsync(batchGetRequest);
-
             // Process each pet ID
             foreach (var petId in petIds)
             {
-                result[petId] = null; // Default to null
+                // For this method, we don't have the file extension, so we'll try common extensions
+                // This is a fallback method - the new method with extensions is preferred
+                var extensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+                string? foundUrl = null;
 
-                // Find the pet in the batch response
-                var petItem = batchGetResponse.Responses[_tableName]
-                    .FirstOrDefault(item => item["PetId"].S == petId.ToString());
-
-                if (petItem != null && petItem.TryGetValue("MainImageFileExtension", out var extensionAttr))
+                foreach (var ext in extensions)
                 {
-                    var extension = extensionAttr.S;
-                    if (!string.IsNullOrEmpty(extension))
+                    var imageS3Key = $"pets/{petId}/main-image{ext}";
+                    var presignedUrl = await _mediaUploadService.GenerateDownloadPresignedUrlAsync(_bucketName, imageS3Key);
+                    if (!string.IsNullOrEmpty(presignedUrl))
                     {
-                        var imageS3Key = $"pets/{petId}/main-image{extension}";
-                        var presignedUrl = await _mediaUploadService.GenerateDownloadPresignedUrlAsync(_bucketName, imageS3Key);
-                        result[petId] = presignedUrl;
+                        foundUrl = presignedUrl;
+                        break;
                     }
                 }
+
+                result[petId] = foundUrl;
             }
 
             _logger.LogInformation("Successfully generated download URLs for {PetCount} pets", petIds.Count);
@@ -669,6 +656,75 @@ public class PetService : IPetService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to get download presigned URLs for pets");
+            return new PetImageDownloadUrlsResponse
+            {
+                Success = false,
+                ErrorMessage = $"Failed to get download presigned URLs: {ex.Message}"
+            };
+        }
+    }
+
+    /// <summary>
+    /// Gets download presigned URLs for main images of multiple pets with their file extensions
+    /// </summary>
+    /// <param name="request">Request containing pet IDs and their file extensions</param>
+    /// <returns>Dictionary of pet IDs to their download presigned URLs</returns>
+    public async Task<PetImageDownloadUrlsResponse> GetPetImageDownloadUrls(GetPetImageDownloadUrlsRequest request)
+    {
+        try
+        {
+            _logger.LogInformation("Getting download presigned URLs for {PetCount} pets with extensions", request.PetRequests.Count);
+
+            if (request == null || request.PetRequests == null || request.PetRequests.Count == 0)
+            {
+                return new PetImageDownloadUrlsResponse
+                {
+                    Success = true,
+                    PetImageUrls = []
+                };
+            }
+
+            // Limit the number of pets to process at once to avoid performance issues
+            if (request.PetRequests.Count > 100)
+            {
+                return new PetImageDownloadUrlsResponse
+                {
+                    Success = false,
+                    ErrorMessage = "Maximum 100 pet requests allowed per request"
+                };
+            }
+
+            var result = new Dictionary<Guid, string?>();
+
+            // Process each pet request
+            foreach (var petRequest in request.PetRequests)
+            {
+                var extension = string.IsNullOrEmpty(petRequest.MainImageFileExtension)
+                    ? throw new InvalidOperationException("MainImageFileExtension must be provided")
+                    : petRequest.MainImageFileExtension;
+
+                // Ensure extension starts with a dot
+                if (!extension.StartsWith('.'))
+                {
+                    extension = '.' + extension;
+                }
+
+                var imageS3Key = $"pets/{petRequest.PetId}/main-image{extension}";
+                var presignedUrl = await _mediaUploadService.GenerateDownloadPresignedUrlAsync(_bucketName, imageS3Key);
+                result[petRequest.PetId] = presignedUrl;
+            }
+
+            _logger.LogInformation("Successfully generated download URLs for {PetCount} pets with extensions", request.PetRequests.Count);
+
+            return new PetImageDownloadUrlsResponse
+            {
+                Success = true,
+                PetImageUrls = result
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get download presigned URLs for pets with extensions");
             return new PetImageDownloadUrlsResponse
             {
                 Success = false,
