@@ -39,14 +39,32 @@ export class ShelterHubStack extends BaseStack {
     this.createDynamoDbTable({
       tableName: 'pets',
       partitionKey: {
-        name: 'ShelterId',
-        type: dynamodb.AttributeType.STRING,
-      },
-      sortKey: {
-        name: 'CreatedAt',
+        name: 'PetId',
         type: dynamodb.AttributeType.STRING,
       },
       description: 'Table for storing pet information',
+      globalSecondaryIndexes: [
+        {
+          indexName: 'ShelterIdCreatedAtIndex',
+          partitionKey: {
+            name: 'ShelterId',
+            type: dynamodb.AttributeType.STRING,
+          },
+          sortKey: {
+            name: 'CreatedAt',
+            type: dynamodb.AttributeType.STRING,
+          },
+          nonKeyAttributes: [
+            'Name',
+            'Species',
+            'Breed',
+            'Age',
+            'Gender',
+            'Status',
+            'MainImageFileExtension',
+          ],
+        },
+      ],
     });
 
     // Create S3 Bucket for Pet Media (images and videos)

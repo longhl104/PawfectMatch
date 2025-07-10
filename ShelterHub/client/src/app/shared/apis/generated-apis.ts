@@ -180,62 +180,6 @@ export class MediaApi {
     }
 
     /**
-     * @param body (optional) 
-     * @return OK
-     */
-    presignedUrl(body?: PresignedUrlRequest | undefined): Observable<PresignedUrlResponse> {
-        let url_ = this.baseUrl + "/api/Media/presigned-url";
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_ : any = {
-            body: content_,
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Content-Type": "application/json",
-                "Accept": "text/plain"
-            })
-        };
-
-        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processPresignedUrl(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processPresignedUrl(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<PresignedUrlResponse>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<PresignedUrlResponse>;
-        }));
-    }
-
-    protected processPresignedUrl(response: HttpResponseBase): Observable<PresignedUrlResponse> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = PresignedUrlResponse.fromJS(resultData200);
-            return _observableOf(result200);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-
-    /**
      * @return OK
      */
     cacheStats(): Observable<DownloadUrlCacheStats> {
@@ -751,6 +695,62 @@ export class PetsApi {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
             result200 = PresignedUrlResponse.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    downloadUrls(body?: string[] | undefined): Observable<PetImageDownloadUrlsResponse> {
+        let url_ = this.baseUrl + "/api/Pets/images/download-urls";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDownloadUrls(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processDownloadUrls(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<PetImageDownloadUrlsResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<PetImageDownloadUrlsResponse>;
+        }));
+    }
+
+    protected processDownloadUrls(response: HttpResponseBase): Observable<PetImageDownloadUrlsResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = PetImageDownloadUrlsResponse.fromJS(resultData200);
             return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
@@ -1294,6 +1294,7 @@ export class Pet implements IPet {
     description?: string | undefined;
     createdAt?: string;
     shelterId?: string;
+    mainImageFileExtension?: string | undefined;
 
     constructor(data?: IPet) {
         if (data) {
@@ -1316,6 +1317,7 @@ export class Pet implements IPet {
             this.description = _data["description"];
             this.createdAt = _data["createdAt"];
             this.shelterId = _data["shelterId"];
+            this.mainImageFileExtension = _data["mainImageFileExtension"];
         }
     }
 
@@ -1338,6 +1340,7 @@ export class Pet implements IPet {
         data["description"] = this.description;
         data["createdAt"] = this.createdAt;
         data["shelterId"] = this.shelterId;
+        data["mainImageFileExtension"] = this.mainImageFileExtension;
         return data;
     }
 }
@@ -1353,6 +1356,63 @@ export interface IPet {
     description?: string | undefined;
     createdAt?: string;
     shelterId?: string;
+    mainImageFileExtension?: string | undefined;
+}
+
+export class PetImageDownloadUrlsResponse implements IPetImageDownloadUrlsResponse {
+    success?: boolean;
+    petImageUrls?: { [key: string]: string; } | undefined;
+    errorMessage?: string | undefined;
+
+    constructor(data?: IPetImageDownloadUrlsResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.success = _data["success"];
+            if (_data["petImageUrls"]) {
+                this.petImageUrls = {} as any;
+                for (let key in _data["petImageUrls"]) {
+                    if (_data["petImageUrls"].hasOwnProperty(key))
+                        (<any>this.petImageUrls)![key] = _data["petImageUrls"][key];
+                }
+            }
+            this.errorMessage = _data["errorMessage"];
+        }
+    }
+
+    static fromJS(data: any): PetImageDownloadUrlsResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new PetImageDownloadUrlsResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["success"] = this.success;
+        if (this.petImageUrls) {
+            data["petImageUrls"] = {};
+            for (let key in this.petImageUrls) {
+                if (this.petImageUrls.hasOwnProperty(key))
+                    (<any>data["petImageUrls"])[key] = (<any>this.petImageUrls)[key];
+            }
+        }
+        data["errorMessage"] = this.errorMessage;
+        return data;
+    }
+}
+
+export interface IPetImageDownloadUrlsResponse {
+    success?: boolean;
+    petImageUrls?: { [key: string]: string; } | undefined;
+    errorMessage?: string | undefined;
 }
 
 export class PetResponse implements IPetResponse {
@@ -1404,54 +1464,6 @@ export enum PetStatus {
     Pending = "Pending",
     Adopted = "Adopted",
     MedicalHold = "MedicalHold",
-}
-
-export class PresignedUrlRequest implements IPresignedUrlRequest {
-    bucketName!: string | undefined;
-    key!: string | undefined;
-    contentType?: string | undefined;
-    fileSizeBytes?: number;
-
-    constructor(data?: IPresignedUrlRequest) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.bucketName = _data["bucketName"];
-            this.key = _data["key"];
-            this.contentType = _data["contentType"];
-            this.fileSizeBytes = _data["fileSizeBytes"];
-        }
-    }
-
-    static fromJS(data: any): PresignedUrlRequest {
-        data = typeof data === 'object' ? data : {};
-        let result = new PresignedUrlRequest();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["bucketName"] = this.bucketName;
-        data["key"] = this.key;
-        data["contentType"] = this.contentType;
-        data["fileSizeBytes"] = this.fileSizeBytes;
-        return data;
-    }
-}
-
-export interface IPresignedUrlRequest {
-    bucketName: string | undefined;
-    key: string | undefined;
-    contentType?: string | undefined;
-    fileSizeBytes?: number;
 }
 
 export class PresignedUrlResponse implements IPresignedUrlResponse {

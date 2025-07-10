@@ -55,7 +55,23 @@ public interface IPetService
     /// <param name="petId">The pet ID</param>
     /// <returns>Success status</returns>
     Task<PetResponse> DeletePet(Guid petId);
+
+    /// <summary>
+    /// Generates a presigned URL for uploading pet images
+    /// </summary>
+    /// <param name="petId">The pet ID</param>
+    /// <param name="fileName">The name of the file to upload</param>
+    /// <param name="contentType">The content type of the file</param>
+    /// <param name="fileSizeBytes">The size of the file in bytes</param>
+    /// <returns>Presigned URL for upload</returns>
     Task<PresignedUrlResponse> GenerateUploadUrl(Guid petId, string fileName, string contentType, long fileSizeBytes);
+
+    /// <summary>
+    /// Gets download presigned URLs for main images of multiple pets
+    /// </summary>
+    /// <param name="petIds">List of pet IDs to get image URLs for</param>
+    /// <returns>Dictionary of pet IDs to their download presigned URLs</returns>
+    Task<PetImageDownloadUrlsResponse> GetPetImageDownloadUrls(List<Guid> petIds);
 }
 
 /// <summary>
@@ -69,6 +85,7 @@ public class PetService : IPetService
     private readonly IMediaService _mediaUploadService;
     private readonly string _tableName;
     private readonly string _bucketName;
+    private readonly string _shelterIdCreatedAtIndex = "ShelterIdCreatedAtIndex";
 
     public PetService(
         IAmazonDynamoDB dynamoDbClient,
@@ -98,6 +115,7 @@ public class PetService : IPetService
             var query = new QueryRequest
             {
                 TableName = _tableName,
+                IndexName = _shelterIdCreatedAtIndex,
                 KeyConditionExpression = "ShelterId = :shelterId",
                 ExpressionAttributeValues = new Dictionary<string, AttributeValue>
                 {
@@ -241,7 +259,7 @@ public class PetService : IPetService
                 TableName = _tableName,
                 Key = new Dictionary<string, AttributeValue>
                 {
-                    { "Id", new AttributeValue { S = petId.ToString() } }
+                    { "PetId", new AttributeValue { S = petId.ToString() } }
                 }
             };
 
@@ -348,7 +366,7 @@ public class PetService : IPetService
                 TableName = _tableName,
                 Key = new Dictionary<string, AttributeValue>
                 {
-                    { "Id", new AttributeValue { S = petId.ToString() } }
+                    { "PetId", new AttributeValue { S = petId.ToString() } }
                 },
                 UpdateExpression = "SET #status = :status",
                 ExpressionAttributeNames = new Dictionary<string, string>
@@ -410,7 +428,7 @@ public class PetService : IPetService
                 TableName = _tableName,
                 Key = new Dictionary<string, AttributeValue>
                 {
-                    { "Id", new AttributeValue { S = petId.ToString() } }
+                    { "PetId", new AttributeValue { S = petId.ToString() } }
                 },
                 ReturnValues = ReturnValue.ALL_OLD
             };
@@ -454,16 +472,17 @@ public class PetService : IPetService
     {
         return new Pet
         {
-            PetId = Guid.Parse(item["Id"].S),
+            PetId = Guid.Parse(item["PetId"].S),
             Name = item["Name"].S,
             Species = item["Species"].S,
             Breed = item["Breed"].S,
             Age = int.Parse(item["Age"].N),
             Gender = item["Gender"].S,
-            Description = item["Description"].S,
+            Description = item.TryGetValue("Description", out var desc) ? desc.S : string.Empty,
             ShelterId = Guid.Parse(item["ShelterId"].S),
             Status = Enum.Parse<PetStatus>(item["Status"].S),
             CreatedAt = DateTime.Parse(item["CreatedAt"].S),
+            MainImageFileExtension = item.TryGetValue("MainImageFileExtension", out var ext) ? ext.S : null
         };
     }
 
@@ -474,7 +493,7 @@ public class PetService : IPetService
     {
         var item = new Dictionary<string, AttributeValue>
         {
-            { "Id", new AttributeValue { S = pet.PetId.ToString() } },
+            { "PetId", new AttributeValue { S = pet.PetId.ToString() } },
             { "Name", new AttributeValue { S = pet.Name } },
             { "Species", new AttributeValue { S = pet.Species } },
             { "Breed", new AttributeValue { S = pet.Breed } },
@@ -486,29 +505,175 @@ public class PetService : IPetService
             { "CreatedAt", new AttributeValue { S = pet.CreatedAt.ToString("O") } }
         };
 
+        // Add MainImageFileExtension if it exists
+        if (!string.IsNullOrWhiteSpace(pet.MainImageFileExtension))
+        {
+            item["MainImageFileExtension"] = new AttributeValue { S = pet.MainImageFileExtension };
+        }
+
         return item;
     }
 
-    public Task<PresignedUrlResponse> GenerateUploadUrl(Guid petId, string fileName, string contentType, long fileSizeBytes)
+    public async Task<PresignedUrlResponse> GenerateUploadUrl(Guid petId, string fileName, string contentType, long fileSizeBytes)
     {
-        if (string.IsNullOrWhiteSpace(contentType))
+        try
         {
-            throw new ArgumentException("Content type must be provided", nameof(contentType));
-        }
+            if (string.IsNullOrWhiteSpace(contentType))
+            {
+                throw new ArgumentException("Content type must be provided", nameof(contentType));
+            }
 
-        var extension = Path.GetExtension(fileName);
-        if (string.IsNullOrWhiteSpace(extension))
-        {
-            throw new ArgumentException("File name must have an extension", nameof(fileName));
-        }
+            var extension = Path.GetExtension(fileName);
+            if (string.IsNullOrWhiteSpace(extension))
+            {
+                throw new ArgumentException("File name must have an extension", nameof(fileName));
+            }
 
-        // Generate a presigned URL for uploading pet images
-        return _mediaUploadService.GeneratePresignedUrlAsync(new PresignedUrlRequest
+            _logger.LogInformation("Generating upload URL for pet {PetId} with extension {Extension}", petId, extension);
+
+            // Update the pet's MainImageFileExtension in DynamoDB
+            var updateRequest = new UpdateItemRequest
+            {
+                TableName = _tableName,
+                Key = new Dictionary<string, AttributeValue>
+                {
+                    { "PetId", new AttributeValue { S = petId.ToString() } }
+                },
+                UpdateExpression = "SET MainImageFileExtension = :extension",
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                {
+                    { ":extension", new AttributeValue { S = extension } }
+                },
+                ConditionExpression = "attribute_exists(PetId)", // Ensure the pet exists
+            };
+
+            await _dynamoDbClient.UpdateItemAsync(updateRequest);
+
+            _logger.LogInformation("Updated pet {PetId} with main image file extension {Extension}", petId, extension);
+
+            // Generate a presigned URL for uploading pet images
+            var presignedUrlResponse = await _mediaUploadService.GeneratePresignedUrlAsync(new PresignedUrlRequest
+            {
+                BucketName = _bucketName,
+                Key = $"pets/{petId}/main-image{extension}",
+                ContentType = contentType,
+                FileSizeBytes = fileSizeBytes,
+            });
+
+            _logger.LogInformation("Successfully generated upload URL for pet {PetId}", petId);
+
+            return presignedUrlResponse;
+        }
+        catch (ConditionalCheckFailedException)
         {
-            BucketName = _bucketName,
-            Key = $"pets/{petId}/main-image{extension}",
-            ContentType = contentType,
-            FileSizeBytes = fileSizeBytes,
-        });
+            _logger.LogWarning("Pet not found when generating upload URL: {PetId}", petId);
+            return new PresignedUrlResponse
+            {
+                Success = false,
+                ErrorMessage = "Pet not found"
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to generate upload URL for pet {PetId}", petId);
+            return new PresignedUrlResponse
+            {
+                Success = false,
+                ErrorMessage = $"Failed to generate upload URL: {ex.Message}"
+            };
+        }
+    }
+
+    /// <summary>
+    /// Gets download presigned URLs for main images of multiple pets
+    /// </summary>
+    /// <param name="petIds">List of pet IDs to get image URLs for</param>
+    /// <returns>Dictionary of pet IDs to their download presigned URLs</returns>
+    public async Task<PetImageDownloadUrlsResponse> GetPetImageDownloadUrls(List<Guid> petIds)
+    {
+        try
+        {
+            _logger.LogInformation("Getting download presigned URLs for {PetCount} pets", petIds.Count);
+
+            if (petIds == null || petIds.Count == 0)
+            {
+                return new PetImageDownloadUrlsResponse
+                {
+                    Success = true,
+                    PetImageUrls = []
+                };
+            }
+
+            // Limit the number of pets to process at once to avoid performance issues
+            if (petIds.Count > 100)
+            {
+                return new PetImageDownloadUrlsResponse
+                {
+                    Success = false,
+                    ErrorMessage = "Maximum 100 pet IDs allowed per request"
+                };
+            }
+
+            var result = new Dictionary<Guid, string?>();
+
+            // Batch get pets from DynamoDB to get their file extensions
+            var batchGetRequest = new BatchGetItemRequest
+            {
+                RequestItems = new Dictionary<string, KeysAndAttributes>
+                {
+                    {
+                        _tableName,
+                        new KeysAndAttributes
+                        {
+                            Keys = [.. petIds.Select(petId => new Dictionary<string, AttributeValue>
+                            {
+                                { "PetId", new AttributeValue { S = petId.ToString() } }
+                            })],
+                            ProjectionExpression = "PetId, MainImageFileExtension"
+                        }
+                    }
+                }
+            };
+
+            var batchGetResponse = await _dynamoDbClient.BatchGetItemAsync(batchGetRequest);
+
+            // Process each pet ID
+            foreach (var petId in petIds)
+            {
+                result[petId] = null; // Default to null
+
+                // Find the pet in the batch response
+                var petItem = batchGetResponse.Responses[_tableName]
+                    .FirstOrDefault(item => item["PetId"].S == petId.ToString());
+
+                if (petItem != null && petItem.TryGetValue("MainImageFileExtension", out var extensionAttr))
+                {
+                    var extension = extensionAttr.S;
+                    if (!string.IsNullOrEmpty(extension))
+                    {
+                        var imageS3Key = $"pets/{petId}/main-image{extension}";
+                        var presignedUrl = await _mediaUploadService.GenerateDownloadPresignedUrlAsync(_bucketName, imageS3Key);
+                        result[petId] = presignedUrl;
+                    }
+                }
+            }
+
+            _logger.LogInformation("Successfully generated download URLs for {PetCount} pets", petIds.Count);
+
+            return new PetImageDownloadUrlsResponse
+            {
+                Success = true,
+                PetImageUrls = result
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get download presigned URLs for pets");
+            return new PetImageDownloadUrlsResponse
+            {
+                Success = false,
+                ErrorMessage = $"Failed to get download presigned URLs: {ex.Message}"
+            };
+        }
     }
 }

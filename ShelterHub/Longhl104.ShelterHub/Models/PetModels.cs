@@ -73,6 +73,8 @@ public class Pet
     /// ID of the shelter that owns this pet
     /// </summary>
     public Guid ShelterId { get; set; } = Guid.NewGuid();
+
+    public string? MainImageFileExtension { get; set; }
 }
 
 /// <summary>
@@ -260,4 +262,25 @@ public class DownloadPresignedUrlRequest
     /// The S3 URL to generate a download presigned URL for
     /// </summary>
     public string S3Url { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Response model for multiple download presigned URLs
+/// </summary>
+public class PetImageDownloadUrlsResponse
+{
+    /// <summary>
+    /// Whether the operation was successful
+    /// </summary>
+    public bool Success { get; set; }
+
+    /// <summary>
+    /// Dictionary of pet IDs to their download presigned URLs
+    /// </summary>
+    public Dictionary<Guid, string?> PetImageUrls { get; set; } = new();
+
+    /// <summary>
+    /// Error message (if unsuccessful)
+    /// </summary>
+    public string? ErrorMessage { get; set; }
 }
