@@ -31,6 +31,7 @@ module.exports = tseslint.config(
           style: 'kebab-case',
         },
       ],
+      '@typescript-eslint/ban-tslint-comment': 'off',
     },
   },
   {
