@@ -106,9 +106,6 @@ public class PetService : IPetService
             var response = await _dynamoDbClient.QueryAsync(query);
             var pets = response.Items.Select(ConvertDynamoDbItemToPet).ToList();
 
-            // Generate presigned URLs for pet images
-            await GeneratePresignedUrlsForPets(pets);
-
             _logger.LogInformation("Found {PetCount} pets for shelter {ShelterId}", pets.Count, shelterId);
 
             return new GetPetsResponse
@@ -178,9 +175,6 @@ public class PetService : IPetService
 
             var response = await _dynamoDbClient.QueryAsync(query);
             var pets = response.Items.Select(ConvertDynamoDbItemToPet).ToList();
-
-            // Generate presigned URLs for pet images
-            await GeneratePresignedUrlsForPets(pets);
 
             // Get total count with a separate query
             var countQuery = new QueryRequest
@@ -262,16 +256,6 @@ public class PetService : IPetService
 
             var pet = ConvertDynamoDbItemToPet(response.Item);
 
-            // Generate presigned URL for pet image if it exists
-            if (!string.IsNullOrEmpty(pet.ImageUrl))
-            {
-                var presignedUrl = await _mediaUploadService.GenerateDownloadPresignedUrlAsync(pet.ImageUrl);
-                if (!string.IsNullOrEmpty(presignedUrl))
-                {
-                    pet.ImageUrl = presignedUrl;
-                }
-            }
-
             _logger.LogInformation("Successfully retrieved pet: {PetId}", petId);
 
             return new PetResponse
@@ -303,14 +287,14 @@ public class PetService : IPetService
         {
             _logger.LogInformation("Creating new pet for shelter {ShelterId}", shelterId);
 
-            // Validate S3 URL if provided
-            if (!string.IsNullOrEmpty(request.ImageUrl) && !_mediaUploadService.IsValidS3Url(request.ImageUrl))
+            // Validate S3 Key if provided
+            if (!string.IsNullOrEmpty(request.ImageS3Key))
             {
-                _logger.LogWarning("Invalid S3 URL provided for pet creation: {ImageUrl}", request.ImageUrl);
+                _logger.LogWarning("Invalid S3 Key provided for pet creation: {ImageS3Key}", request.ImageS3Key);
                 return new PetResponse
                 {
                     Success = false,
-                    ErrorMessage = "Invalid image URL. Please use a valid S3 URL from the presigned upload endpoint."
+                    ErrorMessage = "Invalid image S3 Key. Please use a valid S3 Key from the presigned upload endpoint."
                 };
             }
 
@@ -326,7 +310,7 @@ public class PetService : IPetService
                 ShelterId = shelterId,
                 Status = PetStatus.Available,
                 CreatedAt = DateTime.UtcNow,
-                ImageUrl = request.ImageUrl
+                ImageS3Key = request.ImageS3Key
             };
 
             var putRequest = new PutItemRequest
@@ -489,7 +473,7 @@ public class PetService : IPetService
             ShelterId = Guid.Parse(item["ShelterId"].S),
             Status = Enum.Parse<PetStatus>(item["Status"].S),
             CreatedAt = DateTime.Parse(item["CreatedAt"].S),
-            ImageUrl = item.TryGetValue("ImageUrl", out AttributeValue? value) ? value.S : null
+            ImageS3Key = item.TryGetValue("ImageS3Key", out AttributeValue? value) ? value.S : null
         };
     }
 
@@ -512,60 +496,12 @@ public class PetService : IPetService
             { "CreatedAt", new AttributeValue { S = pet.CreatedAt.ToString("O") } }
         };
 
-        // Add ImageUrl if it exists
-        if (!string.IsNullOrEmpty(pet.ImageUrl))
+        // Add ImageS3Key if it exists
+        if (!string.IsNullOrEmpty(pet.ImageS3Key))
         {
-            item.Add("ImageUrl", new AttributeValue { S = pet.ImageUrl });
+            item.Add("ImageS3Key", new AttributeValue { S = pet.ImageS3Key });
         }
 
         return item;
-    }
-
-    /// <summary>
-    /// Generates presigned download URLs for pet images
-    /// </summary>
-    /// <param name="pets">List of pets to generate presigned URLs for</param>
-    private async Task GeneratePresignedUrlsForPets(List<Pet> pets)
-    {
-        var tasks = pets.Where(p => !string.IsNullOrEmpty(p.ImageUrl))
-            .Select(async pet =>
-            {
-                try
-                {
-                    var presignedUrl = await _mediaUploadService.GenerateDownloadPresignedUrlAsync(pet.ImageUrl!);
-                    if (!string.IsNullOrEmpty(presignedUrl))
-                    {
-                        pet.ImageUrl = presignedUrl;
-                    }
-                    return true; // Success
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Failed to generate presigned URL for pet {PetId}, keeping original URL", pet.PetId);
-                    return false; // Failure, but don't propagate
-                }
-            });
-
-        try
-        {
-            var results = await Task.WhenAll(tasks);
-            var successCount = results.Count(r => r);
-            var failureCount = results.Length - successCount;
-
-            if (failureCount > 0)
-            {
-                _logger.LogWarning("Generated presigned URLs: {SuccessCount} successful, {FailureCount} failed",
-                    successCount, failureCount);
-            }
-            else
-            {
-                _logger.LogDebug("Successfully generated presigned URLs for all {Count} pet images", successCount);
-            }
-        }
-        catch (Exception ex)
-        {
-            // This should not happen since we're catching exceptions in individual tasks
-            _logger.LogError(ex, "Unexpected error in GeneratePresignedUrlsForPets");
-        }
     }
 }

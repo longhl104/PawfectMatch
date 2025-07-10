@@ -50,20 +50,13 @@ public interface IMediaService
     Task<PresignedUrlResponse> GeneratePresignedUrlAsync(PresignedUrlRequest request);
 
     /// <summary>
-    /// Validates if an S3 URL is valid and belongs to our bucket
-    /// </summary>
-    /// <param name="url">The S3 URL to validate</param>
-    /// <returns>True if valid, false otherwise</returns>
-    bool IsValidS3Url(string url);
-
-    /// <summary>
     /// Generates a presigned URL for downloading an image from S3
     /// Uses in-memory caching to avoid regenerating URLs for the same S3 object.
     /// Cache expires 5 minutes before the presigned URL expires to ensure valid URLs.
     /// </summary>
     /// <param name="s3Url">The S3 URL to generate a download presigned URL for</param>
     /// <returns>The presigned download URL</returns>
-    Task<string?> GenerateDownloadPresignedUrlAsync(string s3Url);
+    Task<string?> GenerateDownloadPresignedUrlAsync(string bucketName, string s3Url);
 
     /// <summary>
     /// Clears the cached presigned download URL for a specific S3 URL
@@ -82,14 +75,15 @@ public interface IMediaService
 /// <summary>
 /// Service for handling media uploads to S3
 /// </summary>
-public class MediaService(IAmazonS3 s3Client, IConfiguration configuration, IHostEnvironment hostEnvironment, ILogger<MediaService> logger, IMemoryCache memoryCache) : IMediaService
+public class MediaService(
+    IAmazonS3 s3Client,
+    ILogger<MediaService> logger,
+    IMemoryCache memoryCache
+    ) : IMediaService
 {
     private readonly IAmazonS3 _s3Client = s3Client;
-    private readonly IConfiguration _configuration = configuration;
     private readonly ILogger<MediaService> _logger = logger;
     private readonly IMemoryCache _memoryCache = memoryCache;
-    private readonly string _bucketName = $"pawfectmatch-{hostEnvironment.EnvironmentName.ToLowerInvariant()}-shelter-hub-pet-media";
-    private readonly string _bucketRegion = "ap-southeast-2";
 
     // Cache statistics
     private long _cacheHits = 0;
@@ -110,8 +104,8 @@ public class MediaService(IAmazonS3 s3Client, IConfiguration configuration, IHos
     {
         try
         {
-            _logger.LogInformation("Generating presigned URL for file: {FileName}, ContentType: {ContentType}, Size: {Size}",
-                request.FileName, request.ContentType, request.FileSizeBytes);
+            _logger.LogInformation("Generating presigned URL for file key: {Key}, ContentType: {ContentType}, Size: {Size}",
+                request.Key, request.ContentType, request.FileSizeBytes);
 
             // Validate request
             var validationResult = ValidateUploadRequest(request);
@@ -126,17 +120,13 @@ public class MediaService(IAmazonS3 s3Client, IConfiguration configuration, IHos
             }
 
             // Generate unique key for the file
-            var fileExtension = Path.GetExtension(request.FileName).ToLowerInvariant();
-            var uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
-            var key = $"pets/{request.ShelterId}/{uniqueFileName}";
-
-            _logger.LogInformation("Generated S3 key: {Key} for bucket: {BucketName}", key, _bucketName);
+            var fileExtension = Path.GetExtension(request.Key).ToLowerInvariant();
 
             // Create presigned URL request
             var presignedRequest = new GetPreSignedUrlRequest
             {
-                BucketName = _bucketName,
-                Key = key,
+                BucketName = request.BucketName,
+                Key = request.Key,
                 Verb = HttpVerb.PUT,
                 Expires = DateTime.UtcNow.AddMinutes(PresignedUrlExpirationMinutes),
                 ContentType = request.ContentType
@@ -145,23 +135,19 @@ public class MediaService(IAmazonS3 s3Client, IConfiguration configuration, IHos
             // Generate the presigned URL
             var presignedUrl = await _s3Client.GetPreSignedURLAsync(presignedRequest);
 
-            _logger.LogInformation("Successfully generated presigned URL for key: {Key}", key);
-
-            // Generate the final S3 URL (what the file will be accessible at after upload)
-            var s3Url = $"https://{_bucketName}.s3.{_bucketRegion}.amazonaws.com/{key}";
+            _logger.LogInformation("Successfully generated presigned URL for key: {Key}", request.Key);
 
             return new PresignedUrlResponse
             {
                 Success = true,
                 PresignedUrl = presignedUrl,
-                S3Url = s3Url,
-                Key = key,
+                Key = request.Key,
                 ExpiresAt = presignedRequest.Expires
             };
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to generate presigned URL for file: {FileName}", request.FileName);
+            _logger.LogError(ex, "Failed to generate presigned URL for file key: {Key}", request.Key);
             return new PresignedUrlResponse
             {
                 Success = false,
@@ -171,45 +157,19 @@ public class MediaService(IAmazonS3 s3Client, IConfiguration configuration, IHos
     }
 
     /// <summary>
-    /// Validates if an S3 URL is valid and belongs to our bucket
-    /// </summary>
-    /// <param name="url">The S3 URL to validate</param>
-    /// <returns>True if valid, false otherwise</returns>
-    public bool IsValidS3Url(string url)
-    {
-        if (string.IsNullOrWhiteSpace(url))
-            return false;
-
-        try
-        {
-            // Check if URL matches our bucket pattern
-            var bucketPattern = $@"^https://{Regex.Escape(_bucketName)}\.s3\.{Regex.Escape(_bucketRegion)}\.amazonaws\.com/pets/[\w-]+/[\w-]+\.(jpg|jpeg|png|gif|webp)$";
-            return Regex.IsMatch(url, bucketPattern, RegexOptions.IgnoreCase);
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
-    /// <summary>
     /// Generates a presigned URL for downloading an image from S3
     /// </summary>
-    /// <param name="s3Url">The S3 URL to generate a download presigned URL for</param>
+    /// <param name="key">The S3 URL to generate a download presigned URL for</param>
     /// <returns>The presigned download URL</returns>
-    public async Task<string?> GenerateDownloadPresignedUrlAsync(string s3Url)
+    public async Task<string?> GenerateDownloadPresignedUrlAsync(string bucketName, string key)
     {
         try
         {
-            if (string.IsNullOrEmpty(s3Url) || !IsValidS3Url(s3Url))
+            if (string.IsNullOrEmpty(key))
             {
-                _logger.LogWarning("Invalid S3 URL provided for download presigned URL generation: {S3Url}", s3Url);
+                _logger.LogWarning("Invalid S3 key provided for download presigned URL generation: {S3Key}", key);
                 return null;
             }
-
-            // Extract the S3 key from the URL
-            var uri = new Uri(s3Url);
-            var key = uri.AbsolutePath.TrimStart('/');
 
             // Create cache key for this S3 key
             var cacheKey = $"presigned_download_{key}";
@@ -228,7 +188,7 @@ public class MediaService(IAmazonS3 s3Client, IConfiguration configuration, IHos
             // Create presigned URL request for download
             var presignedRequest = new GetPreSignedUrlRequest
             {
-                BucketName = _bucketName,
+                BucketName = bucketName,
                 Key = key,
                 Verb = HttpVerb.GET,
                 Expires = DateTime.UtcNow.AddMinutes(PresignedUrlExpirationMinutes)
@@ -253,7 +213,7 @@ public class MediaService(IAmazonS3 s3Client, IConfiguration configuration, IHos
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to generate download presigned URL for S3 URL: {S3Url}", s3Url);
+            _logger.LogError(ex, "Failed to generate download presigned URL for S3 key: {S3Key}", key);
             return null;
         }
     }
@@ -261,20 +221,16 @@ public class MediaService(IAmazonS3 s3Client, IConfiguration configuration, IHos
     /// <summary>
     /// Clears the cached presigned download URL for a specific S3 URL
     /// </summary>
-    /// <param name="s3Url">The S3 URL to clear from cache</param>
-    public void ClearDownloadPresignedUrlCache(string s3Url)
+    /// <param name="key">The S3 URL to clear from cache</param>
+    public void ClearDownloadPresignedUrlCache(string key)
     {
         try
         {
-            if (string.IsNullOrEmpty(s3Url) || !IsValidS3Url(s3Url))
+            if (string.IsNullOrEmpty(key))
             {
-                _logger.LogWarning("Invalid S3 URL provided for cache clearing: {S3Url}", s3Url);
+                _logger.LogWarning("Invalid S3 key provided for cache clearing: {S3Key}", key);
                 return;
             }
-
-            // Extract the S3 key from the URL
-            var uri = new Uri(s3Url);
-            var key = uri.AbsolutePath.TrimStart('/');
 
             // Create cache key for this S3 key
             var cacheKey = $"presigned_download_{key}";
@@ -286,7 +242,7 @@ public class MediaService(IAmazonS3 s3Client, IConfiguration configuration, IHos
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to clear cached download presigned URL for S3 URL: {S3Url}", s3Url);
+            _logger.LogError(ex, "Failed to clear cached download presigned URL for S3 key: {S3Key}", key);
         }
     }
 
@@ -342,14 +298,8 @@ public class MediaService(IAmazonS3 s3Client, IConfiguration configuration, IHos
 
     private static ValidationResult ValidateUploadRequest(PresignedUrlRequest request)
     {
-        // Check file name
-        if (string.IsNullOrWhiteSpace(request.FileName))
-        {
-            return new ValidationResult { IsValid = false, ErrorMessage = "File name is required" };
-        }
-
         // Check file extension
-        var extension = Path.GetExtension(request.FileName).ToLowerInvariant();
+        var extension = Path.GetExtension(request.Key).ToLowerInvariant();
         if (!AllowedExtensions.Contains(extension))
         {
             return new ValidationResult
@@ -377,12 +327,6 @@ public class MediaService(IAmazonS3 s3Client, IConfiguration configuration, IHos
                 IsValid = false,
                 ErrorMessage = $"File size must be between 1 byte and {MaxFileSizeBytes / (1024 * 1024)}MB"
             };
-        }
-
-        // Check shelter ID
-        if (request.ShelterId == Guid.Empty)
-        {
-            return new ValidationResult { IsValid = false, ErrorMessage = "Shelter ID is required" };
         }
 
         return new ValidationResult { IsValid = true };

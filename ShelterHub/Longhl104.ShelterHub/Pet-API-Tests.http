@@ -19,7 +19,7 @@ Content-Type: application/json
   "age": 3,
   "gender": "Male",
   "description": "Friendly and energetic dog looking for a loving family.",
-  "imageUrl": "https://images.unsplash.com/photo-1552053831-71594a27632d?w=300&h=200&fit=crop&crop=faces"
+  "imageS3Key": "https://images.unsplash.com/photo-1552053831-71594a27632d?w=300&h=200&fit=crop&crop=faces"
 }
 
 ### 4. Update pet status
@@ -42,7 +42,7 @@ Content-Type: application/json
   "age": 2,
   "gender": "Female",
   "description": "<p>Calm and affectionate cat who loves to <strong>cuddle</strong>.</p><ul><li>Good with kids</li><li>Litter trained</li><li>Loves to play</li></ul>",
-  "imageUrl": "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=300&h=200&fit=crop&crop=faces"
+  "imageS3Key": "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=300&h=200&fit=crop&crop=faces"
 }
 
 ### Variables

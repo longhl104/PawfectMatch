@@ -11,7 +11,7 @@ export interface Pet {
   age: number;
   gender: string;
   status: 'available' | 'pending' | 'adopted' | 'medical_hold';
-  imageUrl?: string;
+  imageS3Key?: string;
   description: string;
   createdAt: Date;
   shelterId: string;
@@ -24,7 +24,7 @@ export interface CreatePetRequest {
   age: number;
   gender: string;
   description: string;
-  imageUrl?: string;
+  imageS3Key?: string;
 }
 
 export interface PresignedUrlRequest {
@@ -228,7 +228,7 @@ export class PetService {
         await this.uploadToS3(presignedResponse.presignedUrl, imageFile);
 
         // Add the S3 URL to the pet data
-        finalPetData.imageUrl = presignedResponse.s3Url;
+        finalPetData.imageS3Key = presignedResponse.s3Url;
       }
 
       // Create the pet with the image URL

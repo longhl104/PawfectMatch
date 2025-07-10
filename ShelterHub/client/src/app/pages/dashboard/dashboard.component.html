@@ -91,8 +91,8 @@
                   class="w-full h-10rem -mb-2 border-round-top-xl overflow-hidden"
                 >
                   <img
-                    *ngIf="pet.imageUrl; else noImage"
-                    [src]="pet.imageUrl"
+                    *ngIf="pet.imageS3Key; else noImage"
+                    [src]="pet.imageS3Key"
                     [alt]="pet.name"
                     class="w-full h-full object-cover"
                     (error)="onImageError($event)"

@@ -77,7 +77,7 @@ public class Pet
     /// <summary>
     /// URL of the pet's main image
     /// </summary>
-    public string? ImageUrl { get; set; }
+    public string? ImageS3Key { get; set; }
 }
 
 /// <summary>
@@ -118,7 +118,7 @@ public class CreatePetRequest
     /// <summary>
     /// Optional image URL for the pet
     /// </summary>
-    public string? ImageUrl { get; set; }
+    public string? ImageS3Key { get; set; }
 }
 
 /// <summary>
@@ -215,10 +215,9 @@ public class GetPetsResponse
 /// </summary>
 public class PresignedUrlRequest
 {
-    /// <summary>
-    /// Name of the file to upload
-    /// </summary>
-    public string FileName { get; set; } = string.Empty;
+    public required string BucketName { get; set; }
+
+    public required string Key { get; set; }
 
     /// <summary>
     /// Content type of the file (e.g., image/jpeg)
@@ -230,10 +229,6 @@ public class PresignedUrlRequest
     /// </summary>
     public long FileSizeBytes { get; set; }
 
-    /// <summary>
-    /// ID of the shelter uploading the image
-    /// </summary>
-    public Guid ShelterId { get; set; }
 }
 
 /// <summary>
@@ -250,11 +245,6 @@ public class PresignedUrlResponse
     /// The presigned URL for uploading (if successful)
     /// </summary>
     public string? PresignedUrl { get; set; }
-
-    /// <summary>
-    /// The final S3 URL where the file will be accessible after upload
-    /// </summary>
-    public string? S3Url { get; set; }
 
     /// <summary>
     /// The S3 key/path for the uploaded file

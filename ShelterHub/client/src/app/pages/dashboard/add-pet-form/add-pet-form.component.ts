@@ -148,7 +148,7 @@ export class AddPetFormComponent {
       age: 'Age',
       gender: 'Gender',
       description: 'Description',
-      imageUrl: 'Image URL',
+      imageS3Key: 'Image URL',
     };
     return labels[fieldName] || fieldName;
   }
