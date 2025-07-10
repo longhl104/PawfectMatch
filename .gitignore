@@ -2,3 +2,4 @@ bin/
 obj/
 .env
 nupkg/
+local-certs/
