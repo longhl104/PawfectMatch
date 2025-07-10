@@ -53,8 +53,6 @@ export class ShelterHubStack extends BaseStack {
     this.petMediaBucket = new s3.Bucket(this, `${this.stackName}-pet-media`, {
       bucketName: `${this.stackName}-pet-media`.toLowerCase(),
       versioned: true,
-      publicReadAccess: false,
-      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ACLS,
       removalPolicy:
         this.environment === 'production'
           ? RemovalPolicy.RETAIN
@@ -92,7 +90,7 @@ export class ShelterHubStack extends BaseStack {
             'https://localhost:4200',
             'http://localhost:3000',
             'https://localhost:3000',
-            '*' // Allow all origins for development
+            '*', // Allow all origins for development
           ],
           allowedHeaders: [
             'Content-Type',
@@ -100,7 +98,7 @@ export class ShelterHubStack extends BaseStack {
             'Authorization',
             'x-amz-date',
             'x-amz-content-sha256',
-            'x-amz-meta-*'
+            'x-amz-meta-*',
           ],
           exposedHeaders: ['ETag', 'x-amz-version-id'],
           maxAge: 3000,
