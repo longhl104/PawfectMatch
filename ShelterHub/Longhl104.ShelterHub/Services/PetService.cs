@@ -464,7 +464,6 @@ public class PetService : IPetService
             ShelterId = Guid.Parse(item["ShelterId"].S),
             Status = Enum.Parse<PetStatus>(item["Status"].S),
             CreatedAt = DateTime.Parse(item["CreatedAt"].S),
-            ImageS3Key = item.TryGetValue("ImageS3Key", out AttributeValue? value) ? value.S : null
         };
     }
 
@@ -486,12 +485,6 @@ public class PetService : IPetService
             { "Status", new AttributeValue { S = pet.Status.GetAmbientValue<string>() } },
             { "CreatedAt", new AttributeValue { S = pet.CreatedAt.ToString("O") } }
         };
-
-        // Add ImageS3Key if it exists
-        if (!string.IsNullOrEmpty(pet.ImageS3Key))
-        {
-            item.Add("ImageS3Key", new AttributeValue { S = pet.ImageS3Key });
-        }
 
         return item;
     }

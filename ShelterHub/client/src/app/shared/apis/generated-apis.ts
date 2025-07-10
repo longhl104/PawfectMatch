@@ -1294,7 +1294,6 @@ export class Pet implements IPet {
     description?: string | undefined;
     createdAt?: string;
     shelterId?: string;
-    imageS3Key?: string | undefined;
 
     constructor(data?: IPet) {
         if (data) {
@@ -1317,7 +1316,6 @@ export class Pet implements IPet {
             this.description = _data["description"];
             this.createdAt = _data["createdAt"];
             this.shelterId = _data["shelterId"];
-            this.imageS3Key = _data["imageS3Key"];
         }
     }
 
@@ -1340,7 +1338,6 @@ export class Pet implements IPet {
         data["description"] = this.description;
         data["createdAt"] = this.createdAt;
         data["shelterId"] = this.shelterId;
-        data["imageS3Key"] = this.imageS3Key;
         return data;
     }
 }
@@ -1356,7 +1353,6 @@ export interface IPet {
     description?: string | undefined;
     createdAt?: string;
     shelterId?: string;
-    imageS3Key?: string | undefined;
 }
 
 export class PetResponse implements IPetResponse {

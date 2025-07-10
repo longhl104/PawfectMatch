@@ -12,29 +12,6 @@ namespace Longhl104.ShelterHub.Controllers;
 public class MediaController(IMediaService mediaUploadService) : ControllerBase
 {
     /// <summary>
-    /// Generates a presigned URL for uploading pet images to S3
-    /// </summary>
-    /// <param name="request">The presigned URL request</param>
-    /// <returns>Presigned URL for upload</returns>
-    [HttpPost("presigned-url")]
-    public async Task<ActionResult<PresignedUrlResponse>> GeneratePresignedUrl([FromBody] PresignedUrlRequest request)
-    {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
-        var response = await mediaUploadService.GeneratePresignedUrlAsync(request);
-
-        if (!response.Success)
-        {
-            return BadRequest(response);
-        }
-
-        return Ok(response);
-    }
-
-    /// <summary>
     /// Gets cache statistics for download presigned URLs
     /// </summary>
     /// <returns>Cache statistics</returns>

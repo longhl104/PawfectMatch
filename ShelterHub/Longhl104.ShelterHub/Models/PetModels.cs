@@ -73,11 +73,6 @@ public class Pet
     /// ID of the shelter that owns this pet
     /// </summary>
     public Guid ShelterId { get; set; } = Guid.NewGuid();
-
-    /// <summary>
-    /// URL of the pet's main image
-    /// </summary>
-    public string? ImageS3Key { get; set; }
 }
 
 /// <summary>

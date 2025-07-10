@@ -203,9 +203,6 @@ export class PetService {
         }
 
         await this.uploadToS3(presignedResponse.presignedUrl, imageFile);
-
-        // Add the S3 key to the pet data
-        pet.imageS3Key = presignedResponse.key;
       }
 
       return pet;
