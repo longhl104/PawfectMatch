@@ -1,6 +1,7 @@
 import { firstValueFrom } from 'rxjs';
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
@@ -54,6 +55,7 @@ export class DashboardComponent implements OnInit {
   private toastService = inject(ToastService);
   private dialogService = inject(DialogService);
   private petsApi = inject(PetsApi);
+  private router = inject(Router);
   public authService = inject(AuthService);
 
   shelterInfo: ShelterInfo | null = null;
@@ -199,6 +201,10 @@ export class DashboardComponent implements OnInit {
 
   onPetAdded() {
     this.loadDashboardData(); // Refresh the data
+  }
+
+  onSeeFullList() {
+    this.router.navigate(['/pets']);
   }
 
   formatDate(date: Date): string {
