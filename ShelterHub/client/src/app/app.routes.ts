@@ -13,4 +13,11 @@ export const routes: Routes = [
         (m) => m.DashboardComponent,
       ),
   },
+  {
+    path: 'pets',
+    loadComponent: () =>
+      import('./pages/pets/pets-list.component').then(
+        (m) => m.PetsListComponent,
+      ),
+  },
 ];
