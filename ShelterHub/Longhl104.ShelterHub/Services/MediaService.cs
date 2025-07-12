@@ -2,7 +2,6 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using Longhl104.ShelterHub.Models;
 using Microsoft.Extensions.Caching.Memory;
-using System.Text.RegularExpressions;
 
 namespace Longhl104.ShelterHub.Services;
 

@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Longhl104.ShelterHub.Models;
 using Longhl104.ShelterHub.Services;
 
 namespace Longhl104.ShelterHub.Controllers;

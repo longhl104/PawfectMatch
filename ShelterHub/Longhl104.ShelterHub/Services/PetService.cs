@@ -2,7 +2,7 @@ using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using Longhl104.ShelterHub.Models;
 using Longhl104.PawfectMatch.Extensions;
-using System.Globalization;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Longhl104.ShelterHub.Services;
 
@@ -90,6 +90,7 @@ public class PetService : IPetService
     private readonly IHostEnvironment _environment;
     private readonly ILogger<PetService> _logger;
     private readonly IMediaService _mediaUploadService;
+    private readonly IMemoryCache _memoryCache;
     private readonly string _tableName;
     private readonly string _bucketName;
     private readonly string _shelterIdCreatedAtIndex = "ShelterIdCreatedAtIndex";
@@ -98,12 +99,15 @@ public class PetService : IPetService
         IAmazonDynamoDB dynamoDbClient,
         IHostEnvironment environment,
         ILogger<PetService> logger,
-        IMediaService mediaUploadService)
+        IMediaService mediaUploadService,
+        IMemoryCache memoryCache
+        )
     {
         _dynamoDbClient = dynamoDbClient;
         _environment = environment;
         _logger = logger;
         _mediaUploadService = mediaUploadService;
+        _memoryCache = memoryCache;
         _tableName = $"pawfectmatch-{_environment.EnvironmentName.ToLowerInvariant()}-shelter-hub-pets";
         _bucketName = $"pawfectmatch-{_environment.EnvironmentName.ToLowerInvariant()}-shelter-hub-pet-media";
     }
@@ -258,63 +262,8 @@ public class PetService : IPetService
             var response = await _dynamoDbClient.QueryAsync(query);
             var pets = response.Items.Select(ConvertDynamoDbItemToPet).ToList();
 
-            // Get total count with paginated queries (including filters)
-            var totalCount = 0;
-            Dictionary<string, AttributeValue>? lastEvaluatedKey = null;
-
-            do
-            {
-                var countQuery = new QueryRequest
-                {
-                    TableName = _tableName,
-                    IndexName = _shelterIdCreatedAtIndex, // GSI for querying by shelter ID
-                    KeyConditionExpression = "ShelterId = :shelterId",
-                    ExpressionAttributeValues = new Dictionary<string, AttributeValue>
-                    {
-                        { ":shelterId", new AttributeValue { S = shelterId.ToString() } }
-                    },
-                    Select = Select.COUNT
-                };
-
-                // Apply the same filters to the count query
-                if (filterConditions.Count > 0)
-                {
-                    countQuery.FilterExpression = query.FilterExpression;
-                    countQuery.ExpressionAttributeNames = query.ExpressionAttributeNames;
-
-                    // Add filter values to count query
-                    if (request.Status.HasValue)
-                    {
-                        countQuery.ExpressionAttributeValues[":status"] = new AttributeValue { S = request.Status.Value.GetAmbientValue<string>() };
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(request.Species))
-                    {
-                        countQuery.ExpressionAttributeValues[":species"] = new AttributeValue { S = request.Species };
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(request.Name))
-                    {
-                        countQuery.ExpressionAttributeValues[":petName"] = new AttributeValue { S = request.Name };
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(request.Breed))
-                    {
-                        countQuery.ExpressionAttributeValues[":breed"] = new AttributeValue { S = request.Breed };
-                    }
-                }
-
-                // Add pagination for the count query if needed
-                if (lastEvaluatedKey != null)
-                {
-                    countQuery.ExclusiveStartKey = lastEvaluatedKey;
-                }
-
-                var countResponse = await _dynamoDbClient.QueryAsync(countQuery);
-                totalCount += countResponse.Count ?? 0;
-                lastEvaluatedKey = countResponse.LastEvaluatedKey;
-
-            } while (lastEvaluatedKey != null && lastEvaluatedKey.Count > 0);
+            // Get total count with caching (including filters)
+            var totalCount = await GetTotalPetCountWithCache(shelterId, request);
 
             // Generate next token if there are more items
             string? nextToken = null;
@@ -433,6 +382,9 @@ public class PetService : IPetService
 
             await _dynamoDbClient.PutItemAsync(putRequest);
 
+            // Invalidate cache for this shelter
+            InvalidatePetCountCache(shelterId);
+
             _logger.LogInformation("Successfully created pet with ID: {PetId}", pet.PetId);
 
             return new PetResponse
@@ -496,6 +448,10 @@ public class PetService : IPetService
             }
 
             var updatedPet = ConvertDynamoDbItemToPet(response.Attributes);
+
+            // Invalidate cache for this shelter since pet status changed
+            InvalidatePetCountCache(updatedPet.ShelterId);
+
             _logger.LogInformation("Successfully updated pet status for ID: {PetId}", petId);
 
             return new PetResponse
@@ -549,6 +505,10 @@ public class PetService : IPetService
             }
 
             var deletedPet = ConvertDynamoDbItemToPet(response.Attributes);
+
+            // Invalidate cache for this shelter since pet was deleted
+            InvalidatePetCountCache(deletedPet.ShelterId);
+
             _logger.LogInformation("Successfully deleted pet with ID: {PetId}", petId);
 
             return new PetResponse
@@ -653,6 +613,13 @@ public class PetService : IPetService
             await _dynamoDbClient.UpdateItemAsync(updateRequest);
 
             _logger.LogInformation("Updated pet {PetId} with main image file extension {Extension}", petId, extension);
+
+            // Get the pet to find its shelter ID for cache invalidation
+            var petResponse = await GetPetById(petId);
+            if (petResponse.Success && petResponse.Pet != null)
+            {
+                InvalidatePetCountCache(petResponse.Pet.ShelterId);
+            }
 
             // Generate a presigned URL for uploading pet images
             var presignedUrlResponse = await _mediaUploadService.GeneratePresignedUrlAsync(new PresignedUrlRequest
@@ -826,6 +793,203 @@ public class PetService : IPetService
                 Success = false,
                 ErrorMessage = $"Failed to get download presigned URLs: {ex.Message}"
             };
+        }
+    }
+
+    /// <summary>
+    /// Gets the total pet count for a shelter with caching support
+    /// </summary>
+    /// <param name="shelterId">The shelter ID</param>
+    /// <param name="request">The request containing filters</param>
+    /// <returns>Total pet count</returns>
+    private async Task<int> GetTotalPetCountWithCache(Guid shelterId, GetPetsRequest request)
+    {
+        // Generate cache key based on shelter ID and filters
+        var cacheKey = GeneratePetCountCacheKey(shelterId, request);
+
+        // Try to get count from cache first
+        if (_memoryCache.TryGetValue(cacheKey, out int cachedCount))
+        {
+            _logger.LogDebug("Retrieved pet count from cache for shelter {ShelterId}: {Count}", shelterId, cachedCount);
+            return cachedCount;
+        }
+
+        // If not in cache, calculate count with paginated queries
+        _logger.LogDebug("Pet count not in cache for shelter {ShelterId}, calculating...", shelterId);
+        var totalCount = await CalculateTotalPetCount(shelterId, request);
+
+        // Cache the result for 5 minutes
+        var cacheOptions = new MemoryCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5),
+            SlidingExpiration = TimeSpan.FromMinutes(2),
+            Priority = CacheItemPriority.Normal
+        };
+
+        _memoryCache.Set(cacheKey, totalCount, cacheOptions);
+        _logger.LogDebug("Cached pet count for shelter {ShelterId}: {Count}", shelterId, totalCount);
+
+        return totalCount;
+    }
+
+    /// <summary>
+    /// Calculates the total pet count with paginated queries (including filters)
+    /// </summary>
+    /// <param name="shelterId">The shelter ID</param>
+    /// <param name="request">The request containing filters</param>
+    /// <returns>Total pet count</returns>
+    private async Task<int> CalculateTotalPetCount(Guid shelterId, GetPetsRequest request)
+    {
+        var totalCount = 0;
+        Dictionary<string, AttributeValue>? lastEvaluatedKey = null;
+
+        // Build filter conditions (reuse the same logic from the main method)
+        var filterConditions = new List<string>();
+        var expressionAttributeValues = new Dictionary<string, AttributeValue>
+        {
+            { ":shelterId", new AttributeValue { S = shelterId.ToString() } }
+        };
+        var expressionAttributeNames = new Dictionary<string, string>();
+
+        if (request.Status.HasValue)
+        {
+            filterConditions.Add("#status = :status");
+            expressionAttributeValues[":status"] = new AttributeValue { S = request.Status.Value.GetAmbientValue<string>() };
+            expressionAttributeNames["#status"] = "Status";
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Species))
+        {
+            filterConditions.Add("#species = :species");
+            expressionAttributeValues[":species"] = new AttributeValue { S = request.Species };
+            expressionAttributeNames["#species"] = "Species";
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Name))
+        {
+            filterConditions.Add("contains(#petName, :petName)");
+            expressionAttributeValues[":petName"] = new AttributeValue { S = request.Name };
+            expressionAttributeNames["#petName"] = "Name";
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Breed))
+        {
+            filterConditions.Add("contains(#breed, :breed)");
+            expressionAttributeValues[":breed"] = new AttributeValue { S = request.Breed };
+            expressionAttributeNames["#breed"] = "Breed";
+        }
+
+        do
+        {
+            var countQuery = new QueryRequest
+            {
+                TableName = _tableName,
+                IndexName = _shelterIdCreatedAtIndex,
+                KeyConditionExpression = "ShelterId = :shelterId",
+                ExpressionAttributeValues = expressionAttributeValues,
+                Select = Select.COUNT
+            };
+
+            // Apply filters if any
+            if (filterConditions.Count > 0)
+            {
+                countQuery.FilterExpression = string.Join(" AND ", filterConditions);
+                countQuery.ExpressionAttributeNames = expressionAttributeNames;
+            }
+
+            // Add pagination for the count query if needed
+            if (lastEvaluatedKey != null)
+            {
+                countQuery.ExclusiveStartKey = lastEvaluatedKey;
+            }
+
+            var countResponse = await _dynamoDbClient.QueryAsync(countQuery);
+            totalCount += countResponse.Count ?? 0;
+            lastEvaluatedKey = countResponse.LastEvaluatedKey;
+
+        } while (lastEvaluatedKey != null && lastEvaluatedKey.Count > 0);
+
+        return totalCount;
+    }
+
+    /// <summary>
+    /// Generates a cache key for pet count based on shelter ID and filters
+    /// </summary>
+    /// <param name="shelterId">The shelter ID</param>
+    /// <param name="request">The request containing filters</param>
+    /// <returns>Cache key string</returns>
+    private static string GeneratePetCountCacheKey(Guid shelterId, GetPetsRequest request)
+    {
+        var keyParts = new List<string>
+        {
+            "pet-count",
+            shelterId.ToString()
+        };
+
+        if (request.Status.HasValue)
+        {
+            keyParts.Add($"status:{request.Status.Value.GetAmbientValue<string>()}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Species))
+        {
+            keyParts.Add($"species:{request.Species}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Name))
+        {
+            keyParts.Add($"name:{request.Name}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Breed))
+        {
+            keyParts.Add($"breed:{request.Breed}");
+        }
+
+        return string.Join(":", keyParts);
+    }
+
+    /// <summary>
+    /// Invalidates all cached pet counts for a specific shelter
+    /// </summary>
+    /// <param name="shelterId">The shelter ID</param>
+    private void InvalidatePetCountCache(Guid shelterId)
+    {
+        try
+        {
+            // Since we can't easily enumerate cache keys in IMemoryCache,
+            // we'll remove common cache patterns for this shelter
+            var baseKey = $"pet-count:{shelterId}";
+
+            // Remove the base cache entry (no filters)
+            _memoryCache.Remove(baseKey);
+
+            // Remove common filter combinations
+            var commonStatuses = new[] { "Available", "Adopted", "Pending", "Medical" };
+            var commonSpecies = new[] { "Dog", "Cat", "Bird", "Rabbit", "Other" };
+
+            foreach (var status in commonStatuses)
+            {
+                _memoryCache.Remove($"{baseKey}:status:{status}");
+
+                foreach (var species in commonSpecies)
+                {
+                    _memoryCache.Remove($"{baseKey}:status:{status}:species:{species}");
+                    _memoryCache.Remove($"{baseKey}:species:{species}");
+                }
+            }
+
+            // For more comprehensive cache invalidation in production, consider:
+            // 1. Using a cache tagging system
+            // 2. Maintaining a list of active cache keys per shelter
+            // 3. Using Redis with pattern-based removal
+            // 4. Implementing a cache notification system
+
+            _logger.LogDebug("Invalidated pet count cache for shelter {ShelterId}", shelterId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to invalidate pet count cache for shelter {ShelterId}", shelterId);
         }
     }
 }
