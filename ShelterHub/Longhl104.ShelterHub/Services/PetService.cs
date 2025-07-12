@@ -163,7 +163,8 @@ public class PetService : IPetService
     {
         try
         {
-            _logger.LogInformation("Getting paginated pets for shelter ID: {ShelterId}, PageSize: {PageSize}", shelterId, request.PageSize);
+            _logger.LogInformation("Getting paginated pets for shelter ID: {ShelterId}, PageSize: {PageSize}, Status: {Status}, Species: {Species}, Name: {Name}, Breed: {Breed}",
+                shelterId, request.PageSize, request.Status, request.Species, request.Name, request.Breed);
 
             // Validate page size
             var pageSize = Math.Min(Math.Max(request.PageSize, 1), 100);
@@ -171,7 +172,7 @@ public class PetService : IPetService
             var query = new QueryRequest
             {
                 TableName = _tableName,
-                IndexName = "ShelterId-Index", // GSI for querying by shelter ID
+                IndexName = _shelterIdCreatedAtIndex, // GSI for querying by shelter ID
                 KeyConditionExpression = "ShelterId = :shelterId",
                 ExpressionAttributeValues = new Dictionary<string, AttributeValue>
                 {
@@ -179,6 +180,59 @@ public class PetService : IPetService
                 },
                 Limit = pageSize
             };
+
+            // Build filter expression if filters are provided
+            var filterConditions = new List<string>();
+
+            if (request.Status.HasValue)
+            {
+                filterConditions.Add("#status = :status");
+                query.ExpressionAttributeValues[":status"] = new AttributeValue { S = request.Status.Value.GetAmbientValue<string>() };
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Species))
+            {
+                filterConditions.Add("#species = :species");
+                query.ExpressionAttributeValues[":species"] = new AttributeValue { S = request.Species };
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Name))
+            {
+                filterConditions.Add("contains(#petName, :petName)");
+                query.ExpressionAttributeValues[":petName"] = new AttributeValue { S = request.Name };
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Breed))
+            {
+                filterConditions.Add("contains(#breed, :breed)");
+                query.ExpressionAttributeValues[":breed"] = new AttributeValue { S = request.Breed };
+            }
+
+            if (filterConditions.Count > 0)
+            {
+                query.FilterExpression = string.Join(" AND ", filterConditions);
+                query.ExpressionAttributeNames = [];
+
+                if (request.Status.HasValue)
+                {
+                    query.ExpressionAttributeNames["#status"] = "Status";
+                }
+
+                if (!string.IsNullOrWhiteSpace(request.Species))
+                {
+                    query.ExpressionAttributeNames["#species"] = "Species";
+                }
+
+                if (!string.IsNullOrWhiteSpace(request.Name))
+                {
+                    query.ExpressionAttributeNames["#petName"] = "Name";
+                }
+
+                if (!string.IsNullOrWhiteSpace(request.Breed))
+                {
+                    query.ExpressionAttributeNames["#breed"] = "Breed";
+                }
+            }
 
             // Add pagination token if provided
             if (!string.IsNullOrEmpty(request.NextToken))
@@ -204,11 +258,11 @@ public class PetService : IPetService
             var response = await _dynamoDbClient.QueryAsync(query);
             var pets = response.Items.Select(ConvertDynamoDbItemToPet).ToList();
 
-            // Get total count with a separate query
+            // Get total count with a separate query (including filters)
             var countQuery = new QueryRequest
             {
                 TableName = _tableName,
-                IndexName = "ShelterId-Index",
+                IndexName = _shelterIdCreatedAtIndex, // GSI for querying by shelter ID
                 KeyConditionExpression = "ShelterId = :shelterId",
                 ExpressionAttributeValues = new Dictionary<string, AttributeValue>
                 {
@@ -216,6 +270,34 @@ public class PetService : IPetService
                 },
                 Select = Select.COUNT
             };
+
+            // Apply the same filters to the count query
+            if (filterConditions.Count > 0)
+            {
+                countQuery.FilterExpression = query.FilterExpression;
+                countQuery.ExpressionAttributeNames = query.ExpressionAttributeNames;
+
+                // Add filter values to count query
+                if (request.Status.HasValue)
+                {
+                    countQuery.ExpressionAttributeValues[":status"] = new AttributeValue { S = request.Status.Value.GetAmbientValue<string>() };
+                }
+
+                if (!string.IsNullOrWhiteSpace(request.Species))
+                {
+                    countQuery.ExpressionAttributeValues[":species"] = new AttributeValue { S = request.Species };
+                }
+
+                if (!string.IsNullOrWhiteSpace(request.Name))
+                {
+                    countQuery.ExpressionAttributeValues[":petName"] = new AttributeValue { S = request.Name };
+                }
+
+                if (!string.IsNullOrWhiteSpace(request.Breed))
+                {
+                    countQuery.ExpressionAttributeValues[":breed"] = new AttributeValue { S = request.Breed };
+                }
+            }
 
             var countResponse = await _dynamoDbClient.QueryAsync(countQuery);
             var totalCount = countResponse.Count ?? 0;
@@ -229,7 +311,7 @@ public class PetService : IPetService
                 nextToken = Convert.ToBase64String(lastKeyBytes);
             }
 
-            _logger.LogInformation("Found {PetCount} pets for shelter {ShelterId} (Total: {TotalCount})", pets.Count, shelterId, totalCount);
+            _logger.LogInformation("Found {PetCount} pets for shelter {ShelterId} (Total: {TotalCount}) with filters", pets.Count, shelterId, totalCount);
 
             return new GetPaginatedPetsResponse
             {

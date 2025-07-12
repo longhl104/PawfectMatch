@@ -148,6 +148,26 @@ public class GetPetsRequest
     /// Token for pagination (from previous response)
     /// </summary>
     public string? NextToken { get; set; }
+
+    /// <summary>
+    /// Filter by pet status (optional - null means all statuses)
+    /// </summary>
+    public PetStatus? Status { get; set; }
+
+    /// <summary>
+    /// Filter by pet species (optional - null means all species)
+    /// </summary>
+    public string? Species { get; set; }
+
+    /// <summary>
+    /// Search by pet name (optional - case-insensitive partial match)
+    /// </summary>
+    public string? Name { get; set; }
+
+    /// <summary>
+    /// Search by pet breed (optional - case-insensitive partial match)
+    /// </summary>
+    public string? Breed { get; set; }
 }
 
 /// <summary>

@@ -13,7 +13,7 @@
         <h1 class="text-2xl font-bold m-0">All Pets</h1>
         <p-tag
           *ngIf="!isLoading"
-          [value]="filteredPets.length.toString()"
+          [value]="totalRecords.toString()"
           severity="info"
         ></p-tag>
       </div>
@@ -28,16 +28,32 @@
     <!-- Filters Section -->
     <p-card>
       <div class="grid">
-        <!-- Search -->
-        <div class="col-12 md:col-3">
-          <span class="block text-sm font-medium mb-2">Search</span>
+        <!-- Name Search -->
+        <div class="col-12 md:col-2">
+          <span class="block text-sm font-medium mb-2">Pet Name</span>
           <span class="p-input-icon-left w-full">
             <i class="pi pi-search"></i>
             <input
               type="text"
               pInputText
-              placeholder="Search by name, breed, or description..."
-              [(ngModel)]="searchTerm"
+              placeholder="Search by name..."
+              [(ngModel)]="searchName"
+              (input)="onSearchChange()"
+              class="w-full"
+            />
+          </span>
+        </div>
+
+        <!-- Breed Search -->
+        <div class="col-12 md:col-2">
+          <span class="block text-sm font-medium mb-2">Breed</span>
+          <span class="p-input-icon-left w-full">
+            <i class="pi pi-search"></i>
+            <input
+              type="text"
+              pInputText
+              placeholder="Search by breed..."
+              [(ngModel)]="searchBreed"
               (input)="onSearchChange()"
               class="w-full"
             />
@@ -87,6 +103,15 @@
           ></p-button>
         </div>
       </div>
+
+      <!-- Filter Info -->
+      <div
+        *ngIf="searchName || searchBreed || selectedStatus || selectedSpecies"
+        class="mt-2 text-sm text-gray-600"
+      >
+        <i class="pi pi-info-circle mr-1"></i>
+        Server-side filtering is applied across all results.
+      </div>
     </p-card>
   </div>
 
@@ -110,10 +135,9 @@
   <!-- Pets Data View -->
   <p-dataView
     *ngIf="!isLoading"
-    [value]="filteredPets"
+    [value]="allPets()"
     layout="grid"
-    [paginator]="true"
-    [rows]="12"
+    [paginator]="false"
     [sortField]="'name'"
     [sortOrder]="1"
   >
@@ -123,13 +147,15 @@
         <h3 class="text-xl text-gray-600 mb-2">No pets found</h3>
         <p class="text-gray-500 mb-4">
           {{
-            searchTerm || selectedStatus || selectedSpecies
+            searchName || searchBreed || selectedStatus || selectedSpecies
               ? "Try adjusting your filters to see more results."
               : "Get started by adding your first pet."
           }}
         </p>
         <p-button
-          *ngIf="!searchTerm && !selectedStatus && !selectedSpecies"
+          *ngIf="
+            !searchName && !searchBreed && !selectedStatus && !selectedSpecies
+          "
           label="Add Your First Pet"
           icon="pi pi-plus"
           (onClick)="onAddPet()"
@@ -137,118 +163,145 @@
       </div>
     </ng-template>
 
-    <ng-template let-pet pTemplate="gridItem">
-      <div class="col-12 md:col-6 lg:col-4 p-2">
-        <p-card class="pet-card h-full">
-          <ng-template pTemplate="header">
-            <div class="pet-image-container">
-              <img
-                *ngIf="petMainImageUrls.get(pet.petId!); else noImage"
-                [src]="petMainImageUrls.get(pet.petId!)"
-                [alt]="pet.name"
-                class="pet-image"
-                (error)="onImageError($event)"
-              />
-              <ng-template #noImage>
-                <div class="no-image-placeholder">
-                  <i class="pi pi-image text-4xl text-gray-400"></i>
+    <ng-template let-pets #grid>
+      <div class="grid grid-nogutter">
+        @for (pet of pets; track pet.petId) {
+          <div class="col-12 md:col-6 lg:col-4 p-2">
+            <p-card class="pet-card h-full">
+              <ng-template pTemplate="header">
+                <div class="pet-image-container">
+                  <img
+                    *ngIf="petMainImageUrls.get(pet.petId!); else noImage"
+                    [src]="petMainImageUrls.get(pet.petId!)"
+                    [alt]="pet.name"
+                    class="pet-image"
+                    (error)="onImageError($event)"
+                  />
+                  <ng-template #noImage>
+                    <div class="no-image-placeholder">
+                      <i class="pi pi-image text-4xl text-gray-400"></i>
+                    </div>
+                  </ng-template>
                 </div>
               </ng-template>
-            </div>
-          </ng-template>
 
-          <!-- Pet Info -->
-          <div class="pet-info">
-            <div class="flex justify-content-between align-items-start mb-2">
-              <h3 class="pet-name m-0">{{ pet.name }}</h3>
-              <p-tag
-                [value]="pet.status"
-                [severity]="getStatusSeverity(pet.status!)"
-                class="text-xs"
-              ></p-tag>
-            </div>
+              <!-- Pet Info -->
+              <div class="pet-info">
+                <div
+                  class="flex justify-content-between align-items-start mb-2"
+                >
+                  <h3 class="pet-name m-0">{{ pet.name }}</h3>
+                  <p-tag
+                    [value]="pet.status"
+                    [severity]="getStatusSeverity(pet.status!)"
+                    class="text-xs"
+                  ></p-tag>
+                </div>
 
-            <div class="pet-details mb-3">
-              <div class="detail-item">
-                <i class="pi pi-tag text-gray-500"></i>
-                <span>{{ pet.species }} • {{ pet.breed }}</span>
-              </div>
-              <div class="detail-item" *ngIf="pet.age">
-                <i class="pi pi-calendar text-gray-500"></i>
-                <span>{{ pet.age }} old</span>
-              </div>
-              <div class="detail-item" *ngIf="pet.weight">
-                <i class="pi pi-chart-line text-gray-500"></i>
-                <span>{{ pet.weight }} lbs</span>
-              </div>
-            </div>
+                <div class="pet-details mb-3">
+                  <div class="detail-item">
+                    <i class="pi pi-tag text-gray-500"></i>
+                    <span>{{ pet.species }} • {{ pet.breed }}</span>
+                  </div>
+                  <div class="detail-item" *ngIf="pet.age">
+                    <i class="pi pi-calendar text-gray-500"></i>
+                    <span>{{ pet.age }} old</span>
+                  </div>
+                  <div class="detail-item" *ngIf="pet.weight">
+                    <i class="pi pi-chart-line text-gray-500"></i>
+                    <span>{{ pet.weight }} lbs</span>
+                  </div>
+                </div>
 
-            <p class="pet-description text-sm text-gray-600 mb-3">
-              {{
-                pet.description && pet.description.length > 100
-                  ? (pet.description | slice: 0 : 100) + "..."
-                  : pet.description
-              }}
-            </p>
+                <p class="pet-description text-sm text-gray-600 mb-3">
+                  {{
+                    pet.description && pet.description.length > 100
+                      ? (pet.description | slice: 0 : 100) + "..."
+                      : pet.description
+                  }}
+                </p>
+              </div>
+
+              <ng-template pTemplate="footer">
+                <div
+                  class="flex justify-content-between align-items-center gap-2"
+                >
+                  <!-- Status Change Buttons -->
+                  <div class="flex gap-1">
+                    <p-button
+                      *ngIf="pet.status !== getAvailableStatus()"
+                      icon="pi pi-check"
+                      severity="success"
+                      size="small"
+                      [outlined]="true"
+                      pTooltip="Mark as Available"
+                      (onClick)="
+                        onUpdateStatus(pet, getAvailableStatus(), $event)
+                      "
+                    ></p-button>
+                    <p-button
+                      *ngIf="pet.status !== getPendingStatus()"
+                      icon="pi pi-clock"
+                      severity="info"
+                      size="small"
+                      [outlined]="true"
+                      pTooltip="Mark as Pending"
+                      (onClick)="
+                        onUpdateStatus(pet, getPendingStatus(), $event)
+                      "
+                    ></p-button>
+                    <p-button
+                      *ngIf="pet.status !== getAdoptedStatus()"
+                      icon="pi pi-heart"
+                      severity="secondary"
+                      size="small"
+                      [outlined]="true"
+                      pTooltip="Mark as Adopted"
+                      (onClick)="
+                        onUpdateStatus(pet, getAdoptedStatus(), $event)
+                      "
+                    ></p-button>
+                  </div>
+
+                  <!-- Action Buttons -->
+                  <div class="flex gap-1">
+                    <p-button
+                      icon="pi pi-pencil"
+                      size="small"
+                      [outlined]="true"
+                      pTooltip="Edit Pet"
+                      (onClick)="onEditPet(pet)"
+                    ></p-button>
+                    <p-button
+                      icon="pi pi-trash"
+                      severity="danger"
+                      size="small"
+                      [outlined]="true"
+                      pTooltip="Delete Pet"
+                      (onClick)="onDeletePet(pet, $event)"
+                    ></p-button>
+                  </div>
+                </div>
+              </ng-template>
+            </p-card>
           </div>
-
-          <ng-template pTemplate="footer">
-            <div class="flex justify-content-between align-items-center gap-2">
-              <!-- Status Change Buttons -->
-              <div class="flex gap-1">
-                <p-button
-                  *ngIf="pet.status !== getAvailableStatus()"
-                  icon="pi pi-check"
-                  severity="success"
-                  size="small"
-                  [outlined]="true"
-                  pTooltip="Mark as Available"
-                  (onClick)="onUpdateStatus(pet, getAvailableStatus(), $event)"
-                ></p-button>
-                <p-button
-                  *ngIf="pet.status !== getPendingStatus()"
-                  icon="pi pi-clock"
-                  severity="info"
-                  size="small"
-                  [outlined]="true"
-                  pTooltip="Mark as Pending"
-                  (onClick)="onUpdateStatus(pet, getPendingStatus(), $event)"
-                ></p-button>
-                <p-button
-                  *ngIf="pet.status !== getAdoptedStatus()"
-                  icon="pi pi-heart"
-                  severity="secondary"
-                  size="small"
-                  [outlined]="true"
-                  pTooltip="Mark as Adopted"
-                  (onClick)="onUpdateStatus(pet, getAdoptedStatus(), $event)"
-                ></p-button>
-              </div>
-
-              <!-- Action Buttons -->
-              <div class="flex gap-1">
-                <p-button
-                  icon="pi pi-pencil"
-                  size="small"
-                  [outlined]="true"
-                  pTooltip="Edit Pet"
-                  (onClick)="onEditPet(pet)"
-                ></p-button>
-                <p-button
-                  icon="pi pi-trash"
-                  severity="danger"
-                  size="small"
-                  [outlined]="true"
-                  pTooltip="Delete Pet"
-                  (onClick)="onDeletePet(pet, $event)"
-                ></p-button>
-              </div>
-            </div>
-          </ng-template>
-        </p-card>
+        }
       </div>
     </ng-template>
   </p-dataView>
+
+  <!-- Server-side Paginator -->
+  <p-paginator
+    *ngIf="!isLoading && totalRecords > 0"
+    [rows]="pageSize"
+    [totalRecords]="totalRecords"
+    [first]="currentPage * pageSize"
+    (onPageChange)="onPageChange($event)"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} pets"
+    [rowsPerPageOptions]="[12, 24, 36]"
+    styleClass="mt-4"
+  ></p-paginator>
 </div>
 
 <p-confirmDialog></p-confirmDialog>

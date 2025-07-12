@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -11,7 +11,9 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { PaginatorModule } from 'primeng/paginator';
 import { ConfirmationService } from 'primeng/api';
+import type { PaginatorState } from 'primeng/paginator';
 import {
   DynamicDialogModule,
   DialogService,
@@ -19,7 +21,6 @@ import {
 } from 'primeng/dynamicdialog';
 
 import { PetService } from 'shared/services/pet.service';
-import { AuthService } from 'shared/services/auth.service';
 import { ToastService } from '@longhl104/pawfect-match-ng';
 import {
   ShelterService,
@@ -31,6 +32,7 @@ import {
   GetPetImageDownloadUrlsRequest,
   PetImageDownloadUrlRequest,
   PetStatus,
+  GetPaginatedPetsResponse,
 } from 'shared/apis/generated-apis';
 import { AddPetFormComponent } from '../dashboard/add-pet-form/add-pet-form.component';
 
@@ -53,32 +55,40 @@ interface FilterOption {
     SkeletonModule,
     TooltipModule,
     ConfirmDialogModule,
+    PaginatorModule,
     DynamicDialogModule,
   ],
   providers: [ConfirmationService],
   templateUrl: './pets-list.component.html',
   styleUrl: './pets-list.component.scss',
 })
-export class PetsListComponent implements OnInit {
+export class PetsListComponent implements OnInit, OnDestroy {
   private shelterService = inject(ShelterService);
   private petService = inject(PetService);
   private petsApi = inject(PetsApi);
-  private authService = inject(AuthService);
   private toastService = inject(ToastService);
   private router = inject(Router);
   private dialogService = inject(DialogService);
   private confirmationService = inject(ConfirmationService);
 
   shelterInfo: ShelterInfo | null = null;
-  allPets: Pet[] = [];
-  filteredPets: Pet[] = [];
+  allPets = signal<Pet[]>([]);
   petMainImageUrls = new Map<string, string>();
   isLoading = true;
-  searchTerm = '';
+  searchName = '';
+  searchBreed = '';
   selectedStatus: string | null = null;
   selectedSpecies: string | null = null;
 
+  // Pagination properties
+  currentPage = 0;
+  pageSize = 12;
+  totalRecords = 0;
+  nextToken: string | null = null;
+  pageTokens = new Map<number, string>(); // Store tokens for each page
+
   private dialogRef?: DynamicDialogRef;
+  private searchDebounceTimer?: NodeJS.Timeout;
 
   statusOptions: FilterOption[] = [
     { label: 'All Statuses', value: null },
@@ -101,21 +111,70 @@ export class PetsListComponent implements OnInit {
     this.loadPetsData();
   }
 
-  async loadPetsData() {
+  ngOnDestroy() {
+    // Clean up the debounce timer
+    if (this.searchDebounceTimer) {
+      clearTimeout(this.searchDebounceTimer);
+    }
+  }
+
+  async loadPetsData(page = 0) {
     try {
       this.isLoading = true;
 
-      // Load shelter information
-      this.shelterInfo = await this.shelterService.getShelterInfo();
+      // Load shelter information if not already loaded
+      if (!this.shelterInfo) {
+        this.shelterInfo = await this.shelterService.getShelterInfo();
+      }
 
-      // Load all pets
-      this.allPets = await this.petService.getAllPets(this.shelterInfo.shelterId);
-      this.filteredPets = [...this.allPets];
+      // Calculate which token to use for this page
+      let tokenToUse: string | undefined = undefined;
+      if (page > 0) {
+        tokenToUse = this.pageTokens.get(page) || undefined;
+      }
 
-      // Load pet images
+      // Parse search term into name and breed components
+      let nameFilter: string | undefined = undefined;
+      let breedFilter: string | undefined = undefined;
+
+      if (this.searchName.trim()) {
+        nameFilter = this.searchName.trim();
+      }
+
+      if (this.searchBreed.trim()) {
+        breedFilter = this.searchBreed.trim();
+      }
+
+      // Load paginated pets with server-side filtering
+      const response: GetPaginatedPetsResponse = await firstValueFrom(
+        this.petsApi.paginated(
+          this.shelterInfo.shelterId,
+          this.pageSize,
+          tokenToUse,
+          (this.selectedStatus as PetStatus | undefined) ?? undefined,
+          (this.selectedSpecies as string | undefined) ?? undefined,
+          nameFilter,
+          breedFilter,
+        ),
+      );
+
+      if (!response.success) {
+        throw new Error(response.errorMessage || 'Failed to load pets');
+      }
+
+      this.allPets.set(response.pets || []);
+      this.totalRecords = response.totalCount || 0;
+      this.currentPage = page;
+
+      // Store the next token for the next page
+      if (response.nextToken) {
+        this.pageTokens.set(page + 1, response.nextToken);
+      }
+
+      // Load pet images for current page
       await this.loadPetImages();
 
-      // Update species filter options based on actual data
+      // Update species filter options based on current data
       this.updateSpeciesOptions();
     } catch (error) {
       console.error('Error loading pets data:', error);
@@ -126,7 +185,7 @@ export class PetsListComponent implements OnInit {
   }
 
   private async loadPetImages() {
-    const petIdsAndExtensions = this.allPets
+    const petIdsAndExtensions = this.allPets()
       .map((pet) => ({
         petId: pet.petId!,
         mainImageFileExtension: pet.mainImageFileExtension,
@@ -166,44 +225,85 @@ export class PetsListComponent implements OnInit {
   }
 
   private updateSpeciesOptions() {
-    const uniqueSpecies = [...new Set(this.allPets.map(pet => pet.species))].filter(Boolean);
-    this.speciesOptions = [
-      { label: 'All Species', value: null },
-      ...uniqueSpecies.map(species => ({ label: species!, value: species! }))
-    ];
+    // With server-side pagination, we keep the static species options
+    // or we could load species from a separate API endpoint
+    const uniqueSpecies = [
+      ...new Set(this.allPets().map((pet) => pet.species)),
+    ].filter(Boolean);
+
+    // Add any new species found in current page to existing options
+    const existingSpecies = this.speciesOptions
+      .filter((option) => option.value !== null)
+      .map((option) => option.value);
+
+    const newSpecies = uniqueSpecies.filter(
+      (species) => species && !existingSpecies.includes(species),
+    );
+
+    if (newSpecies.length > 0) {
+      this.speciesOptions = [
+        { label: 'All Species', value: null },
+        ...this.speciesOptions.slice(1), // Keep existing non-null options
+        ...newSpecies.map((species) => ({ label: species!, value: species! })),
+      ];
+    }
   }
 
-  applyFilters() {
-    this.filteredPets = this.allPets.filter(pet => {
-      const matchesSearch = !this.searchTerm ||
-        (pet.name && pet.name.toLowerCase().includes(this.searchTerm.toLowerCase())) ||
-        (pet.breed && pet.breed.toLowerCase().includes(this.searchTerm.toLowerCase())) ||
-        (pet.description && pet.description.toLowerCase().includes(this.searchTerm.toLowerCase()));
-
-      const matchesStatus = !this.selectedStatus || pet.status === this.selectedStatus;
-      const matchesSpecies = !this.selectedSpecies || pet.species === this.selectedSpecies;
-
-      return matchesSearch && matchesStatus && matchesSpecies;
-    });
-  }
+  // NOTE: Filters are now applied server-side via API parameters.
+  // This provides better performance and accurate pagination across all results.
 
   onSearchChange() {
-    this.applyFilters();
+    // Clear existing timer
+    if (this.searchDebounceTimer) {
+      clearTimeout(this.searchDebounceTimer);
+    }
+
+    // Set a new timer to debounce the search
+    this.searchDebounceTimer = setTimeout(() => {
+      // Reset to first page when filters change
+      this.resetPagination();
+      this.loadPetsData(0);
+    }, 500); // 500ms debounce
   }
 
   onStatusChange() {
-    this.applyFilters();
+    // Reset to first page when filters change
+    this.resetPagination();
+    this.loadPetsData(0);
   }
 
   onSpeciesChange() {
-    this.applyFilters();
+    // Reset to first page when filters change
+    this.resetPagination();
+    this.loadPetsData(0);
   }
 
   clearFilters() {
-    this.searchTerm = '';
+    this.searchName = '';
+    this.searchBreed = '';
     this.selectedStatus = null;
     this.selectedSpecies = null;
-    this.filteredPets = [...this.allPets];
+    this.resetPagination();
+    this.loadPetsData(0);
+  }
+
+  onPageChange(event: PaginatorState) {
+    const page = event.page || 0;
+    const rows = event.rows || this.pageSize;
+
+    // If page size changed, reset pagination and update page size
+    if (rows !== this.pageSize) {
+      this.pageSize = rows;
+      this.resetPagination();
+      this.loadPetsData(0);
+    } else {
+      this.loadPetsData(page);
+    }
+  }
+
+  private resetPagination() {
+    this.currentPage = 0;
+    this.pageTokens.clear();
   }
 
   onAddPet() {
@@ -228,13 +328,15 @@ export class PetsListComponent implements OnInit {
 
     this.dialogRef.onClose.subscribe((result) => {
       if (result) {
-        this.loadPetsData(); // Refresh the data
+        this.resetPagination();
+        this.loadPetsData(0); // Refresh the data
       }
     });
   }
 
-  onEditPet(_pet: Pet) {
+  onEditPet(pet: Pet) {
     // TODO: Implement edit pet functionality
+    console.log('Edit pet:', pet.name);
     this.toastService.info('Edit pet functionality coming soon');
   }
 
@@ -252,12 +354,12 @@ export class PetsListComponent implements OnInit {
         try {
           await this.petService.deletePet(pet.petId!);
           this.toastService.success(`${pet.name} has been deleted`);
-          this.loadPetsData(); // Refresh the data
+          this.loadPetsData(this.currentPage); // Refresh the current page
         } catch (error) {
           console.error('Error deleting pet:', error);
           this.toastService.error('Failed to delete pet');
         }
-      }
+      },
     });
   }
 
@@ -272,13 +374,15 @@ export class PetsListComponent implements OnInit {
       accept: async () => {
         try {
           await this.petService.updatePetStatus(pet.petId!, newStatus);
-          this.toastService.success(`${pet.name}'s status updated to ${newStatus}`);
-          this.loadPetsData(); // Refresh the data
+          this.toastService.success(
+            `${pet.name}'s status updated to ${newStatus}`,
+          );
+          this.loadPetsData(this.currentPage); // Refresh the current page
         } catch (error) {
           console.error('Error updating pet status:', error);
           this.toastService.error('Failed to update pet status');
         }
-      }
+      },
     });
   }
 

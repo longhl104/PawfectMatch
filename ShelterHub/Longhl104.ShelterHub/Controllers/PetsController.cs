@@ -35,17 +35,29 @@ public class PetsController(IPetService petService) : ControllerBase
     /// <param name="shelterId">The shelter ID</param>
     /// <param name="pageSize">Number of items per page (default: 10, max: 100)</param>
     /// <param name="nextToken">Token for pagination</param>
+    /// <param name="status">Filter by pet status (optional - null means all statuses)</param>
+    /// <param name="species">Filter by pet species (optional - null means all species)</param>
+    /// <param name="name">Search by pet name (optional - case-insensitive partial match)</param>
+    /// <param name="breed">Search by pet breed (optional - case-insensitive partial match)</param>
     /// <returns>Paginated list of pets</returns>
     [HttpGet("shelter/{shelterId:guid}/paginated")]
     public async Task<ActionResult<GetPaginatedPetsResponse>> GetPaginatedPetsByShelterId(
         Guid shelterId,
         [FromQuery] int pageSize = 10,
-        [FromQuery] string? nextToken = null)
+        [FromQuery] string? nextToken = null,
+        [FromQuery] PetStatus? status = null,
+        [FromQuery] string? species = null,
+        [FromQuery] string? name = null,
+        [FromQuery] string? breed = null)
     {
         var request = new GetPetsRequest
         {
             PageSize = pageSize,
-            NextToken = nextToken
+            NextToken = nextToken,
+            Status = status,
+            Species = species,
+            Name = name,
+            Breed = breed
         };
 
         var response = await petService.GetPaginatedPetsByShelterId(shelterId, request);

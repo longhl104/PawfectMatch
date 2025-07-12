@@ -408,9 +408,13 @@ export class PetsApi {
     /**
      * @param pageSize (optional) 
      * @param nextToken (optional) 
+     * @param status (optional) 
+     * @param species (optional) 
+     * @param name (optional) 
+     * @param breed (optional) 
      * @return OK
      */
-    paginated(shelterId: string, pageSize?: number | undefined, nextToken?: string | undefined): Observable<GetPaginatedPetsResponse> {
+    paginated(shelterId: string, pageSize?: number | undefined, nextToken?: string | undefined, status?: PetStatus | undefined, species?: string | undefined, name?: string | undefined, breed?: string | undefined): Observable<GetPaginatedPetsResponse> {
         let url_ = this.baseUrl + "/api/Pets/shelter/{shelterId}/paginated?";
         if (shelterId === undefined || shelterId === null)
             throw new Error("The parameter 'shelterId' must be defined.");
@@ -423,6 +427,22 @@ export class PetsApi {
             throw new Error("The parameter 'nextToken' cannot be null.");
         else if (nextToken !== undefined)
             url_ += "nextToken=" + encodeURIComponent("" + nextToken) + "&";
+        if (status === null)
+            throw new Error("The parameter 'status' cannot be null.");
+        else if (status !== undefined)
+            url_ += "status=" + encodeURIComponent("" + status) + "&";
+        if (species === null)
+            throw new Error("The parameter 'species' cannot be null.");
+        else if (species !== undefined)
+            url_ += "species=" + encodeURIComponent("" + species) + "&";
+        if (name === null)
+            throw new Error("The parameter 'name' cannot be null.");
+        else if (name !== undefined)
+            url_ += "name=" + encodeURIComponent("" + name) + "&";
+        if (breed === null)
+            throw new Error("The parameter 'breed' cannot be null.");
+        else if (breed !== undefined)
+            url_ += "breed=" + encodeURIComponent("" + breed) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
