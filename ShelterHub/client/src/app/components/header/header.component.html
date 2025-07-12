@@ -23,16 +23,12 @@
         </span>
 
         <p-avatar
-          [label]="getUserInitials((authStatus$ | async)?.user)"
+          #avatar
           styleClass="cursor-pointer"
           size="normal"
           shape="circle"
-          [style]="{
-            'background-color': 'var(--primary-color)',
-            color: 'white',
-          }"
+          [label]="getUserInitials((authStatus$ | async)?.user)"
           (click)="menu.toggle($event)"
-          #avatar
         >
         </p-avatar>
 

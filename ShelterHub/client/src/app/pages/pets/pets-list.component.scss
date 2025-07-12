@@ -17,7 +17,9 @@
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: var(--p-card-shadow), 0 4px 20px rgba(0, 0, 0, 0.1);
+    box-shadow:
+      var(--p-card-shadow),
+      0 4px 20px rgba(0, 0, 0, 0.1);
   }
 
   .p-card-body {
@@ -50,7 +52,8 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform calc(var(--p-transition-duration) * 2) var(--p-transition-timing-function);
+    transition: transform calc(var(--p-transition-duration) * 2)
+      var(--p-transition-timing-function);
 
     &:hover {
       transform: scale(1.05);
@@ -155,10 +158,6 @@
     border: none;
     background: transparent;
     padding: 1rem 0;
-  }
-
-  .p-dropdown-panel {
-    z-index: 1100;
   }
 
   .p-confirm-dialog {
