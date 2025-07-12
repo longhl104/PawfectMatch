@@ -1,48 +1,30 @@
+import {
+  QueryShelterRequest,
+  Shelter,
+  SheltersApi,
+} from './../apis/generated-apis';
 import { firstValueFrom } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { environment } from 'environments/environment';
-
-export interface ShelterInfo {
-  shelterId: string;
-  shelterName: string;
-  shelterAddress: string;
-  shelterContactNumber: string;
-  capacity: number;
-  currentPets: number;
-}
 
 @Injectable({
   providedIn: 'root',
 })
 export class ShelterService {
-  private http = inject(HttpClient);
+  private sheltersApi = inject(SheltersApi);
 
-  async getShelterInfo(): Promise<ShelterInfo> {
+  async getShelterInfo(): Promise<Shelter> {
     const response = await firstValueFrom(
-      this.http.post<ShelterInfo>(
-        `${environment.apiUrl}/api/shelters/my-shelter/query`,
-        {
+      this.sheltersApi.query(
+        new QueryShelterRequest({
           attributesToGet: [
             'ShelterName',
             'ShelterAddress',
             'ShelterContactNumber',
           ],
-        },
-        {
-          withCredentials: true,
-        },
+        }),
       ),
     );
 
     return response;
-  }
-
-  async updateShelterInfo(
-    shelterInfo: Partial<ShelterInfo>,
-  ): Promise<ShelterInfo> {
-    // TODO: Replace with actual API call
-    console.log('Updating shelter info:', shelterInfo);
-    return this.getShelterInfo();
   }
 }

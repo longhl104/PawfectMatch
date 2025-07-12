@@ -22,10 +22,7 @@ import {
 
 import { PetService } from 'shared/services/pet.service';
 import { ToastService } from '@longhl104/pawfect-match-ng';
-import {
-  ShelterService,
-  type ShelterInfo,
-} from '../../shared/services/shelter.service';
+import { ShelterService } from 'shared/services/shelter.service';
 import {
   Pet,
   PetsApi,
@@ -33,6 +30,7 @@ import {
   PetImageDownloadUrlRequest,
   PetStatus,
   GetPaginatedPetsResponse,
+  Shelter,
 } from 'shared/apis/generated-apis';
 import { AddPetFormComponent } from '../dashboard/add-pet-form/add-pet-form.component';
 
@@ -71,7 +69,7 @@ export class PetsListComponent implements OnInit, OnDestroy {
   private dialogService = inject(DialogService);
   private confirmationService = inject(ConfirmationService);
 
-  shelterInfo: ShelterInfo | null = null;
+  shelterInfo: Shelter | null = null;
   allPets = signal<Pet[]>([]);
   petMainImageUrls = new Map<string, string>();
   isLoading = true;

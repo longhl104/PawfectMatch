@@ -13,10 +13,7 @@ import {
   DialogService,
   DynamicDialogRef,
 } from 'primeng/dynamicdialog';
-import {
-  ShelterService,
-  type ShelterInfo,
-} from '../../shared/services/shelter.service';
+import { ShelterService } from 'shared/services/shelter.service';
 import {
   ApplicationService,
   type Application,
@@ -30,6 +27,7 @@ import {
   Pet,
   PetImageDownloadUrlRequest,
   PetsApi,
+  Shelter,
 } from 'shared/apis/generated-apis';
 
 @Component({
@@ -58,7 +56,7 @@ export class DashboardComponent implements OnInit {
   private router = inject(Router);
   public authService = inject(AuthService);
 
-  shelterInfo: ShelterInfo | null = null;
+  shelterInfo: Shelter | null = null;
   pets: Pet[] = [];
   recentApplications: Application[] = [];
   isLoading = true;

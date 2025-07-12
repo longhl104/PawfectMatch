@@ -23,7 +23,7 @@ import { authInitializer } from './initializers/auth.initializer';
 import { providePrimeNG } from 'primeng/config';
 import { DialogService } from 'primeng/dynamicdialog';
 import Aura from '@primeuix/themes/aura';
-import { API_BASE_URL, PetsApi } from 'shared/apis/generated-apis';
+import { API_BASE_URL, PetsApi, SheltersApi } from 'shared/apis/generated-apis';
 import { environment } from 'environments/environment';
 
 export const appConfig: ApplicationConfig = {
@@ -52,5 +52,6 @@ export const appConfig: ApplicationConfig = {
       useValue: environment.apiUrl,
     },
     PetsApi,
+    SheltersApi,
   ],
 };
