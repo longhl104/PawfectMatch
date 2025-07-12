@@ -10,12 +10,14 @@
 }
 
 .pet-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform var(--p-transition-duration) var(--p-transition-timing-function),
+    box-shadow var(--p-transition-duration) var(--p-transition-timing-function);
   height: 100%;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--p-card-shadow), 0 4px 20px rgba(0, 0, 0, 0.1);
   }
 
   .p-card-body {
@@ -32,7 +34,7 @@
 
   .p-card-footer {
     padding: 0.75rem 1rem;
-    border-top: 1px solid #e5e7eb;
+    border-top: 1px solid var(--p-content-border-color);
     margin-top: auto;
   }
 }
@@ -42,13 +44,13 @@
   width: 100%;
   height: 200px;
   overflow: hidden;
-  background-color: #f3f4f6;
+  background-color: var(--p-surface-100);
 
   .pet-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
+    transition: transform calc(var(--p-transition-duration) * 2) var(--p-transition-timing-function);
 
     &:hover {
       transform: scale(1.05);
@@ -61,8 +63,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #f9fafb;
-    color: #9ca3af;
+    background-color: var(--p-surface-50);
+    color: var(--p-text-color-muted);
   }
 }
 
@@ -70,7 +72,7 @@
   .pet-name {
     font-size: 1.125rem;
     font-weight: 600;
-    color: #111827;
+    color: var(--p-text-color);
     line-height: 1.4;
   }
 
@@ -84,7 +86,7 @@
       align-items: center;
       gap: 0.5rem;
       font-size: 0.875rem;
-      color: #6b7280;
+      color: var(--p-text-color-secondary);
 
       i {
         width: 14px;
@@ -95,26 +97,7 @@
 
   .pet-description {
     line-height: 1.5;
-    color: #4b5563;
-  }
-}
-
-// Status-specific styling
-.p-tag {
-  &.p-tag-success {
-    background-color: #10b981;
-  }
-
-  &.p-tag-info {
-    background-color: #3b82f6;
-  }
-
-  &.p-tag-warning {
-    background-color: #f59e0b;
-  }
-
-  &.p-tag-danger {
-    background-color: #ef4444;
+    color: var(--p-text-color-secondary);
   }
 }
 
@@ -127,10 +110,6 @@
 
   .p-input-icon-left {
     width: 100%;
-
-    input {
-      padding-left: 2.5rem;
-    }
   }
 }
 
@@ -139,6 +118,29 @@
   .pi-info-circle {
     display: block;
     margin: 0 auto 1rem;
+  }
+}
+
+// Override utility classes to use theme colors
+:host {
+  .text-gray-400 {
+    color: var(--p-text-color-muted) !important;
+  }
+
+  .text-gray-500 {
+    color: var(--p-text-color-muted) !important;
+  }
+
+  .text-gray-600 {
+    color: var(--p-text-color-secondary) !important;
+  }
+
+  .bg-gray-100 {
+    background-color: var(--p-surface-100) !important;
+  }
+
+  .bg-gray-400 {
+    background-color: var(--p-surface-400) !important;
   }
 }
 

@@ -32,7 +32,6 @@
         <div class="col-12 md:col-2">
           <span class="block text-sm font-medium mb-2">Pet Name</span>
           <span class="p-input-icon-left w-full">
-            <i class="pi pi-search"></i>
             <input
               type="text"
               pInputText
@@ -48,7 +47,6 @@
         <div class="col-12 md:col-2">
           <span class="block text-sm font-medium mb-2">Breed</span>
           <span class="p-input-icon-left w-full">
-            <i class="pi pi-search"></i>
             <input
               type="text"
               pInputText
@@ -190,7 +188,7 @@
                 <div
                   class="flex justify-content-between align-items-start mb-2"
                 >
-                  <h3 class="pet-name m-0">{{ pet.name }}</h3>
+                  <h3 class="pet-name m-0 capitalize">{{ pet.name }}</h3>
                   <p-tag
                     [value]="pet.status"
                     [severity]="getStatusSeverity(pet.status!)"
@@ -199,7 +197,7 @@
                 </div>
 
                 <div class="pet-details mb-3">
-                  <div class="detail-item">
+                  <div class="detail-item capitalize" *ngIf="pet.species">
                     <i class="pi pi-tag text-gray-500"></i>
                     <span>{{ pet.species }} • {{ pet.breed }}</span>
                   </div>

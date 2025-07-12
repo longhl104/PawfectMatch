@@ -400,9 +400,9 @@ public class PetService : IPetService
             var pet = new Pet
             {
                 PetId = Guid.NewGuid(),
-                Name = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(request.Name.ToLowerInvariant()),
+                Name = request.Name.ToLowerInvariant(),
                 Species = request.Species,
-                Breed = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(request.Breed.ToLowerInvariant()),
+                Breed = request.Breed.ToLowerInvariant(),
                 Age = request.Age,
                 Gender = request.Gender,
                 Description = request.Description,
