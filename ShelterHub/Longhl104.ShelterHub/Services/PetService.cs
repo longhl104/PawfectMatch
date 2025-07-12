@@ -258,49 +258,63 @@ public class PetService : IPetService
             var response = await _dynamoDbClient.QueryAsync(query);
             var pets = response.Items.Select(ConvertDynamoDbItemToPet).ToList();
 
-            // Get total count with a separate query (including filters)
-            var countQuery = new QueryRequest
+            // Get total count with paginated queries (including filters)
+            var totalCount = 0;
+            Dictionary<string, AttributeValue>? lastEvaluatedKey = null;
+
+            do
             {
-                TableName = _tableName,
-                IndexName = _shelterIdCreatedAtIndex, // GSI for querying by shelter ID
-                KeyConditionExpression = "ShelterId = :shelterId",
-                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                var countQuery = new QueryRequest
                 {
-                    { ":shelterId", new AttributeValue { S = shelterId.ToString() } }
-                },
-                Select = Select.COUNT
-            };
+                    TableName = _tableName,
+                    IndexName = _shelterIdCreatedAtIndex, // GSI for querying by shelter ID
+                    KeyConditionExpression = "ShelterId = :shelterId",
+                    ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                    {
+                        { ":shelterId", new AttributeValue { S = shelterId.ToString() } }
+                    },
+                    Select = Select.COUNT
+                };
 
-            // Apply the same filters to the count query
-            if (filterConditions.Count > 0)
-            {
-                countQuery.FilterExpression = query.FilterExpression;
-                countQuery.ExpressionAttributeNames = query.ExpressionAttributeNames;
-
-                // Add filter values to count query
-                if (request.Status.HasValue)
+                // Apply the same filters to the count query
+                if (filterConditions.Count > 0)
                 {
-                    countQuery.ExpressionAttributeValues[":status"] = new AttributeValue { S = request.Status.Value.GetAmbientValue<string>() };
+                    countQuery.FilterExpression = query.FilterExpression;
+                    countQuery.ExpressionAttributeNames = query.ExpressionAttributeNames;
+
+                    // Add filter values to count query
+                    if (request.Status.HasValue)
+                    {
+                        countQuery.ExpressionAttributeValues[":status"] = new AttributeValue { S = request.Status.Value.GetAmbientValue<string>() };
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(request.Species))
+                    {
+                        countQuery.ExpressionAttributeValues[":species"] = new AttributeValue { S = request.Species };
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(request.Name))
+                    {
+                        countQuery.ExpressionAttributeValues[":petName"] = new AttributeValue { S = request.Name };
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(request.Breed))
+                    {
+                        countQuery.ExpressionAttributeValues[":breed"] = new AttributeValue { S = request.Breed };
+                    }
                 }
 
-                if (!string.IsNullOrWhiteSpace(request.Species))
+                // Add pagination for the count query if needed
+                if (lastEvaluatedKey != null)
                 {
-                    countQuery.ExpressionAttributeValues[":species"] = new AttributeValue { S = request.Species };
+                    countQuery.ExclusiveStartKey = lastEvaluatedKey;
                 }
 
-                if (!string.IsNullOrWhiteSpace(request.Name))
-                {
-                    countQuery.ExpressionAttributeValues[":petName"] = new AttributeValue { S = request.Name };
-                }
+                var countResponse = await _dynamoDbClient.QueryAsync(countQuery);
+                totalCount += countResponse.Count ?? 0;
+                lastEvaluatedKey = countResponse.LastEvaluatedKey;
 
-                if (!string.IsNullOrWhiteSpace(request.Breed))
-                {
-                    countQuery.ExpressionAttributeValues[":breed"] = new AttributeValue { S = request.Breed };
-                }
-            }
-
-            var countResponse = await _dynamoDbClient.QueryAsync(countQuery);
-            var totalCount = countResponse.Count ?? 0;
+            } while (lastEvaluatedKey != null && lastEvaluatedKey.Count > 0);
 
             // Generate next token if there are more items
             string? nextToken = null;
