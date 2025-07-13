@@ -112,7 +112,7 @@ public class SheltersController(
             }
 
             _logger.LogInformation("Successfully retrieved pet statistics for shelter {ShelterId}: Total={TotalPets}, Available={AvailablePets}, FromCache={FromCache}",
-                shelterAdmin.ShelterId, statistics.TotalPets, statistics.AvailablePets, statistics.FromCache);
+                shelterAdmin.ShelterId, statistics.TotalPets, statistics.AdoptedPets, statistics.FromCache);
 
             return Ok(statistics);
         }
@@ -154,7 +154,7 @@ public class SheltersController(
             }
 
             _logger.LogInformation("Successfully retrieved pet statistics for shelter {ShelterId}: Total={TotalPets}, Available={AvailablePets}, FromCache={FromCache}",
-                shelterId, statistics.TotalPets, statistics.AvailablePets, statistics.FromCache);
+                shelterId, statistics.TotalPets, statistics.AdoptedPets, statistics.FromCache);
 
             return Ok(statistics);
         }

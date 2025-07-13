@@ -1072,8 +1072,8 @@ public class PetService : IPetService
         var totalPetsRequest = new GetPetsRequest(); // No filters for total count
         statistics.TotalPets = await CalculateTotalPetCount(shelterId, totalPetsRequest);
 
-        // Get count for available pets only
-        statistics.AvailablePets = await CalculatePetCountByStatus(shelterId, PetStatus.Available);
+        // Get count for adopted pets only
+        statistics.AdoptedPets = await CalculatePetCountByStatus(shelterId, PetStatus.Adopted);
 
         return statistics;
     }

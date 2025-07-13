@@ -86,7 +86,7 @@ public class ShelterPetStatisticsResponse
     /// <summary>
     /// Number of pets currently available for adoption
     /// </summary>
-    public int AvailablePets { get; set; }
+    public int AdoptedPets { get; set; }
 
     /// <summary>
     /// Error message if the request failed

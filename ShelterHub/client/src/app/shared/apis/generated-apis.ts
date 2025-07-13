@@ -1942,7 +1942,7 @@ export interface IShelterAdminResponse {
 export class ShelterPetStatisticsResponse implements IShelterPetStatisticsResponse {
     success?: boolean;
     totalPets?: number;
-    availablePets?: number;
+    adoptedPets?: number;
     errorMessage?: string | undefined;
     fromCache?: boolean;
     lastUpdated?: string;
@@ -1960,7 +1960,7 @@ export class ShelterPetStatisticsResponse implements IShelterPetStatisticsRespon
         if (_data) {
             this.success = _data["success"];
             this.totalPets = _data["totalPets"];
-            this.availablePets = _data["availablePets"];
+            this.adoptedPets = _data["adoptedPets"];
             this.errorMessage = _data["errorMessage"];
             this.fromCache = _data["fromCache"];
             this.lastUpdated = _data["lastUpdated"];
@@ -1978,7 +1978,7 @@ export class ShelterPetStatisticsResponse implements IShelterPetStatisticsRespon
         data = typeof data === 'object' ? data : {};
         data["success"] = this.success;
         data["totalPets"] = this.totalPets;
-        data["availablePets"] = this.availablePets;
+        data["adoptedPets"] = this.adoptedPets;
         data["errorMessage"] = this.errorMessage;
         data["fromCache"] = this.fromCache;
         data["lastUpdated"] = this.lastUpdated;
@@ -1989,7 +1989,7 @@ export class ShelterPetStatisticsResponse implements IShelterPetStatisticsRespon
 export interface IShelterPetStatisticsResponse {
     success?: boolean;
     totalPets?: number;
-    availablePets?: number;
+    adoptedPets?: number;
     errorMessage?: string | undefined;
     fromCache?: boolean;
     lastUpdated?: string;

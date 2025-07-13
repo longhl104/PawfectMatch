@@ -21,21 +21,30 @@
               </p>
             </div>
           </div>
-          <!-- <div class="col-12 md:col-3">
+          <div class="col-12 md:col-3">
             <div class="field">
-              <h3 class="text-sm text-600 m-0 mb-1">Adoption Rate</h3>
-              <p class="m-0 text-lg">
-                {{ shelterInfo.adoptedPetsCount }} /
-                {{ shelterInfo.totalPetsCount }}
+              <h3 class="text-sm text-600 m-0 mb-1">Adopted Pets</h3>
+              <p class="m-0 text-lg" *ngIf="petStatistics">
+                {{ getAdoptedPetsCount() }} /
+                {{ petStatistics.totalPets }}
                 <span class="text-sm text-600">pets adopted</span>
               </p>
-              <div class="w-full bg-gray-200 border-round h-1rem mt-2">
+              <p
+                class="m-0 text-lg text-600"
+                *ngIf="!petStatistics && !isLoading"
+              >
+                Statistics unavailable
+              </p>
+              <div
+                class="w-full bg-gray-200 border-round h-1rem mt-2"
+                *ngIf="petStatistics"
+              >
                 <div
                   class="bg-primary border-round h-full transition-all transition-duration-300"
                   [style.width]="
-                    shelterInfo.totalPetsCount > 0
-                      ? (shelterInfo.adoptedPetsCount /
-                          shelterInfo.totalPetsCount) *
+                    (petStatistics.totalPets || 0) > 0
+                      ? (getAdoptedPetsCount() /
+                          (petStatistics.totalPets || 1)) *
                           100 +
                         '%'
                       : '0%'
@@ -43,7 +52,7 @@
                 ></div>
               </div>
             </div>
-          </div> -->
+          </div>
         </div>
         <div *ngIf="isLoading" class="flex justify-content-center">
           <i class="pi pi-spinner pi-spin text-2xl"></i>

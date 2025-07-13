@@ -28,6 +28,7 @@ import {
   PetImageDownloadUrlRequest,
   PetsApi,
   Shelter,
+  ShelterPetStatisticsResponse,
 } from 'shared/apis/generated-apis';
 
 @Component({
@@ -57,6 +58,7 @@ export class DashboardComponent implements OnInit {
   public authService = inject(AuthService);
 
   shelterInfo: Shelter | null = null;
+  petStatistics: ShelterPetStatisticsResponse | null = null;
   pets: Pet[] = [];
   recentApplications: Application[] = [];
   isLoading = true;
@@ -74,6 +76,15 @@ export class DashboardComponent implements OnInit {
 
       // Load shelter information
       this.shelterInfo = await this.shelterService.getShelterInfo();
+
+      // Load pet statistics
+      try {
+        this.petStatistics = await this.shelterService.getPetStatistics();
+      } catch (error) {
+        console.error('Failed to load pet statistics:', error);
+        this.toastService.error('Failed to load pet statistics');
+        this.petStatistics = null;
+      }
 
       // Load pets
       this.pets = await this.petService.getAllPets(this.shelterInfo.shelterId);
@@ -198,7 +209,7 @@ export class DashboardComponent implements OnInit {
   }
 
   onPetAdded() {
-    this.loadDashboardData(); // Refresh the data
+    this.loadDashboardData(); // Refresh the data including pet statistics
   }
 
   onSeeFullList() {
@@ -207,6 +218,14 @@ export class DashboardComponent implements OnInit {
 
   formatDate(date: Date): string {
     return new Date(date).toLocaleDateString();
+  }
+
+  getAdoptedPetsCount(): number {
+    if (!this.petStatistics) {
+      return 0;
+    }
+    // Note: AdoptedPets property actually contains the count of adopted pets
+    return this.petStatistics.adoptedPets || 0;
   }
 
   onImageError(event: Event) {

@@ -2,6 +2,7 @@ import {
   QueryShelterRequest,
   Shelter,
   SheltersApi,
+  ShelterPetStatisticsResponse,
 } from './../apis/generated-apis';
 import { firstValueFrom } from 'rxjs';
 import { inject, Injectable } from '@angular/core';
@@ -23,6 +24,14 @@ export class ShelterService {
           ],
         }),
       ),
+    );
+
+    return response;
+  }
+
+  async getPetStatistics(): Promise<ShelterPetStatisticsResponse> {
+    const response = await firstValueFrom(
+      this.sheltersApi.petStatistics()
     );
 
     return response;
