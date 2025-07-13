@@ -45,9 +45,9 @@ public class Pet
     public string Breed { get; set; } = string.Empty;
 
     /// <summary>
-    /// Age of the pet in years
+    /// Date of birth of the pet
     /// </summary>
-    public int Age { get; set; }
+    public DateOnly DateOfBirth { get; set; }
 
     /// <summary>
     /// Gender of the pet (Male, Female)
@@ -98,9 +98,9 @@ public class CreatePetRequest
     public required string Breed { get; set; }
 
     /// <summary>
-    /// Age of the pet in years
+    /// Date of birth of the pet
     /// </summary>
-    public required int Age { get; set; }
+    public required DateOnly DateOfBirth { get; set; }
 
     /// <summary>
     /// Gender of the pet (Male, Female)

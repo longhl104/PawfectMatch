@@ -1132,7 +1132,7 @@ export class CreatePetRequest implements ICreatePetRequest {
     name!: string | undefined;
     species!: string | undefined;
     breed!: string | undefined;
-    age!: number;
+    dateOfBirth!: string;
     gender!: string | undefined;
     description!: string | undefined;
 
@@ -1150,7 +1150,7 @@ export class CreatePetRequest implements ICreatePetRequest {
             this.name = _data["name"];
             this.species = _data["species"];
             this.breed = _data["breed"];
-            this.age = _data["age"];
+            this.dateOfBirth = _data["dateOfBirth"];
             this.gender = _data["gender"];
             this.description = _data["description"];
         }
@@ -1168,7 +1168,7 @@ export class CreatePetRequest implements ICreatePetRequest {
         data["name"] = this.name;
         data["species"] = this.species;
         data["breed"] = this.breed;
-        data["age"] = this.age;
+        data["dateOfBirth"] = this.dateOfBirth;
         data["gender"] = this.gender;
         data["description"] = this.description;
         return data;
@@ -1179,7 +1179,7 @@ export interface ICreatePetRequest {
     name: string | undefined;
     species: string | undefined;
     breed: string | undefined;
-    age: number;
+    dateOfBirth: string;
     gender: string | undefined;
     description: string | undefined;
 }
@@ -1457,7 +1457,7 @@ export class Pet implements IPet {
     name?: string | undefined;
     species?: string | undefined;
     breed?: string | undefined;
-    age?: number;
+    dateOfBirth?: string;
     gender?: string | undefined;
     status?: PetStatus;
     description?: string | undefined;
@@ -1480,7 +1480,7 @@ export class Pet implements IPet {
             this.name = _data["name"];
             this.species = _data["species"];
             this.breed = _data["breed"];
-            this.age = _data["age"];
+            this.dateOfBirth = _data["dateOfBirth"];
             this.gender = _data["gender"];
             this.status = _data["status"];
             this.description = _data["description"];
@@ -1503,7 +1503,7 @@ export class Pet implements IPet {
         data["name"] = this.name;
         data["species"] = this.species;
         data["breed"] = this.breed;
-        data["age"] = this.age;
+        data["dateOfBirth"] = this.dateOfBirth;
         data["gender"] = this.gender;
         data["status"] = this.status;
         data["description"] = this.description;
@@ -1519,7 +1519,7 @@ export interface IPet {
     name?: string | undefined;
     species?: string | undefined;
     breed?: string | undefined;
-    age?: number;
+    dateOfBirth?: string;
     gender?: string | undefined;
     status?: PetStatus;
     description?: string | undefined;

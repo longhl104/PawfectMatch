@@ -164,7 +164,7 @@
                       class="inline-flex align-items-center gap-1 bg-purple-50 text-purple-600 px-2 py-1 border-round text-xs font-medium"
                     >
                       <i class="pi pi-calendar"></i>
-                      {{ pet.age }} {{ pet.age === 1 ? "year" : "years" }}
+                      {{ getAgeLabel(pet.dateOfBirth) }}
                     </span>
                     <span
                       class="inline-flex align-items-center gap-1 bg-pink-50 text-pink-600 px-2 py-1 border-round text-xs font-medium"
