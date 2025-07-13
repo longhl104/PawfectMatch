@@ -17,6 +17,7 @@ import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
 import { PetService } from 'shared/services/pet.service';
 import { ToastService } from '@longhl104/pawfect-match-ng';
 import { CreatePetRequest } from 'shared/apis/generated-apis';
+import { formatDateToLocalString } from 'shared/utils';
 
 @Component({
   selector: 'app-add-pet-form',
@@ -93,7 +94,7 @@ export class AddPetFormComponent {
 
       const petData: CreatePetRequest = {
         ...this.petForm.value,
-        dateOfBirth: this.formatDateToLocalString(
+        dateOfBirth: formatDateToLocalString(
           this.petForm.value.dateOfBirth,
         ), // Convert Date to local date string
       };
@@ -163,17 +164,6 @@ export class AddPetFormComponent {
     return labels[fieldName] || fieldName;
   }
 
-  private formatDateToLocalString(date: Date | null): string {
-    if (!date) return '';
-
-    // Format date in local timezone as YYYY-MM-DD
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-
-    return `${year}-${month}-${day}`;
-  }
-
   private markFormGroupTouched(formGroup: FormGroup) {
     Object.keys(formGroup.controls).forEach((key) => {
       const control = formGroup.get(key);
@@ -198,22 +188,5 @@ export class AddPetFormComponent {
   onImageRemove() {
     this.selectedImageFile = null;
     this.imagePreview = null;
-  }
-
-  getAgeLabel(dateOfBirth: string | undefined): string {
-    if (!dateOfBirth) return 'Unknown age';
-
-    const birthDate = new Date(dateOfBirth);
-    const today = new Date();
-    const age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-
-    if (
-      monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birthDate.getDate())
-    ) {
-      return `${age - 1} years`;
-    }
-    return `${age} years`;
   }
 }

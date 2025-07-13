@@ -33,6 +33,7 @@ import {
   Shelter,
 } from 'shared/apis/generated-apis';
 import { AddPetFormComponent } from '../dashboard/add-pet-form/add-pet-form.component';
+import { getAgeLabel } from 'shared/utils';
 
 interface FilterOption {
   label: string;
@@ -427,19 +428,6 @@ export class PetsListComponent implements OnInit, OnDestroy {
   }
 
   getAgeLabel(dateOfBirth: string | undefined): string {
-    if (!dateOfBirth) return 'Unknown age';
-
-    const birthDate = new Date(dateOfBirth);
-    const today = new Date();
-    const age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-
-    if (
-      monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birthDate.getDate())
-    ) {
-      return `${age - 1} years`;
-    }
-    return `${age} years`;
+    return getAgeLabel(dateOfBirth);
   }
 }
