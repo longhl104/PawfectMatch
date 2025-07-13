@@ -79,6 +79,13 @@ public interface IPetService
     /// <param name="request">Request containing pet IDs and their file extensions</param>
     /// <returns>Dictionary of pet IDs to their download presigned URLs</returns>
     Task<PetImageDownloadUrlsResponse> GetPetImageDownloadUrls(GetPetImageDownloadUrlsRequest request);
+
+    /// <summary>
+    /// Gets pet statistics for a specific shelter with caching
+    /// </summary>
+    /// <param name="shelterId">The shelter ID</param>
+    /// <returns>Pet statistics including total and adopted counts</returns>
+    Task<ShelterPetStatisticsResponse> GetShelterPetStatistics(Guid shelterId);
 }
 
 /// <summary>
@@ -384,6 +391,7 @@ public class PetService : IPetService
 
             // Invalidate cache for this shelter
             InvalidatePetCountCache(shelterId);
+            InvalidatePetStatisticsCache(shelterId);
 
             _logger.LogInformation("Successfully created pet with ID: {PetId}", pet.PetId);
 
@@ -451,6 +459,7 @@ public class PetService : IPetService
 
             // Invalidate cache for this shelter since pet status changed
             InvalidatePetCountCache(updatedPet.ShelterId);
+            InvalidatePetStatisticsCache(updatedPet.ShelterId);
 
             _logger.LogInformation("Successfully updated pet status for ID: {PetId}", petId);
 
@@ -508,6 +517,7 @@ public class PetService : IPetService
 
             // Invalidate cache for this shelter since pet was deleted
             InvalidatePetCountCache(deletedPet.ShelterId);
+            InvalidatePetStatisticsCache(deletedPet.ShelterId);
 
             _logger.LogInformation("Successfully deleted pet with ID: {PetId}", petId);
 
@@ -619,6 +629,7 @@ public class PetService : IPetService
             if (petResponse.Success && petResponse.Pet != null)
             {
                 InvalidatePetCountCache(petResponse.Pet.ShelterId);
+                InvalidatePetStatisticsCache(petResponse.Pet.ShelterId);
             }
 
             // Generate a presigned URL for uploading pet images
@@ -990,6 +1001,144 @@ public class PetService : IPetService
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to invalidate pet count cache for shelter {ShelterId}", shelterId);
+        }
+    }
+
+    /// <summary>
+    /// Gets pet statistics for a specific shelter with caching
+    /// </summary>
+    /// <param name="shelterId">The shelter ID</param>
+    /// <returns>Pet statistics including total and adopted counts</returns>
+    public async Task<ShelterPetStatisticsResponse> GetShelterPetStatistics(Guid shelterId)
+    {
+        try
+        {
+            _logger.LogInformation("Getting pet statistics for shelter {ShelterId}", shelterId);
+
+            // Generate cache key for statistics
+            var cacheKey = $"shelter-pet-stats:{shelterId}";
+
+            // Try to get statistics from cache first
+            if (_memoryCache.TryGetValue(cacheKey, out ShelterPetStatisticsResponse? cachedStats))
+            {
+                _logger.LogDebug("Retrieved pet statistics from cache for shelter {ShelterId}", shelterId);
+                cachedStats!.FromCache = true;
+                return cachedStats;
+            }
+
+            // If not in cache, calculate statistics
+            _logger.LogDebug("Pet statistics not in cache for shelter {ShelterId}, calculating...", shelterId);
+            var statistics = await CalculateShelterPetStatistics(shelterId);
+
+            // Cache the result for 10 minutes
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10),
+                SlidingExpiration = TimeSpan.FromMinutes(5),
+                Priority = CacheItemPriority.Normal
+            };
+
+            _memoryCache.Set(cacheKey, statistics, cacheOptions);
+            _logger.LogDebug("Cached pet statistics for shelter {ShelterId}", shelterId);
+
+            statistics.FromCache = false;
+            return statistics;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get pet statistics for shelter {ShelterId}", shelterId);
+            return new ShelterPetStatisticsResponse
+            {
+                Success = false,
+                ErrorMessage = $"Failed to retrieve pet statistics: {ex.Message}"
+            };
+        }
+    }
+
+    /// <summary>
+    /// Calculates pet statistics for a shelter by querying DynamoDB
+    /// </summary>
+    /// <param name="shelterId">The shelter ID</param>
+    /// <returns>Pet statistics</returns>
+    private async Task<ShelterPetStatisticsResponse> CalculateShelterPetStatistics(Guid shelterId)
+    {
+        var statistics = new ShelterPetStatisticsResponse
+        {
+            Success = true,
+            LastUpdated = DateTime.UtcNow
+        };
+
+        // Get total count for all pets (no status filter)
+        var totalPetsRequest = new GetPetsRequest(); // No filters for total count
+        statistics.TotalPets = await CalculateTotalPetCount(shelterId, totalPetsRequest);
+
+        // Get count for available pets only
+        statistics.AvailablePets = await CalculatePetCountByStatus(shelterId, PetStatus.Available);
+
+        return statistics;
+    }
+
+    /// <summary>
+    /// Calculates the count of pets by status for a shelter
+    /// </summary>
+    /// <param name="shelterId">The shelter ID</param>
+    /// <param name="status">The pet status to count</param>
+    /// <returns>Count of pets with the specified status</returns>
+    private async Task<int> CalculatePetCountByStatus(Guid shelterId, PetStatus status)
+    {
+        var totalCount = 0;
+        Dictionary<string, AttributeValue>? lastEvaluatedKey = null;
+
+        do
+        {
+            var countQuery = new QueryRequest
+            {
+                TableName = _tableName,
+                IndexName = _shelterIdCreatedAtIndex,
+                KeyConditionExpression = "ShelterId = :shelterId",
+                FilterExpression = "#status = :status",
+                ExpressionAttributeNames = new Dictionary<string, string>
+                {
+                    { "#status", "Status" }
+                },
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                {
+                    { ":shelterId", new AttributeValue { S = shelterId.ToString() } },
+                    { ":status", new AttributeValue { S = status.GetAmbientValue<string>() } }
+                },
+                Select = Select.COUNT
+            };
+
+            // Add pagination for the count query if needed
+            if (lastEvaluatedKey != null)
+            {
+                countQuery.ExclusiveStartKey = lastEvaluatedKey;
+            }
+
+            var countResponse = await _dynamoDbClient.QueryAsync(countQuery);
+            totalCount += countResponse.Count ?? 0;
+            lastEvaluatedKey = countResponse.LastEvaluatedKey;
+
+        } while (lastEvaluatedKey != null && lastEvaluatedKey.Count > 0);
+
+        return totalCount;
+    }
+
+    /// <summary>
+    /// Invalidates shelter pet statistics cache
+    /// </summary>
+    /// <param name="shelterId">The shelter ID</param>
+    private void InvalidatePetStatisticsCache(Guid shelterId)
+    {
+        try
+        {
+            var cacheKey = $"shelter-pet-stats:{shelterId}";
+            _memoryCache.Remove(cacheKey);
+            _logger.LogDebug("Invalidated pet statistics cache for shelter {ShelterId}", shelterId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to invalidate pet statistics cache for shelter {ShelterId}", shelterId);
         }
     }
 }

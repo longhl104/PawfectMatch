@@ -67,3 +67,39 @@ public class QueryShelterRequest
     /// </summary>
     public List<string>? AttributesToGet { get; set; }
 }
+
+/// <summary>
+/// Response model for shelter pet statistics
+/// </summary>
+public class ShelterPetStatisticsResponse
+{
+    /// <summary>
+    /// Whether the request was successful
+    /// </summary>
+    public bool Success { get; set; }
+
+    /// <summary>
+    /// Total number of pets in the shelter database
+    /// </summary>
+    public int TotalPets { get; set; }
+
+    /// <summary>
+    /// Number of pets currently available for adoption
+    /// </summary>
+    public int AvailablePets { get; set; }
+
+    /// <summary>
+    /// Error message if the request failed
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// Indicates if the data was retrieved from cache
+    /// </summary>
+    public bool FromCache { get; set; }
+
+    /// <summary>
+    /// When the statistics were last updated
+    /// </summary>
+    public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
+}

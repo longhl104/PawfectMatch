@@ -90,6 +90,47 @@ The ShelterHub API provides endpoints for:
 **Authorization:** Internal API Key Required  
 **Purpose:** Retrieves shelter information by shelter ID (for internal service communication)
 
+### 6. Get My Shelter Pet Statistics
+
+**Endpoint:** `GET /api/shelters/my-shelter/pet-statistics`  
+**Authorization:** Authenticated shelter admin required  
+**Purpose:** Retrieves pet statistics for the current authenticated shelter admin's shelter
+
+**Response:**
+```json
+{
+  "success": true,
+  "totalPets": 150,
+  "adoptedPets": 120,
+  "availablePets": 25,
+  "pendingPets": 3,
+  "medicalHoldPets": 2,
+  "fromCache": true,
+  "lastUpdated": "2025-07-13T10:30:00Z"
+}
+```
+
+### 7. Get Shelter Pet Statistics by ID
+
+**Endpoint:** `GET /api/shelters/{shelterId}/pet-statistics`  
+**Authorization:** Authenticated shelter admin required  
+**Purpose:** Retrieves pet statistics for a specific shelter by shelter ID
+
+**Response:**
+```json
+{
+  "success": true,
+  "totalPets": 150,
+  "adoptedPets": 120,
+  "availablePets": 25,
+  "pendingPets": 3,
+  "medicalHoldPets": 2,
+  "fromCache": false,
+  "lastUpdated": "2025-07-13T10:30:00Z",
+  "errorMessage": null
+}
+```
+
 ## Authentication
 
 ### For Shelter Admins
@@ -101,6 +142,20 @@ The ShelterHub API provides endpoints for:
 - Internal endpoints require the `X-Internal-API-Key` header
 - This is used for service-to-service communication
 - The Identity service uses this to create shelter admin profiles during registration
+
+## Caching
+
+### Pet Statistics Caching
+- Pet statistics are cached in memory for 10 minutes with a 5-minute sliding expiration
+- Cache is automatically invalidated when pets are created, updated, or deleted
+- The `fromCache` field in the response indicates if data was retrieved from cache
+- Cache keys are based on shelter ID: `shelter-pet-stats:{shelterId}`
+
+### Pet Count Caching  
+- Pet counts (used for pagination) are cached in memory for 5 minutes with a 2-minute sliding expiration
+- Cache includes filter-specific counts (status, species, name, breed)
+- Cache is automatically invalidated when pets are created, updated, or deleted
+- Cache keys include all filter parameters for accurate results
 
 ## Data Models
 

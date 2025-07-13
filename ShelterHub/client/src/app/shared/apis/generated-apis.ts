@@ -1021,6 +1021,111 @@ export class SheltersApi {
         }
         return _observableOf(null as any);
     }
+
+    /**
+     * @return OK
+     */
+    petStatistics(): Observable<ShelterPetStatisticsResponse> {
+        let url_ = this.baseUrl + "/api/Shelters/my-shelter/pet-statistics";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processPetStatistics(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processPetStatistics(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ShelterPetStatisticsResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ShelterPetStatisticsResponse>;
+        }));
+    }
+
+    protected processPetStatistics(response: HttpResponseBase): Observable<ShelterPetStatisticsResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ShelterPetStatisticsResponse.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    petStatistics2(shelterId: string): Observable<ShelterPetStatisticsResponse> {
+        let url_ = this.baseUrl + "/api/Shelters/{shelterId}/pet-statistics";
+        if (shelterId === undefined || shelterId === null)
+            throw new Error("The parameter 'shelterId' must be defined.");
+        url_ = url_.replace("{shelterId}", encodeURIComponent("" + shelterId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processPetStatistics2(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processPetStatistics2(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ShelterPetStatisticsResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ShelterPetStatisticsResponse>;
+        }));
+    }
+
+    protected processPetStatistics2(response: HttpResponseBase): Observable<ShelterPetStatisticsResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ShelterPetStatisticsResponse.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
 }
 
 export class CreatePetRequest implements ICreatePetRequest {
@@ -1832,6 +1937,62 @@ export interface IShelterAdminResponse {
     message?: string | undefined;
     userId?: string;
     shelterId?: string;
+}
+
+export class ShelterPetStatisticsResponse implements IShelterPetStatisticsResponse {
+    success?: boolean;
+    totalPets?: number;
+    availablePets?: number;
+    errorMessage?: string | undefined;
+    fromCache?: boolean;
+    lastUpdated?: string;
+
+    constructor(data?: IShelterPetStatisticsResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.success = _data["success"];
+            this.totalPets = _data["totalPets"];
+            this.availablePets = _data["availablePets"];
+            this.errorMessage = _data["errorMessage"];
+            this.fromCache = _data["fromCache"];
+            this.lastUpdated = _data["lastUpdated"];
+        }
+    }
+
+    static fromJS(data: any): ShelterPetStatisticsResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new ShelterPetStatisticsResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["success"] = this.success;
+        data["totalPets"] = this.totalPets;
+        data["availablePets"] = this.availablePets;
+        data["errorMessage"] = this.errorMessage;
+        data["fromCache"] = this.fromCache;
+        data["lastUpdated"] = this.lastUpdated;
+        return data;
+    }
+}
+
+export interface IShelterPetStatisticsResponse {
+    success?: boolean;
+    totalPets?: number;
+    availablePets?: number;
+    errorMessage?: string | undefined;
+    fromCache?: boolean;
+    lastUpdated?: string;
 }
 
 export class ApiException extends Error {

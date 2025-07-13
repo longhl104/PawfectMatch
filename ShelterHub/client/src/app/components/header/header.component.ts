@@ -59,7 +59,7 @@ export class HeaderComponent implements OnInit {
   private setupUserMenu() {
     this.userMenuItems = [
       {
-        label: 'Profile',
+        label: 'Profile (Coming Soon)',
         icon: 'pi pi-user',
         command: () => {
           // Navigate to profile page
@@ -67,7 +67,7 @@ export class HeaderComponent implements OnInit {
         },
       },
       {
-        label: 'Settings',
+        label: 'Settings (Coming Soon)',
         icon: 'pi pi-cog',
         command: () => {
           // Navigate to settings page
