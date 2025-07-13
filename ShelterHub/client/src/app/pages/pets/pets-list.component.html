@@ -202,9 +202,9 @@
                     <i class="pi pi-tag text-gray-500"></i>
                     <span>{{ pet.species }} • {{ pet.breed }}</span>
                   </div>
-                  <div class="detail-item" *ngIf="pet.age">
+                  <div class="detail-item" *ngIf="pet.dateOfBirth">
                     <i class="pi pi-calendar text-gray-500"></i>
-                    <span>{{ pet.age }} old</span>
+                    <span>{{ getAgeLabel(pet.dateOfBirth) }}</span>
                   </div>
                   <div class="detail-item" *ngIf="pet.weight">
                     <i class="pi pi-chart-line text-gray-500"></i>

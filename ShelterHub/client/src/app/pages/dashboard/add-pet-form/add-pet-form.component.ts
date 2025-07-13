@@ -12,6 +12,7 @@ import { SelectModule } from 'primeng/select';
 import { EditorModule } from 'primeng/editor';
 import { ButtonModule } from 'primeng/button';
 import { FileUploadModule } from 'primeng/fileupload';
+import { DatePickerModule } from 'primeng/datepicker';
 import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
 import { PetService } from 'shared/services/pet.service';
 import { ToastService } from '@longhl104/pawfect-match-ng';
@@ -29,6 +30,7 @@ import { CreatePetRequest } from 'shared/apis/generated-apis';
     EditorModule,
     ButtonModule,
     FileUploadModule,
+    DatePickerModule,
   ],
   templateUrl: './add-pet-form.component.html',
   styleUrl: './add-pet-form.component.scss',
@@ -48,6 +50,7 @@ export class AddPetFormComponent {
   isUploadingImage = false;
   imagePreview: string | null = null;
   selectedImageFile: File | null = null;
+  maxDate = new Date(); // For date picker max date
 
   speciesOptions = [
     { label: 'Dog', value: 'Dog' },
@@ -66,7 +69,7 @@ export class AddPetFormComponent {
       name: ['', [Validators.required, Validators.minLength(2)]],
       species: ['', Validators.required],
       breed: ['', [Validators.required, Validators.minLength(2)]],
-      age: [null, [Validators.required, Validators.min(0), Validators.max(30)]],
+      dateOfBirth: [null, [Validators.required]],
       gender: ['', Validators.required],
       description: [null, [Validators.required]],
     });
@@ -88,7 +91,12 @@ export class AddPetFormComponent {
       this.isSubmitting = true;
       this.isUploadingImage = !!this.selectedImageFile;
 
-      const petData: CreatePetRequest = this.petForm.value;
+      const petData: CreatePetRequest = {
+        ...this.petForm.value,
+        dateOfBirth: this.formatDateToLocalString(
+          this.petForm.value.dateOfBirth,
+        ), // Convert Date to local date string
+      };
 
       // Use the new upload method that handles S3 upload
       await this.petService.createPetAndUploadImage(
@@ -146,12 +154,24 @@ export class AddPetFormComponent {
       name: 'Name',
       species: 'Species',
       breed: 'Breed',
-      age: 'Age',
+      dateOfBirth: 'Date of Birth',
       gender: 'Gender',
       description: 'Description',
       imageS3Key: 'Image URL',
     };
+
     return labels[fieldName] || fieldName;
+  }
+
+  private formatDateToLocalString(date: Date | null): string {
+    if (!date) return '';
+
+    // Format date in local timezone as YYYY-MM-DD
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
   }
 
   private markFormGroupTouched(formGroup: FormGroup) {
@@ -178,5 +198,22 @@ export class AddPetFormComponent {
   onImageRemove() {
     this.selectedImageFile = null;
     this.imagePreview = null;
+  }
+
+  getAgeLabel(dateOfBirth: string | undefined): string {
+    if (!dateOfBirth) return 'Unknown age';
+
+    const birthDate = new Date(dateOfBirth);
+    const today = new Date();
+    const age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      return `${age - 1} years`;
+    }
+    return `${age} years`;
   }
 }

@@ -63,24 +63,25 @@
       </div>
     </div>
 
-    <!-- Age -->
+    <!-- Date of Birth -->
     <div class="col-12 md:col-6">
       <div class="field">
-        <label for="age" class="block text-sm font-medium mb-2"
-          >Age (years) *</label
+        <label for="dateOfBirth" class="block text-sm font-medium mb-2"
+          >Date of Birth *</label
         >
-        <p-inputnumber
-          id="age"
-          formControlName="age"
-          placeholder="Enter age"
-          [min]="0"
-          [max]="30"
+        <p-datepicker
+          id="dateOfBirth"
+          formControlName="dateOfBirth"
+          placeholder="Select date of birth"
+          [maxDate]="maxDate"
+          [showIcon]="true"
+          iconDisplay="input"
           class="w-full"
-          [class.ng-invalid]="isFieldInvalid('age')"
+          [class.ng-invalid]="isFieldInvalid('dateOfBirth')"
         >
-        </p-inputnumber>
-        <small *ngIf="isFieldInvalid('age')" class="p-error block mt-1">
-          {{ getFieldError("age") }}
+        </p-datepicker>
+        <small *ngIf="isFieldInvalid('dateOfBirth')" class="p-error block mt-1">
+          {{ getFieldError("dateOfBirth") }}
         </small>
       </div>
     </div>

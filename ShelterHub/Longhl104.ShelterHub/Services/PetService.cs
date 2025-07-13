@@ -549,7 +549,7 @@ public class PetService : IPetService
             Name = item["Name"].S,
             Species = item["Species"].S,
             Breed = item["Breed"].S,
-            DateOfBirth = item.TryGetValue("DateOfBirth", out var dob) ? DateOnly.Parse(dob.S) : DateOnly.MaxValue,
+            DateOfBirth = item.TryGetValue("DateOfBirth", out var dob) ? DateOnly.Parse(dob.S) : DateOnly.MinValue,
             Gender = item["Gender"].S,
             Description = item.TryGetValue("Description", out var desc) ? desc.S : string.Empty,
             ShelterId = Guid.Parse(item["ShelterId"].S),
