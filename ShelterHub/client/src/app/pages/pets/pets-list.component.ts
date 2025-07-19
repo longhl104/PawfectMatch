@@ -33,7 +33,7 @@ import {
   Shelter,
 } from 'shared/apis/generated-apis';
 import { AddPetFormComponent } from '../dashboard/add-pet-form/add-pet-form.component';
-import { getAgeLabel } from 'shared/utils';
+import { PetCardComponent, PetCardAction } from '../../shared/components';
 
 interface FilterOption {
   label: string;
@@ -56,6 +56,7 @@ interface FilterOption {
     ConfirmDialogModule,
     PaginatorModule,
     DynamicDialogModule,
+    PetCardComponent,
   ],
   providers: [ConfirmationService],
   templateUrl: './pets-list.component.html',
@@ -365,6 +366,24 @@ export class PetsListComponent implements OnInit, OnDestroy {
     });
   }
 
+  onPetCardAction(eventData: { action: PetCardAction; pet: Pet; event: Event }) {
+    const { action, pet, event } = eventData;
+
+    switch (action.type) {
+      case 'edit':
+        this.onEditPet(pet);
+        break;
+      case 'delete':
+        this.onDeletePet(pet, event);
+        break;
+      case 'status-change':
+        if (action.data) {
+          this.onUpdateStatus(pet, action.data, event);
+        }
+        break;
+    }
+  }
+
   onUpdateStatus(pet: Pet, newStatus: PetStatus, event: Event) {
     event.stopPropagation();
 
@@ -388,21 +407,6 @@ export class PetsListComponent implements OnInit, OnDestroy {
     });
   }
 
-  getStatusSeverity(status: string): 'success' | 'info' | 'warning' | 'danger' {
-    switch (status) {
-      case 'Available':
-        return 'success';
-      case 'Pending':
-        return 'info';
-      case 'Adopted':
-        return 'warning';
-      case 'MedicalHold':
-        return 'danger';
-      default:
-        return 'info';
-    }
-  }
-
   onImageError(event: Event) {
     const target = event.target as HTMLImageElement;
     target.style.display = 'none';
@@ -416,21 +420,5 @@ export class PetsListComponent implements OnInit, OnDestroy {
 
   goBack() {
     this.router.navigate(['/dashboard']);
-  }
-
-  getAvailableStatus(): PetStatus {
-    return PetStatus.Available;
-  }
-
-  getPendingStatus(): PetStatus {
-    return PetStatus.Pending;
-  }
-
-  getAdoptedStatus(): PetStatus {
-    return PetStatus.Adopted;
-  }
-
-  getAgeLabel(dateOfBirth: string | undefined): string {
-    return getAgeLabel(dateOfBirth);
   }
 }

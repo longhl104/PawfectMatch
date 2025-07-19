@@ -30,7 +30,7 @@ import {
   Shelter,
   ShelterPetStatisticsResponse,
 } from 'shared/apis/generated-apis';
-import { getAgeLabel } from 'shared/utils';
+import { PetCardComponent } from '../../shared/components';
 
 @Component({
   selector: 'app-dashboard',
@@ -44,6 +44,7 @@ import { getAgeLabel } from 'shared/utils';
     PanelModule,
     TableModule,
     DynamicDialogModule,
+    PetCardComponent,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
@@ -136,21 +137,6 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  getStatusSeverity(status: string): 'success' | 'info' | 'warning' | 'danger' {
-    switch (status) {
-      case 'available':
-        return 'success';
-      case 'pending':
-        return 'info';
-      case 'adopted':
-        return 'warning';
-      case 'medical_hold':
-        return 'danger';
-      default:
-        return 'info';
-    }
-  }
-
   getApplicationStatusSeverity(
     status: string,
   ): 'success' | 'info' | 'warning' | 'danger' {
@@ -240,9 +226,5 @@ export class DashboardComponent implements OnInit {
       parent.innerHTML =
         '<div class="w-full h-full bg-gray-100 flex align-items-center justify-content-center"><i class="pi pi-image text-4xl text-gray-400"></i></div>';
     }
-  }
-
-  getAgeLabel(dateOfBirth: string | undefined): string {
-    return getAgeLabel(dateOfBirth);
   }
 }

@@ -166,123 +166,18 @@
       <div class="grid grid-nogutter">
         @for (pet of pets; track pet.petId) {
           <div class="col-12 md:col-6 lg:col-4 p-2">
-            <p-card class="pet-card h-full">
-              <ng-template pTemplate="header">
-                <div class="pet-image-container">
-                  <img
-                    *ngIf="petMainImageUrls.get(pet.petId!); else noImage"
-                    [src]="petMainImageUrls.get(pet.petId!)"
-                    [alt]="pet.name"
-                    class="pet-image"
-                    (error)="onImageError($event)"
-                  />
-                  <ng-template #noImage>
-                    <div class="no-image-placeholder">
-                      <i class="pi pi-image text-4xl text-gray-400"></i>
-                    </div>
-                  </ng-template>
-                </div>
-              </ng-template>
-
-              <!-- Pet Info -->
-              <div class="pet-info">
-                <div
-                  class="flex justify-content-between align-items-start mb-2"
-                >
-                  <h3 class="pet-name m-0 capitalize">{{ pet.name }}</h3>
-                  <p-tag
-                    [value]="pet.status"
-                    [severity]="getStatusSeverity(pet.status!)"
-                    class="text-xs"
-                  ></p-tag>
-                </div>
-
-                <div class="pet-details mb-3">
-                  <div class="detail-item capitalize" *ngIf="pet.species">
-                    <i class="pi pi-tag text-gray-500"></i>
-                    <span>{{ pet.species }} • {{ pet.breed }}</span>
-                  </div>
-                  <div class="detail-item" *ngIf="pet.dateOfBirth">
-                    <i class="pi pi-calendar text-gray-500"></i>
-                    <span>{{ getAgeLabel(pet.dateOfBirth) }}</span>
-                  </div>
-                  <div class="detail-item" *ngIf="pet.weight">
-                    <i class="pi pi-chart-line text-gray-500"></i>
-                    <span>{{ pet.weight }} kg</span>
-                  </div>
-                </div>
-
-                <p class="pet-description text-sm text-gray-600 mb-3">
-                  {{
-                    pet.description && pet.description.length > 100
-                      ? (pet.description | slice: 0 : 100) + "..."
-                      : pet.description
-                  }}
-                </p>
-              </div>
-
-              <ng-template pTemplate="footer">
-                <div
-                  class="flex justify-content-between align-items-center gap-2"
-                >
-                  <!-- Status Change Buttons -->
-                  <div class="flex gap-1">
-                    <p-button
-                      *ngIf="pet.status !== getAvailableStatus()"
-                      icon="pi pi-check"
-                      severity="success"
-                      size="small"
-                      [outlined]="true"
-                      pTooltip="Mark as Available"
-                      (onClick)="
-                        onUpdateStatus(pet, getAvailableStatus(), $event)
-                      "
-                    ></p-button>
-                    <p-button
-                      *ngIf="pet.status !== getPendingStatus()"
-                      icon="pi pi-clock"
-                      severity="info"
-                      size="small"
-                      [outlined]="true"
-                      pTooltip="Mark as Pending"
-                      (onClick)="
-                        onUpdateStatus(pet, getPendingStatus(), $event)
-                      "
-                    ></p-button>
-                    <p-button
-                      *ngIf="pet.status !== getAdoptedStatus()"
-                      icon="pi pi-heart"
-                      severity="secondary"
-                      size="small"
-                      [outlined]="true"
-                      pTooltip="Mark as Adopted"
-                      (onClick)="
-                        onUpdateStatus(pet, getAdoptedStatus(), $event)
-                      "
-                    ></p-button>
-                  </div>
-
-                  <!-- Action Buttons -->
-                  <div class="flex gap-1">
-                    <p-button
-                      icon="pi pi-pencil"
-                      size="small"
-                      [outlined]="true"
-                      pTooltip="Edit Pet"
-                      (onClick)="onEditPet(pet)"
-                    ></p-button>
-                    <p-button
-                      icon="pi pi-trash"
-                      severity="danger"
-                      size="small"
-                      [outlined]="true"
-                      pTooltip="Delete Pet"
-                      (onClick)="onDeletePet(pet, $event)"
-                    ></p-button>
-                  </div>
-                </div>
-              </ng-template>
-            </p-card>
+            <app-pet-card
+              [pet]="pet"
+              [imageUrl]="petMainImageUrls.get(pet.petId!)"
+              [showActions]="true"
+              [showStatusActions]="true"
+              [showWeight]="true"
+              [showDescription]="true"
+              [truncateDescription]="true"
+              [descriptionMaxLength]="100"
+              (imageError)="onImageError($event)"
+              (actionClick)="onPetCardAction($event)"
+            ></app-pet-card>
           </div>
         }
       </div>

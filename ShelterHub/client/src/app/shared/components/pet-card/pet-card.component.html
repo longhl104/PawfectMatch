@@ -1,0 +1,157 @@
+<p-card styleClass="pet-card h-full">
+  <ng-template pTemplate="header">
+    <div
+      class="w-full h-10rem -mb-2 border-round-top-xl overflow-hidden"
+    >
+      <ng-container *ngIf="imageUrl; else noImage">
+        <img
+          [src]="imageUrl"
+          [alt]="pet.name"
+          class="w-full h-full object-cover"
+          (error)="onImageError($event)"
+        />
+      </ng-container>
+
+      <ng-template #noImage>
+        <div
+          class="w-full h-full bg-gray-100 flex align-items-center justify-content-center"
+        >
+          <i class="pi pi-image text-4xl text-gray-400"></i>
+        </div>
+      </ng-template>
+    </div>
+  </ng-template>
+
+  <div class="flex flex-column h-full">
+    <div class="flex-grow-1">
+      <h3 class="mt-0 mb-2 capitalize">{{ pet.name }}</h3>
+      <div class="flex flex-wrap gap-2 mb-2">
+        <span
+          class="inline-flex align-items-center gap-1 bg-green-50 text-green-600 px-2 py-1 border-round text-xs font-medium"
+        >
+          <i class="pi pi-star"></i>
+          {{ pet.species }}
+        </span>
+        <span
+          class="inline-flex align-items-center gap-1 bg-blue-50 text-blue-600 px-2 py-1 border-round text-xs font-medium capitalize"
+        >
+          <i class="pi pi-heart"></i>
+          {{ pet.breed }}
+        </span>
+        <span
+          class="inline-flex align-items-center gap-1 bg-purple-50 text-purple-600 px-2 py-1 border-round text-xs font-medium"
+        >
+          <i class="pi pi-calendar"></i>
+          {{ getAgeLabel(pet.dateOfBirth) }}
+        </span>
+        <span
+          class="inline-flex align-items-center gap-1 bg-pink-50 text-pink-600 px-2 py-1 border-round text-xs font-medium"
+        >
+          <i
+            class="pi pi-{{
+              pet.gender?.toLowerCase() === 'male' ? 'mars' : 'venus'
+            }}"
+          ></i>
+          {{ pet.gender }}
+        </span>
+        <span
+          class="inline-flex align-items-center gap-1 bg-orange-50 text-orange-600 px-2 py-1 border-round text-xs font-medium"
+          *ngIf="
+            pet.adoptionFee !== undefined &&
+            pet.adoptionFee !== null
+          "
+        >
+          {{
+            pet.adoptionFee | currency: "AUD" : "symbol" : "1.0-0"
+          }}
+        </span>
+        <span
+          class="inline-flex align-items-center gap-1 bg-cyan-50 text-cyan-600 px-2 py-1 border-round text-xs font-medium"
+          *ngIf="showWeight && pet.weight"
+        >
+          <i class="pi pi-chart-line"></i>
+          {{ pet.weight }} kg
+        </span>
+      </div>
+
+      <p
+        class="text-sm text-gray-600 mb-2"
+        *ngIf="showDescription && pet.description"
+      >
+        {{ getDisplayDescription() }}
+      </p>
+    </div>
+
+    <div
+      class="flex justify-content-between align-items-center gap-2"
+    >
+      <p-tag
+        [value]="pet.status ?? 'unknown'"
+        [severity]="
+          pet.status ? getStatusSeverity(pet.status) : 'secondary'
+        "
+        class="text-xs capitalize"
+      >
+      </p-tag>
+      <small class="text-600">
+        Added {{ pet.createdAt | date }}
+      </small>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer" *ngIf="showActions">
+    <div
+      class="flex justify-content-between align-items-center gap-2"
+    >
+      <!-- Status Change Buttons -->
+      <div class="flex gap-1" *ngIf="showStatusActions">
+        <p-button
+          *ngIf="shouldShowAvailableAction()"
+          [icon]="getAvailableAction().icon"
+          [severity]="getAvailableAction().severity"
+          [size]="getAvailableAction().size"
+          [outlined]="getAvailableAction().outlined"
+          [pTooltip]="getAvailableAction().tooltip"
+          (onClick)="onActionClick(getAvailableAction(), $event)"
+        ></p-button>
+        <p-button
+          *ngIf="shouldShowPendingAction()"
+          [icon]="getPendingAction().icon"
+          [severity]="getPendingAction().severity"
+          [size]="getPendingAction().size"
+          [outlined]="getPendingAction().outlined"
+          [pTooltip]="getPendingAction().tooltip"
+          (onClick)="onActionClick(getPendingAction(), $event)"
+        ></p-button>
+        <p-button
+          *ngIf="shouldShowAdoptedAction()"
+          [icon]="getAdoptedAction().icon"
+          [severity]="getAdoptedAction().severity"
+          [size]="getAdoptedAction().size"
+          [outlined]="getAdoptedAction().outlined"
+          [pTooltip]="getAdoptedAction().tooltip"
+          (onClick)="onActionClick(getAdoptedAction(), $event)"
+        ></p-button>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-1">
+        <p-button
+          [icon]="getEditAction().icon"
+          [size]="getEditAction().size"
+          [outlined]="getEditAction().outlined"
+          [pTooltip]="getEditAction().tooltip"
+          (onClick)="onActionClick(getEditAction(), $event)"
+        ></p-button>
+        <p-button
+          [icon]="getDeleteAction().icon"
+          [severity]="getDeleteAction().severity"
+          [size]="getDeleteAction().size"
+          [outlined]="getDeleteAction().outlined"
+          [pTooltip]="getDeleteAction().tooltip"
+          (onClick)="onActionClick(getDeleteAction(), $event)"
+        ></p-button>
+      </div>
+    </div>
+  </ng-template>
+</p-card>
