@@ -53,6 +53,7 @@ export class EditPetFormComponent implements OnInit {
   selectedImageFile: File | null = null;
   maxDate = new Date(); // For date picker max date
   pet: Pet | null = null;
+  currentPetImageUrl: string | null = null; // Store the original pet image URL
 
   speciesOptions = [
     { label: 'Dog', value: 'Dog' },
@@ -82,6 +83,7 @@ export class EditPetFormComponent implements OnInit {
     this.pet = this.config.data?.pet;
     if (this.pet) {
       this.populateForm();
+      this.loadExistingImage();
     }
   }
 
@@ -96,6 +98,31 @@ export class EditPetFormComponent implements OnInit {
       gender: this.pet.gender,
       description: this.pet.description,
     });
+  }
+
+  private async loadExistingImage() {
+    if (!this.pet?.petId || !this.pet.mainImageFileExtension) return;
+
+    try {
+      // Get the download URL for the existing image
+      const downloadUrlRequest = {
+        petRequests: [
+          {
+            petId: this.pet.petId,
+            mainImageFileExtension: this.pet.mainImageFileExtension,
+          },
+        ],
+      };
+
+      const response = await this.petService.getPetImageDownloadUrls(downloadUrlRequest);
+      if (response.success && response.petImageUrls[this.pet.petId]) {
+        this.currentPetImageUrl = response.petImageUrls[this.pet.petId];
+        this.imagePreview = this.currentPetImageUrl;
+      }
+    } catch (error) {
+      console.log('Could not load existing pet image:', error);
+      // Don't show error to user as this is not critical
+    }
   }
 
   async onSubmit() {
@@ -120,14 +147,12 @@ export class EditPetFormComponent implements OnInit {
         ),
       };
 
-      // Upload image if selected
-      if (this.selectedImageFile) {
-        // TODO: Implement image upload when updatePet method supports it
-        // await this.petService.uploadImage(this.pet.petId!, this.selectedImageFile);
-      }
-
-      // Update the pet
-      const updatedPet = await this.petService.updatePet(this.pet.petId!, petData);
+      // Use the new upload method that handles S3 upload
+      const updatedPet = await this.petService.updatePetAndUploadImage(
+        this.pet.petId!,
+        petData,
+        this.selectedImageFile || undefined,
+      );
 
       this.toastService.success(`${updatedPet.name} has been updated successfully!`);
       this.dialogRef.close(true);
@@ -208,7 +233,13 @@ export class EditPetFormComponent implements OnInit {
   }
 
   onImageRemove() {
-    this.selectedImageFile = null;
-    this.imagePreview = null;
+    // If there was a newly selected file, remove it and revert to current image
+    if (this.selectedImageFile) {
+      this.selectedImageFile = null;
+      this.imagePreview = this.currentPetImageUrl;
+    } else {
+      this.selectedImageFile = null;
+      this.imagePreview = null;
+    }
   }
 }

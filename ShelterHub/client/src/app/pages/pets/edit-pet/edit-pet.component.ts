@@ -52,6 +52,12 @@ export class EditPetComponent implements OnInit {
   loading = false;
   saving = false;
 
+  // Image upload properties
+  imagePreview: string | null = null;
+  selectedImageFile: File | null = null;
+  currentPetImageUrl: string | null = null;
+  isUploadingImage = false;
+
   speciesOptions = [
     { label: 'Dog', value: 'Dog' },
     { label: 'Cat', value: 'Cat' },
@@ -148,20 +154,25 @@ export class EditPetComponent implements OnInit {
       gender: pet.gender,
       description: pet.description,
       adoptionFee: pet.adoptionFee || 0,
-      weight: pet.weight || null,
+      weight: pet.weight,
       color: pet.color || '',
       isSpayedNeutered: pet.isSpayedNeutered || false,
       isHouseTrained: pet.isHouseTrained || false,
       isGoodWithKids: pet.isGoodWithKids || false,
       isGoodWithPets: pet.isGoodWithPets || false,
       specialNeeds: pet.specialNeeds || '',
-      status: pet.status
+      status: pet.status || PetStatus.Available
     });
+
+    // Load existing image
+    this.loadExistingImage();
   }
 
   async onSubmit() {
     if (this.petForm.valid && this.pet) {
       this.saving = true;
+      this.isUploadingImage = !!this.selectedImageFile;
+
       try {
         const formValue = this.petForm.value;
 
@@ -187,9 +198,14 @@ export class EditPetComponent implements OnInit {
           status: formValue.status
         });
 
-        const response = await this.petService.updatePet(this.pet.petId!, updateRequest);
+        // Use the new upload method that handles S3 upload
+        const updatedPet = await this.petService.updatePetAndUploadImage(
+          this.pet.petId!,
+          updateRequest,
+          this.selectedImageFile || undefined,
+        );
 
-        if (response) {
+        if (updatedPet) {
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
@@ -212,6 +228,7 @@ export class EditPetComponent implements OnInit {
         });
       } finally {
         this.saving = false;
+        this.isUploadingImage = false;
       }
     } else {
       this.markFormGroupTouched();
@@ -223,8 +240,53 @@ export class EditPetComponent implements OnInit {
   }
 
   onImageUpload(event: FileSelectEvent) {
-    // Handle image upload logic here
-    console.log('Image upload:', event);
+    const file = event.files[0];
+    if (file) {
+      this.selectedImageFile = file;
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.imagePreview = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  onImageRemove() {
+    // If there was a newly selected file, remove it and revert to current image
+    if (this.selectedImageFile) {
+      this.selectedImageFile = null;
+      this.imagePreview = this.currentPetImageUrl;
+    } else {
+      this.selectedImageFile = null;
+      this.imagePreview = null;
+    }
+  }
+
+  private async loadExistingImage() {
+    if (!this.pet?.petId || !this.pet.mainImageFileExtension) return;
+
+    try {
+      // Get the download URL for the existing image
+      const downloadUrlRequest = {
+        petRequests: [
+          {
+            petId: this.pet.petId,
+            mainImageFileExtension: this.pet.mainImageFileExtension,
+          },
+        ],
+      };
+
+      const response = await this.petService.getPetImageDownloadUrls(downloadUrlRequest);
+      if (response.success && response.petImageUrls[this.pet.petId]) {
+        this.currentPetImageUrl = response.petImageUrls[this.pet.petId];
+        this.imagePreview = this.currentPetImageUrl;
+      }
+    } catch (error) {
+      console.log('Could not load existing pet image:', error);
+      // Don't show error to user as this is not critical
+    }
   }
 
   private markFormGroupTouched() {

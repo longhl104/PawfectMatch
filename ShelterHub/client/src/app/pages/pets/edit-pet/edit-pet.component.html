@@ -223,15 +223,32 @@
 
         <!-- Image Upload Section -->
         <div class="form-section">
-          <h3>Pet Image</h3>
+          <h3>Pet Main Image</h3>
           <p-fileUpload
+            #fileUpload
             mode="basic"
-            chooseLabel="Choose Image"
             accept="image/*"
-            [maxFileSize]="5000000"
-            (onSelect)="onImageUpload($event)"
+            [maxFileSize]="10000000"
             [auto]="false"
+            chooseLabel="Choose Image"
+            chooseIcon="pi pi-image"
+            [customUpload]="true"
+            (onSelect)="onImageUpload($event)"
+            (onRemove)="onImageRemove()"
           ></p-fileUpload>
+          <small class="text-600 block mt-1">
+            Maximum file size: 10MB. Supported formats: JPG, PNG, GIF
+          </small>
+          <div *ngIf="imagePreview" class="mt-2">
+            <span class="text-sm text-600 block mb-1">
+              {{ selectedImageFile ? 'New image preview:' : 'Current image:' }}
+            </span>
+            <img
+              [src]="imagePreview"
+              alt="Image preview"
+              class="w-8rem h-6rem object-cover border-round border-2 border-gray-200"
+            />
+          </div>
         </div>
 
         <!-- Action Buttons -->
@@ -244,7 +261,7 @@
           ></p-button>
 
           <p-button
-            label="Save Changes"
+            [label]="isUploadingImage ? 'Uploading Image...' : 'Save Changes'"
             type="submit"
             [loading]="saving"
             [disabled]="petForm.invalid"

@@ -10,6 +10,21 @@ import {
   PresignedUrlResponse,
 } from 'shared/apis/generated-apis';
 
+export interface PetImageDownloadUrlRequest {
+  petId: string;
+  mainImageFileExtension: string;
+}
+
+export interface GetPetImageDownloadUrlsRequest {
+  petRequests: PetImageDownloadUrlRequest[];
+}
+
+export interface PetImageDownloadUrlsResponse {
+  success: boolean;
+  petImageUrls: Record<string, string | null>;
+  errorMessage?: string;
+}
+
 export interface PresignedUrlRequest {
   petId: string;
   fileName: string;
@@ -196,6 +211,32 @@ export class PetService {
     }
   }
 
+  async getPetImageDownloadUrls(
+    request: GetPetImageDownloadUrlsRequest,
+  ): Promise<PetImageDownloadUrlsResponse> {
+    try {
+      const response = await firstValueFrom(
+        this.http.post<PetImageDownloadUrlsResponse>(
+          `${this.apiUrl}/images/download-urls`,
+          request,
+        ),
+      );
+
+      if (!response) {
+        throw new Error('Failed to get pet image download URLs');
+      }
+
+      return response;
+    } catch (error) {
+      console.error('Error getting pet image download URLs:', error);
+      return {
+        success: false,
+        petImageUrls: {},
+        errorMessage: 'Failed to get pet image download URLs',
+      };
+    }
+  }
+
   async createPetAndUploadImage(
     shelterId: string,
     petData: CreatePetRequest,
@@ -228,6 +269,43 @@ export class PetService {
       return pet;
     } catch (error) {
       console.error('Error uploading image and creating pet:', error);
+      throw error;
+    }
+  }
+
+  async updatePetAndUploadImage(
+    petId: string,
+    petData: UpdatePetRequest,
+    imageFile?: File,
+  ): Promise<Pet> {
+    try {
+      // Update the pet
+      const updatedPet = await this.updatePet(petId, petData);
+      if (!updatedPet.petId) {
+        throw new Error('Pet update failed, no pet ID returned');
+      }
+
+      // Upload image if provided
+      if (imageFile) {
+        const presignedRequest: PresignedUrlRequest = {
+          petId: updatedPet.petId,
+          fileName: imageFile.name,
+          contentType: imageFile.type,
+          fileSizeBytes: imageFile.size,
+        };
+
+        const presignedResponse = await this.getPresignedUrl(presignedRequest);
+
+        if (!presignedResponse.presignedUrl || !presignedResponse.key) {
+          throw new Error('Failed to get presigned URL for image upload');
+        }
+
+        await this.uploadToS3(presignedResponse.presignedUrl, imageFile);
+      }
+
+      return updatedPet;
+    } catch (error) {
+      console.error('Error uploading image and updating pet:', error);
       throw error;
     }
   }
