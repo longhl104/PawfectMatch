@@ -662,19 +662,47 @@ public class PetService : IPetService
     /// </summary>
     private static Pet ConvertDynamoDbItemToPet(Dictionary<string, AttributeValue> item)
     {
+        var petId = Guid.Parse(item["PetId"].S);
+        var name = item["Name"].S;
+        var species = item["Species"].S;
+        var breed = item["Breed"].S;
+        var dateOfBirth = item.TryGetValue("DateOfBirth", out var dobValue) ? DateOnly.Parse(dobValue.S) : DateOnly.MinValue;
+        var gender = item["Gender"].S;
+        var description = item.TryGetValue("Description", out var descValue) ? descValue.S : string.Empty;
+        var adoptionFee = item.TryGetValue("AdoptionFee", out var feeValue) ? decimal.Parse(feeValue.N) : 0;
+        var weight = item.TryGetValue("Weight", out var weightValue) ? (decimal?)decimal.Parse(weightValue.N) : null;
+        var color = item.TryGetValue("Color", out var colorValue) ? colorValue.S : string.Empty;
+        var isSpayedNeutered = item.TryGetValue("IsSpayedNeutered", out var spayedValue) && spayedValue.BOOL == true;
+        var isHouseTrained = item.TryGetValue("IsHouseTrained", out var houseTrainedValue) && houseTrainedValue.BOOL == true;
+        var isGoodWithKids = item.TryGetValue("IsGoodWithKids", out var goodWithKidsValue) && goodWithKidsValue.BOOL == true;
+        var isGoodWithPets = item.TryGetValue("IsGoodWithPets", out var goodWithPetsValue) && goodWithPetsValue.BOOL == true;
+        var specialNeeds = item.TryGetValue("SpecialNeeds", out var specialNeedsValue) ? specialNeedsValue.S : string.Empty;
+        var shelterId = Guid.Parse(item["ShelterId"].S);
+        var status = Enum.Parse<PetStatus>(item["Status"].S);
+        var createdAt = DateTime.Parse(item["CreatedAt"].S);
+        var mainImageFileExtension = item.TryGetValue("MainImageFileExtension", out var extValue) ? extValue.S : null;
+
         return new Pet
         {
-            PetId = Guid.Parse(item["PetId"].S),
-            Name = item["Name"].S,
-            Species = item["Species"].S,
-            Breed = item["Breed"].S,
-            DateOfBirth = item.TryGetValue("DateOfBirth", out var dob) ? DateOnly.Parse(dob.S) : DateOnly.MinValue,
-            Gender = item["Gender"].S,
-            Description = item.TryGetValue("Description", out var desc) ? desc.S : string.Empty,
-            ShelterId = Guid.Parse(item["ShelterId"].S),
-            Status = Enum.Parse<PetStatus>(item["Status"].S),
-            CreatedAt = DateTime.Parse(item["CreatedAt"].S),
-            MainImageFileExtension = item.TryGetValue("MainImageFileExtension", out var ext) ? ext.S : null
+            PetId = petId,
+            Name = name,
+            Species = species,
+            Breed = breed,
+            DateOfBirth = dateOfBirth,
+            Gender = gender,
+            Description = description,
+            AdoptionFee = adoptionFee,
+            Weight = weight,
+            Color = color,
+            IsSpayedNeutered = isSpayedNeutered,
+            IsHouseTrained = isHouseTrained,
+            IsGoodWithKids = isGoodWithKids,
+            IsGoodWithPets = isGoodWithPets,
+            SpecialNeeds = specialNeeds,
+            ShelterId = shelterId,
+            Status = status,
+            CreatedAt = createdAt,
+            MainImageFileExtension = mainImageFileExtension
         };
     }
 
@@ -692,10 +720,23 @@ public class PetService : IPetService
             { "DateOfBirth", new AttributeValue { S = pet.DateOfBirth.ToString("O") } },
             { "Gender", new AttributeValue { S = pet.Gender } },
             { "Description", new AttributeValue { S = pet.Description } },
+            { "AdoptionFee", new AttributeValue { N = pet.AdoptionFee.ToString() } },
+            { "Color", new AttributeValue { S = pet.Color } },
+            { "IsSpayedNeutered", new AttributeValue { S = pet.IsSpayedNeutered.ToString() } },
+            { "IsHouseTrained", new AttributeValue { S = pet.IsHouseTrained.ToString() } },
+            { "IsGoodWithKids", new AttributeValue { S = pet.IsGoodWithKids.ToString() } },
+            { "IsGoodWithPets", new AttributeValue { S = pet.IsGoodWithPets.ToString() } },
+            { "SpecialNeeds", new AttributeValue { S = pet.SpecialNeeds } },
             { "ShelterId", new AttributeValue { S = pet.ShelterId.ToString() } },
             { "Status", new AttributeValue { S = pet.Status.GetAmbientValue<string>() } },
             { "CreatedAt", new AttributeValue { S = pet.CreatedAt.ToString("O") } }
         };
+
+        // Add Weight if it has a value
+        if (pet.Weight.HasValue)
+        {
+            item["Weight"] = new AttributeValue { N = pet.Weight.Value.ToString() };
+        }
 
         // Add MainImageFileExtension if it exists
         if (!string.IsNullOrWhiteSpace(pet.MainImageFileExtension))

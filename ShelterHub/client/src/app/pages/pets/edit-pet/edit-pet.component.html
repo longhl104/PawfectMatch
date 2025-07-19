@@ -94,6 +94,7 @@
                 id="color"
                 formControlName="color"
                 placeholder="Enter color or markings"
+                class="capitalize"
               />
             </div>
           </div>
@@ -241,7 +242,7 @@
           </small>
           <div *ngIf="imagePreview" class="mt-2">
             <span class="text-sm text-600 block mb-1">
-              {{ selectedImageFile ? 'New image preview:' : 'Current image:' }}
+              {{ selectedImageFile ? "New image preview:" : "Current image:" }}
             </span>
             <img
               [src]="imagePreview"
