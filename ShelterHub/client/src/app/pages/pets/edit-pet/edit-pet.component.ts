@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -22,7 +22,6 @@ import { Pet, UpdatePetRequest, PetStatus } from '../../../shared/apis/generated
   selector: 'app-edit-pet',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     ButtonModule,
     InputTextModule,
@@ -35,7 +34,7 @@ import { Pet, UpdatePetRequest, PetStatus } from '../../../shared/apis/generated
     CardModule,
     ToastModule,
     ProgressSpinnerModule
-  ],
+],
   providers: [MessageService],
   templateUrl: './edit-pet.component.html',
   styleUrl: './edit-pet.component.scss'

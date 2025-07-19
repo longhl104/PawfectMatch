@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
@@ -44,7 +44,6 @@ interface FilterOption {
   selector: 'app-pets-list',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     ButtonModule,
     CardModule,
@@ -56,8 +55,8 @@ interface FilterOption {
     ConfirmDialogModule,
     PaginatorModule,
     DynamicDialogModule,
-    PetCardComponent,
-  ],
+    PetCardComponent
+],
   providers: [ConfirmationService],
   templateUrl: './pets-list.component.html',
   styleUrl: './pets-list.component.scss',

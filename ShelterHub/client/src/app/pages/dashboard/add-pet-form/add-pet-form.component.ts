@@ -1,5 +1,5 @@
 import { Component, inject, output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import {
   FormBuilder,
   FormGroup,
@@ -23,7 +23,6 @@ import { formatDateToLocalString } from 'shared/utils';
   selector: 'app-add-pet-form',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     InputTextModule,
     InputNumberModule,
@@ -31,8 +30,8 @@ import { formatDateToLocalString } from 'shared/utils';
     EditorModule,
     ButtonModule,
     FileUploadModule,
-    DatePickerModule,
-  ],
+    DatePickerModule
+],
   templateUrl: './add-pet-form.component.html',
   styleUrl: './add-pet-form.component.scss',
 })

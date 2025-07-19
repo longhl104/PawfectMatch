@@ -14,10 +14,12 @@
           placeholder="Enter pet name"
           class="w-full"
           [class.ng-invalid]="isFieldInvalid('name')"
-        />
-        <small *ngIf="isFieldInvalid('name')" class="p-error block mt-1">
-          {{ getFieldError("name") }}
-        </small>
+          />
+        @if (isFieldInvalid('name')) {
+          <small class="p-error block mt-1">
+            {{ getFieldError("name") }}
+          </small>
+        }
       </div>
     </div>
 
@@ -34,11 +36,13 @@
           placeholder="Select species"
           class="w-full"
           [class.ng-invalid]="isFieldInvalid('species')"
-        >
+          >
         </p-select>
-        <small *ngIf="isFieldInvalid('species')" class="p-error block mt-1">
-          {{ getFieldError("species") }}
-        </small>
+        @if (isFieldInvalid('species')) {
+          <small class="p-error block mt-1">
+            {{ getFieldError("species") }}
+          </small>
+        }
       </div>
     </div>
 
@@ -47,137 +51,147 @@
       <div class="field">
         <label for="breed" class="block text-sm font-medium mb-2"
           >Breed *</label
-        >
-        <input
-          id="breed"
-          type="text"
-          pInputText
-          formControlName="breed"
-          placeholder="Enter breed"
-          class="w-full"
-          [class.ng-invalid]="isFieldInvalid('breed')"
-        />
-        <small *ngIf="isFieldInvalid('breed')" class="p-error block mt-1">
-          {{ getFieldError("breed") }}
-        </small>
+          >
+          <input
+            id="breed"
+            type="text"
+            pInputText
+            formControlName="breed"
+            placeholder="Enter breed"
+            class="w-full"
+            [class.ng-invalid]="isFieldInvalid('breed')"
+            />
+          @if (isFieldInvalid('breed')) {
+            <small class="p-error block mt-1">
+              {{ getFieldError("breed") }}
+            </small>
+          }
+        </div>
       </div>
-    </div>
 
-    <!-- Date of Birth -->
-    <div class="col-12 md:col-6">
-      <div class="field">
-        <label for="dateOfBirth" class="block text-sm font-medium mb-2"
-          >Date of Birth *</label
-        >
-        <p-datepicker
-          id="dateOfBirth"
-          formControlName="dateOfBirth"
-          placeholder="Select date of birth"
-          [maxDate]="maxDate"
-          [showIcon]="true"
-          iconDisplay="input"
-          class="w-full"
-          [class.ng-invalid]="isFieldInvalid('dateOfBirth')"
-        >
-        </p-datepicker>
-        <small *ngIf="isFieldInvalid('dateOfBirth')" class="p-error block mt-1">
-          {{ getFieldError("dateOfBirth") }}
-        </small>
-      </div>
-    </div>
+      <!-- Date of Birth -->
+      <div class="col-12 md:col-6">
+        <div class="field">
+          <label for="dateOfBirth" class="block text-sm font-medium mb-2"
+            >Date of Birth *</label
+            >
+            <p-datepicker
+              id="dateOfBirth"
+              formControlName="dateOfBirth"
+              placeholder="Select date of birth"
+              [maxDate]="maxDate"
+              [showIcon]="true"
+              iconDisplay="input"
+              class="w-full"
+              [class.ng-invalid]="isFieldInvalid('dateOfBirth')"
+              >
+            </p-datepicker>
+            @if (isFieldInvalid('dateOfBirth')) {
+              <small class="p-error block mt-1">
+                {{ getFieldError("dateOfBirth") }}
+              </small>
+            }
+          </div>
+        </div>
 
-    <!-- Gender -->
-    <div class="col-12 md:col-6">
-      <div class="field">
-        <label for="gender" class="block text-sm font-medium mb-2">
-          Gender *
-        </label>
-        <p-select
-          id="gender"
-          formControlName="gender"
-          [options]="genderOptions"
-          placeholder="Select gender"
-          class="w-full"
-          [class.ng-invalid]="isFieldInvalid('gender')"
-        >
-        </p-select>
-        <small *ngIf="isFieldInvalid('gender')" class="p-error block mt-1">
-          {{ getFieldError("gender") }}
-        </small>
-      </div>
-    </div>
+        <!-- Gender -->
+        <div class="col-12 md:col-6">
+          <div class="field">
+            <label for="gender" class="block text-sm font-medium mb-2">
+              Gender *
+            </label>
+            <p-select
+              id="gender"
+              formControlName="gender"
+              [options]="genderOptions"
+              placeholder="Select gender"
+              class="w-full"
+              [class.ng-invalid]="isFieldInvalid('gender')"
+              >
+            </p-select>
+            @if (isFieldInvalid('gender')) {
+              <small class="p-error block mt-1">
+                {{ getFieldError("gender") }}
+              </small>
+            }
+          </div>
+        </div>
 
-    <!-- Main Image Upload -->
-    <div class="col-12 md:col-6">
-      <div class="field">
-        <label for="mainImage" class="block text-sm font-medium mb-2">
-          Main Image
-        </label>
-        <p-fileupload
-          #fileUpload
-          mode="basic"
-          accept="image/*"
-          [maxFileSize]="10000000"
-          [auto]="false"
-          chooseLabel="Choose Image"
-          chooseIcon="pi pi-image"
-          [customUpload]="true"
-          (onSelect)="onImageSelect($event)"
-          (onRemove)="onImageRemove()"
-          class="w-full"
-        >
-        </p-fileupload>
-        <small class="text-600 block mt-1">
-          Maximum file size: 10MB. Supported formats: JPG, PNG, GIF
-        </small>
-        <small *ngIf="imagePreview" class="block mt-2">
-          <img
-            [src]="imagePreview"
-            alt="Image preview"
-            class="w-8rem h-6rem object-cover border-round border-2 border-gray-200"
-          />
-        </small>
-      </div>
-    </div>
+        <!-- Main Image Upload -->
+        <div class="col-12 md:col-6">
+          <div class="field">
+            <label for="mainImage" class="block text-sm font-medium mb-2">
+              Main Image
+            </label>
+            <p-fileupload
+              #fileUpload
+              mode="basic"
+              accept="image/*"
+              [maxFileSize]="10000000"
+              [auto]="false"
+              chooseLabel="Choose Image"
+              chooseIcon="pi pi-image"
+              [customUpload]="true"
+              (onSelect)="onImageSelect($event)"
+              (onRemove)="onImageRemove()"
+              class="w-full"
+              >
+            </p-fileupload>
+            <small class="text-600 block mt-1">
+              Maximum file size: 10MB. Supported formats: JPG, PNG, GIF
+            </small>
+            @if (imagePreview) {
+              <small class="block mt-2">
+                <img
+                  [src]="imagePreview"
+                  alt="Image preview"
+                  class="w-8rem h-6rem object-cover border-round border-2 border-gray-200"
+                  />
+              </small>
+            }
+          </div>
+        </div>
 
-    <!-- Description -->
-    <div class="col-12">
-      <div class="field">
-        <label for="description" class="block text-sm font-medium mb-2"
-          >Description *</label
-        >
-        <p-editor
-          id="description"
-          formControlName="description"
-          placeholder="Enter pet description..."
-          class="w-full"
-          [style]="{ height: '200px' }"
-          [class.ng-invalid]="isFieldInvalid('description')"
-        >
-        </p-editor>
-        <small *ngIf="isFieldInvalid('description')" class="p-error block mt-1">
-          {{ getFieldError("description") }}
-        </small>
-      </div>
-    </div>
-  </div>
+        <!-- Description -->
+        <div class="col-12">
+          <div class="field">
+            <label for="description" class="block text-sm font-medium mb-2"
+              >Description *</label
+              >
+              <p-editor
+                id="description"
+                formControlName="description"
+                placeholder="Enter pet description..."
+                class="w-full"
+                [style]="{ height: '200px' }"
+                [class.ng-invalid]="isFieldInvalid('description')"
+                >
+              </p-editor>
+              @if (isFieldInvalid('description')) {
+                <small class="p-error block mt-1">
+                  {{ getFieldError("description") }}
+                </small>
+              }
+            </div>
+          </div>
+        </div>
 
-  <!-- Form Actions -->
-  <div class="flex justify-content-end gap-3 mt-4">
-    <p-button
-      label="Cancel"
-      severity="secondary"
-      (onClick)="onCancel()"
-      [disabled]="isSubmitting"
-    >
-    </p-button>
-    <p-button
-      [label]="isUploadingImage ? 'Uploading Image...' : 'Add Pet'"
-      type="submit"
-      severity="success"
-      [loading]="isSubmitting"
-      [disabled]="petForm.invalid"
-    >
-    </p-button>
-  </div>
-</form>
+        <!-- Form Actions -->
+        <div class="flex justify-content-end gap-3 mt-4">
+          <p-button
+            label="Cancel"
+            severity="secondary"
+            (onClick)="onCancel()"
+            [disabled]="isSubmitting"
+            >
+          </p-button>
+          <p-button
+            [label]="isUploadingImage ? 'Uploading Image...' : 'Add Pet'"
+            type="submit"
+            severity="success"
+            [loading]="isSubmitting"
+            [disabled]="petForm.invalid"
+            >
+          </p-button>
+        </div>
+      </form>

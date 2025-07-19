@@ -11,11 +11,12 @@
           pTooltip="Back to Dashboard"
         ></p-button>
         <h1 class="text-2xl font-bold m-0">All Pets</h1>
-        <p-tag
-          *ngIf="!isLoading"
-          [value]="totalRecords.toString()"
-          severity="info"
-        ></p-tag>
+        @if (!isLoading) {
+          <p-tag
+            [value]="totalRecords.toString()"
+            severity="info"
+          ></p-tag>
+        }
       </div>
       <p-button
         label="Add New Pet"
@@ -40,7 +41,7 @@
               [(ngModel)]="searchName"
               (input)="onSearchChange()"
               class="w-full"
-            />
+              />
           </span>
         </div>
 
@@ -55,7 +56,7 @@
               [(ngModel)]="searchBreed"
               (input)="onSearchChange()"
               class="w-full"
-            />
+              />
           </span>
         </div>
 
@@ -63,15 +64,16 @@
         <div class="col-12 md:col-3">
           <span class="block text-sm font-medium mb-2">Status</span>
           <div class="flex flex-wrap gap-1">
-            <p-button
-              *ngFor="let option of statusOptions"
-              [label]="option.label"
-              [outlined]="selectedStatus !== option.value"
-              [text]="selectedStatus !== option.value"
-              size="small"
-              (onClick)="selectedStatus = option.value; onStatusChange()"
-              class="flex-shrink-0"
-            ></p-button>
+            @for (option of statusOptions; track option) {
+              <p-button
+                [label]="option.label"
+                [outlined]="selectedStatus !== option.value"
+                [text]="selectedStatus !== option.value"
+                size="small"
+                (onClick)="selectedStatus = option.value; onStatusChange()"
+                class="flex-shrink-0"
+              ></p-button>
+            }
           </div>
         </div>
 
@@ -79,15 +81,16 @@
         <div class="col-12 md:col-3">
           <span class="block text-sm font-medium mb-2">Species</span>
           <div class="flex flex-wrap gap-1">
-            <p-button
-              *ngFor="let option of speciesOptions"
-              [label]="option.label"
-              [outlined]="selectedSpecies !== option.value"
-              [text]="selectedSpecies !== option.value"
-              size="small"
-              (onClick)="selectedSpecies = option.value; onSpeciesChange()"
-              class="flex-shrink-0"
-            ></p-button>
+            @for (option of speciesOptions; track option) {
+              <p-button
+                [label]="option.label"
+                [outlined]="selectedSpecies !== option.value"
+                [text]="selectedSpecies !== option.value"
+                size="small"
+                (onClick)="selectedSpecies = option.value; onSpeciesChange()"
+                class="flex-shrink-0"
+              ></p-button>
+            }
           </div>
         </div>
 
@@ -104,98 +107,105 @@
       </div>
 
       <!-- Filter Info -->
-      <div
-        *ngIf="searchName || searchBreed || selectedStatus || selectedSpecies"
-        class="mt-2 text-sm text-gray-600"
-      >
-        <i class="pi pi-info-circle mr-1"></i>
-        Server-side filtering is applied across all results.
-      </div>
+      @if (searchName || searchBreed || selectedStatus || selectedSpecies) {
+        <div
+          class="mt-2 text-sm text-gray-600"
+          >
+          <i class="pi pi-info-circle mr-1"></i>
+          Server-side filtering is applied across all results.
+        </div>
+      }
     </p-card>
   </div>
 
   <!-- Loading State -->
-  <div *ngIf="isLoading" class="grid">
-    <div *ngFor="let i of [1, 2, 3, 4, 5, 6]" class="col-12 md:col-6 lg:col-4">
-      <p-card>
-        <div class="flex flex-column gap-3">
-          <p-skeleton height="200px"></p-skeleton>
-          <p-skeleton height="1.5rem" width="80%"></p-skeleton>
-          <p-skeleton height="1rem" width="60%"></p-skeleton>
-          <div class="flex gap-2">
-            <p-skeleton height="2rem" width="4rem"></p-skeleton>
-            <p-skeleton height="2rem" width="4rem"></p-skeleton>
-          </div>
+  @if (isLoading) {
+    <div class="grid">
+      @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+        <div class="col-12 md:col-6 lg:col-4">
+          <p-card>
+            <div class="flex flex-column gap-3">
+              <p-skeleton height="200px"></p-skeleton>
+              <p-skeleton height="1.5rem" width="80%"></p-skeleton>
+              <p-skeleton height="1rem" width="60%"></p-skeleton>
+              <div class="flex gap-2">
+                <p-skeleton height="2rem" width="4rem"></p-skeleton>
+                <p-skeleton height="2rem" width="4rem"></p-skeleton>
+              </div>
+            </div>
+          </p-card>
         </div>
-      </p-card>
+      }
     </div>
-  </div>
+  }
 
   <!-- Pets Data View -->
-  <p-dataView
-    *ngIf="!isLoading"
-    [value]="allPets()"
-    layout="grid"
-    [paginator]="false"
-    [sortField]="'name'"
-    [sortOrder]="1"
-  >
-    <ng-template pTemplate="empty">
-      <div class="text-center p-6">
-        <i class="pi pi-info-circle text-4xl text-gray-400 mb-3"></i>
-        <h3 class="text-xl text-gray-600 mb-2">No pets found</h3>
-        <p class="text-gray-500 mb-4">
-          {{
+  @if (!isLoading) {
+    <p-dataView
+      [value]="allPets()"
+      layout="grid"
+      [paginator]="false"
+      [sortField]="'name'"
+      [sortOrder]="1"
+      >
+      <ng-template pTemplate="empty">
+        <div class="text-center p-6">
+          <i class="pi pi-info-circle text-4xl text-gray-400 mb-3"></i>
+          <h3 class="text-xl text-gray-600 mb-2">No pets found</h3>
+          <p class="text-gray-500 mb-4">
+            {{
             searchName || searchBreed || selectedStatus || selectedSpecies
-              ? "Try adjusting your filters to see more results."
-              : "Get started by adding your first pet."
-          }}
-        </p>
-        <p-button
-          *ngIf="
+            ? "Try adjusting your filters to see more results."
+            : "Get started by adding your first pet."
+            }}
+          </p>
+          @if (
             !searchName && !searchBreed && !selectedStatus && !selectedSpecies
-          "
-          label="Add Your First Pet"
-          icon="pi pi-plus"
-          (onClick)="onAddPet()"
-        ></p-button>
-      </div>
-    </ng-template>
-
-    <ng-template let-pets #grid>
-      <div class="grid grid-nogutter">
-        @for (pet of pets; track pet.petId) {
-          <div class="col-12 md:col-6 lg:col-4 p-2">
-            <app-pet-card
-              [pet]="pet"
-              [imageUrl]="petMainImageUrls.get(pet.petId!)"
-              [showActions]="true"
-              [showStatusActions]="true"
-              [showWeight]="true"
-              [showDescription]="true"
-              [truncateDescription]="true"
-              [descriptionMaxLength]="100"
-              (imageError)="onImageError($event)"
-              (actionClick)="onPetCardAction($event)"
-            ></app-pet-card>
-          </div>
-        }
-      </div>
-    </ng-template>
-  </p-dataView>
+            ) {
+            <p-button
+              label="Add Your First Pet"
+              icon="pi pi-plus"
+              (onClick)="onAddPet()"
+            ></p-button>
+          }
+        </div>
+      </ng-template>
+      <ng-template let-pets #grid>
+        <div class="grid grid-nogutter">
+          @for (pet of pets; track pet.petId) {
+            <div class="col-12 md:col-6 lg:col-4 p-2">
+              <app-pet-card
+                [pet]="pet"
+                [imageUrl]="petMainImageUrls.get(pet.petId!)"
+                [showActions]="true"
+                [showStatusActions]="true"
+                [showWeight]="true"
+                [showDescription]="true"
+                [truncateDescription]="true"
+                [descriptionMaxLength]="100"
+                (imageError)="onImageError($event)"
+                (actionClick)="onPetCardAction($event)"
+              ></app-pet-card>
+            </div>
+          }
+        </div>
+      </ng-template>
+    </p-dataView>
+  }
 
   <!-- Server-side Paginator -->
-  <p-paginator
-    *ngIf="!isLoading && totalRecords > 0"
-    [rows]="pageSize"
-    [totalRecords]="totalRecords"
-    [first]="currentPage * pageSize"
-    (onPageChange)="onPageChange($event)"
-    [showCurrentPageReport]="true"
-    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} pets"
-    [rowsPerPageOptions]="[12, 24, 36]"
-    styleClass="mt-4"
-  ></p-paginator>
+  @if (!isLoading && totalRecords > 0) {
+    <p-paginator
+      [rows]="pageSize"
+      [totalRecords]="totalRecords"
+      [first]="currentPage * pageSize"
+      (onPageChange)="onPageChange($event)"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} pets"
+      [rowsPerPageOptions]="[12, 24, 36]"
+      styleClass="mt-4"
+    ></p-paginator>
+  }
 </div>
 
 <p-confirmDialog></p-confirmDialog>
