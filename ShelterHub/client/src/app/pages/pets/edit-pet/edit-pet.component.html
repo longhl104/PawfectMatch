@@ -105,7 +105,7 @@
 
           <div class="form-row">
             <div class="form-field">
-              <label for="weight">Weight (lbs)</label>
+              <label for="weight">Weight (kg)</label>
               <p-inputNumber
                 formControlName="weight"
                 mode="decimal"
@@ -121,7 +121,7 @@
               <p-inputNumber
                 formControlName="adoptionFee"
                 mode="currency"
-                currency="USD"
+                currency="AUD"
                 [min]="0"
                 placeholder="Enter adoption fee"
                 [class.ng-invalid]="isFieldInvalid('adoptionFee')"
