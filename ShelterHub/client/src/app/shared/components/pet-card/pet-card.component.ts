@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, input } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
@@ -34,12 +34,12 @@ export class PetCardComponent {
   readonly truncateDescription = input(true);
   readonly descriptionMaxLength = input(100);
 
-  @Output() imageError = new EventEmitter<Event>();
-  @Output() actionClick = new EventEmitter<{
+  readonly imageError = output<Event>();
+  readonly actionClick = output<{
     action: PetCardAction;
     pet: Pet;
     event: Event;
-  }>();
+}>();
 
   getAgeLabel(dateOfBirth: string | undefined): string {
     return getAgeLabelFromUtils(dateOfBirth);

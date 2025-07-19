@@ -1,4 +1,4 @@
-import { Component, EventEmitter, inject, Output, OnInit } from '@angular/core';
+import { Component, inject, OnInit, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -37,8 +37,8 @@ import { formatDateToLocalString } from 'shared/utils';
   styleUrl: './edit-pet-form.component.scss',
 })
 export class EditPetFormComponent implements OnInit {
-  @Output() petUpdated = new EventEmitter<void>();
-  @Output() cancelled = new EventEmitter<void>();
+  readonly petUpdated = output<void>();
+  readonly cancelled = output<void>();
 
   private fb = inject(FormBuilder);
   private petService = inject(PetService);
