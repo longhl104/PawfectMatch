@@ -1,0 +1,157 @@
+.edit-pet-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.edit-pet-card {
+  .card-content {
+    padding: 1.5rem;
+  }
+}
+
+.pet-form {
+  .form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--surface-border);
+
+    &:last-of-type {
+      border-bottom: none;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      margin: 0 0 1rem 0;
+      color: var(--primary-color);
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    label {
+      font-weight: 500;
+      color: var(--text-color);
+      font-size: 0.875rem;
+    }
+
+    .error-message {
+      color: var(--red-500);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+    }
+
+    input, textarea, p-dropdown, p-calendar, p-inputNumber {
+      width: 100%;
+    }
+
+    input.ng-invalid,
+    textarea.ng-invalid {
+      border-color: var(--red-500);
+    }
+  }
+
+  .checkbox-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      label {
+        font-weight: 400;
+        cursor: pointer;
+      }
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--surface-border);
+
+    @media (max-width: 480px) {
+      flex-direction: column;
+
+      p-button {
+        width: 100%;
+      }
+    }
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  gap: 1rem;
+
+  p {
+    color: var(--text-color-secondary);
+    margin: 0;
+  }
+}
+
+// Override PrimeNG styles for better integration
+:host ::ng-deep {
+  .p-card-header {
+    background: var(--primary-color);
+    color: white;
+    padding: 1rem 1.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+
+  .p-dropdown.ng-invalid,
+  .p-calendar.ng-invalid,
+  .p-inputnumber.ng-invalid {
+    .p-dropdown-trigger,
+    .p-inputtext,
+    .p-component {
+      border-color: var(--red-500) !important;
+    }
+  }
+
+  .p-fileupload-basic {
+    .p-button {
+      background: var(--surface-100);
+      border: 2px dashed var(--surface-300);
+      color: var(--text-color);
+      padding: 2rem;
+      width: 100%;
+
+      &:hover {
+        background: var(--surface-200);
+        border-color: var(--primary-color);
+      }
+    }
+  }
+
+  .p-inputnumber-input {
+    width: 100%;
+  }
+}

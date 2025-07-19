@@ -114,6 +114,30 @@ public class PetsController(IPetService petService) : ControllerBase
     }
 
     /// <summary>
+    /// Updates an existing pet
+    /// </summary>
+    /// <param name="id">The pet ID</param>
+    /// <param name="request">Pet update request</param>
+    /// <returns>Updated pet</returns>
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult<PetResponse>> UpdatePet(Guid id, [FromBody] UpdatePetRequest request)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var response = await petService.UpdatePet(id, request);
+
+        if (!response.Success)
+        {
+            return NotFound(response);
+        }
+
+        return Ok(response);
+    }
+
+    /// <summary>
     /// Updates a pet's status
     /// </summary>
     /// <param name="id">The pet ID</param>

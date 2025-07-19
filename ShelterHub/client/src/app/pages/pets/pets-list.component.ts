@@ -334,9 +334,12 @@ export class PetsListComponent implements OnInit, OnDestroy {
   }
 
   onEditPet(pet: Pet) {
-    // TODO: Implement edit pet functionality
-    console.log('Edit pet:', pet.name);
-    this.toastService.info('Edit pet functionality coming soon');
+    if (!pet.petId) {
+      this.toastService.error('Pet ID is not available');
+      return;
+    }
+
+    this.router.navigate(['/pets/edit', pet.petId]);
   }
 
   onDeletePet(pet: Pet, event: Event) {

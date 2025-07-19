@@ -65,6 +65,46 @@ public class Pet
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
+    /// Adoption fee for the pet
+    /// </summary>
+    public decimal AdoptionFee { get; set; } = 0;
+
+    /// <summary>
+    /// Weight of the pet in pounds
+    /// </summary>
+    public decimal? Weight { get; set; }
+
+    /// <summary>
+    /// Color/markings of the pet
+    /// </summary>
+    public string Color { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Whether the pet is spayed/neutered
+    /// </summary>
+    public bool IsSpayedNeutered { get; set; } = false;
+
+    /// <summary>
+    /// Whether the pet is house trained
+    /// </summary>
+    public bool IsHouseTrained { get; set; } = false;
+
+    /// <summary>
+    /// Whether the pet is good with kids
+    /// </summary>
+    public bool IsGoodWithKids { get; set; } = false;
+
+    /// <summary>
+    /// Whether the pet is good with other pets
+    /// </summary>
+    public bool IsGoodWithPets { get; set; } = false;
+
+    /// <summary>
+    /// Special needs or medical conditions
+    /// </summary>
+    public string SpecialNeeds { get; set; } = string.Empty;
+
+    /// <summary>
     /// Date when the pet was added to the shelter
     /// </summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -111,6 +151,87 @@ public class CreatePetRequest
     /// Description of the pet
     /// </summary>
     public required string Description { get; set; }
+}
+
+/// <summary>
+/// Request model for updating an existing pet
+/// </summary>
+public class UpdatePetRequest
+{
+    /// <summary>
+    /// Name of the pet
+    /// </summary>
+    public required string Name { get; set; }
+
+    /// <summary>
+    /// Species of the pet (Dog, Cat, etc.)
+    /// </summary>
+    public required string Species { get; set; }
+
+    /// <summary>
+    /// Breed of the pet
+    /// </summary>
+    public required string Breed { get; set; }
+
+    /// <summary>
+    /// Date of birth of the pet
+    /// </summary>
+    public required DateOnly DateOfBirth { get; set; }
+
+    /// <summary>
+    /// Gender of the pet (Male, Female)
+    /// </summary>
+    public required string Gender { get; set; }
+
+    /// <summary>
+    /// Description of the pet
+    /// </summary>
+    public required string Description { get; set; }
+
+    /// <summary>
+    /// Adoption fee for the pet
+    /// </summary>
+    public decimal AdoptionFee { get; set; } = 0;
+
+    /// <summary>
+    /// Weight of the pet in pounds
+    /// </summary>
+    public decimal? Weight { get; set; }
+
+    /// <summary>
+    /// Color/markings of the pet
+    /// </summary>
+    public string Color { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Whether the pet is spayed/neutered
+    /// </summary>
+    public bool IsSpayedNeutered { get; set; } = false;
+
+    /// <summary>
+    /// Whether the pet is house trained
+    /// </summary>
+    public bool IsHouseTrained { get; set; } = false;
+
+    /// <summary>
+    /// Whether the pet is good with kids
+    /// </summary>
+    public bool IsGoodWithKids { get; set; } = false;
+
+    /// <summary>
+    /// Whether the pet is good with other pets
+    /// </summary>
+    public bool IsGoodWithPets { get; set; } = false;
+
+    /// <summary>
+    /// Special needs or medical conditions
+    /// </summary>
+    public string SpecialNeeds { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Current status of the pet
+    /// </summary>
+    public PetStatus Status { get; set; } = PetStatus.Available;
 }
 
 /// <summary>

@@ -544,6 +544,65 @@ export class PetsApi {
     }
 
     /**
+     * @param body (optional) 
+     * @return OK
+     */
+    petsPUT(id: string, body?: UpdatePetRequest | undefined): Observable<PetResponse> {
+        let url_ = this.baseUrl + "/api/Pets/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processPetsPUT(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processPetsPUT(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<PetResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<PetResponse>;
+        }));
+    }
+
+    protected processPetsPUT(response: HttpResponseBase): Observable<PetResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = PetResponse.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
      * @return OK
      */
     petsDELETE(id: string): Observable<PetResponse> {
@@ -1461,6 +1520,14 @@ export class Pet implements IPet {
     gender?: string | undefined;
     status?: PetStatus;
     description?: string | undefined;
+    adoptionFee?: number;
+    weight?: number | undefined;
+    color?: string | undefined;
+    isSpayedNeutered?: boolean;
+    isHouseTrained?: boolean;
+    isGoodWithKids?: boolean;
+    isGoodWithPets?: boolean;
+    specialNeeds?: string | undefined;
     createdAt?: string;
     shelterId?: string;
     mainImageFileExtension?: string | undefined;
@@ -1484,6 +1551,14 @@ export class Pet implements IPet {
             this.gender = _data["gender"];
             this.status = _data["status"];
             this.description = _data["description"];
+            this.adoptionFee = _data["adoptionFee"];
+            this.weight = _data["weight"];
+            this.color = _data["color"];
+            this.isSpayedNeutered = _data["isSpayedNeutered"];
+            this.isHouseTrained = _data["isHouseTrained"];
+            this.isGoodWithKids = _data["isGoodWithKids"];
+            this.isGoodWithPets = _data["isGoodWithPets"];
+            this.specialNeeds = _data["specialNeeds"];
             this.createdAt = _data["createdAt"];
             this.shelterId = _data["shelterId"];
             this.mainImageFileExtension = _data["mainImageFileExtension"];
@@ -1507,6 +1582,14 @@ export class Pet implements IPet {
         data["gender"] = this.gender;
         data["status"] = this.status;
         data["description"] = this.description;
+        data["adoptionFee"] = this.adoptionFee;
+        data["weight"] = this.weight;
+        data["color"] = this.color;
+        data["isSpayedNeutered"] = this.isSpayedNeutered;
+        data["isHouseTrained"] = this.isHouseTrained;
+        data["isGoodWithKids"] = this.isGoodWithKids;
+        data["isGoodWithPets"] = this.isGoodWithPets;
+        data["specialNeeds"] = this.specialNeeds;
         data["createdAt"] = this.createdAt;
         data["shelterId"] = this.shelterId;
         data["mainImageFileExtension"] = this.mainImageFileExtension;
@@ -1523,6 +1606,14 @@ export interface IPet {
     gender?: string | undefined;
     status?: PetStatus;
     description?: string | undefined;
+    adoptionFee?: number;
+    weight?: number | undefined;
+    color?: string | undefined;
+    isSpayedNeutered?: boolean;
+    isHouseTrained?: boolean;
+    isGoodWithKids?: boolean;
+    isGoodWithPets?: boolean;
+    specialNeeds?: string | undefined;
     createdAt?: string;
     shelterId?: string;
     mainImageFileExtension?: string | undefined;
@@ -1993,6 +2084,98 @@ export interface IShelterPetStatisticsResponse {
     errorMessage?: string | undefined;
     fromCache?: boolean;
     lastUpdated?: string;
+}
+
+export class UpdatePetRequest implements IUpdatePetRequest {
+    name!: string | undefined;
+    species!: string | undefined;
+    breed!: string | undefined;
+    dateOfBirth!: string;
+    gender!: string | undefined;
+    description!: string | undefined;
+    adoptionFee?: number;
+    weight?: number | undefined;
+    color?: string | undefined;
+    isSpayedNeutered?: boolean;
+    isHouseTrained?: boolean;
+    isGoodWithKids?: boolean;
+    isGoodWithPets?: boolean;
+    specialNeeds?: string | undefined;
+    status?: PetStatus;
+
+    constructor(data?: IUpdatePetRequest) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            this.species = _data["species"];
+            this.breed = _data["breed"];
+            this.dateOfBirth = _data["dateOfBirth"];
+            this.gender = _data["gender"];
+            this.description = _data["description"];
+            this.adoptionFee = _data["adoptionFee"];
+            this.weight = _data["weight"];
+            this.color = _data["color"];
+            this.isSpayedNeutered = _data["isSpayedNeutered"];
+            this.isHouseTrained = _data["isHouseTrained"];
+            this.isGoodWithKids = _data["isGoodWithKids"];
+            this.isGoodWithPets = _data["isGoodWithPets"];
+            this.specialNeeds = _data["specialNeeds"];
+            this.status = _data["status"];
+        }
+    }
+
+    static fromJS(data: any): UpdatePetRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new UpdatePetRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["species"] = this.species;
+        data["breed"] = this.breed;
+        data["dateOfBirth"] = this.dateOfBirth;
+        data["gender"] = this.gender;
+        data["description"] = this.description;
+        data["adoptionFee"] = this.adoptionFee;
+        data["weight"] = this.weight;
+        data["color"] = this.color;
+        data["isSpayedNeutered"] = this.isSpayedNeutered;
+        data["isHouseTrained"] = this.isHouseTrained;
+        data["isGoodWithKids"] = this.isGoodWithKids;
+        data["isGoodWithPets"] = this.isGoodWithPets;
+        data["specialNeeds"] = this.specialNeeds;
+        data["status"] = this.status;
+        return data;
+    }
+}
+
+export interface IUpdatePetRequest {
+    name: string | undefined;
+    species: string | undefined;
+    breed: string | undefined;
+    dateOfBirth: string;
+    gender: string | undefined;
+    description: string | undefined;
+    adoptionFee?: number;
+    weight?: number | undefined;
+    color?: string | undefined;
+    isSpayedNeutered?: boolean;
+    isHouseTrained?: boolean;
+    isGoodWithKids?: boolean;
+    isGoodWithPets?: boolean;
+    specialNeeds?: string | undefined;
+    status?: PetStatus;
 }
 
 export class ApiException extends Error {

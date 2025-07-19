@@ -42,6 +42,14 @@ public interface IPetService
     Task<PetResponse> CreatePet(CreatePetRequest request, Guid shelterId);
 
     /// <summary>
+    /// Updates an existing pet
+    /// </summary>
+    /// <param name="petId">The pet ID</param>
+    /// <param name="request">Pet update request</param>
+    /// <returns>Updated pet</returns>
+    Task<PetResponse> UpdatePet(Guid petId, UpdatePetRequest request);
+
+    /// <summary>
     /// Updates a pet's status
     /// </summary>
     /// <param name="petId">The pet ID</param>
@@ -408,6 +416,117 @@ public class PetService : IPetService
             {
                 Success = false,
                 ErrorMessage = $"Failed to create pet: {ex.Message}"
+            };
+        }
+    }
+
+    /// <summary>
+    /// Updates an existing pet
+    /// </summary>
+    /// <param name="petId">The pet ID</param>
+    /// <param name="request">Pet update request</param>
+    /// <returns>Updated pet</returns>
+    public async Task<PetResponse> UpdatePet(Guid petId, UpdatePetRequest request)
+    {
+        try
+        {
+            _logger.LogInformation("Updating pet with ID: {PetId}", petId);
+
+            var updateRequest = new UpdateItemRequest
+            {
+                TableName = _tableName,
+                Key = new Dictionary<string, AttributeValue>
+                {
+                    { "PetId", new AttributeValue { S = petId.ToString() } }
+                },
+                UpdateExpression = "SET #name = :name, #species = :species, #breed = :breed, #dateOfBirth = :dateOfBirth, #gender = :gender, #description = :description, #adoptionFee = :adoptionFee, #color = :color, #isSpayedNeutered = :isSpayedNeutered, #isHouseTrained = :isHouseTrained, #isGoodWithKids = :isGoodWithKids, #isGoodWithPets = :isGoodWithPets, #specialNeeds = :specialNeeds, #status = :status" + (request.Weight.HasValue ? ", #weight = :weight" : ""),
+                ExpressionAttributeNames = new Dictionary<string, string>
+                {
+                    { "#name", "Name" },
+                    { "#species", "Species" },
+                    { "#breed", "Breed" },
+                    { "#dateOfBirth", "DateOfBirth" },
+                    { "#gender", "Gender" },
+                    { "#description", "Description" },
+                    { "#adoptionFee", "AdoptionFee" },
+                    { "#color", "Color" },
+                    { "#isSpayedNeutered", "IsSpayedNeutered" },
+                    { "#isHouseTrained", "IsHouseTrained" },
+                    { "#isGoodWithKids", "IsGoodWithKids" },
+                    { "#isGoodWithPets", "IsGoodWithPets" },
+                    { "#specialNeeds", "SpecialNeeds" },
+                    { "#status", "Status" }
+                },
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                {
+                    { ":name", new AttributeValue { S = request.Name.ToLowerInvariant() } },
+                    { ":species", new AttributeValue { S = request.Species } },
+                    { ":breed", new AttributeValue { S = request.Breed.ToLowerInvariant() } },
+                    { ":dateOfBirth", new AttributeValue { S = request.DateOfBirth.ToString("yyyy-MM-dd") } },
+                    { ":gender", new AttributeValue { S = request.Gender } },
+                    { ":description", new AttributeValue { S = request.Description } },
+                    { ":adoptionFee", new AttributeValue { N = request.AdoptionFee.ToString("F2") } },
+                    { ":color", new AttributeValue { S = request.Color } },
+                    { ":isSpayedNeutered", new AttributeValue { BOOL = request.IsSpayedNeutered } },
+                    { ":isHouseTrained", new AttributeValue { BOOL = request.IsHouseTrained } },
+                    { ":isGoodWithKids", new AttributeValue { BOOL = request.IsGoodWithKids } },
+                    { ":isGoodWithPets", new AttributeValue { BOOL = request.IsGoodWithPets } },
+                    { ":specialNeeds", new AttributeValue { S = request.SpecialNeeds } },
+                    { ":status", new AttributeValue { S = request.Status.ToString() } }
+                },
+                ConditionExpression = "attribute_exists(PetId)", // Ensure the pet exists
+                ReturnValues = ReturnValue.ALL_NEW
+            };
+
+            // Add weight if provided
+            if (request.Weight.HasValue)
+            {
+                updateRequest.ExpressionAttributeNames.Add("#weight", "Weight");
+                updateRequest.ExpressionAttributeValues.Add(":weight", new AttributeValue { N = request.Weight.Value.ToString("F2") });
+            }
+
+            var response = await _dynamoDbClient.UpdateItemAsync(updateRequest);
+
+            if (!response.Attributes.Any())
+            {
+                _logger.LogWarning("Pet not found for update: {PetId}", petId);
+                return new PetResponse
+                {
+                    Success = false,
+                    ErrorMessage = "Pet not found"
+                };
+            }
+
+            var updatedPet = ConvertDynamoDbItemToPet(response.Attributes);
+
+            // Invalidate cache for this shelter since pet data changed
+            InvalidatePetCountCache(updatedPet.ShelterId);
+            InvalidatePetStatisticsCache(updatedPet.ShelterId);
+
+            _logger.LogInformation("Successfully updated pet with ID: {PetId}", petId);
+
+            return new PetResponse
+            {
+                Success = true,
+                Pet = updatedPet
+            };
+        }
+        catch (ConditionalCheckFailedException)
+        {
+            _logger.LogWarning("Pet not found when updating: {PetId}", petId);
+            return new PetResponse
+            {
+                Success = false,
+                ErrorMessage = "Pet not found"
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to update pet with ID: {PetId}", petId);
+            return new PetResponse
+            {
+                Success = false,
+                ErrorMessage = $"Failed to update pet: {ex.Message}"
             };
         }
     }

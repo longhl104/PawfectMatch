@@ -4,6 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { environment } from 'environments/environment';
 import {
   CreatePetRequest,
+  UpdatePetRequest,
   Pet,
   PetsApi,
   PresignedUrlResponse,
@@ -93,6 +94,25 @@ export class PetService {
       return response.pet;
     } catch (error) {
       console.error('Error updating pet status:', error);
+      throw error;
+    }
+  }
+
+  async updatePet(petId: string, petData: UpdatePetRequest): Promise<Pet> {
+    try {
+      const response = await this.http
+        .put<PetResponse>(`${this.apiUrl}/${petId}`, petData)
+        .toPromise();
+
+      if (!response?.success || !response.pet) {
+        throw new Error(
+          response?.errorMessage || 'Failed to update pet',
+        );
+      }
+
+      return response.pet;
+    } catch (error) {
+      console.error('Error updating pet:', error);
       throw error;
     }
   }

@@ -20,4 +20,11 @@ export const routes: Routes = [
         (m) => m.PetsListComponent,
       ),
   },
+  {
+    path: 'pets/edit/:id',
+    loadComponent: () =>
+      import('./pages/pets/edit-pet/edit-pet.component').then(
+        (m) => m.EditPetComponent,
+      ),
+  },
 ];
