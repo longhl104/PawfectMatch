@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
@@ -25,14 +25,14 @@ export interface PetCardAction {
   styleUrl: './pet-card.component.scss',
 })
 export class PetCardComponent {
-  @Input({ required: true }) pet!: Pet;
-  @Input() imageUrl?: string;
-  @Input() showActions = false;
-  @Input() showStatusActions = false;
-  @Input() showWeight = false;
-  @Input() showDescription = false;
-  @Input() truncateDescription = true;
-  @Input() descriptionMaxLength = 100;
+  readonly pet = input.required<Pet>();
+  readonly imageUrl = input<string>();
+  readonly showActions = input(false);
+  readonly showStatusActions = input(false);
+  readonly showWeight = input(false);
+  readonly showDescription = input(false);
+  readonly truncateDescription = input(true);
+  readonly descriptionMaxLength = input(100);
 
   @Output() imageError = new EventEmitter<Event>();
   @Output() actionClick = new EventEmitter<{
@@ -45,7 +45,9 @@ export class PetCardComponent {
     return getAgeLabelFromUtils(dateOfBirth);
   }
 
-  getStatusSeverity(status: string): 'success' | 'info' | 'warning' | 'danger' {
+  getStatusSeverity(
+    status: string | undefined,
+  ): 'success' | 'info' | 'warning' | 'danger' {
     switch (status) {
       case 'Available':
         return 'success';
@@ -65,7 +67,7 @@ export class PetCardComponent {
   }
 
   onActionClick(action: PetCardAction, event: Event) {
-    this.actionClick.emit({ action, pet: this.pet, event });
+    this.actionClick.emit({ action, pet: this.pet(), event });
   }
 
   // Status change actions
@@ -129,30 +131,29 @@ export class PetCardComponent {
 
   // Check if status actions should be shown
   shouldShowAvailableAction(): boolean {
-    return this.pet.status !== PetStatus.Available;
+    return this.pet().status !== PetStatus.Available;
   }
 
   shouldShowPendingAction(): boolean {
-    return this.pet.status !== PetStatus.Pending;
+    return this.pet().status !== PetStatus.Pending;
   }
 
   shouldShowAdoptedAction(): boolean {
-    return this.pet.status !== PetStatus.Adopted;
+    return this.pet().status !== PetStatus.Adopted;
   }
 
   // Description handling
   getDisplayDescription(): string {
-    if (!this.pet.description) return '';
+    const pet = this.pet();
+    if (!pet.description) return '';
 
     if (
-      this.truncateDescription &&
-      this.pet.description.length > this.descriptionMaxLength
+      this.truncateDescription() &&
+      pet.description.length > this.descriptionMaxLength()
     ) {
-      return (
-        this.pet.description.substring(0, this.descriptionMaxLength) + '...'
-      );
+      return pet.description.substring(0, this.descriptionMaxLength()) + '...';
     }
 
-    return this.pet.description;
+    return pet.description;
   }
 }
