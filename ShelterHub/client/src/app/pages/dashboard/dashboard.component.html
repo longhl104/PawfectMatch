@@ -178,6 +178,17 @@
                       ></i>
                       {{ pet.gender }}
                     </span>
+                    <span
+                      class="inline-flex align-items-center gap-1 bg-orange-50 text-orange-600 px-2 py-1 border-round text-xs font-medium"
+                      *ngIf="
+                        pet.adoptionFee !== undefined &&
+                        pet.adoptionFee !== null
+                      "
+                    >
+                      {{
+                        pet.adoptionFee | currency: "USD" : "symbol" : "1.0-0"
+                      }}
+                    </span>
                   </div>
                 </div>
 
@@ -192,9 +203,9 @@
                     class="text-xs capitalize"
                   >
                   </p-tag>
-                  <small class="text-600"
-                    >Added {{ pet.createdAt | date }}</small
-                  >
+                  <small class="text-600">
+                    Added {{ pet.createdAt | date }}
+                  </small>
                 </div>
               </div>
             </p-card>

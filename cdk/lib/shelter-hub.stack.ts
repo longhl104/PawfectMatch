@@ -62,6 +62,7 @@ export class ShelterHubStack extends BaseStack {
             'Gender',
             'Status',
             'MainImageFileExtension',
+            'AdoptionFee'
           ],
         },
       ],
