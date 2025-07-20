@@ -4,7 +4,10 @@
     "ap-southeast-2b",
     "ap-southeast-2c"
   ],
-  "acknowledged-issue-numbers": [34892],
+  "acknowledged-issue-numbers": [
+    34892
+  ],
   "ssm:account=141714874243:parameterName=/PawfectMatch/Shared/HostedZoneId:region=ap-southeast-2": "Z002750623WOVCCGCKDI7",
-  "ssm:account=141714874243:parameterName=/PawfectMatch/Development/Common/CertificateArn:region=ap-southeast-2": "arn:aws:acm:us-east-1:141714874243:certificate/ae6ba59c-8384-4f55-a0cf-396a176d1665"
+  "ssm:account=141714874243:parameterName=/PawfectMatch/Development/Common/CertificateArn:region=ap-southeast-2": "arn:aws:acm:us-east-1:141714874243:certificate/1e593ae8-a3b0-4015-84d9-6286e0104bf4",
+  "ssm:account=141714874243:parameterName=/PawfectMatch/Development/Common/CertificateArn:region=us-east-1": "arn:aws:acm:us-east-1:141714874243:certificate/1e593ae8-a3b0-4015-84d9-6286e0104bf4"
 }
