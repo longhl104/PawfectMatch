@@ -178,8 +178,8 @@ export class BaseStack extends cdk.Stack {
     // Create S3 bucket for hosting static website
     this.clientBucket = new s3.Bucket(this, `${this.serviceName}ClientBucket`, {
       bucketName: `${this.stackName}-${this.serviceName.toLowerCase()}-client`,
-      websiteIndexDocument: 'index.html',
-      websiteErrorDocument: 'index.html', // For SPA routing
+      websiteIndexDocument: 'index.csr.html',
+      websiteErrorDocument: 'index.csr.html', // For SPA routing
       publicReadAccess: false, // We'll use CloudFront OAC instead
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       removalPolicy:
@@ -223,7 +223,7 @@ export class BaseStack extends cdk.Stack {
       `${this.serviceName}ClientDistribution`,
       {
         comment: `${this.serviceName} Client Distribution - ${this.stage}`,
-        defaultRootObject: 'index.html',
+        defaultRootObject: 'index.csr.html',
         priceClass: cloudfront.PriceClass.PRICE_CLASS_100, // Use only North America and Europe for cost optimization
 
         // Use certificate from shared stack if available
@@ -252,12 +252,12 @@ export class BaseStack extends cdk.Stack {
           {
             httpStatus: 403,
             responseHttpStatus: 200,
-            responsePagePath: '/index.html',
+            responsePagePath: '/index.csr.html',
           },
           {
             httpStatus: 404,
             responseHttpStatus: 200,
-            responsePagePath: '/index.html',
+            responsePagePath: '/index.csr.html',
           },
         ],
 

@@ -70,7 +70,7 @@ const identityStack = new IdentityStack(app, `PawfectMatch-${stage}-Identity`, {
   domainConfig: domainConfig.identity,
   clientHosting: {
     enabled: true,
-    subdomain: 'app',
+    subdomain: 'id',
     distPath: '../Identity/client/dist/client/browser',
   },
 });
@@ -89,7 +89,7 @@ const shelterHubStack = new ShelterHubStack(
     domainConfig: domainConfig.shelterHub,
     clientHosting: {
       enabled: true,
-      subdomain: 'admin',
+      subdomain: 'shelter',
       distPath: '../ShelterHub/client/dist/client/browser',
     },
   }
@@ -105,7 +105,7 @@ const matcherStack = new MatcherStack(app, `PawfectMatch-${stage}-Matcher`, {
   domainConfig: domainConfig.matcher,
   clientHosting: {
     enabled: true,
-    subdomain: 'match',
+    subdomain: 'adopter',
     distPath: '../Matcher/client/dist/client/browser',
   },
 });
