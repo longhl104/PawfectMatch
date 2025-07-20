@@ -12,7 +12,6 @@ import {
   type UserProfile,
 } from 'shared/services/auth.service';
 import { Observable } from 'rxjs';
-import { Logo } from "shared/components";
 
 @Component({
   selector: 'app-header',
@@ -24,8 +23,7 @@ import { Logo } from "shared/components";
     AvatarModule,
     MenuModule,
     TooltipModule,
-    Logo
-],
+  ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })

@@ -8,4 +8,5 @@ import { Component, input } from '@angular/core';
 })
 export class Logo {
   color = input<string>('var(--p-primary-color)'); // Default color (orange-500)
+  width = input<string>('5rem'); // Default width
 }

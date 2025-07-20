@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Adobe Illustrator 29.2.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="24px"
+	 height="24px" viewBox="0 0 24 24" style="enable-background:new 0 0 24 24;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:none;}
+	.st1{clip-path:url(#SVGID_00000145737502730830161740000000134236865570241979_);}
+	.st2{fill:none;stroke:#000000;stroke-width:0.25;stroke-miterlimit:10;}
+	.st3{opacity:0.4;}
+	
+		.st4{clip-path:url(#SVGID_00000173139622881940881380000015174664192892294312_);fill:none;stroke:#000000;stroke-width:0.25;stroke-miterlimit:10;}
+	.st5{clip-path:url(#SVGID_00000173139622881940881380000015174664192892294312_);}
+	.st6{display:none;}
+	.st7{display:inline;opacity:0.2;}
+	.st8{fill:#FFFFFF;}
+	.st9{fill:none;stroke:#000000;stroke-width:0.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}
+</style>
+<symbol  id="material_x5F_system_x5F_icon_x5F_border" viewBox="0 -48 48 48">
+	<rect y="-48" class="st0" width="48" height="48"/>
+</symbol>
+<symbol  id="material_x5F_system_x5F_icon_x5F_grid" viewBox="0 -48 48 48">
+	<g>
+		<defs>
+			<rect id="SVGID_1_" x="0" y="-48" width="48" height="48"/>
+		</defs>
+		<clipPath id="SVGID_00000075842512198282016510000007926133882477744778_">
+			<use xlink:href="#SVGID_1_"  style="overflow:visible;"/>
+		</clipPath>
+		<g style="clip-path:url(#SVGID_00000075842512198282016510000007926133882477744778_);">
+			<g>
+				<line class="st2" x1="2" y1="-48" x2="2" y2="0"/>
+				<line class="st2" x1="4" y1="-48" x2="4" y2="0"/>
+				<line class="st2" x1="6" y1="-48" x2="6" y2="0"/>
+				<line class="st2" x1="8" y1="-48" x2="8" y2="0"/>
+				<line class="st2" x1="10" y1="-48" x2="10" y2="0"/>
+				<line class="st2" x1="12" y1="-48" x2="12" y2="0"/>
+				<line class="st2" x1="14" y1="-48" x2="14" y2="0"/>
+				<line class="st2" x1="16" y1="-48" x2="16" y2="0"/>
+				<line class="st2" x1="18" y1="-48" x2="18" y2="0"/>
+				<line class="st2" x1="20" y1="-48" x2="20" y2="0"/>
+				<line class="st2" x1="22" y1="-48" x2="22" y2="0"/>
+				<line class="st2" x1="24" y1="-48" x2="24" y2="0"/>
+				<line class="st2" x1="26" y1="-48" x2="26" y2="0"/>
+				<line class="st2" x1="28" y1="-48" x2="28" y2="0"/>
+				<line class="st2" x1="30" y1="-48" x2="30" y2="0"/>
+				<line class="st2" x1="32" y1="-48" x2="32" y2="0"/>
+				<line class="st2" x1="34" y1="-48" x2="34" y2="0"/>
+				<line class="st2" x1="36" y1="-48" x2="36" y2="0"/>
+				<line class="st2" x1="38" y1="-48" x2="38" y2="0"/>
+				<line class="st2" x1="40" y1="-48" x2="40" y2="0"/>
+				<line class="st2" x1="42" y1="-48" x2="42" y2="0"/>
+				<line class="st2" x1="44" y1="-48" x2="44" y2="0"/>
+				<line class="st2" x1="46" y1="-48" x2="46" y2="0"/>
+			</g>
+			<g>
+				<line class="st2" x1="0" y1="-2" x2="48" y2="-2"/>
+				<line class="st2" x1="0" y1="-4" x2="48" y2="-4"/>
+				<line class="st2" x1="0" y1="-6" x2="48" y2="-6"/>
+				<line class="st2" x1="0" y1="-8" x2="48" y2="-8"/>
+				<line class="st2" x1="0" y1="-10" x2="48" y2="-10"/>
+				<line class="st2" x1="0" y1="-12" x2="48" y2="-12"/>
+				<line class="st2" x1="0" y1="-14" x2="48" y2="-14"/>
+				<line class="st2" x1="0" y1="-16" x2="48" y2="-16"/>
+				<line class="st2" x1="0" y1="-18" x2="48" y2="-18"/>
+				<line class="st2" x1="0" y1="-20" x2="48" y2="-20"/>
+				<line class="st2" x1="0" y1="-22" x2="48" y2="-22"/>
+				<line class="st2" x1="0" y1="-24" x2="48" y2="-24"/>
+				<line class="st2" x1="0" y1="-26" x2="48" y2="-26"/>
+				<line class="st2" x1="0" y1="-28" x2="48" y2="-28"/>
+				<line class="st2" x1="0" y1="-30" x2="48" y2="-30"/>
+				<line class="st2" x1="0" y1="-32" x2="48" y2="-32"/>
+				<line class="st2" x1="0" y1="-34" x2="48" y2="-34"/>
+				<line class="st2" x1="0" y1="-36" x2="48" y2="-36"/>
+				<line class="st2" x1="0" y1="-38" x2="48" y2="-38"/>
+				<line class="st2" x1="0" y1="-40" x2="48" y2="-40"/>
+				<line class="st2" x1="0" y1="-42" x2="48" y2="-42"/>
+				<line class="st2" x1="0" y1="-44" x2="48" y2="-44"/>
+				<line class="st2" x1="0" y1="-46" x2="48" y2="-46"/>
+			</g>
+			<g>
+				<path d="M47.75-0.25v-47.5H0.25v47.5H47.75 M48,0H0v-48h48V0L48,0z"/>
+			</g>
+		</g>
+	</g>
+</symbol>
+<symbol  id="material_x5F_system_x5F_icon_x5F_keylines" viewBox="0 -48 48 48">
+	<g class="st3">
+		<defs>
+			<rect id="SVGID_00000164480830886255451850000001933031992178997159_" x="0" y="-48" class="st3" width="48" height="48"/>
+		</defs>
+		<clipPath id="SVGID_00000174602427309324128280000004651569134924808632_">
+			<use xlink:href="#SVGID_00000164480830886255451850000001933031992178997159_"  style="overflow:visible;"/>
+		</clipPath>
+		
+			<line style="clip-path:url(#SVGID_00000174602427309324128280000004651569134924808632_);fill:none;stroke:#000000;stroke-width:0.25;stroke-miterlimit:10;" x1="24" y1="0" x2="24" y2="-48"/>
+		
+			<line style="clip-path:url(#SVGID_00000174602427309324128280000004651569134924808632_);fill:none;stroke:#000000;stroke-width:0.25;stroke-miterlimit:10;" x1="48" y1="-24" x2="0" y2="-24"/>
+		
+			<line style="clip-path:url(#SVGID_00000174602427309324128280000004651569134924808632_);fill:none;stroke:#000000;stroke-width:0.25;stroke-miterlimit:10;" x1="48" y1="-16" x2="0" y2="-16"/>
+		
+			<line style="clip-path:url(#SVGID_00000174602427309324128280000004651569134924808632_);fill:none;stroke:#000000;stroke-width:0.25;stroke-miterlimit:10;" x1="48" y1="-32" x2="0" y2="-32"/>
+		
+			<line style="clip-path:url(#SVGID_00000174602427309324128280000004651569134924808632_);fill:none;stroke:#000000;stroke-width:0.25;stroke-miterlimit:10;" x1="32" y1="-48" x2="32" y2="0"/>
+		
+			<line style="clip-path:url(#SVGID_00000174602427309324128280000004651569134924808632_);fill:none;stroke:#000000;stroke-width:0.25;stroke-miterlimit:10;" x1="16" y1="-48" x2="16" y2="0"/>
+		
+			<line style="clip-path:url(#SVGID_00000174602427309324128280000004651569134924808632_);fill:none;stroke:#000000;stroke-width:0.25;stroke-miterlimit:10;" x1="47.75" y1="-0.25" x2="0.25" y2="-47.75"/>
+		
+			<line style="clip-path:url(#SVGID_00000174602427309324128280000004651569134924808632_);fill:none;stroke:#000000;stroke-width:0.25;stroke-miterlimit:10;" x1="0.25" y1="-0.25" x2="47.75" y2="-47.75"/>
+		
+			<path style="clip-path:url(#SVGID_00000174602427309324128280000004651569134924808632_);fill:none;stroke:#000000;stroke-width:0.25;stroke-miterlimit:10;" d="
+			M24-14c-5.52,0-10-4.48-10-10c0-5.52,4.48-10,10-10c5.52,0,10,4.48,10,10C34-18.48,29.52-14,24-14z"/>
+		
+			<path style="clip-path:url(#SVGID_00000174602427309324128280000004651569134924808632_);fill:none;stroke:#000000;stroke-width:0.25;stroke-miterlimit:10;" d="
+			M24-4C12.95-4,4-12.95,4-24c0-11.05,8.95-20,20-20c11.05,0,20,8.95,20,20C44-12.95,35.05-4,24-4z"/>
+		
+			<path style="clip-path:url(#SVGID_00000174602427309324128280000004651569134924808632_);fill:none;stroke:#000000;stroke-width:0.25;stroke-miterlimit:10;" d="
+			M38-6H10c-2.21,0-4-1.79-4-4v-28c0-2.21,1.79-4,4-4h28c2.21,0,4,1.79,4,4v28C42-7.79,40.21-6,38-6z"/>
+		
+			<path style="clip-path:url(#SVGID_00000174602427309324128280000004651569134924808632_);fill:none;stroke:#000000;stroke-width:0.25;stroke-miterlimit:10;" d="
+			M40-8H8c-2.21,0-4-1.79-4-4v-24c0-2.21,1.79-4,4-4h32c2.21,0,4,1.79,4,4l0,24C44-9.79,42.21-8,40-8z"/>
+		
+			<path style="clip-path:url(#SVGID_00000174602427309324128280000004651569134924808632_);fill:none;stroke:#000000;stroke-width:0.25;stroke-miterlimit:10;" d="
+			M40-40v32c0,2.21-1.79,4-4,4H12C9.79-4,8-5.79,8-8v-32c0-2.21,1.79-4,4-4h24C38.21-44,40-42.21,40-40z"/>
+		<g style="clip-path:url(#SVGID_00000174602427309324128280000004651569134924808632_);">
+			<path d="M47.75-0.25v-47.5H0.25v47.5H47.75 M48,0H0v-48h48V0L48,0z"/>
+		</g>
+	</g>
+</symbol>
+<g class="st6">
+	<circle id="circle" class="st7" cx="12" cy="12" r="10"/>
+	<path id="Rectangle" class="st7" d="M19,21H5c-1.1,0-2-0.9-2-2V5c0-1.1,0.9-2,2-2h14c1.1,0,2,0.9,2,2v14C21,20.1,20.1,21,19,21z"/>
+	<path id="Vertical_Rectangle" class="st7" d="M6,22h12c1.1,0,2-0.9,2-2V4c0-1.1-0.9-2-2-2H6C4.9,2,4,2.9,4,4v16C4,21.1,4.9,22,6,22
+		z"/>
+	<path id="Horizontal_Rectangle" class="st7" d="M22,18V6c0-1.1-0.9-2-2-2H4C2.9,4,2,4.9,2,6v12c0,1.1,0.9,2,2,2h16
+		C21.1,20,22,19.1,22,18z"/>
+</g>
+<g id="border" class="st6">
+	
+		<use xlink:href="#material_x5F_system_x5F_icon_x5F_border"  width="48" height="48" id="XMLID_2_" y="-48" transform="matrix(0.5 0 0 -0.5 -1.144415e-04 -8.010902e-05)" style="display:inline;overflow:visible;"/>
+</g>
+<g id="grid" class="st6">
+	
+		<use xlink:href="#material_x5F_system_x5F_icon_x5F_grid"  width="48" height="48" id="XMLID_1_" x="0" y="-48" transform="matrix(0.5 0 0 -0.5 -1.144415e-04 -8.010902e-05)" style="display:inline;overflow:visible;opacity:0.15;"/>
+</g>
+<g id="keylines" class="st6">
+	
+		<use xlink:href="#material_x5F_system_x5F_icon_x5F_keylines"  width="48" height="48" id="XMLID_3_" x="0" y="-48" transform="matrix(0.5 0 0 -0.5 -1.144415e-04 -8.010902e-05)" style="display:inline;overflow:visible;"/>
+</g>
+<g id="Layer_5">
+	<circle class="st8" cx="12" cy="12" r="10"/>
+	<g>
+		<g transform="matrix(0.389097,0,0,0.389102,1037.45,533.05)">
+			<path class="st9" d="M-2650.6-1335.71l0.78-0.87c-0.29,0.32-0.54,0.62-0.78,0.88C-2650.6-1335.7-2650.6-1335.71-2650.6-1335.71
+				c1.79,0.41,1.43-1.21,1.2-1.34l-0.42,0.47c1.32-1.45,3.41-3.48,6.48-4.5c1.43-0.48,1.73-2.96,1.76-3.08
+				c0.72,0.47,2.18,1.27,3.72,2.34c2.11-1.37,5.24-2.48,8.1-0.66c0.38,0.24,3.17,2.38,4.46,2.42c6.07,0.2,6.11,0.86,5.99,1.34
+				c-0.01,0.03-0.02,0.06-0.03,0.09c0.73,1.51-0.49,4.31-3.03,5.26c-1.4,0.52-5.21,2.76-2.36,5.23c3.62,3.14,9.63,1.81,9.82-0.51
+				c0.02-0.29-0.29-17.45-2.49-18.55c-3.36-1.68-7.87-2.75-17.88-9.86c-0.81,0.54-20.79,11.51-20.75,12.22
+				c0.31,6.28-0.12,18.17,0.83,18.23c0.67,0.04,9.69-0.26,10.65-1.02c1.39-1.09-0.03-4.35-1.21-4.78c-1.14-0.42-4.27-2.02-4.84-3.28
+				 M-2619.33-1338.63c-0.46,1.22-3.34-0.91-2.01-0.98C-2620.29-1339.67-2619.64-1339.27-2619.33-1338.63z M-2637.86-1341.82
+				c3.07,2.14,6.48,5.37,5.11,9.28c-1.94,5.48-12.12-0.39-7.46-7.2C-2639.89-1340.21-2639.03-1341.06-2637.86-1341.82z
+				 M-2619.33-1338.63c-0.46,1.22-3.34-0.91-2.01-0.98C-2620.29-1339.67-2619.64-1339.27-2619.33-1338.63z"/>
+		</g>
+		<g transform="matrix(0.389097,0,0,0.389102,1037.45,533.05)">
+			<path class="st9" d="M-2637.41-1351.92c-0.04-0.02-0.29,0.49-0.26,1.02c0.2,3.13-0.52,3.87,0.57,3.7
+				c3.73-0.59,4.23-0.01,4.27-0.83C-2632.63-1351.69-2633.76-1351.61-2637.41-1351.92z"/>
+		</g>
+		<g transform="matrix(0.389097,0,0,0.389102,1037.45,533.05)">
+			<path class="st9" d="M-2635.51-1351.74c0,0.68-0.04,1.4,0.04,2.03c0.01,0.07,0.02,0.15,0.03,0.22c0.05,0.26,0.02,1.21,0,2.08"/>
+		</g>
+		<g transform="matrix(0.389097,0,0,0.389102,1037.45,533.05)">
+			<path class="st9" d="M-2637.63-1349.68c1.01,0.05,1.62,0.01,2.16-0.04c0.72-0.06,1.32-0.15,2.59-0.06"/>
+		</g>
+		<g transform="matrix(0.389097,0,0,0.389102,1037.45,533.05)">
+			<path class="st9" d="M-2630.86-1339.29c-0.1,0.14,0.75-1,2.12,0.38"/>
+		</g>
+		<g transform="matrix(0.389097,0,0,0.389102,1037.45,533.05)">
+			<path class="st9" d="M-2645.69-1337.51c1.06-0.18,1.04,0.2,2.1-0.06"/>
+		</g>
+	</g>
+</g>
+</svg>
