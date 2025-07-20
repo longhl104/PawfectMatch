@@ -8,18 +8,18 @@ import {
   ShelterHubStack,
   MatcherStack,
 } from '../lib';
-import { StageType } from '../lib/utils';
+import { StageType, DomainConfigManager } from '../lib/utils';
 
 const app = new cdk.App();
 
 // Environment configuration
 const environments = {
   development: {
-    account: process.env.CDK_DEFAULT_ACCOUNT, // Account A
+    account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION,
   },
   production: {
-    account: process.env.CDK_PRODUCTION_ACCOUNT, // Account B
+    account: process.env.CDK_DEFAULT_ACCOUNT, // Use same account detection for both
     region: process.env.CDK_DEFAULT_REGION,
   },
 };
@@ -37,10 +37,14 @@ if (!environments[stage as keyof typeof environments]) {
 
 const env = environments[stage as keyof typeof environments];
 
+// Get domain configuration for this stage
+const domainConfig = DomainConfigManager.getDomainConfig(stage);
+
 // Create Shared Stack (one per account)
 const sharedStack = new SharedStack(app, 'PawfectMatch-Shared', {
   env,
   stackName: 'pawfectmatch-shared',
+  stage, // Pass stage to enable domain setup
 });
 
 // Create Environment Stack (one per stage)
@@ -63,6 +67,7 @@ const identityStack = new IdentityStack(app, `PawfectMatch-${stage}-Identity`, {
   environmentStack,
   stackName: `pawfectmatch-${stage}-identity`,
   serviceName: 'Identity',
+  domainConfig: domainConfig.identity,
 });
 
 // Create ShelterHub Stack
@@ -76,6 +81,7 @@ const shelterHubStack = new ShelterHubStack(
     environmentStack,
     stackName: `pawfectmatch-${stage}-shelter-hub`,
     serviceName: 'ShelterHub',
+    domainConfig: domainConfig.shelterHub,
   }
 );
 
@@ -86,6 +92,7 @@ const matcherStack = new MatcherStack(app, `PawfectMatch-${stage}-Matcher`, {
   environmentStack,
   stackName: `pawfectmatch-${stage}-matcher`,
   serviceName: 'Matcher',
+  domainConfig: domainConfig.matcher,
 });
 
 // Add dependency

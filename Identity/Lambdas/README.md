@@ -148,7 +148,7 @@ The login system consists of two main endpoints:
 ### Login Flow
 ```bash
 # 1. Login with email and password
-curl -X POST https://api.pawfectmatch.com/identity/users/login \
+curl -X POST https://api.pawfectmatchnow.com/identity/users/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "adopter@example.com",
@@ -156,11 +156,11 @@ curl -X POST https://api.pawfectmatch.com/identity/users/login \
   }'
 
 # 2. Use the access token for authenticated requests
-curl -X GET https://api.pawfectmatch.com/protected-endpoint \
+curl -X GET https://api.pawfectmatchnow.com/protected-endpoint \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 
 # 3. Refresh the token when it expires
-curl -X POST https://api.pawfectmatch.com/identity/users/refresh-token \
+curl -X POST https://api.pawfectmatchnow.com/identity/users/refresh-token \
   -H "Content-Type: application/json" \
   -d '{
     "refreshToken": "base64encodedrefreshtoken..."

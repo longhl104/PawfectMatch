@@ -4,5 +4,8 @@
     "ap-southeast-2b",
     "ap-southeast-2c"
   ],
-  "acknowledged-issue-numbers": [34892]
+  "acknowledged-issue-numbers": [
+    34892
+  ],
+  "ssm:account=141714874243:parameterName=/PawfectMatch/Shared/HostedZoneId:region=ap-southeast-2": "Z01196693TWEA3S64YM9G"
 }

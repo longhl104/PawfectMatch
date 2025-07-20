@@ -1,6 +1,6 @@
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import { Construct } from 'constructs';
-import { PawfectMatchBaseStackProps } from './utils';
+import { PawfectMatchBaseStackProps, DomainConfigManager } from './utils';
 import { BaseStack } from './base-stack';
 import { Duration, RemovalPolicy } from 'aws-cdk-lib';
 
@@ -118,15 +118,21 @@ export class IdentityStack extends BaseStack {
             cognito.OAuthScope.PROFILE,
           ],
           callbackUrls: [
-            `https://${
-              stage === 'production' ? 'www' : stage
-            }.pawfectmatch.com/auth/callback`,
+            // Identity service domain
+            `https://${props.domainConfig?.domainName || 'localhost:4200'}/auth/callback`,
+            // Shelter Hub domain
+            `https://${DomainConfigManager.getDomainConfig(stage).shelterHub.domainName}/auth/callback`,
+            // Matcher domain
+            `https://${DomainConfigManager.getDomainConfig(stage).matcher.domainName}/auth/callback`,
             'http://localhost:4200/auth/callback', // For local development
           ],
           logoutUrls: [
-            `https://${
-              stage === 'production' ? 'www' : stage
-            }.pawfectmatch.com/auth/logout`,
+            // Identity service domain
+            `https://${props.domainConfig?.domainName || 'localhost:4200'}/auth/logout`,
+            // Shelter Hub domain
+            `https://${DomainConfigManager.getDomainConfig(stage).shelterHub.domainName}/auth/logout`,
+            // Matcher domain
+            `https://${DomainConfigManager.getDomainConfig(stage).matcher.domainName}/auth/logout`,
             'http://localhost:4200/auth/logout', // For local development
           ],
         },

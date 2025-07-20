@@ -1,8 +1,10 @@
 import * as cdk from 'aws-cdk-lib';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
+import * as route53 from 'aws-cdk-lib/aws-route53';
+import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 import { RemovalPolicy } from 'aws-cdk-lib';
-import { PawfectMatchBaseStackProps, StageType } from './utils';
+import { PawfectMatchBaseStackProps, StageType, DomainUtils } from './utils';
 import { Construct } from 'constructs';
 
 export interface DynamoDbTableConfig {
@@ -35,6 +37,8 @@ export class BaseStack extends cdk.Stack {
   protected readonly sharedStack: cdk.Stack;
   protected readonly environmentStack: cdk.Stack;
   protected readonly serviceName: string;
+  protected readonly hostedZone?: route53.IHostedZone;
+  protected readonly certificate?: acm.ICertificate;
 
   constructor(scope: Construct, id: string, props: PawfectMatchBaseStackProps) {
     super(scope, id, props);
@@ -43,6 +47,17 @@ export class BaseStack extends cdk.Stack {
     this.sharedStack = props.sharedStack;
     this.environmentStack = props.environmentStack;
     this.serviceName = props.serviceName;
+
+    // Import domain resources if they exist
+    if (props.domainConfig && props.sharedStack) {
+      try {
+        // Get hosted zone from shared stack
+        this.hostedZone = props.sharedStack.hostedZone;
+        this.certificate = props.sharedStack.certificate;
+      } catch (error) {
+        console.warn(`Domain resources not available for ${this.serviceName}:`, error);
+      }
+    }
   }
 
   static getCapitalizedStage(stage: StageType): string {
