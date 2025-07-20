@@ -6,6 +6,7 @@ import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 import { StageType, DomainConfigManager } from './utils';
+import { BaseStack } from './base-stack';
 
 export interface SharedStackProps extends cdk.StackProps {
   stage?: StageType;
@@ -14,7 +15,7 @@ export interface SharedStackProps extends cdk.StackProps {
 export class SharedStack extends cdk.Stack {
   public readonly assetsBucket?: s3.Bucket;
   public readonly hostedZone?: route53.IHostedZone;
-  public readonly certificate?: acm.Certificate;
+  public readonly certificate?: acm.ICertificate;
   public readonly wildcardCertificate?: acm.Certificate;
   public readonly distribution?: cloudfront.Distribution;
 
@@ -33,14 +34,26 @@ export class SharedStack extends cdk.Stack {
           comment: `Hosted zone for PawfectMatch ${stage} environment`,
         });
 
-        // Create SSL certificates for the domain
-        this.certificate = new acm.Certificate(this, 'Certificate', {
-          domainName: DomainConfigManager.getRootDomain(stage),
-          subjectAlternativeNames: [
-            `*.${DomainConfigManager.getRootDomain(stage)}`,
-          ],
-          validation: acm.CertificateValidation.fromDns(this.hostedZone),
-        });
+        // Reference existing SSL certificate (created manually)
+        // You'll need to manually create the certificate in ACM us-east-1 region
+        // and update the certificate ARN in SSM parameter
+        try {
+          const certificateArn = ssm.StringParameter.valueFromLookup(
+            this,
+            '/PawfectMatch/Shared/CertificateArn'
+          );
+          if (certificateArn && certificateArn !== 'dummy-value-for-${Token}') {
+            this.certificate = acm.Certificate.fromCertificateArn(
+              this,
+              'ImportedCertificate',
+              certificateArn
+            );
+          }
+        } catch (error) {
+          console.warn(
+            'Certificate not found in SSM, will deploy without custom domains'
+          );
+        }
 
         // Store hosted zone ID in SSM for other stacks to reference
         new ssm.StringParameter(this, 'HostedZoneId', {
@@ -57,11 +70,13 @@ export class SharedStack extends cdk.Stack {
         });
 
         // Store certificate ARN in SSM
-        new ssm.StringParameter(this, 'CertificateArn', {
-          parameterName: '/PawfectMatch/Shared/CertificateArn',
-          stringValue: this.certificate.certificateArn,
-          description: 'SSL Certificate ARN for PawfectMatch domain',
-        });
+        if (this.certificate) {
+          new ssm.StringParameter(this, 'CertificateArn', {
+            parameterName: '/PawfectMatch/Shared/CertificateArn',
+            stringValue: this.certificate.certificateArn,
+            description: 'SSL Certificate ARN for PawfectMatch domain',
+          });
+        }
       } else {
         // For other environments, reference the production hosted zone
         // You'll need to manually provide the hosted zone ID from production
@@ -79,21 +94,30 @@ export class SharedStack extends cdk.Stack {
           }
         );
 
-        // Create certificate for the stage subdomain
-        this.certificate = new acm.Certificate(this, 'Certificate', {
-          domainName: DomainConfigManager.getRootDomain(stage),
-          subjectAlternativeNames: [
-            `*.${DomainConfigManager.getRootDomain(stage)}`,
-          ],
-          validation: acm.CertificateValidation.fromDns(this.hostedZone),
-        });
+        // Create certificate for the stage subdomain in us-east-1 for CloudFront
+        try {
+          const certificateArn = ssm.StringParameter.valueFromLookup(
+            this,
+            `/PawfectMatch/${BaseStack.getCapitalizedStage(
+              stage
+            )}/Common/CertificateArn`
+          );
 
-        // Store certificate ARN in SSM for this stage
-        new ssm.StringParameter(this, 'CertificateArn', {
-          parameterName: `/PawfectMatch/${stage}/Shared/CertificateArn`,
-          stringValue: this.certificate.certificateArn,
-          description: `SSL Certificate ARN for PawfectMatch ${stage} environment`,
-        });
+          console.log(
+            `Certificate ARN for ${stage} environment: ${certificateArn}`
+          );
+          if (certificateArn && certificateArn !== 'dummy-value-for-${Token}') {
+            this.certificate = acm.Certificate.fromCertificateArn(
+              this,
+              'ImportedCertificate',
+              certificateArn
+            );
+          }
+        } catch (error) {
+          console.warn(
+            `Certificate not found for ${stage} environment, will deploy without custom domains`
+          );
+        }
       }
     }
   }

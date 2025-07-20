@@ -22,7 +22,7 @@ usage() {
     echo "Options:"
     echo "  -s, --stage STAGE        Deployment stage (development|production)"
     echo "  -p, --profile PROFILE    AWS CLI profile name"
-    echo "  -r, --region REGION      AWS region (default: us-east-1)"
+    echo "  -r, --region REGION      AWS region (default: ap-southeast-2)"
     echo "  -h, --help               Display this help message"
     echo ""
     echo "Example:"

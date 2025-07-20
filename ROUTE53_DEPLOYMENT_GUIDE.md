@@ -30,12 +30,12 @@ Set the following environment variables:
 # For development
 export CDK_STAGE=development
 export CDK_DEFAULT_ACCOUNT=your-dev-account-id
-export CDK_DEFAULT_REGION=us-east-1
+export CDK_DEFAULT_REGION=ap-southeast-2
 
 # For production
 export CDK_STAGE=production
 export CDK_PRODUCTION_ACCOUNT=your-prod-account-id
-export CDK_DEFAULT_REGION=us-east-1
+export CDK_DEFAULT_REGION=ap-southeast-2
 ```
 
 ### 3. Deploy Infrastructure

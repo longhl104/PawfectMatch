@@ -68,6 +68,11 @@ const identityStack = new IdentityStack(app, `PawfectMatch-${stage}-Identity`, {
   stackName: `pawfectmatch-${stage}-identity`,
   serviceName: 'Identity',
   domainConfig: domainConfig.identity,
+  clientHosting: {
+    enabled: true,
+    subdomain: 'app',
+    distPath: '../Identity/client/dist/client/browser',
+  },
 });
 
 // Create ShelterHub Stack
@@ -82,6 +87,11 @@ const shelterHubStack = new ShelterHubStack(
     stackName: `pawfectmatch-${stage}-shelter-hub`,
     serviceName: 'ShelterHub',
     domainConfig: domainConfig.shelterHub,
+    clientHosting: {
+      enabled: true,
+      subdomain: 'admin',
+      distPath: '../ShelterHub/client/dist/client/browser',
+    },
   }
 );
 
@@ -93,6 +103,11 @@ const matcherStack = new MatcherStack(app, `PawfectMatch-${stage}-Matcher`, {
   stackName: `pawfectmatch-${stage}-matcher`,
   serviceName: 'Matcher',
   domainConfig: domainConfig.matcher,
+  clientHosting: {
+    enabled: true,
+    subdomain: 'match',
+    distPath: '../Matcher/client/dist/client/browser',
+  },
 });
 
 // Add dependency

@@ -157,6 +157,55 @@ build_lambda_functions() {
 	cd "$ROOT_DIR/scripts"
 }
 
+# Function to build Angular client applications
+build_angular_clients() {
+	print_info "Building Angular client applications..."
+
+	# Change to root directory of the project
+	cd "$ROOT_DIR"
+
+	# List of client directories
+	local client_dirs=("Identity/client" "Matcher/client" "ShelterHub/client")
+
+	for client_dir in "${client_dirs[@]}"; do
+		if [ -d "$client_dir" ]; then
+			print_info "Building Angular client in: $client_dir"
+
+			cd "$ROOT_DIR/$client_dir"
+
+			# Check if package.json exists
+			if [ ! -f "package.json" ]; then
+				print_warning "No package.json found in $client_dir, skipping..."
+				continue
+			fi
+
+			# Install dependencies and build
+			print_info "Installing dependencies for $client_dir..."
+			if npm i; then
+				print_success "Dependencies installed for $client_dir"
+			else
+				print_error "Failed to install dependencies for $client_dir"
+				cd "$ROOT_DIR/scripts"
+				exit 1
+			fi
+
+			print_info "Building production build for $client_dir..."
+			if npm run build:prod; then
+				print_success "Built Angular client: $client_dir"
+			else
+				print_error "Failed to build Angular client: $client_dir"
+				cd "$ROOT_DIR/scripts"
+				exit 1
+			fi
+		else
+			print_warning "Client directory not found: $client_dir"
+		fi
+	done
+
+	print_success "All Angular clients built successfully"
+	cd "$ROOT_DIR/scripts"
+}
+
 # Function to deploy CDK stacks
 deploy_cdk() {
 	print_info "Starting CDK deployment for environment: $ENVIRONMENT"
@@ -206,6 +255,7 @@ main() {
 	# Parse command line arguments
 	local environment=""
 	local skip_lambda_build=false
+	local skip_angular_build=false
 
 	while [[ $# -gt 0 ]]; do
 		case $1 in
@@ -213,12 +263,17 @@ main() {
 			skip_lambda_build=true
 			shift
 			;;
+		--skip-angular-build)
+			skip_angular_build=true
+			shift
+			;;
 		-*)
 			print_error "Unknown option: $1"
-			echo "Usage: $0 <environment> [--skip-lambda-build]"
+			echo "Usage: $0 <environment> [--skip-lambda-build] [--skip-angular-build]"
 			echo "Environments: dev, development, prod, production"
 			echo "Options:"
-			echo "  --skip-lambda-build    Skip building .NET Lambda functions"
+			echo "  --skip-lambda-build     Skip building .NET Lambda functions"
+			echo "  --skip-angular-build    Skip building Angular client applications"
 			exit 1
 			;;
 		*)
@@ -226,7 +281,7 @@ main() {
 				environment=$1
 			else
 				print_error "Multiple environments specified"
-				echo "Usage: $0 <environment> [--skip-lambda-build]"
+				echo "Usage: $0 <environment> [--skip-lambda-build] [--skip-angular-build]"
 				exit 1
 			fi
 			shift
@@ -237,10 +292,11 @@ main() {
 	# Check if environment parameter is provided
 	if [ -z "$environment" ]; then
 		print_error "Environment parameter is required"
-		echo "Usage: $0 <environment> [--skip-lambda-build]"
+		echo "Usage: $0 <environment> [--skip-lambda-build] [--skip-angular-build]"
 		echo "Environments: dev, development, prod, production"
 		echo "Options:"
-		echo "  --skip-lambda-build    Skip building .NET Lambda functions"
+		echo "  --skip-lambda-build     Skip building .NET Lambda functions"
+		echo "  --skip-angular-build    Skip building Angular client applications"
 		exit 1
 	fi
 
@@ -253,6 +309,9 @@ main() {
 	if [ "$skip_lambda_build" = true ]; then
 		print_warning "Skipping Lambda function builds"
 	fi
+	if [ "$skip_angular_build" = true ]; then
+		print_warning "Skipping Angular client builds"
+	fi
 	echo
 
 	# AWS authentication
@@ -261,6 +320,10 @@ main() {
 
 	# Build and deploy
 	build_project
+
+	if [ "$skip_angular_build" = false ]; then
+		build_angular_clients
+	fi
 
 	# if [ "$skip_lambda_build" = false ]; then
 	# 	build_lambda_functions

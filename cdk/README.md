@@ -71,7 +71,7 @@ The infrastructure is organized into multiple stacks:
 ```bash
 # Set environment variables
 export CDK_STAGE=development
-export CDK_DEFAULT_REGION=us-east-1
+export CDK_DEFAULT_REGION=ap-southeast-2
 
 # Deploy stacks in order
 cdk deploy PawfectMatch-Shared
