@@ -168,6 +168,9 @@ build_angular_clients() {
 	local client_dirs=("Identity/client" "Matcher/client" "ShelterHub/client")
 
 	for client_dir in "${client_dirs[@]}"; do
+		# Always ensure we're in the ROOT_DIR before checking
+		cd "$ROOT_DIR"
+
 		if [ -d "$client_dir" ]; then
 			print_info "Building Angular client in: $client_dir"
 
