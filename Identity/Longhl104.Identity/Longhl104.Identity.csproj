@@ -4,6 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <ContainerUser>root</ContainerUser>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,8 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- <ProjectReference Include="..\..\Shared\Longhl104.PawfectMatch\Longhl104.PawfectMatch.csproj" /> -->
-    <PackageReference Include="Longhl104.PawfectMatch" Version="1.4.0" />
+    <ProjectReference Include="..\..\Shared\Longhl104.PawfectMatch\Longhl104.PawfectMatch.csproj" />
+    <!-- <PackageReference Include="Longhl104.PawfectMatch" Version="1.4.0" /> -->
   </ItemGroup>
 
 </Project>

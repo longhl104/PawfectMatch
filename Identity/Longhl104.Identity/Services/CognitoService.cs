@@ -220,7 +220,8 @@ public class CognitoService : ICognitoService
 
             var userProfile = new UserProfile
             {
-                UserId = getUserResponse.Username,
+                UserId = Guid.Parse(getUserResponse.UserAttributes.FirstOrDefault(attr => attr.Name == "sub")?.Value ??
+                                  Guid.NewGuid().ToString()),
                 Email = email,
                 CreatedAt = getUserResponse.UserCreateDate.Value,
                 LastLoginAt = DateTime.UtcNow,

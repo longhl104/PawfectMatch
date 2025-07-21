@@ -38,5 +38,6 @@
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.12.1" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.12.1" />
     <PackageReference Include="System.Text.Json" Version="9.0.6" />
+    <PackageReference Include="Amazon.AspNetCore.DataProtection.SSM" Version="4.0.0" />
   </ItemGroup>
 </Project>

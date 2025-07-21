@@ -41,6 +41,9 @@ builder.Services.AddCors(options =>
 builder.Services.AddSingleton<AmazonDynamoDBClient>();
 builder.Services.AddSingleton<AmazonCognitoIdentityProviderClient>();
 
+// Configure Data Protection for containerized environment
+builder.Services.AddPawfectMatchDataProtection("Identity", environmentName);
+
 // Configure Identity services
 builder.Services.AddScoped<ICognitoService, CognitoService>();
 builder.Services.AddScoped<ICookieService, CookieService>();

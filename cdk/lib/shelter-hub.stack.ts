@@ -134,7 +134,7 @@ export class ShelterHubStack extends BaseStack {
     // Create ECS service for ShelterHub API
     this.createEcsService({
       repository: this.environmentStack.shelterHubRepository,
-      containerPort: 80,
+      containerPort: 8080,
       cpu: 512,
       memory: 1024,
       healthCheckPath: '/health',

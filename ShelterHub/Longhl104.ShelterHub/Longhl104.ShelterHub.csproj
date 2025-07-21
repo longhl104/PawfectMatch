@@ -7,6 +7,7 @@
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <UseProjectReference>true</UseProjectReference>
+    <ContainerUser>root</ContainerUser>
   </PropertyGroup>
 
   <ItemGroup>

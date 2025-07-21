@@ -26,7 +26,7 @@ export class MatcherStack extends BaseStack {
     // Create ECS service for Matcher API
     this.createEcsService({
       repository: this.environmentStack.matcherRepository,
-      containerPort: 80,
+      containerPort: 8080,
       cpu: 512,
       memory: 1024,
       healthCheckPath: '/health',

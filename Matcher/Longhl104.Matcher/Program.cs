@@ -35,6 +35,9 @@ builder.Services.AddCors(options =>
 // Configure AWS services
 builder.Services.AddSingleton<IAmazonDynamoDB, AmazonDynamoDBClient>();
 
+// Configure Data Protection for containerized environment
+builder.Services.AddPawfectMatchDataProtection("Matcher", environmentName);
+
 // Configure logging
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();

@@ -389,7 +389,7 @@ export class BaseStack extends cdk.Stack {
   }): void {
     const {
       repository,
-      containerPort = 80,
+      containerPort = 8080,
       cpu = 256,
       memory = 512,
       healthCheckPath = '/health',

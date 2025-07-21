@@ -1,8 +1,7 @@
 # Use the official .NET 9 runtime as a parent image
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
-EXPOSE 80
-EXPOSE 443
+EXPOSE 8080
 
 # Use the official .NET 9 SDK for building
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build

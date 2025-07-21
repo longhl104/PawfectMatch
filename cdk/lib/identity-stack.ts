@@ -188,7 +188,7 @@ export class IdentityStack extends BaseStack {
     // Create ECS service for Identity API
     this.createEcsService({
       repository: this.environmentStack.identityRepository,
-      containerPort: 80,
+      containerPort: 8080,
       cpu: 512,
       memory: 1024,
       healthCheckPath: '/health',

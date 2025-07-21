@@ -31,6 +31,9 @@ builder.Services.AddPawfectMatchAuthenticationAndAuthorization("shelter_admin");
 builder.Services.AddSingleton<IAmazonDynamoDB, AmazonDynamoDBClient>();
 builder.Services.AddSingleton<IAmazonS3, AmazonS3Client>();
 
+// Configure Data Protection for containerized environment
+builder.Services.AddPawfectMatchDataProtection("ShelterHub", environmentName);
+
 // Configure caching
 builder.Services.AddMemoryCache();
 
