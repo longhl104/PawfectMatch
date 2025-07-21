@@ -206,8 +206,10 @@ build_and_push_backend_images() {
 		local service_dir="$service/Longhl104.$service"
 		local dockerfile_path="$service_dir/Dockerfile"
 		local repo_name="pawfectmatch-$(echo $service | tr '[:upper:]' '[:lower:]')-${ENVIRONMENT}"
-		local image_tag="latest"
-		local full_image_name="$ecr_base_url/$repo_name:$image_tag"
+		local timestamp_tag=$(date +%Y%m%d-%H%M%S)
+		local latest_tag="latest"
+		local timestamp_image_name="$ecr_base_url/$repo_name:$timestamp_tag"
+		local latest_image_name="$ecr_base_url/$repo_name:$latest_tag"
 
 		# Check if Dockerfile exists
 		if [ ! -f "$dockerfile_path" ]; then
@@ -215,10 +217,14 @@ build_and_push_backend_images() {
 			continue
 		fi
 
-		# Build Docker image
-		print_info "Building Docker image: $full_image_name"
-		if docker build --platform linux/arm64 -t $full_image_name -f $dockerfile_path .; then
+		# Build Docker image with timestamp tag
+		print_info "Building Docker image: $timestamp_image_name"
+		if docker build --platform linux/arm64 -t $timestamp_image_name -f $dockerfile_path .; then
 			print_success "Docker image built successfully for $service"
+
+			# Tag with latest
+			print_info "Tagging image as latest: $latest_image_name"
+			docker tag $timestamp_image_name $latest_image_name
 		else
 			print_error "Failed to build Docker image for $service"
 			cd "$ROOT_DIR/scripts"
@@ -240,12 +246,21 @@ build_and_push_backend_images() {
 			print_info "ECR repository already exists: $repo_name"
 		fi
 
-		# Push Docker image
-		print_info "Pushing Docker image: $full_image_name"
-		if docker push $full_image_name; then
-			print_success "Docker image pushed successfully for $service"
+		# Push both timestamp and latest tags
+		print_info "Pushing Docker image with timestamp tag: $timestamp_image_name"
+		if docker push $timestamp_image_name; then
+			print_success "Docker image with timestamp tag pushed successfully for $service"
 		else
-			print_error "Failed to push Docker image for $service"
+			print_error "Failed to push Docker image with timestamp tag for $service"
+			cd "$ROOT_DIR/scripts"
+			exit 1
+		fi
+
+		print_info "Pushing Docker image with latest tag: $latest_image_name"
+		if docker push $latest_image_name; then
+			print_success "Docker image with latest tag pushed successfully for $service"
+		else
+			print_error "Failed to push Docker image with latest tag for $service"
 			cd "$ROOT_DIR/scripts"
 			exit 1
 		fi
@@ -334,6 +349,61 @@ deploy_cdk() {
 	fi
 }
 
+# Function to force ECS redeployment
+force_ecs_redeployment() {
+	print_info "Forcing ECS service redeployment..."
+
+	# Get AWS region
+	local aws_region=$(aws configure get region --profile $AWS_PROFILE)
+	if [ -z "$aws_region" ]; then
+		aws_region="us-east-1"
+	fi
+
+	# ECS cluster and service names based on your actual naming convention
+	local cluster_name="pawfectmatch-${ENVIRONMENT}-cluster"
+
+	print_info "Using ECS cluster: $cluster_name"
+
+	# Define services and their actual ECS service names
+	local services=(
+		"pawfectmatch-${ENVIRONMENT}-identity-service"
+		"pawfectmatch-${ENVIRONMENT}-matcher-service"
+		"pawfectmatch-${ENVIRONMENT}-shelter-hub-service"
+	)
+
+	for service_name in "${services[@]}"; do
+		print_info "Forcing redeployment of ECS service: $service_name"
+
+		# Check if service exists by listing services and checking if our service is in the list
+		local service_exists=$(aws ecs list-services \
+			--cluster $cluster_name \
+			--region $aws_region \
+			--profile $AWS_PROFILE \
+			--output text \
+			--query "serviceArns[?contains(@, '$service_name')]" 2>/dev/null)
+
+		if [ -n "$service_exists" ]; then
+			# Force new deployment
+			print_info "Service found, forcing redeployment..."
+			if aws ecs update-service \
+				--cluster $cluster_name \
+				--service $service_name \
+				--force-new-deployment \
+				--region $aws_region \
+				--profile $AWS_PROFILE \
+				--no-cli-pager &>/dev/null; then
+				print_success "Forced redeployment of $service_name"
+			else
+				print_warning "Failed to force redeployment of $service_name"
+			fi
+		else
+			print_warning "ECS service $service_name not found in cluster $cluster_name, skipping..."
+		fi
+	done
+
+	print_success "ECS redeployment commands completed"
+}
+
 # Function to display stack outputs
 show_outputs() {
 	print_info "Displaying stack outputs..."
@@ -358,6 +428,7 @@ main() {
 	local skip_lambda_build=false
 	local skip_angular_build=false
 	local skip_backend_build=false
+	local skip_ecs_redeploy=false
 
 	while [[ $# -gt 0 ]]; do
 		case $1 in
@@ -373,14 +444,19 @@ main() {
 			skip_backend_build=true
 			shift
 			;;
+		--skip-ecs-redeploy)
+			skip_ecs_redeploy=true
+			shift
+			;;
 		-*)
 			print_error "Unknown option: $1"
-			echo "Usage: $0 <environment> [--skip-lambda-build] [--skip-angular-build] [--skip-backend-build]"
+			echo "Usage: $0 <environment> [--skip-lambda-build] [--skip-angular-build] [--skip-backend-build] [--skip-ecs-redeploy]"
 			echo "Environments: dev, development, prod, production"
 			echo "Options:"
 			echo "  --skip-lambda-build     Skip building .NET Lambda functions"
 			echo "  --skip-angular-build    Skip building Angular client applications"
 			echo "  --skip-backend-build    Skip building and pushing backend Docker images"
+			echo "  --skip-ecs-redeploy     Skip forcing ECS service redeployment"
 			exit 1
 			;;
 		*)
@@ -388,7 +464,7 @@ main() {
 				environment=$1
 			else
 				print_error "Multiple environments specified"
-				echo "Usage: $0 <environment> [--skip-lambda-build] [--skip-angular-build] [--skip-backend-build]"
+				echo "Usage: $0 <environment> [--skip-lambda-build] [--skip-angular-build] [--skip-backend-build] [--skip-ecs-redeploy]"
 				exit 1
 			fi
 			shift
@@ -399,12 +475,13 @@ main() {
 	# Check if environment parameter is provided
 	if [ -z "$environment" ]; then
 		print_error "Environment parameter is required"
-		echo "Usage: $0 <environment> [--skip-lambda-build] [--skip-angular-build] [--skip-backend-build]"
+		echo "Usage: $0 <environment> [--skip-lambda-build] [--skip-angular-build] [--skip-backend-build] [--skip-ecs-redeploy]"
 		echo "Environments: dev, development, prod, production"
 		echo "Options:"
 		echo "  --skip-lambda-build     Skip building .NET Lambda functions"
 		echo "  --skip-angular-build    Skip building Angular client applications"
 		echo "  --skip-backend-build    Skip building and pushing backend Docker images"
+		echo "  --skip-ecs-redeploy     Skip forcing ECS service redeployment"
 		exit 1
 	fi
 
@@ -422,6 +499,9 @@ main() {
 	fi
 	if [ "$skip_backend_build" = true ]; then
 		print_warning "Skipping backend Docker image builds"
+	fi
+	if [ "$skip_ecs_redeploy" = true ]; then
+		print_warning "Skipping ECS service redeployment"
 	fi
 	echo
 
@@ -449,6 +529,11 @@ main() {
 
 		# Show stack outputs
 		show_outputs
+
+		# Force ECS redeployment if not skipped
+		if [ "$skip_ecs_redeploy" = false ]; then
+			force_ecs_redeployment
+		fi
 
 		# Install PostGIS
 		echo
