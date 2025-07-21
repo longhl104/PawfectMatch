@@ -64,7 +64,8 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Health check endpoint
-app.MapGet("/health", () => new { Status = "Healthy", Timestamp = DateTime.UtcNow });
+// Health check endpoint - allow anonymous access for ALB health checks
+app.MapGet("/health", () => new { Status = "Healthy", Timestamp = DateTime.UtcNow })
+    .AllowAnonymous();
 
 app.Run();

@@ -568,7 +568,7 @@ export class BaseStack extends cdk.Stack {
       // Create Route 53 record
       new route53.ARecord(this, 'ApiDomainRecord', {
         zone: this.hostedZone,
-        recordName: subdomain,
+        recordName: this.apiDomainName,
         target: route53.RecordTarget.fromAlias(
           new targets.LoadBalancerTarget(this.applicationLoadBalancer)
         ),
