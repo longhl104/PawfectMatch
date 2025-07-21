@@ -13,6 +13,7 @@ import {
   ToastService,
   ErrorHandlingService,
 } from '@longhl104/pawfect-match-ng';
+import { environment } from 'environments/environment';
 
 interface HttpError {
   status?: number;
@@ -78,10 +79,10 @@ export class Login {
 
         switch (response.data?.user?.userType) {
           case 'adopter':
-            window.location.href = 'https://localhost:4201';
+            window.location.href = environment.matcherUrl;
             break;
           case 'shelter_admin':
-            window.location.href = 'https://localhost:4202';
+            window.location.href = environment.shelterHubUrl;
             break;
           default:
             throw new Error(

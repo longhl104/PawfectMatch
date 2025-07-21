@@ -29,7 +29,12 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
     {
         policy.WithOrigins(
-                builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? ["https://localhost:4200"]
+                builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ??
+                [
+                    "https://localhost:4200",
+                    $"https://id.{environmentName.ToLowerInvariant()}.pawfectmatchnow.com",
+                    "https://id.pawfectmatchnow.com"
+                ]
             )
             .AllowAnyMethod()
             .AllowAnyHeader()

@@ -4,4 +4,6 @@ export interface Environment {
   apiUrl: string;
   appName: string;
   version: string;
+  shelterHubUrl: string;
+  matcherUrl: string;
 }

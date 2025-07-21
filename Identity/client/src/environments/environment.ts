@@ -6,4 +6,6 @@ export const environment: Environment = {
   apiUrl: 'http://localhost:5200/api',
   appName: 'PawfectMatch',
   version: '1.0.0',
+  shelterHubUrl: 'http://localhost:5202',
+  matcherUrl: 'http://localhost:5201',
 };
