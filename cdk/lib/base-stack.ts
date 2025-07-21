@@ -479,6 +479,10 @@ export class BaseStack extends cdk.Stack {
         memoryLimitMiB: memory,
         executionRole: taskExecutionRole,
         taskRole,
+        runtimePlatform: {
+          cpuArchitecture: ecs.CpuArchitecture.ARM64,
+          operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,
+        },
       }
     );
 

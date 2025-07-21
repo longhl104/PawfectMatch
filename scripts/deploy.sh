@@ -217,7 +217,7 @@ build_and_push_backend_images() {
 
 		# Build Docker image
 		print_info "Building Docker image: $full_image_name"
-		if docker build --platform linux/x86_64 -t $full_image_name -f $dockerfile_path .; then
+		if docker build --platform linux/arm64 -t $full_image_name -f $dockerfile_path .; then
 			print_success "Docker image built successfully for $service"
 		else
 			print_error "Failed to build Docker image for $service"
