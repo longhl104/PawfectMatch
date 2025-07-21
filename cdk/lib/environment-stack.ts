@@ -64,15 +64,23 @@ export class EnvironmentStack extends cdk.Stack {
     // Create CloudWatch Log Group
     this.logGroup = new logs.LogGroup(this, 'PawfectMatchLogGroup', {
       logGroupName: `/aws/ecs/pawfectmatch-${stage}`,
-      retention: stage === 'production' ? logs.RetentionDays.ONE_MONTH : logs.RetentionDays.ONE_WEEK,
-      removalPolicy: stage === 'production' ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+      retention:
+        stage === 'production'
+          ? logs.RetentionDays.ONE_MONTH
+          : logs.RetentionDays.ONE_WEEK,
+      removalPolicy:
+        stage === 'production'
+          ? cdk.RemovalPolicy.RETAIN
+          : cdk.RemovalPolicy.DESTROY,
     });
 
     // Create Task Execution Role
     this.taskExecutionRole = new iam.Role(this, 'TaskExecutionRole', {
       assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
       managedPolicies: [
-        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AmazonECSTaskExecutionRolePolicy'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName(
+          'service-role/AmazonECSTaskExecutionRolePolicy'
+        ),
       ],
       inlinePolicies: {
         ECRAccess: new iam.PolicyDocument({
@@ -97,10 +105,7 @@ export class EnvironmentStack extends cdk.Stack {
           statements: [
             new iam.PolicyStatement({
               effect: iam.Effect.ALLOW,
-              actions: [
-                'logs:CreateLogStream',
-                'logs:PutLogEvents',
-              ],
+              actions: ['logs:CreateLogStream', 'logs:PutLogEvents'],
               resources: [this.logGroup.logGroupArn],
             }),
           ],
@@ -127,7 +132,9 @@ export class EnvironmentStack extends cdk.Stack {
                 'dynamodb:BatchGetItem',
                 'dynamodb:BatchWriteItem',
               ],
-              resources: [`arn:aws:dynamodb:${this.region}:${this.account}:table/pawfectmatch-${stage}-*`],
+              resources: [
+                `arn:aws:dynamodb:${this.region}:${this.account}:table/pawfectmatch-${stage}-*`,
+              ],
             }),
             // Systems Manager Parameter Store access
             new iam.PolicyStatement({
@@ -137,7 +144,9 @@ export class EnvironmentStack extends cdk.Stack {
                 'ssm:GetParameters',
                 'ssm:GetParametersByPath',
               ],
-              resources: [`arn:aws:ssm:${this.region}:${this.account}:parameter/PawfectMatch/${stage}/*`],
+              resources: [
+                `arn:aws:ssm:${this.region}:${this.account}:parameter/PawfectMatch/*`,
+              ],
             }),
             // Cognito access
             new iam.PolicyStatement({
@@ -152,16 +161,14 @@ export class EnvironmentStack extends cdk.Stack {
                 'cognito-idp:AdminConfirmSignUp',
                 'cognito-idp:AdminSetUserPassword',
               ],
-              resources: [`arn:aws:cognito-idp:${this.region}:${this.account}:userpool/*`],
+              resources: [
+                `arn:aws:cognito-idp:${this.region}:${this.account}:userpool/*`,
+              ],
             }),
             // S3 access (for media uploads)
             new iam.PolicyStatement({
               effect: iam.Effect.ALLOW,
-              actions: [
-                's3:GetObject',
-                's3:PutObject',
-                's3:DeleteObject',
-              ],
+              actions: ['s3:GetObject', 's3:PutObject', 's3:DeleteObject'],
               resources: [`arn:aws:s3:::pawfectmatch-${stage}-*/*`],
             }),
           ],
@@ -173,7 +180,7 @@ export class EnvironmentStack extends cdk.Stack {
     const services = ['identity', 'matcher', 'shelterhub'];
     const repositories: { [key: string]: ecr.IRepository } = {};
 
-    services.forEach(service => {
+    services.forEach((service) => {
       const repositoryName = `pawfectmatch-${service}-${stage}`;
       const repository = ecr.Repository.fromRepositoryName(
         this,
