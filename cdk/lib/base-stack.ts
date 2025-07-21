@@ -9,6 +9,11 @@ import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as targets from 'aws-cdk-lib/aws-route53-targets';
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as ecs from 'aws-cdk-lib/aws-ecs';
+import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as ecr from 'aws-cdk-lib/aws-ecr';
+import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
+import * as logs from 'aws-cdk-lib/aws-logs';
 import { RemovalPolicy } from 'aws-cdk-lib';
 import {
   PawfectMatchBaseStackProps,
@@ -17,6 +22,7 @@ import {
   ClientHostingConfig,
 } from './utils';
 import { Construct } from 'constructs';
+import { EnvironmentStack } from './environment-stack';
 
 export interface DynamoDbTableConfig {
   tableName: string;
@@ -46,15 +52,22 @@ export interface DynamoDbTableConfig {
 export class BaseStack extends cdk.Stack {
   protected readonly stage: StageType;
   protected readonly sharedStack: cdk.Stack;
-  protected readonly environmentStack: cdk.Stack;
+  protected readonly environmentStack: EnvironmentStack;
   protected readonly serviceName: string;
   protected readonly hostedZone?: route53.IHostedZone;
   protected readonly certificate?: acm.ICertificate;
+  protected readonly regionalCertificate?: acm.ICertificate;
 
   // Client hosting resources
   public clientBucket?: s3.Bucket;
   public clientDistribution?: cloudfront.Distribution;
   public clientDomainName?: string;
+
+  // ECS Backend resources
+  public ecsService?: ecs.FargateService;
+  public applicationLoadBalancer?: elbv2.ApplicationLoadBalancer;
+  public targetGroup?: elbv2.ApplicationTargetGroup;
+  public apiDomainName?: string;
 
   constructor(scope: Construct, id: string, props: PawfectMatchBaseStackProps) {
     super(scope, id, props);
@@ -70,6 +83,7 @@ export class BaseStack extends cdk.Stack {
         // Get hosted zone from shared stack
         this.hostedZone = props.sharedStack.hostedZone;
         this.certificate = props.sharedStack.certificate;
+        this.regionalCertificate = props.sharedStack.regionalCertificate;
       } catch (error) {
         console.warn(
           `Domain resources not available for ${this.serviceName}:`,
@@ -229,7 +243,7 @@ export class BaseStack extends cdk.Stack {
         // Use certificate from shared stack if available
         ...(this.certificate && {
           certificate: this.certificate,
-          domainNames: [this.clientDomainName]
+          domainNames: [this.clientDomainName],
         }),
 
         defaultBehavior: {
@@ -358,5 +372,256 @@ export class BaseStack extends cdk.Stack {
     cdk.Tags.of(this.clientDistribution).add('Service', this.serviceName);
     cdk.Tags.of(this.clientDistribution).add('Component', 'ClientHosting');
     cdk.Tags.of(this.clientDistribution).add('Environment', this.stage);
+  }
+
+  /**
+   * Creates an ECS Fargate service for the backend API
+   * @param config Configuration for the ECS service
+   */
+  protected createEcsService(config: {
+    repository: ecr.IRepository;
+    containerPort?: number;
+    cpu?: number;
+    memory?: number;
+    healthCheckPath?: string;
+    subdomain?: string;
+    environment?: { [key: string]: string };
+  }): void {
+    const {
+      repository,
+      containerPort = 80,
+      cpu = 256,
+      memory = 512,
+      healthCheckPath = '/health',
+      subdomain = 'api',
+      environment = {},
+    } = config;
+
+    // Get ECS resources from environment stack
+    const cluster = this.environmentStack.ecsCluster;
+    const vpc = this.environmentStack.vpc;
+    const taskExecutionRole = this.environmentStack.taskExecutionRole;
+    const taskRole = this.environmentStack.taskRole;
+    const logGroup = this.environmentStack.logGroup;
+
+    // Create security group for the service
+    const serviceSecurityGroup = new ec2.SecurityGroup(
+      this,
+      'ServiceSecurityGroup',
+      {
+        vpc,
+        description: `Security group for ${this.serviceName} ECS service`,
+        allowAllOutbound: true,
+      }
+    );
+
+    // Create ALB security group
+    const albSecurityGroup = new ec2.SecurityGroup(this, 'AlbSecurityGroup', {
+      vpc,
+      description: `Security group for ${this.serviceName} ALB`,
+      allowAllOutbound: true,
+    });
+
+    // Allow HTTP and HTTPS traffic to ALB
+    albSecurityGroup.addIngressRule(
+      ec2.Peer.anyIpv4(),
+      ec2.Port.tcp(80),
+      'Allow HTTP'
+    );
+    albSecurityGroup.addIngressRule(
+      ec2.Peer.anyIpv4(),
+      ec2.Port.tcp(443),
+      'Allow HTTPS'
+    );
+
+    // Allow ALB to reach the service
+    serviceSecurityGroup.addIngressRule(
+      albSecurityGroup,
+      ec2.Port.tcp(containerPort),
+      'Allow ALB access to container'
+    );
+
+    // Create Application Load Balancer
+    this.applicationLoadBalancer = new elbv2.ApplicationLoadBalancer(
+      this,
+      'ApplicationLoadBalancer',
+      {
+        vpc,
+        internetFacing: true,
+        securityGroup: albSecurityGroup,
+      }
+    );
+
+    // Create target group
+    this.targetGroup = new elbv2.ApplicationTargetGroup(this, 'TargetGroup', {
+      vpc,
+      port: containerPort,
+      protocol: elbv2.ApplicationProtocol.HTTP,
+      targetType: elbv2.TargetType.IP,
+      healthCheck: {
+        enabled: true,
+        path: healthCheckPath,
+        healthyHttpCodes: '200',
+        interval: cdk.Duration.seconds(30),
+        timeout: cdk.Duration.seconds(5),
+        healthyThresholdCount: 2,
+        unhealthyThresholdCount: 3,
+      },
+    });
+
+    // Create task definition
+    const taskDefinition = new ecs.FargateTaskDefinition(
+      this,
+      'TaskDefinition',
+      {
+        family: `${this.stackName}-task`,
+        cpu,
+        memoryLimitMiB: memory,
+        executionRole: taskExecutionRole,
+        taskRole,
+      }
+    );
+
+    // Add container to task definition
+    const container = taskDefinition.addContainer('Container', {
+      image: ecs.ContainerImage.fromEcrRepository(repository, 'latest'),
+      logging: ecs.LogDrivers.awsLogs({
+        streamPrefix: this.serviceName,
+        logGroup,
+      }),
+      environment: {
+        ASPNETCORE_ENVIRONMENT:
+          this.stage === 'production' ? 'Production' : 'Development',
+        ASPNETCORE_URLS: `http://+:${containerPort}`,
+        ...environment,
+      },
+      essential: true,
+    });
+
+    // Add port mapping
+    container.addPortMappings({
+      containerPort,
+      protocol: ecs.Protocol.TCP,
+    });
+
+    // Create ECS service
+    this.ecsService = new ecs.FargateService(this, 'Service', {
+      cluster,
+      taskDefinition,
+      serviceName: `${this.stackName}-service`,
+      desiredCount: this.stage === 'production' ? 2 : 1,
+      assignPublicIp: false,
+      securityGroups: [serviceSecurityGroup],
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
+      },
+      enableExecuteCommand: this.stage !== 'production',
+    });
+
+    // Attach the service to the target group
+    this.targetGroup.addTarget(this.ecsService);
+
+    // Create ALB listener
+    const listener = this.applicationLoadBalancer.addListener('Listener', {
+      port: 80,
+      protocol: elbv2.ApplicationProtocol.HTTP,
+      defaultTargetGroups: [this.targetGroup],
+    });
+
+    // If we have a regional certificate and hosted zone, set up HTTPS and custom domain
+    // Use regional certificate for ALB (not CloudFront certificate)
+    if (this.regionalCertificate && this.hostedZone && subdomain) {
+      // Create API domain name
+      this.apiDomainName =
+        this.stage === 'production'
+          ? `${subdomain}.${this.hostedZone.zoneName}`
+          : `${subdomain}.${this.stage}.${this.hostedZone.zoneName}`;
+
+      console.log(
+        `Setting up HTTPS for ${this.serviceName} at ${this.apiDomainName} using regional certificate`
+      );
+
+      // Add HTTPS listener
+      const httpsListener = this.applicationLoadBalancer.addListener(
+        'HttpsListener',
+        {
+          port: 443,
+          protocol: elbv2.ApplicationProtocol.HTTPS,
+          certificates: [this.regionalCertificate],
+          defaultTargetGroups: [this.targetGroup],
+        }
+      );
+
+      // Redirect HTTP to HTTPS
+      listener.addAction('RedirectToHttps', {
+        action: elbv2.ListenerAction.redirect({
+          protocol: elbv2.ApplicationProtocol.HTTPS,
+          port: '443',
+          permanent: true,
+        }),
+      });
+
+      // Create Route 53 record
+      new route53.ARecord(this, 'ApiDomainRecord', {
+        zone: this.hostedZone,
+        recordName: subdomain,
+        target: route53.RecordTarget.fromAlias(
+          new targets.LoadBalancerTarget(this.applicationLoadBalancer)
+        ),
+      });
+
+      // Create SSM parameter for API domain
+      this.createSsmParameter(
+        'ApiDomainName',
+        this.apiDomainName,
+        `API domain name for ${this.serviceName}`
+      );
+    }
+
+    // Create SSM parameters for the service
+    this.createSsmParameter(
+      'ServiceName',
+      this.ecsService.serviceName,
+      `ECS service name for ${this.serviceName}`
+    );
+
+    this.createSsmParameter(
+      'LoadBalancerDnsName',
+      this.applicationLoadBalancer.loadBalancerDnsName,
+      `Load balancer DNS name for ${this.serviceName}`
+    );
+
+    this.createSsmParameter(
+      'TargetGroupArn',
+      this.targetGroup.targetGroupArn,
+      `Target group ARN for ${this.serviceName}`
+    );
+
+    // Outputs
+    new cdk.CfnOutput(this, `${this.serviceName}ServiceName`, {
+      value: this.ecsService.serviceName,
+      description: `ECS service name for ${this.serviceName}`,
+    });
+
+    new cdk.CfnOutput(this, `${this.serviceName}LoadBalancerDnsName`, {
+      value: this.applicationLoadBalancer.loadBalancerDnsName,
+      description: `Load balancer DNS name for ${this.serviceName}`,
+    });
+
+    if (this.apiDomainName) {
+      new cdk.CfnOutput(this, `${this.serviceName}ApiDomainName`, {
+        value: this.apiDomainName,
+        description: `API domain name for ${this.serviceName}`,
+      });
+    }
+
+    // Add tags
+    cdk.Tags.of(this.ecsService).add('Service', this.serviceName);
+    cdk.Tags.of(this.ecsService).add('Component', 'Backend');
+    cdk.Tags.of(this.ecsService).add('Environment', this.stage);
+
+    cdk.Tags.of(this.applicationLoadBalancer).add('Service', this.serviceName);
+    cdk.Tags.of(this.applicationLoadBalancer).add('Component', 'Backend');
+    cdk.Tags.of(this.applicationLoadBalancer).add('Environment', this.stage);
   }
 }

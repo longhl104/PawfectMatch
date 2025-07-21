@@ -184,5 +184,19 @@ export class IdentityStack extends BaseStack {
       this.userPoolClient.userPoolClientId,
       `User Pool Client ID for ${stage} environment`
     );
+
+    // Create ECS service for Identity API
+    this.createEcsService({
+      repository: this.environmentStack.identityRepository,
+      containerPort: 80,
+      cpu: 512,
+      memory: 1024,
+      healthCheckPath: '/health',
+      subdomain: 'api-id',
+      environment: {
+        'PawfectMatch__Environment': this.stage,
+        'PawfectMatch__ServiceName': 'Identity',
+      },
+    });
   }
 }

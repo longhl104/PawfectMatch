@@ -16,8 +16,8 @@ export class SharedStack extends cdk.Stack {
   public readonly assetsBucket?: s3.Bucket;
   public readonly hostedZone?: route53.IHostedZone;
   public readonly certificate?: acm.ICertificate;
-  public readonly wildcardCertificate?: acm.Certificate;
   public readonly distribution?: cloudfront.Distribution;
+  public readonly regionalCertificate?: acm.ICertificate;
 
   constructor(scope: Construct, id: string, props: SharedStackProps) {
     super(scope, id, props);
@@ -116,6 +116,32 @@ export class SharedStack extends cdk.Stack {
         } catch (error) {
           console.warn(
             `Certificate not found for ${stage} environment, will deploy without custom domains`
+          );
+        }
+
+        // Create regional certificate for ALB (Application Load Balancer) usage
+        // This is different from the CloudFront certificate which must be in us-east-1
+        try {
+          const regionalCertificateArn = ssm.StringParameter.valueFromLookup(
+            this,
+            `/PawfectMatch/${BaseStack.getCapitalizedStage(
+              stage
+            )}/Common/RegionalCertificateArn`
+          );
+
+          console.log(
+            `Regional Certificate ARN for ${stage} environment: ${regionalCertificateArn}`
+          );
+          if (regionalCertificateArn && regionalCertificateArn !== 'dummy-value-for-${Token}') {
+            this.regionalCertificate = acm.Certificate.fromCertificateArn(
+              this,
+              'ImportedRegionalCertificate',
+              regionalCertificateArn
+            );
+          }
+        } catch (error) {
+          console.warn(
+            `Regional certificate not found for ${stage} environment, ALB will use HTTP only`
           );
         }
       }

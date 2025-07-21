@@ -73,7 +73,7 @@ export class ShelterHubStack extends BaseStack {
       bucketName: `${this.stackName}-pet-media`.toLowerCase(),
       versioned: true,
       removalPolicy:
-        this.environment === 'production'
+        this.stage === 'production'
           ? RemovalPolicy.RETAIN
           : RemovalPolicy.DESTROY,
       lifecycleRules: [
@@ -130,5 +130,19 @@ export class ShelterHubStack extends BaseStack {
       'Description',
       'S3 bucket for storing pet images and videos'
     );
+
+    // Create ECS service for ShelterHub API
+    this.createEcsService({
+      repository: this.environmentStack.shelterHubRepository,
+      containerPort: 80,
+      cpu: 512,
+      memory: 1024,
+      healthCheckPath: '/health',
+      subdomain: 'api-shelter',
+      environment: {
+        'PawfectMatch__Environment': this.stage,
+        'PawfectMatch__ServiceName': 'ShelterHub',
+      },
+    });
   }
 }

@@ -48,6 +48,17 @@ check_prerequisites() {
 		exit 1
 	fi
 
+	if ! command -v docker &>/dev/null; then
+		print_error "Docker is not installed. Please install Docker."
+		exit 1
+	fi
+
+	# Check if Docker daemon is running
+	if ! docker info &>/dev/null; then
+		print_error "Docker daemon is not running. Please start Docker."
+		exit 1
+	fi
+
 	print_success "All prerequisites are installed."
 }
 
@@ -157,6 +168,93 @@ build_lambda_functions() {
 	cd "$ROOT_DIR/scripts"
 }
 
+# Function to build and push Docker images for backend services
+build_and_push_backend_images() {
+	print_info "Building and pushing Docker images for backend services..."
+
+	# Change to root directory
+	cd "$ROOT_DIR"
+
+	# Get AWS account ID and region
+	local aws_account_id=$(aws sts get-caller-identity --profile $AWS_PROFILE --query Account --output text)
+	local aws_region=$(aws configure get region --profile $AWS_PROFILE)
+
+	# Use default region if not configured
+	if [ -z "$aws_region" ]; then
+		aws_region="us-east-1"
+	fi
+
+	# ECR base URL
+	local ecr_base_url="${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.com"
+
+	print_info "Using ECR base URL: $ecr_base_url"
+
+	# Login to ECR
+	print_info "Logging into ECR..."
+	if ! aws ecr get-login-password --region $aws_region --profile $AWS_PROFILE | docker login --username AWS --password-stdin $ecr_base_url; then
+		print_error "Failed to login to ECR"
+		cd "$ROOT_DIR/scripts"
+		exit 1
+	fi
+
+	# Backend services to build
+	local services=("Identity" "Matcher" "ShelterHub")
+
+	for service in "${services[@]}"; do
+		print_info "Building Docker image for $service..."
+
+		local service_dir="$service/Longhl104.$service"
+		local dockerfile_path="$service_dir/Dockerfile"
+		local repo_name="pawfectmatch-$(echo $service | tr '[:upper:]' '[:lower:]')-${ENVIRONMENT}"
+		local image_tag="latest"
+		local full_image_name="$ecr_base_url/$repo_name:$image_tag"
+
+		# Check if Dockerfile exists
+		if [ ! -f "$dockerfile_path" ]; then
+			print_warning "Dockerfile not found for $service at $dockerfile_path, skipping..."
+			continue
+		fi
+
+		# Build Docker image
+		print_info "Building Docker image: $full_image_name"
+		if docker build --platform linux/x86_64 -t $full_image_name -f $dockerfile_path .; then
+			print_success "Docker image built successfully for $service"
+		else
+			print_error "Failed to build Docker image for $service"
+			cd "$ROOT_DIR/scripts"
+			exit 1
+		fi
+
+		# Create ECR repository if it doesn't exist
+		print_info "Ensuring ECR repository exists: $repo_name"
+		if ! aws ecr describe-repositories --repository-names $repo_name --region $aws_region --profile $AWS_PROFILE &>/dev/null; then
+			print_info "Creating ECR repository: $repo_name"
+			if aws ecr create-repository --repository-name $repo_name --region $aws_region --profile $AWS_PROFILE &>/dev/null; then
+				print_success "ECR repository created: $repo_name"
+			else
+				print_error "Failed to create ECR repository: $repo_name"
+				cd "$ROOT_DIR/scripts"
+				exit 1
+			fi
+		else
+			print_info "ECR repository already exists: $repo_name"
+		fi
+
+		# Push Docker image
+		print_info "Pushing Docker image: $full_image_name"
+		if docker push $full_image_name; then
+			print_success "Docker image pushed successfully for $service"
+		else
+			print_error "Failed to push Docker image for $service"
+			cd "$ROOT_DIR/scripts"
+			exit 1
+		fi
+	done
+
+	print_success "All backend Docker images built and pushed successfully"
+	cd "$ROOT_DIR/scripts"
+}
+
 # Function to build Angular client applications
 build_angular_clients() {
 	print_info "Building Angular client applications..."
@@ -259,6 +357,7 @@ main() {
 	local environment=""
 	local skip_lambda_build=false
 	local skip_angular_build=false
+	local skip_backend_build=false
 
 	while [[ $# -gt 0 ]]; do
 		case $1 in
@@ -270,13 +369,18 @@ main() {
 			skip_angular_build=true
 			shift
 			;;
+		--skip-backend-build)
+			skip_backend_build=true
+			shift
+			;;
 		-*)
 			print_error "Unknown option: $1"
-			echo "Usage: $0 <environment> [--skip-lambda-build] [--skip-angular-build]"
+			echo "Usage: $0 <environment> [--skip-lambda-build] [--skip-angular-build] [--skip-backend-build]"
 			echo "Environments: dev, development, prod, production"
 			echo "Options:"
 			echo "  --skip-lambda-build     Skip building .NET Lambda functions"
 			echo "  --skip-angular-build    Skip building Angular client applications"
+			echo "  --skip-backend-build    Skip building and pushing backend Docker images"
 			exit 1
 			;;
 		*)
@@ -284,7 +388,7 @@ main() {
 				environment=$1
 			else
 				print_error "Multiple environments specified"
-				echo "Usage: $0 <environment> [--skip-lambda-build] [--skip-angular-build]"
+				echo "Usage: $0 <environment> [--skip-lambda-build] [--skip-angular-build] [--skip-backend-build]"
 				exit 1
 			fi
 			shift
@@ -295,11 +399,12 @@ main() {
 	# Check if environment parameter is provided
 	if [ -z "$environment" ]; then
 		print_error "Environment parameter is required"
-		echo "Usage: $0 <environment> [--skip-lambda-build] [--skip-angular-build]"
+		echo "Usage: $0 <environment> [--skip-lambda-build] [--skip-angular-build] [--skip-backend-build]"
 		echo "Environments: dev, development, prod, production"
 		echo "Options:"
 		echo "  --skip-lambda-build     Skip building .NET Lambda functions"
 		echo "  --skip-angular-build    Skip building Angular client applications"
+		echo "  --skip-backend-build    Skip building and pushing backend Docker images"
 		exit 1
 	fi
 
@@ -315,6 +420,9 @@ main() {
 	if [ "$skip_angular_build" = true ]; then
 		print_warning "Skipping Angular client builds"
 	fi
+	if [ "$skip_backend_build" = true ]; then
+		print_warning "Skipping backend Docker image builds"
+	fi
 	echo
 
 	# AWS authentication
@@ -326,6 +434,10 @@ main() {
 
 	if [ "$skip_angular_build" = false ]; then
 		build_angular_clients
+	fi
+
+	if [ "$skip_backend_build" = false ]; then
+		build_and_push_backend_images
 	fi
 
 	# if [ "$skip_lambda_build" = false ]; then
