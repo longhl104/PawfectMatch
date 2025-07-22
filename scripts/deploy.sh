@@ -352,7 +352,7 @@ build_angular_clients() {
 			fi
 
 			print_info "Building production build for $client_dir..."
-			if npm run build:prod; then
+			if npm run build:${ENVIRONMENT}; then
 				print_success "Built Angular client: $client_dir"
 			else
 				print_error "Failed to build Angular client: $client_dir"

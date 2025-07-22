@@ -75,20 +75,15 @@ export class Login {
           this.usersService.login(loginRequest),
         );
 
+        console.log('=== Login Response Debug ===');
+        console.log('Response:', response);
+        console.log('Response data:', response.data);
+        console.log('User type:', response.data?.user?.userType);
+
         this.toastService.success(`Welcome back!`);
 
-        switch (response.data?.user?.userType) {
-          case 'adopter':
-            window.location.href = environment.matcherUrl;
-            break;
-          case 'shelter_admin':
-            window.location.href = environment.shelterHubUrl;
-            break;
-          default:
-            throw new Error(
-              `Unknown user type: ${response.data?.user?.userType}`,
-            );
-        }
+        // Wait for cookies to be set, then navigate
+        await this.waitForCookiesAndNavigate(response.data?.user?.userType || '');
       } catch (error: unknown) {
         // Handle specific error cases
         const httpError = error as HttpError;
@@ -128,5 +123,117 @@ export class Login {
 
   goBack(): void {
     this.router.navigate(['/auth/choice']);
+  }
+
+  private async waitForCookiesAndNavigate(userType: string): Promise<void> {
+    console.log('=== Cookie Debug Information ===');
+    console.log('Current URL:', window.location.href);
+    console.log('Current domain:', window.location.hostname);
+    console.log('Current protocol:', window.location.protocol);
+    console.log('Current port:', window.location.port);
+    console.log('Document domain:', document.domain);
+    console.log('All cookies before wait:', document.cookie);
+    console.log('Cookie length:', document.cookie.length);
+
+    // Check if we're in a secure context
+    console.log('Is secure context:', window.isSecureContext);
+
+    // Wait for cookies to be set (check multiple times with delays)
+    const maxAttempts = 10;
+    let attempts = 0;
+
+    while (attempts < maxAttempts) {
+      // Check if cookies are available
+      const accessToken = this.getCookie('accessToken');
+      const userInfo = this.getCookie('userInfo');
+
+      console.log(`=== Attempt ${attempts + 1} ===`);
+      console.log('Raw document.cookie:', document.cookie);
+      console.log('Cookie exists check - accessToken:', !!accessToken);
+      console.log('Cookie exists check - userInfo:', !!userInfo);
+      console.log('Cookie value check - accessToken length:', accessToken?.length || 0);
+      console.log('Cookie value check - userInfo length:', userInfo?.length || 0);
+
+      // Try to parse all cookies manually
+      const allCookies = this.getAllCookies();
+      console.log('Parsed cookies:', allCookies);
+
+      if (accessToken && userInfo) {
+        console.log('✅ Cookies detected, navigating...');
+        this.navigateToCorrectApp(userType);
+        return;
+      }
+
+      // Wait 100ms before checking again
+      await new Promise(resolve => setTimeout(resolve, 100));
+      attempts++;
+    }
+
+    // If cookies still not available after 1 second, navigate anyway
+    console.warn('❌ Cookies not detected after 1 second, navigating anyway...');
+    console.log('Final cookie state:', document.cookie);
+    console.log('Final cookie length:', document.cookie.length);
+    console.log('=== End Cookie Debug ===');
+    this.navigateToCorrectApp(userType);
+  }
+
+  private getCookie(name: string): string | null {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) {
+      return parts.pop()?.split(';').shift() || null;
+    }
+    return null;
+  }
+
+  private getAllCookies(): Record<string, string> {
+    const cookies: Record<string, string> = {};
+    if (document.cookie) {
+      document.cookie.split(';').forEach(cookie => {
+        const [name, ...rest] = cookie.trim().split('=');
+        if (name) {
+          cookies[name] = rest.join('=');
+        }
+      });
+    }
+    return cookies;
+  }
+
+  private navigateToCorrectApp(userType: string): void {
+    const currentHost = window.location.hostname;
+    let targetUrl: string;
+
+    // Dynamically determine the correct URL based on current host
+    if (currentHost.includes('.pawfectmatchnow.com')) {
+      // Extract environment from current URL
+      const parts = currentHost.split('.');
+      const environment = parts.length >= 3 ? parts[1] : 'development'; // e.g., 'development' from 'id.development.pawfectmatchnow.com'
+
+      switch (userType) {
+        case 'adopter':
+          targetUrl = `https://adopter.${environment}.pawfectmatchnow.com`;
+          break;
+        case 'shelter_admin':
+          targetUrl = `https://shelter.${environment}.pawfectmatchnow.com`;
+          break;
+        default:
+          throw new Error(`Unknown user type: ${userType}`);
+      }
+    } else {
+      // Fallback to environment file for localhost/development
+      switch (userType) {
+        case 'adopter':
+          targetUrl = environment.matcherUrl;
+          break;
+        case 'shelter_admin':
+          targetUrl = environment.shelterHubUrl;
+          break;
+        default:
+          throw new Error(`Unknown user type: ${userType}`);
+      }
+    }
+
+    console.log(`Navigating from ${currentHost} to ${targetUrl}`);
+    window.location.href = targetUrl;
   }
 }

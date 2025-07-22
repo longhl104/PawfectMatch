@@ -29,9 +29,9 @@ yarn-error.log
 .history/*
 
 # Environment files with sensitive data
-/src/environments/environment.dev.ts
-/src/environments/environment.staging.ts
-/src/environments/environment.prod.ts
+/src/environments/*
+!/src/environments/environment.ts
+!/src/environments/environment.interface.ts
 
 # Miscellaneous
 /.angular/cache
