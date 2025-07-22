@@ -5,7 +5,6 @@ import {
   provideZoneChangeDetection,
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
-
 import { routes } from './app.routes';
 import {
   provideClientHydration,
@@ -27,6 +26,7 @@ const credentialsInterceptor: HttpInterceptorFn = (req, next) => {
     },
     withCredentials: true,
   });
+
   return next(reqWithCredentials);
 };
 
