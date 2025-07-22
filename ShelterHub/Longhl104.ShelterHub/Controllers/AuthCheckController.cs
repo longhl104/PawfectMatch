@@ -121,7 +121,7 @@ public class AuthCheckController(ILogger<AuthCheckController> logger) : Controll
         //     .GetRequiredService<IConfiguration>()
         //     .GetValue<string>("IdentityUrl") ?? "https://localhost:4200";
 
-        var identityUrl = EnvironmentUrlHelper.BuildServiceUrl("identity", "https://localhost:4200");
+        var identityUrl = EnvironmentUrlHelper.BuildServiceUrl("id", "https://localhost:4200");
 
         return $"{identityUrl}/auth/login";
     }
