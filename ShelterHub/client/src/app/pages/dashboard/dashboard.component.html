@@ -130,6 +130,7 @@
               <div class="col-12 md:col-6 xl:col-4">
                 <app-pet-card
                   [pet]="pet"
+                  [showActions]="true"
                   [imageUrl]="petMainImageUrls.get(pet.petId!)"
                   (imageError)="onImageError($event)"
                 ></app-pet-card>

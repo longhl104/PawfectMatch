@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Longhl104.PawfectMatch.Models.Identity;
 using Longhl104.PawfectMatch.Extensions;
+using Longhl104.PawfectMatch.Utils;
 
 namespace Longhl104.ShelterHub.Controllers;
 
@@ -116,9 +117,11 @@ public class AuthCheckController(ILogger<AuthCheckController> logger) : Controll
     private string GetIdentityLoginUrl()
     {
         // Get the Identity application URL from configuration
-        var identityUrl = HttpContext.RequestServices
-            .GetRequiredService<IConfiguration>()
-            .GetValue<string>("IdentityUrl") ?? "https://localhost:4200";
+        // var identityUrl = HttpContext.RequestServices
+        //     .GetRequiredService<IConfiguration>()
+        //     .GetValue<string>("IdentityUrl") ?? "https://localhost:4200";
+
+        var identityUrl = EnvironmentUrlHelper.BuildServiceUrl("identity", "https://localhost:4200");
 
         return $"{identityUrl}/auth/login";
     }
