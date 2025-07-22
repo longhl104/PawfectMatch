@@ -1,0 +1,307 @@
+.pet-media-upload {
+  .media-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    border: 1px solid var(--surface-border);
+    border-radius: var(--border-radius);
+    background: var(--surface-ground);
+
+    .section-title {
+      color: var(--primary-color);
+      margin: 0 0 0.5rem 0;
+      font-weight: 600;
+    }
+
+    .section-description {
+      color: var(--text-color-secondary);
+      margin: 0 0 1rem 0;
+      font-size: 0.875rem;
+    }
+
+    .upload-area {
+      margin-bottom: 1.5rem;
+
+      .empty-state {
+        text-align: center;
+        padding: 2rem;
+        border: 2px dashed var(--surface-border);
+        border-radius: var(--border-radius);
+        background: var(--surface-section);
+
+        i {
+          display: block;
+          margin-bottom: 1rem;
+        }
+
+        p {
+          margin: 0.5rem 0;
+          color: var(--text-color-secondary);
+        }
+
+        small {
+          color: var(--text-color-secondary);
+        }
+      }
+    }
+
+    h5 {
+      margin: 1.5rem 0 1rem 0;
+      color: var(--text-color);
+      font-weight: 500;
+    }
+  }
+
+  // Media preview container for unified upload
+  .media-preview-container {
+    .media-type-section {
+      margin-bottom: 1.5rem;
+
+      .media-type-title {
+        color: var(--primary-color);
+        margin: 0 0 1rem 0;
+        font-weight: 600;
+        font-size: 1rem;
+        border-bottom: 1px solid var(--surface-border);
+        padding-bottom: 0.5rem;
+      }
+    }
+  }
+
+  // Image Preview Grid
+  .image-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+
+    .image-preview-item {
+      position: relative;
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      background: var(--surface-section);
+      border: 1px solid var(--surface-border);
+
+      &.existing {
+        border-color: var(--primary-color);
+        border-width: 2px;
+      }
+
+      .preview-image {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+        display: block;
+      }
+
+      .image-overlay {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        opacity: 0;
+        transition: opacity 0.2s;
+
+        .remove-btn {
+          background: rgba(255, 255, 255, 0.9);
+          width: 2rem;
+          height: 2rem;
+        }
+      }
+
+      &:hover .image-overlay {
+        opacity: 1;
+      }
+
+      .image-info {
+        padding: 0.5rem;
+        background: var(--surface-section);
+
+        .file-name {
+          display: block;
+          font-weight: 500;
+          color: var(--text-color);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .file-size {
+          display: block;
+          color: var(--text-color-secondary);
+          font-size: 0.75rem;
+        }
+      }
+    }
+  }
+
+  // Video Preview Grid
+  .video-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+
+    .video-preview-item {
+      position: relative;
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      background: var(--surface-section);
+      border: 1px solid var(--surface-border);
+
+      &.existing {
+        border-color: var(--primary-color);
+        border-width: 2px;
+      }
+
+      .video-thumbnail {
+        position: relative;
+        width: 100%;
+        height: 120px;
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        i {
+          position: absolute;
+          z-index: 2;
+          color: rgba(255, 255, 255, 0.8);
+        }
+
+        .preview-video {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+      }
+
+      .video-overlay {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        opacity: 0;
+        transition: opacity 0.2s;
+        z-index: 3;
+
+        .remove-btn {
+          background: rgba(255, 255, 255, 0.9);
+          width: 2rem;
+          height: 2rem;
+        }
+      }
+
+      &:hover .video-overlay {
+        opacity: 1;
+      }
+
+      .video-info {
+        padding: 0.5rem;
+        background: var(--surface-section);
+
+        .file-name {
+          display: block;
+          font-weight: 500;
+          color: var(--text-color);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .file-size {
+          display: block;
+          color: var(--text-color-secondary);
+          font-size: 0.75rem;
+        }
+      }
+    }
+  }
+
+  // Document List
+  .document-list {
+    .document-item {
+      display: flex;
+      align-items: center;
+      padding: 1rem;
+      margin-bottom: 0.5rem;
+      border: 1px solid var(--surface-border);
+      border-radius: var(--border-radius);
+      background: var(--surface-section);
+      transition: all 0.2s;
+
+      &.existing {
+        border-color: var(--primary-color);
+        border-width: 2px;
+      }
+
+      &:hover {
+        background: var(--surface-hover);
+      }
+
+      .document-icon {
+        margin-right: 1rem;
+        color: var(--primary-color);
+      }
+
+      .document-details {
+        flex: 1;
+
+        .document-name {
+          font-weight: 500;
+          color: var(--text-color);
+          margin-bottom: 0.25rem;
+        }
+
+        .document-size {
+          color: var(--text-color-secondary);
+          font-size: 0.875rem;
+        }
+      }
+
+      .remove-btn {
+        margin-left: 1rem;
+      }
+    }
+  }
+
+  // Upload Actions
+  .upload-actions {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--surface-border);
+  }
+
+  // Upload Progress
+  .upload-progress {
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--surface-border);
+    border-radius: var(--border-radius);
+    background: var(--surface-section);
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .pet-media-upload {
+    .image-preview-grid {
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 0.75rem;
+
+      .image-preview-item .preview-image {
+        height: 100px;
+      }
+    }
+
+    .video-preview-grid {
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 0.75rem;
+
+      .video-preview-item .video-thumbnail {
+        height: 100px;
+      }
+    }
+
+    .document-list .document-item {
+      padding: 0.75rem;
+    }
+  }
+}

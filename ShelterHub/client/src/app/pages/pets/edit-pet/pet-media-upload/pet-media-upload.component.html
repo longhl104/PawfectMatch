@@ -1,0 +1,307 @@
+<div class="pet-media-upload">
+  <div class="media-section">
+    <p class="section-description">
+      Upload images, videos, and documents for the pet
+    </p>
+
+    <div class="upload-area">
+      <p-fileUpload
+        #mediaUpload
+        mode="advanced"
+        accept="image/*,video/*,.pdf,.doc,.docx,.txt"
+        [multiple]="true"
+        [maxFileSize]="100000000"
+        [fileLimit]="25"
+        [auto]="false"
+        [customUpload]="true"
+        chooseLabel="Choose Files"
+        uploadLabel="Upload"
+        cancelLabel="Clear"
+        [showUploadButton]="false"
+        [showCancelButton]="true"
+        (onSelect)="onFilesSelect($event)"
+        (onRemove)="onFileRemove($event)"
+        (onClear)="onFilesClear()"
+      >
+        <ng-template pTemplate="content" let-files>
+          <div
+            class="media-preview-container"
+            *ngIf="files && files.length > 0"
+          >
+            <!-- Images Grid -->
+            <div
+              class="media-type-section"
+              *ngIf="getFilesByType(files, 'image').length > 0"
+            >
+              <h6 class="media-type-title">
+                Images ({{ getFilesByType(files, "image").length }})
+              </h6>
+              <div class="image-preview-grid">
+                <div
+                  class="image-preview-item"
+                  *ngFor="
+                    let file of getFilesByType(files, 'image');
+                    let i = index
+                  "
+                >
+                  <img
+                    [src]="getImagePreview(file)"
+                    [alt]="file.name"
+                    class="preview-image"
+                  />
+                  <div class="image-overlay">
+                    <p-button
+                      icon="pi pi-times"
+                      severity="danger"
+                      [rounded]="true"
+                      size="small"
+                      (onClick)="removeFile(file)"
+                      class="remove-btn"
+                    />
+                  </div>
+                  <div class="image-info">
+                    <small class="file-name">{{ file.name }}</small>
+                    <small class="file-size">{{
+                      formatFileSize(file.size)
+                    }}</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Videos Grid -->
+            <div
+              class="media-type-section"
+              *ngIf="getFilesByType(files, 'video').length > 0"
+            >
+              <h6 class="media-type-title">
+                Videos ({{ getFilesByType(files, "video").length }})
+              </h6>
+              <div class="video-preview-grid">
+                <div
+                  class="video-preview-item"
+                  *ngFor="
+                    let file of getFilesByType(files, 'video');
+                    let i = index
+                  "
+                >
+                  <div class="video-thumbnail">
+                    <i class="pi pi-play-circle text-4xl text-primary"></i>
+                    <video
+                      [src]="getVideoPreview(file)"
+                      class="preview-video"
+                      muted
+                      preload="metadata"
+                    ></video>
+                  </div>
+                  <div class="video-overlay">
+                    <p-button
+                      icon="pi pi-times"
+                      severity="danger"
+                      [rounded]="true"
+                      size="small"
+                      (onClick)="removeFile(file)"
+                      class="remove-btn"
+                    />
+                  </div>
+                  <div class="video-info">
+                    <small class="file-name">{{ file.name }}</small>
+                    <small class="file-size">{{
+                      formatFileSize(file.size)
+                    }}</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Documents List -->
+            <div
+              class="media-type-section"
+              *ngIf="getFilesByType(files, 'document').length > 0"
+            >
+              <h6 class="media-type-title">
+                Documents ({{ getFilesByType(files, "document").length }})
+              </h6>
+              <div class="document-list">
+                <div
+                  class="document-item"
+                  *ngFor="
+                    let file of getFilesByType(files, 'document');
+                    let i = index
+                  "
+                >
+                  <div class="document-icon">
+                    <i
+                      [class]="getDocumentIcon(file.name)"
+                      class="text-2xl"
+                    ></i>
+                  </div>
+                  <div class="document-details">
+                    <div class="document-name">{{ file.name }}</div>
+                    <div class="document-size">
+                      {{ formatFileSize(file.size) }}
+                    </div>
+                  </div>
+                  <p-button
+                    icon="pi pi-times"
+                    severity="danger"
+                    [text]="true"
+                    size="small"
+                    (onClick)="removeFile(file)"
+                    class="remove-btn"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+
+        <ng-template pTemplate="empty">
+          <div class="empty-state">
+            <i class="pi pi-cloud-upload text-4xl text-gray-400"></i>
+            <p class="text-gray-600">
+              Drag and drop files here or click to browse
+            </p>
+            <small class="text-gray-500"
+              >Images (JPG, PNG, GIF), Videos (MP4, MOV, AVI), Documents (PDF,
+              DOC, DOCX, TXT)</small
+            >
+            <small class="text-gray-500 block mt-1"
+              >Max file size: 100MB • Max total files: 25</small
+            >
+          </div>
+        </ng-template>
+      </p-fileUpload>
+    </div>
+
+    <!-- Existing Media Display -->
+    <div class="existing-media" *ngIf="hasExistingMedia()">
+      <h5>Current Media Files</h5>
+
+      <!-- Existing Images -->
+      <div class="media-type-section" *ngIf="existingImages.length > 0">
+        <h6 class="media-type-title">Images ({{ existingImages.length }})</h6>
+        <div class="image-preview-grid">
+          <div
+            class="image-preview-item existing"
+            *ngFor="let image of existingImages; let i = index"
+          >
+            <img
+              [src]="image.url"
+              [alt]="image.name || 'Pet image'"
+              class="preview-image"
+            />
+            <div class="image-overlay">
+              <p-button
+                icon="pi pi-times"
+                severity="danger"
+                [rounded]="true"
+                size="small"
+                (onClick)="removeExistingImage(i)"
+                class="remove-btn"
+              />
+            </div>
+            <div class="image-info">
+              <small class="file-name">{{
+                image.name || "Image " + (i + 1)
+              }}</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Existing Videos -->
+      <div class="media-type-section" *ngIf="existingVideos.length > 0">
+        <h6 class="media-type-title">Videos ({{ existingVideos.length }})</h6>
+        <div class="video-preview-grid">
+          <div
+            class="video-preview-item existing"
+            *ngFor="let video of existingVideos; let i = index"
+          >
+            <div class="video-thumbnail">
+              <i class="pi pi-play-circle text-4xl text-primary"></i>
+              <video
+                [src]="video.url"
+                class="preview-video"
+                muted
+                preload="metadata"
+              ></video>
+            </div>
+            <div class="video-overlay">
+              <p-button
+                icon="pi pi-times"
+                severity="danger"
+                [rounded]="true"
+                size="small"
+                (onClick)="removeExistingVideo(i)"
+                class="remove-btn"
+              />
+            </div>
+            <div class="video-info">
+              <small class="file-name">{{
+                video.name || "Video " + (i + 1)
+              }}</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Existing Documents -->
+      <div class="media-type-section" *ngIf="existingDocuments.length > 0">
+        <h6 class="media-type-title">
+          Documents ({{ existingDocuments.length }})
+        </h6>
+        <div class="document-list">
+          <div
+            class="document-item existing"
+            *ngFor="let document of existingDocuments; let i = index"
+          >
+            <div class="document-icon">
+              <i [class]="getDocumentIcon(document.name)" class="text-2xl"></i>
+            </div>
+            <div class="document-details">
+              <div class="document-name">
+                {{ document.name || "Document " + (i + 1) }}
+              </div>
+              <a
+                [href]="document.url"
+                target="_blank"
+                class="text-primary text-sm"
+              >
+                <i class="pi pi-external-link mr-1"></i>View
+              </a>
+            </div>
+            <p-button
+              icon="pi pi-times"
+              severity="danger"
+              [text]="true"
+              size="small"
+              (onClick)="removeExistingDocument(i)"
+              class="remove-btn"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload Actions -->
+  <div class="upload-actions" *ngIf="hasNewFiles()">
+    <p-button
+      label="Upload All Files"
+      icon="pi pi-upload"
+      [loading]="uploading"
+      [disabled]="!hasNewFiles()"
+      (onClick)="uploadAllFiles()"
+      class="w-full"
+    />
+  </div>
+
+  <!-- Upload Progress -->
+  <div class="upload-progress" *ngIf="uploading">
+    <p-progressBar [value]="uploadProgress"></p-progressBar>
+    <small class="text-center block mt-2"
+      >Uploading files... {{ uploadProgress }}%</small
+    >
+  </div>
+</div>

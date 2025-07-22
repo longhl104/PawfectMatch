@@ -20,8 +20,9 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { PetService } from 'shared/services/pet.service';
-import { Pet, UpdatePetRequest, PetStatus } from 'shared/apis/generated-apis';
+import { PetService } from '../../../shared/services/pet.service';
+import { Pet, UpdatePetRequest, PetStatus } from '../../../shared/apis/generated-apis';
+import { PetMediaUploadComponent, MediaFile, MediaUploadData } from './pet-media-upload/pet-media-upload.component';
 
 @Component({
   selector: 'app-edit-pet',
@@ -40,6 +41,7 @@ import { Pet, UpdatePetRequest, PetStatus } from 'shared/apis/generated-apis';
     ToastModule,
     ProgressSpinnerModule,
     ConfirmDialogModule,
+    PetMediaUploadComponent,
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './edit-pet.component.html',
@@ -63,6 +65,12 @@ export class EditPetComponent implements OnInit {
   selectedImageFile: File | null = null;
   currentPetImageUrl: string | null = null;
   isUploadingImage = false;
+
+  // Media upload properties
+  existingMediaImages: MediaFile[] = [];
+  existingMediaVideos: MediaFile[] = [];
+  existingMediaDocuments: MediaFile[] = [];
+  currentMediaData: MediaUploadData | null = null;
 
   speciesOptions = [
     { label: 'Dog', value: 'Dog' },
@@ -120,6 +128,7 @@ export class EditPetComponent implements OnInit {
       if (pet) {
         this.pet = pet;
         this.populateForm(this.pet);
+        await this.loadExistingMedia(petId);
       } else {
         this.messageService.add({
           severity: 'error',
@@ -296,11 +305,48 @@ export class EditPetComponent implements OnInit {
     }
   }
 
+  private async loadExistingMedia(petId: string) {
+    try {
+      // For now, initialize with empty arrays
+      // In a real implementation, you would call an API to get existing media files
+      this.existingMediaImages = [];
+      this.existingMediaVideos = [];
+      this.existingMediaDocuments = [];
+
+      // Example of how you might load existing media:
+      // const mediaResponse = await this.petService.getPetMedia(petId);
+      // this.existingMediaImages = mediaResponse.images || [];
+      // this.existingMediaVideos = mediaResponse.videos || [];
+      // this.existingMediaDocuments = mediaResponse.documents || [];
+
+      console.log('Loaded existing media for pet:', petId);
+    } catch (error) {
+      console.log('Could not load existing pet media:', error);
+      // Don't show error to user as this is not critical
+    }
+  }
+
   private markFormGroupTouched() {
     Object.keys(this.petForm.controls).forEach((key) => {
       const control = this.petForm.get(key);
       control?.markAsTouched();
     });
+  }
+
+  onMediaDataChange(mediaData: MediaUploadData) {
+    this.currentMediaData = mediaData;
+    console.log('Media data changed:', mediaData);
+  }
+
+  onMediaUploadComplete() {
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Success',
+      detail: 'Media files uploaded successfully'
+    });
+
+    // Optionally reload media data or refresh the component
+    // This could involve calling an API to get updated media file information
   }
 
   onDelete() {

@@ -16,8 +16,8 @@
                   placeholder="Enter pet name"
                   class="capitalize"
                   [class.ng-invalid]="isFieldInvalid('name')"
-                  />
-                @if (isFieldInvalid('name')) {
+                />
+                @if (isFieldInvalid("name")) {
                   <small class="error-message">
                     {{ getFieldError("name") }}
                   </small>
@@ -33,7 +33,7 @@
                   [options]="speciesOptions"
                   [class.ng-invalid]="isFieldInvalid('species')"
                 ></p-select>
-                @if (isFieldInvalid('species')) {
+                @if (isFieldInvalid("species")) {
                   <small class="error-message">
                     {{ getFieldError("species") }}
                   </small>
@@ -50,8 +50,8 @@
                   placeholder="Enter breed"
                   class="capitalize"
                   [class.ng-invalid]="isFieldInvalid('breed')"
-                  />
-                @if (isFieldInvalid('breed')) {
+                />
+                @if (isFieldInvalid("breed")) {
                   <small class="error-message">
                     {{ getFieldError("breed") }}
                   </small>
@@ -67,7 +67,7 @@
                   placeholder="Select gender"
                   [class.ng-invalid]="isFieldInvalid('gender')"
                 ></p-select>
-                @if (isFieldInvalid('gender')) {
+                @if (isFieldInvalid("gender")) {
                   <small class="error-message">
                     {{ getFieldError("gender") }}
                   </small>
@@ -83,10 +83,8 @@
                   placeholder="Select date of birth"
                   [class.ng-invalid]="isFieldInvalid('dateOfBirth')"
                 ></p-datepicker>
-                @if (isFieldInvalid('dateOfBirth')) {
-                  <small
-                    class="error-message"
-                    >
+                @if (isFieldInvalid("dateOfBirth")) {
+                  <small class="error-message">
                     {{ getFieldError("dateOfBirth") }}
                   </small>
                 }
@@ -99,7 +97,7 @@
                   formControlName="color"
                   placeholder="Enter color or markings"
                   class="capitalize"
-                  />
+                />
               </div>
             </div>
           </div>
@@ -128,10 +126,8 @@
                   placeholder="Enter adoption fee"
                   [class.ng-invalid]="isFieldInvalid('adoptionFee')"
                 ></p-inputNumber>
-                @if (isFieldInvalid('adoptionFee')) {
-                  <small
-                    class="error-message"
-                    >
+                @if (isFieldInvalid("adoptionFee")) {
+                  <small class="error-message">
                     {{ getFieldError("adoptionFee") }}
                   </small>
                 }
@@ -189,7 +185,7 @@
                 placeholder="Select status"
                 [class.ng-invalid]="isFieldInvalid('status')"
               ></p-select>
-              @if (isFieldInvalid('status')) {
+              @if (isFieldInvalid("status")) {
                 <small class="error-message">
                   {{ getFieldError("status") }}
                 </small>
@@ -203,7 +199,7 @@
                 placeholder="Enter pet description"
                 [class.ng-invalid]="isFieldInvalid('description')"
               ></p-editor>
-              @if (isFieldInvalid('description')) {
+              @if (isFieldInvalid("description")) {
                 <small class="error-message">
                   {{ getFieldError("description") }}
                 </small>
@@ -239,16 +235,32 @@
             @if (imagePreview) {
               <div class="mt-2">
                 <span class="text-sm text-600 block mb-1">
-                  {{ selectedImageFile ? "New image preview:" : "Current image:" }}
+                  {{
+                    selectedImageFile ? "New image preview:" : "Current image:"
+                  }}
                 </span>
                 <img
                   [src]="imagePreview"
                   alt="Image preview"
                   class="w-8rem h-6rem object-cover border-round border-2 border-gray-200"
-                  />
+                />
               </div>
             }
           </div>
+
+          <!-- Media Upload Section -->
+          <div class="form-section">
+            <h3>Media Files</h3>
+            <app-pet-media-upload
+              [petId]="pet?.petId || null"
+              [existingImages]="existingMediaImages"
+              [existingVideos]="existingMediaVideos"
+              [existingDocuments]="existingMediaDocuments"
+              (mediaDataChange)="onMediaDataChange($event)"
+              (uploadComplete)="onMediaUploadComplete()"
+            ></app-pet-media-upload>
+          </div>
+
           <!-- Action Buttons -->
           <div class="form-actions">
             <div class="flex justify-content-between w-full">
@@ -269,7 +281,9 @@
                 ></p-button>
               </div>
               <p-button
-                [label]="isUploadingImage ? 'Uploading Image...' : 'Save Changes'"
+                [label]="
+                  isUploadingImage ? 'Uploading Image...' : 'Save Changes'
+                "
                 type="submit"
                 [loading]="saving"
                 [disabled]="petForm.invalid"
@@ -284,7 +298,6 @@
         <p>Loading pet information...</p>
       </div>
     }
-
   </p-card>
 </div>
 
