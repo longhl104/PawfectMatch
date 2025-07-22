@@ -5,6 +5,7 @@ using Longhl104.PawfectMatch.Extensions;
 using Longhl104.ShelterHub.Services;
 using Longhl104.PawfectMatch.Middleware;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -65,17 +66,23 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
     {
         policy.WithOrigins(
-                builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ??
-                [
-                    "https://localhost:4200",
-                    $"https://shelter.{environmentName.ToLowerInvariant()}.pawfectmatchnow.com",
-                    "https://shelter.pawfectmatchnow.com"
-                ]
+                "https://localhost:4202",
+                $"https://shelter.{environmentName.ToLowerInvariant()}.pawfectmatchnow.com",
+                "https://shelter.pawfectmatchnow.com"
             )
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials();
     });
+});
+
+// Configure forwarded headers for ALB (Application Load Balancer)
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+    options.ForwardLimit = null;
 });
 
 // Configure logging
@@ -84,6 +91,9 @@ builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 
 var app = builder.Build();
+
+// Configure forwarded headers FIRST
+app.UseForwardedHeaders();
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
@@ -94,7 +104,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// Note: UseHttpsRedirection removed - ALB handles HTTPS termination
 
 app.UseCors();
 

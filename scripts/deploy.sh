@@ -197,8 +197,31 @@ build_and_push_backend_images() {
 		exit 1
 	fi
 
-	# Backend services to build
-	local services=("Identity" "Matcher" "ShelterHub")
+	# Backend services to build - filter based on selection
+	local all_services=("Identity" "Matcher" "ShelterHub")
+	local services=()
+
+	for service in "${all_services[@]}"; do
+		case $service in
+			"Identity")
+				[ "$deploy_identity" = true ] && services+=("$service")
+				;;
+			"Matcher")
+				[ "$deploy_matcher" = true ] && services+=("$service")
+				;;
+			"ShelterHub")
+				[ "$deploy_shelter_hub" = true ] && services+=("$service")
+				;;
+		esac
+	done
+
+	if [ ${#services[@]} -eq 0 ]; then
+		print_warning "No backend services selected for deployment, skipping Docker builds..."
+		cd "$ROOT_DIR/scripts"
+		return 0
+	fi
+
+	print_info "Building Docker images for selected services: ${services[*]}"
 
 	for service in "${services[@]}"; do
 		print_info "Building Docker image for $service..."
@@ -277,8 +300,31 @@ build_angular_clients() {
 	# Change to root directory of the project
 	cd "$ROOT_DIR"
 
-	# List of client directories
-	local client_dirs=("Identity/client" "Matcher/client" "ShelterHub/client")
+	# List of client directories - filter based on selection
+	local all_client_dirs=("Identity/client" "Matcher/client" "ShelterHub/client")
+	local client_dirs=()
+
+	for client_dir in "${all_client_dirs[@]}"; do
+		case $client_dir in
+			"Identity/client")
+				[ "$deploy_identity" = true ] && client_dirs+=("$client_dir")
+				;;
+			"Matcher/client")
+				[ "$deploy_matcher" = true ] && client_dirs+=("$client_dir")
+				;;
+			"ShelterHub/client")
+				[ "$deploy_shelter_hub" = true ] && client_dirs+=("$client_dir")
+				;;
+		esac
+	done
+
+	if [ ${#client_dirs[@]} -eq 0 ]; then
+		print_warning "No Angular clients selected for deployment, skipping builds..."
+		cd "$ROOT_DIR/scripts"
+		return 0
+	fi
+
+	print_info "Building Angular clients for selected services: ${client_dirs[*]}"
 
 	for client_dir in "${client_dirs[@]}"; do
 		# Always ensure we're in the ROOT_DIR before checking
@@ -364,12 +410,34 @@ force_ecs_redeployment() {
 
 	print_info "Using ECS cluster: $cluster_name"
 
-	# Define services and their actual ECS service names
-	local services=(
+	# Define services and their actual ECS service names - filter based on selection
+	local all_services=(
 		"pawfectmatch-${ENVIRONMENT}-identity-service"
 		"pawfectmatch-${ENVIRONMENT}-matcher-service"
 		"pawfectmatch-${ENVIRONMENT}-shelter-hub-service"
 	)
+	local services=()
+
+	for service in "${all_services[@]}"; do
+		case $service in
+			*"identity-service")
+				[ "$deploy_identity" = true ] && services+=("$service")
+				;;
+			*"matcher-service")
+				[ "$deploy_matcher" = true ] && services+=("$service")
+				;;
+			*"shelter-hub-service")
+				[ "$deploy_shelter_hub" = true ] && services+=("$service")
+				;;
+		esac
+	done
+
+	if [ ${#services[@]} -eq 0 ]; then
+		print_warning "No ECS services selected for redeployment, skipping..."
+		return 0
+	fi
+
+	print_info "Redeploying selected ECS services: ${services[*]}"
 
 	for service_name in "${services[@]}"; do
 		print_info "Forcing redeployment of ECS service: $service_name"
@@ -404,6 +472,252 @@ force_ecs_redeployment() {
 	print_success "ECS redeployment commands completed"
 }
 
+# Function to show interactive menu for selecting projects to deploy
+show_project_menu() {
+	echo
+	print_info "Select which projects to deploy (use t to toggle, enter to confirm):"
+	echo
+
+	local options=(
+		"Deploy Identity service"
+		"Deploy Matcher service"
+		"Deploy ShelterHub service"
+	)
+
+	# Use individual variables instead of array (1 = deploy, 0 = skip)
+	local proj0=1 proj1=1 proj2=1  # Default: deploy all
+	local current=0
+
+	# Handle input
+	while true; do
+		# Display menu inline
+		clear
+		echo "========================================="
+		echo "   PawfectMatch Project Selection"
+		echo "========================================="
+		echo
+		print_info "Environment: $ENVIRONMENT"
+		print_info "AWS Profile: $AWS_PROFILE"
+		echo
+		print_info "Select which projects to deploy:"
+		echo "Use ↑/↓ or k/j to navigate, T to toggle, ENTER to confirm"
+		echo
+
+		for i in "${!options[@]}"; do
+			local prefix="  "
+			if [ $i -eq $current ]; then
+				prefix="▶ "
+			fi
+
+			local checkbox="☐"
+			case $i in
+				0) [ $proj0 -eq 1 ] && checkbox="☑" ;;
+				1) [ $proj1 -eq 1 ] && checkbox="☑" ;;
+				2) [ $proj2 -eq 1 ] && checkbox="☑" ;;
+			esac
+
+			echo -e "${prefix}${checkbox} ${options[$i]}"
+		done
+
+		echo
+		echo "Press T to toggle, ENTER when done selecting projects..."
+
+		# Read single character
+		read -rsn1 key
+
+		# Debug: show what key was pressed (remove this later)
+		echo "DEBUG: Project menu key pressed: '$key' (ASCII: $(printf '%d' "'$key"))" >> /tmp/deploy_debug.log
+
+		case $key in
+			$'\x1b')  # ESC sequence
+				read -rsn2 key
+				case $key in
+					'[A') # Up arrow
+						((current > 0)) && ((current--))
+						;;
+					'[B') # Down arrow
+						((current < ${#options[@]} - 1)) && ((current++))
+						;;
+				esac
+				;;
+			'k'|'K') # Vim-style up
+				((current > 0)) && ((current--))
+				;;
+			'j'|'J') # Vim-style down
+				((current < ${#options[@]} - 1)) && ((current++))
+				;;
+			't'|'T') # T to toggle
+				case $current in
+					0) [ $proj0 -eq 1 ] && proj0=0 || proj0=1 ;;
+					1) [ $proj1 -eq 1 ] && proj1=0 || proj1=1 ;;
+					2) [ $proj2 -eq 1 ] && proj2=0 || proj2=1 ;;
+				esac
+				;;
+			$'\n'|$'\r'|'') # Enter to confirm - try multiple formats
+				break
+				;;
+			*) # Debug: catch all other keys
+				echo "DEBUG: Project menu unhandled key: '$key' (ASCII: $(printf '%d' "'$key"))" >> /tmp/deploy_debug.log
+				;;
+		esac
+	done
+
+	# Set project flags based on selections
+	deploy_identity=$( [ $proj0 -eq 1 ] && echo true || echo false )
+	deploy_matcher=$( [ $proj1 -eq 1 ] && echo true || echo false )
+	deploy_shelter_hub=$( [ $proj2 -eq 1 ] && echo true || echo false )
+
+	clear
+	echo "========================================="
+	echo "   Selected Projects"
+	echo "========================================="
+	if [ "$deploy_identity" = true ]; then
+		print_success "Will deploy Identity service"
+	else
+		print_warning "Will skip Identity service"
+	fi
+	if [ "$deploy_matcher" = true ]; then
+		print_success "Will deploy Matcher service"
+	else
+		print_warning "Will skip Matcher service"
+	fi
+	if [ "$deploy_shelter_hub" = true ]; then
+		print_success "Will deploy ShelterHub service"
+	else
+		print_warning "Will skip ShelterHub service"
+	fi
+
+	if [ "$deploy_identity" = false ] && [ "$deploy_matcher" = false ] && [ "$deploy_shelter_hub" = false ]; then
+		print_error "No projects selected for deployment!"
+		exit 1
+	fi
+
+	echo
+}
+
+# Function to show interactive menu for selecting skip options
+show_skip_menu() {
+	echo
+	print_info "Select which build steps to skip (use t to toggle, enter to confirm):"
+	echo
+
+	local options=(
+		"Skip Lambda build"
+		"Skip Angular build"
+		"Skip backend Docker build"
+		"Skip ECS redeployment"
+	)
+
+	# Use individual variables instead of array
+	local sel0=0 sel1=0 sel2=0 sel3=0
+	local current=0
+
+	# Handle input
+	while true; do
+		# Display menu inline
+		clear
+		echo "========================================="
+		echo "   PawfectMatch Deployment Options"
+		echo "========================================="
+		echo
+		print_info "Environment: $ENVIRONMENT"
+		print_info "AWS Profile: $AWS_PROFILE"
+		echo
+		print_info "Select which build steps to skip:"
+		echo "Use ↑/↓ or k/j to navigate, T to toggle, ENTER to confirm"
+		echo
+
+		for i in "${!options[@]}"; do
+			local prefix="  "
+			if [ $i -eq $current ]; then
+				prefix="▶ "
+			fi
+
+			local checkbox="☐"
+			case $i in
+				0) [ $sel0 -eq 1 ] && checkbox="☑" ;;
+				1) [ $sel1 -eq 1 ] && checkbox="☑" ;;
+				2) [ $sel2 -eq 1 ] && checkbox="☑" ;;
+				3) [ $sel3 -eq 1 ] && checkbox="☑" ;;
+			esac
+
+			echo -e "${prefix}${checkbox} ${options[$i]}"
+		done
+
+		echo
+		echo "Press T to toggle, ENTER when done selecting options..."
+
+		# Read single character
+		read -rsn1 key
+
+		# Debug: show what key was pressed (remove this later)
+		echo "DEBUG: Key pressed: '$key' (ASCII: $(printf '%d' "'$key"))" >> /tmp/deploy_debug.log
+
+		case $key in
+			$'\x1b')  # ESC sequence
+				read -rsn2 key
+				case $key in
+					'[A') # Up arrow
+						((current > 0)) && ((current--))
+						;;
+					'[B') # Down arrow
+						((current < ${#options[@]} - 1)) && ((current++))
+						;;
+				esac
+				;;
+			'k'|'K') # Vim-style up
+				((current > 0)) && ((current--))
+				;;
+			'j'|'J') # Vim-style down
+				((current < ${#options[@]} - 1)) && ((current++))
+				;;
+			't'|'T') # T to toggle
+				case $current in
+					0) [ $sel0 -eq 1 ] && sel0=0 || sel0=1 ;;
+					1) [ $sel1 -eq 1 ] && sel1=0 || sel1=1 ;;
+					2) [ $sel2 -eq 1 ] && sel2=0 || sel2=1 ;;
+					3) [ $sel3 -eq 1 ] && sel3=0 || sel3=1 ;;
+				esac
+				;;
+			$'\n'|$'\r'|'') # Enter to confirm - try multiple formats
+				break
+				;;
+			*) # Debug: catch all other keys
+				echo "DEBUG: Unhandled key: '$key' (ASCII: $(printf '%d' "'$key"))" >> /tmp/deploy_debug.log
+				;;
+		esac
+	done
+
+	# Set skip flags based on selections
+	skip_lambda_build=$( [ $sel0 -eq 1 ] && echo true || echo false )
+	skip_angular_build=$( [ $sel1 -eq 1 ] && echo true || echo false )
+	skip_backend_build=$( [ $sel2 -eq 1 ] && echo true || echo false )
+	skip_ecs_redeploy=$( [ $sel3 -eq 1 ] && echo true || echo false )
+
+	clear
+	echo "========================================="
+	echo "   Selected Options"
+	echo "========================================="
+	if [ "$skip_lambda_build" = true ]; then
+		print_warning "Will skip Lambda function builds"
+	fi
+	if [ "$skip_angular_build" = true ]; then
+		print_warning "Will skip Angular client builds"
+	fi
+	if [ "$skip_backend_build" = true ]; then
+		print_warning "Will skip backend Docker image builds"
+	fi
+	if [ "$skip_ecs_redeploy" = true ]; then
+		print_warning "Will skip ECS service redeployment"
+	fi
+
+	if [ "$skip_lambda_build" = false ] && [ "$skip_angular_build" = false ] && [ "$skip_backend_build" = false ] && [ "$skip_ecs_redeploy" = false ]; then
+		print_info "Will run all build steps"
+	fi
+
+	echo
+}
+
 # Function to display stack outputs
 show_outputs() {
 	print_info "Displaying stack outputs..."
@@ -425,38 +739,53 @@ main() {
 
 	# Parse command line arguments
 	local environment=""
+	local interactive_mode=true
 	local skip_lambda_build=false
 	local skip_angular_build=false
 	local skip_backend_build=false
 	local skip_ecs_redeploy=false
 
+	# Project deployment flags
+	local deploy_identity=true
+	local deploy_matcher=true
+	local deploy_shelter_hub=true
+
 	while [[ $# -gt 0 ]]; do
 		case $1 in
 		--skip-lambda-build)
 			skip_lambda_build=true
+			interactive_mode=false
 			shift
 			;;
 		--skip-angular-build)
 			skip_angular_build=true
+			interactive_mode=false
 			shift
 			;;
 		--skip-backend-build)
 			skip_backend_build=true
+			interactive_mode=false
 			shift
 			;;
 		--skip-ecs-redeploy)
 			skip_ecs_redeploy=true
+			interactive_mode=false
+			shift
+			;;
+		--non-interactive)
+			interactive_mode=false
 			shift
 			;;
 		-*)
 			print_error "Unknown option: $1"
-			echo "Usage: $0 <environment> [--skip-lambda-build] [--skip-angular-build] [--skip-backend-build] [--skip-ecs-redeploy]"
+			echo "Usage: $0 <environment> [OPTIONS]"
 			echo "Environments: dev, development, prod, production"
 			echo "Options:"
 			echo "  --skip-lambda-build     Skip building .NET Lambda functions"
 			echo "  --skip-angular-build    Skip building Angular client applications"
 			echo "  --skip-backend-build    Skip building and pushing backend Docker images"
 			echo "  --skip-ecs-redeploy     Skip forcing ECS service redeployment"
+			echo "  --non-interactive       Skip the interactive menu (use with skip flags)"
 			exit 1
 			;;
 		*)
@@ -464,7 +793,7 @@ main() {
 				environment=$1
 			else
 				print_error "Multiple environments specified"
-				echo "Usage: $0 <environment> [--skip-lambda-build] [--skip-angular-build] [--skip-backend-build] [--skip-ecs-redeploy]"
+				echo "Usage: $0 <environment> [OPTIONS]"
 				exit 1
 			fi
 			shift
@@ -475,13 +804,14 @@ main() {
 	# Check if environment parameter is provided
 	if [ -z "$environment" ]; then
 		print_error "Environment parameter is required"
-		echo "Usage: $0 <environment> [--skip-lambda-build] [--skip-angular-build] [--skip-backend-build] [--skip-ecs-redeploy]"
+		echo "Usage: $0 <environment> [OPTIONS]"
 		echo "Environments: dev, development, prod, production"
 		echo "Options:"
 		echo "  --skip-lambda-build     Skip building .NET Lambda functions"
 		echo "  --skip-angular-build    Skip building Angular client applications"
 		echo "  --skip-backend-build    Skip building and pushing backend Docker images"
 		echo "  --skip-ecs-redeploy     Skip forcing ECS service redeployment"
+		echo "  --non-interactive       Skip the interactive menu (use with skip flags)"
 		exit 1
 	fi
 
@@ -489,21 +819,27 @@ main() {
 	validate_environment $environment
 	check_prerequisites
 
-	print_info "Deploying to environment: $ENVIRONMENT"
-	print_info "Using AWS profile: $AWS_PROFILE"
-	if [ "$skip_lambda_build" = true ]; then
-		print_warning "Skipping Lambda function builds"
+	# Show interactive menus if no skip flags were provided
+	if [ "$interactive_mode" = true ]; then
+		show_project_menu
+		show_skip_menu
+	else
+		print_info "Deploying to environment: $ENVIRONMENT"
+		print_info "Using AWS profile: $AWS_PROFILE"
+		if [ "$skip_lambda_build" = true ]; then
+			print_warning "Skipping Lambda function builds"
+		fi
+		if [ "$skip_angular_build" = true ]; then
+			print_warning "Skipping Angular client builds"
+		fi
+		if [ "$skip_backend_build" = true ]; then
+			print_warning "Skipping backend Docker image builds"
+		fi
+		if [ "$skip_ecs_redeploy" = true ]; then
+			print_warning "Skipping ECS service redeployment"
+		fi
+		echo
 	fi
-	if [ "$skip_angular_build" = true ]; then
-		print_warning "Skipping Angular client builds"
-	fi
-	if [ "$skip_backend_build" = true ]; then
-		print_warning "Skipping backend Docker image builds"
-	fi
-	if [ "$skip_ecs_redeploy" = true ]; then
-		print_warning "Skipping ECS service redeployment"
-	fi
-	echo
 
 	# AWS authentication
 	aws_sso_login

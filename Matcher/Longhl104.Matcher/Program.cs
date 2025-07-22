@@ -1,5 +1,6 @@
 using Longhl104.PawfectMatch.Extensions;
 using Amazon.DynamoDBv2;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,12 +39,24 @@ builder.Services.AddSingleton<IAmazonDynamoDB, AmazonDynamoDBClient>();
 // Configure Data Protection for containerized environment
 builder.Services.AddPawfectMatchDataProtection("Matcher", environmentName);
 
+// Configure forwarded headers for ALB (Application Load Balancer)
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+    options.ForwardLimit = null;
+});
+
 // Configure logging
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 
 var app = builder.Build();
+
+// Configure forwarded headers FIRST
+app.UseForwardedHeaders();
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
@@ -52,7 +65,7 @@ if (app.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
 }
 
-app.UseHttpsRedirection();
+// Note: UseHttpsRedirection removed - ALB handles HTTPS termination
 
 app.UseCors();
 

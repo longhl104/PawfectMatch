@@ -6,6 +6,7 @@ using System.Text;
 using Longhl104.Identity.Services;
 using Longhl104.PawfectMatch.Extensions;
 using Longhl104.PawfectMatch.Models;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -89,12 +90,29 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+// Configure forwarded headers for ALB (Application Load Balancer)
+// ALB terminates HTTPS and forwards HTTP to containers
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
+    // Trust the ALB/proxy headers
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+
+    // Accept forwarded headers from any source (ALB)
+    options.ForwardLimit = null;
+});
+
 // Configure logging
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 
 var app = builder.Build();
+
+// Configure forwarded headers FIRST (before other middleware)
+app.UseForwardedHeaders();
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
@@ -103,7 +121,10 @@ if (app.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
 }
 
-app.UseHttpsRedirection();
+// Note: UseHttpsRedirection is NOT needed here because:
+// 1. ALB handles HTTPS termination and HTTP->HTTPS redirects
+// 2. Container only receives HTTP traffic from ALB
+// 3. Using it causes "Failed to determine the https port for redirect" error
 
 app.UseCors();
 
