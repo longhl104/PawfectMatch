@@ -211,6 +211,10 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(['/pets']);
   }
 
+  onEditPet(pet: Pet) {
+    this.router.navigate(['/pets/edit', pet.petId]);
+  }
+
   formatDate(date: Date): string {
     return new Date(date).toLocaleDateString();
   }
