@@ -5,6 +5,7 @@ using Longhl104.Identity.Models;
 using Longhl104.PawfectMatch.HttpClient;
 using Longhl104.PawfectMatch.Models;
 using Amazon.SimpleSystemsManagement.Model;
+using Longhl104.PawfectMatch.Utils;
 
 namespace Longhl104.Identity.Controllers;
 
@@ -193,7 +194,7 @@ public partial class RegistrationController(
                 {
                     Message = "Registration successful",
                     UserId = userId,
-                    RedirectUrl = "https://localhost:4202",
+                    RedirectUrl = EnvironmentUrlHelper.BuildServiceUrl("shelter", "https://localhost:4202"),
                     Success = true,
                     Data = tokenData
                 },

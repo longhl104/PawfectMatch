@@ -229,10 +229,7 @@ build_and_push_backend_images() {
 		local service_dir="$service/Longhl104.$service"
 		local dockerfile_path="$service_dir/Dockerfile"
 		local repo_name="pawfectmatch-$(echo $service | tr '[:upper:]' '[:lower:]')-${ENVIRONMENT}"
-		local timestamp_tag=$(date +%Y%m%d-%H%M%S)
-		local latest_tag="latest"
-		local timestamp_image_name="$ecr_base_url/$repo_name:$timestamp_tag"
-		local latest_image_name="$ecr_base_url/$repo_name:$latest_tag"
+		local image_name="$ecr_base_url/$repo_name:latest"
 
 		# Check if Dockerfile exists
 		if [ ! -f "$dockerfile_path" ]; then
@@ -240,14 +237,10 @@ build_and_push_backend_images() {
 			continue
 		fi
 
-		# Build Docker image with timestamp tag
-		print_info "Building Docker image: $timestamp_image_name"
-		if docker build --platform linux/arm64 -t $timestamp_image_name -f $dockerfile_path .; then
+		# Build Docker image
+		print_info "Building Docker image: $image_name"
+		if docker build --platform linux/arm64 -t $image_name -f $dockerfile_path .; then
 			print_success "Docker image built successfully for $service"
-
-			# Tag with latest
-			print_info "Tagging image as latest: $latest_image_name"
-			docker tag $timestamp_image_name $latest_image_name
 		else
 			print_error "Failed to build Docker image for $service"
 			cd "$ROOT_DIR/scripts"
@@ -269,21 +262,12 @@ build_and_push_backend_images() {
 			print_info "ECR repository already exists: $repo_name"
 		fi
 
-		# Push both timestamp and latest tags
-		print_info "Pushing Docker image with timestamp tag: $timestamp_image_name"
-		if docker push $timestamp_image_name; then
-			print_success "Docker image with timestamp tag pushed successfully for $service"
+		# Push Docker image
+		print_info "Pushing Docker image: $image_name"
+		if docker push $image_name; then
+			print_success "Docker image pushed successfully for $service"
 		else
-			print_error "Failed to push Docker image with timestamp tag for $service"
-			cd "$ROOT_DIR/scripts"
-			exit 1
-		fi
-
-		print_info "Pushing Docker image with latest tag: $latest_image_name"
-		if docker push $latest_image_name; then
-			print_success "Docker image with latest tag pushed successfully for $service"
-		else
-			print_error "Failed to push Docker image with latest tag for $service"
+			print_error "Failed to push Docker image for $service"
 			cd "$ROOT_DIR/scripts"
 			exit 1
 		fi
