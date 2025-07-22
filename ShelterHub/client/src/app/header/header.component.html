@@ -39,7 +39,14 @@
             (onClick)="onLogout()"
           >
           </p-button>
-          <p-menu #menu [popup]="true" [model]="userMenuItems"></p-menu>
+          <p-menu
+            #menu
+            [popup]="true"
+            [model]="userMenuItems"
+            appendTo="body"
+            [style]="{ 'min-width': '12rem' }"
+            position="bottom-right"
+          ></p-menu>
         </div>
       } @else {
         <p-button
