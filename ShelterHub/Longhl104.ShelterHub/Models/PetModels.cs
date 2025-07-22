@@ -452,3 +452,286 @@ public class PetImageDownloadUrlsResponse
     /// </summary>
     public string? ErrorMessage { get; set; }
 }
+
+/// <summary>
+/// Media file type enumeration
+/// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum MediaFileType
+{
+    [AmbientValue("Image")]
+    Image,
+    [AmbientValue("Video")]
+    Video,
+    [AmbientValue("Document")]
+    Document
+}
+
+/// <summary>
+/// Pet media file model
+/// </summary>
+public class PetMediaFile
+{
+    /// <summary>
+    /// Unique identifier for the media file
+    /// </summary>
+    public Guid MediaFileId { get; set; } = Guid.NewGuid();
+
+    /// <summary>
+    /// Pet ID this media belongs to
+    /// </summary>
+    public Guid PetId { get; set; }
+
+    /// <summary>
+    /// Original filename
+    /// </summary>
+    public string FileName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// File extension (e.g., .jpg, .mp4, .pdf)
+    /// </summary>
+    public string FileExtension { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Type of media file
+    /// </summary>
+    public MediaFileType FileType { get; set; }
+
+    /// <summary>
+    /// Content type/MIME type
+    /// </summary>
+    public string ContentType { get; set; } = string.Empty;
+
+    /// <summary>
+    /// File size in bytes
+    /// </summary>
+    public long FileSizeBytes { get; set; }
+
+    /// <summary>
+    /// S3 key/path for the file
+    /// </summary>
+    public string S3Key { get; set; } = string.Empty;
+
+    /// <summary>
+    /// When the file was uploaded
+    /// </summary>
+    public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Display order for the media file
+    /// </summary>
+    public int DisplayOrder { get; set; } = 0;
+}
+
+/// <summary>
+/// Request model for uploading multiple media files
+/// </summary>
+public class UploadMediaFilesRequest
+{
+    /// <summary>
+    /// Pet ID to associate media files with
+    /// </summary>
+    public Guid PetId { get; set; }
+
+    /// <summary>
+    /// List of media file upload requests
+    /// </summary>
+    public List<MediaFileUploadRequest> MediaFiles { get; set; } = new();
+}
+
+/// <summary>
+/// Individual media file upload request
+/// </summary>
+public class MediaFileUploadRequest
+{
+    /// <summary>
+    /// Original filename
+    /// </summary>
+    public string FileName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Content type/MIME type
+    /// </summary>
+    public string ContentType { get; set; } = string.Empty;
+
+    /// <summary>
+    /// File size in bytes
+    /// </summary>
+    public long FileSizeBytes { get; set; }
+
+    /// <summary>
+    /// Type of media file
+    /// </summary>
+    public MediaFileType FileType { get; set; }
+}
+
+/// <summary>
+/// Response model for media file upload URLs
+/// </summary>
+public class MediaFileUploadResponse
+{
+    /// <summary>
+    /// Whether the operation was successful
+    /// </summary>
+    public bool Success { get; set; }
+
+    /// <summary>
+    /// List of upload URL responses
+    /// </summary>
+    public List<MediaFileUploadUrlResponse> UploadUrls { get; set; } = new();
+
+    /// <summary>
+    /// Error message (if unsuccessful)
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+}
+
+/// <summary>
+/// Individual media file upload URL response
+/// </summary>
+public class MediaFileUploadUrlResponse
+{
+    /// <summary>
+    /// Media file ID
+    /// </summary>
+    public Guid MediaFileId { get; set; }
+
+    /// <summary>
+    /// Original filename
+    /// </summary>
+    public string FileName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Presigned upload URL
+    /// </summary>
+    public string PresignedUrl { get; set; } = string.Empty;
+
+    /// <summary>
+    /// S3 key for the file
+    /// </summary>
+    public string S3Key { get; set; } = string.Empty;
+
+    /// <summary>
+    /// When the presigned URL expires
+    /// </summary>
+    public DateTime ExpiresAt { get; set; }
+}
+
+/// <summary>
+/// Response model for getting pet media files
+/// </summary>
+public class GetPetMediaResponse
+{
+    /// <summary>
+    /// Whether the operation was successful
+    /// </summary>
+    public bool Success { get; set; }
+
+    /// <summary>
+    /// List of images
+    /// </summary>
+    public List<PetMediaFileResponse> Images { get; set; } = new();
+
+    /// <summary>
+    /// List of videos
+    /// </summary>
+    public List<PetMediaFileResponse> Videos { get; set; } = new();
+
+    /// <summary>
+    /// List of documents
+    /// </summary>
+    public List<PetMediaFileResponse> Documents { get; set; } = new();
+
+    /// <summary>
+    /// Error message (if unsuccessful)
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+}
+
+/// <summary>
+/// Pet media file response model with download URL
+/// </summary>
+public class PetMediaFileResponse
+{
+    /// <summary>
+    /// Media file ID
+    /// </summary>
+    public Guid MediaFileId { get; set; }
+
+    /// <summary>
+    /// Original filename
+    /// </summary>
+    public string FileName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// File extension
+    /// </summary>
+    public string FileExtension { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Type of media file
+    /// </summary>
+    public MediaFileType FileType { get; set; }
+
+    /// <summary>
+    /// Content type/MIME type
+    /// </summary>
+    public string ContentType { get; set; } = string.Empty;
+
+    /// <summary>
+    /// File size in bytes
+    /// </summary>
+    public long FileSizeBytes { get; set; }
+
+    /// <summary>
+    /// Presigned download URL
+    /// </summary>
+    public string DownloadUrl { get; set; } = string.Empty;
+
+    /// <summary>
+    /// When the file was uploaded
+    /// </summary>
+    public DateTime UploadedAt { get; set; }
+
+    /// <summary>
+    /// Display order for the media file
+    /// </summary>
+    public int DisplayOrder { get; set; }
+}
+
+/// <summary>
+/// Request model for deleting media files
+/// </summary>
+public class DeleteMediaFilesRequest
+{
+    /// <summary>
+    /// List of media file IDs to delete
+    /// </summary>
+    public List<Guid> MediaFileIds { get; set; } = new();
+}
+
+/// <summary>
+/// Response model for deleting media files
+/// </summary>
+public class DeleteMediaFilesResponse
+{
+    /// <summary>
+    /// Whether the operation was successful
+    /// </summary>
+    public bool Success { get; set; }
+
+    /// <summary>
+    /// Number of files successfully deleted
+    /// </summary>
+    public int DeletedCount { get; set; }
+
+    /// <summary>
+    /// List of media file IDs that failed to delete
+    /// </summary>
+    public List<Guid> FailedDeletes { get; set; } = new();
+
+    /// <summary>
+    /// Error message (if unsuccessful)
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+}

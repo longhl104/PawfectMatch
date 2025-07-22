@@ -227,4 +227,129 @@ public class PetsController(IPetService petService) : ControllerBase
 
         return Ok(response);
     }
+
+    /// <summary>
+    /// Gets all media files (images, videos, documents) for a specific pet
+    /// </summary>
+    /// <param name="petId">The pet ID</param>
+    /// <returns>Pet media files organized by type</returns>
+    [HttpGet("{petId:guid}/media")]
+    public async Task<ActionResult<GetPetMediaResponse>> GetPetMedia(Guid petId)
+    {
+        var response = await petService.GetPetMedia(petId);
+
+        if (!response.Success)
+        {
+            return BadRequest(response);
+        }
+
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Generates presigned URLs for uploading multiple media files for a pet
+    /// </summary>
+    /// <param name="petId">The pet ID</param>
+    /// <param name="request">Request containing media file details</param>
+    /// <returns>Presigned URLs for uploading media files</returns>
+    [HttpPost("{petId:guid}/media/upload-urls")]
+    public async Task<ActionResult<MediaFileUploadResponse>> GenerateMediaUploadUrls(
+        Guid petId,
+        [FromBody] UploadMediaFilesRequest request)
+    {
+        if (request == null || request.MediaFiles == null || request.MediaFiles.Count == 0)
+        {
+            return BadRequest(new { error = "Request must contain at least one media file" });
+        }
+
+        // Ensure the pet ID in the request matches the route parameter
+        request.PetId = petId;
+
+        var response = await petService.GenerateMediaUploadUrls(request);
+
+        if (!response.Success)
+        {
+            return BadRequest(response);
+        }
+
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Confirms successful upload of media files and updates the database
+    /// </summary>
+    /// <param name="petId">The pet ID</param>
+    /// <param name="mediaFileIds">List of media file IDs that were successfully uploaded</param>
+    /// <returns>Success status</returns>
+    [HttpPost("{petId:guid}/media/confirm-uploads")]
+    public async Task<ActionResult<GetPetMediaResponse>> ConfirmMediaUploads(
+        Guid petId,
+        [FromBody] List<Guid> mediaFileIds)
+    {
+        if (mediaFileIds == null || mediaFileIds.Count == 0)
+        {
+            return BadRequest(new { error = "Media file IDs are required" });
+        }
+
+        var response = await petService.ConfirmMediaUploads(petId, mediaFileIds);
+
+        if (!response.Success)
+        {
+            return BadRequest(response);
+        }
+
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Deletes multiple media files for a pet
+    /// </summary>
+    /// <param name="petId">The pet ID</param>
+    /// <param name="request">Request containing media file IDs to delete</param>
+    /// <returns>Delete operation results</returns>
+    [HttpDelete("{petId:guid}/media")]
+    public async Task<ActionResult<DeleteMediaFilesResponse>> DeleteMediaFiles(
+        Guid petId,
+        [FromBody] DeleteMediaFilesRequest request)
+    {
+        if (request == null || request.MediaFileIds == null || request.MediaFileIds.Count == 0)
+        {
+            return BadRequest(new { error = "Media file IDs are required" });
+        }
+
+        var response = await petService.DeleteMediaFiles(petId, request);
+
+        if (!response.Success)
+        {
+            return BadRequest(response);
+        }
+
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Updates the display order of media files for a pet
+    /// </summary>
+    /// <param name="petId">The pet ID</param>
+    /// <param name="mediaFileOrders">Dictionary of media file ID to display order</param>
+    /// <returns>Success status</returns>
+    [HttpPut("{petId:guid}/media/reorder")]
+    public async Task<ActionResult<GetPetMediaResponse>> ReorderMediaFiles(
+        Guid petId,
+        [FromBody] Dictionary<Guid, int> mediaFileOrders)
+    {
+        if (mediaFileOrders == null || mediaFileOrders.Count == 0)
+        {
+            return BadRequest(new { error = "Media file orders are required" });
+        }
+
+        var response = await petService.ReorderMediaFiles(petId, mediaFileOrders);
+
+        if (!response.Success)
+        {
+            return BadRequest(response);
+        }
+
+        return Ok(response);
+    }
 }

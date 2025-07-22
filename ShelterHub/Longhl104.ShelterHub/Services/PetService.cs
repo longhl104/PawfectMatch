@@ -1,5 +1,7 @@
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
+using Amazon.S3;
+using Amazon.S3.Model;
 using Longhl104.ShelterHub.Models;
 using Longhl104.PawfectMatch.Extensions;
 using Microsoft.Extensions.Caching.Memory;
@@ -94,6 +96,44 @@ public interface IPetService
     /// <param name="shelterId">The shelter ID</param>
     /// <returns>Pet statistics including total and adopted counts</returns>
     Task<ShelterPetStatisticsResponse> GetShelterPetStatistics(Guid shelterId);
+
+    /// <summary>
+    /// Gets all media files (images, videos, documents) for a specific pet
+    /// </summary>
+    /// <param name="petId">The pet ID</param>
+    /// <returns>Pet media files organized by type</returns>
+    Task<GetPetMediaResponse> GetPetMedia(Guid petId);
+
+    /// <summary>
+    /// Generates presigned URLs for uploading multiple media files for a pet
+    /// </summary>
+    /// <param name="request">Request containing media file details</param>
+    /// <returns>Presigned URLs for uploading media files</returns>
+    Task<MediaFileUploadResponse> GenerateMediaUploadUrls(UploadMediaFilesRequest request);
+
+    /// <summary>
+    /// Confirms successful upload of media files and updates the database
+    /// </summary>
+    /// <param name="petId">The pet ID</param>
+    /// <param name="mediaFileIds">List of media file IDs that were successfully uploaded</param>
+    /// <returns>Updated pet media response</returns>
+    Task<GetPetMediaResponse> ConfirmMediaUploads(Guid petId, List<Guid> mediaFileIds);
+
+    /// <summary>
+    /// Deletes multiple media files for a pet
+    /// </summary>
+    /// <param name="petId">The pet ID</param>
+    /// <param name="request">Request containing media file IDs to delete</param>
+    /// <returns>Delete operation results</returns>
+    Task<DeleteMediaFilesResponse> DeleteMediaFiles(Guid petId, DeleteMediaFilesRequest request);
+
+    /// <summary>
+    /// Updates the display order of media files for a pet
+    /// </summary>
+    /// <param name="petId">The pet ID</param>
+    /// <param name="mediaFileOrders">Dictionary of media file ID to display order</param>
+    /// <returns>Updated pet media response</returns>
+    Task<GetPetMediaResponse> ReorderMediaFiles(Guid petId, Dictionary<Guid, int> mediaFileOrders);
 }
 
 /// <summary>
@@ -1301,4 +1341,332 @@ public class PetService : IPetService
             _logger.LogWarning(ex, "Failed to invalidate pet statistics cache for shelter {ShelterId}", shelterId);
         }
     }
+
+    public async Task<GetPetMediaResponse> GetPetMedia(Guid petId)
+    {
+        try
+        {
+            var request = new QueryRequest
+            {
+                TableName = "PetMediaFiles", // This would need to be a configurable table name
+                KeyConditionExpression = "PetId = :petId",
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                    {
+                        { ":petId", new AttributeValue { S = petId.ToString() } }
+                    },
+                ScanIndexForward = true // Order by sort key ascending (DisplayOrder)
+            };
+
+            var response = await _dynamoDbClient.QueryAsync(request);
+            var mediaFiles = new List<PetMediaFile>();
+
+            foreach (var item in response.Items)
+            {
+                mediaFiles.Add(new PetMediaFile
+                {
+                    MediaFileId = Guid.Parse(item["MediaFileId"].S),
+                    PetId = Guid.Parse(item["PetId"].S),
+                    FileName = item["FileName"].S,
+                    FileExtension = item.ContainsKey("FileExtension") ? item["FileExtension"].S : "",
+                    FileType = Enum.Parse<MediaFileType>(item["FileType"].S),
+                    ContentType = item.ContainsKey("ContentType") ? item["ContentType"].S : "",
+                    FileSizeBytes = long.Parse(item["FileSizeBytes"].N),
+                    S3Key = item["S3Key"].S,
+                    DisplayOrder = int.Parse(item["DisplayOrder"].N),
+                    UploadedAt = DateTime.Parse(item["UploadedAt"].S)
+                });
+            }
+
+            // Convert to response models with download URLs
+            var images = new List<PetMediaFileResponse>();
+            var videos = new List<PetMediaFileResponse>();
+            var documents = new List<PetMediaFileResponse>();
+
+            foreach (var mediaFile in mediaFiles)
+            {
+                var downloadUrl = await _mediaUploadService.GenerateDownloadPresignedUrlAsync(_bucketName, mediaFile.S3Key);
+
+                var responseItem = new PetMediaFileResponse
+                {
+                    MediaFileId = mediaFile.MediaFileId,
+                    FileName = mediaFile.FileName,
+                    FileExtension = mediaFile.FileExtension,
+                    FileType = mediaFile.FileType,
+                    ContentType = mediaFile.ContentType,
+                    FileSizeBytes = mediaFile.FileSizeBytes,
+                    DownloadUrl = downloadUrl ?? "",
+                    UploadedAt = mediaFile.UploadedAt,
+                    DisplayOrder = mediaFile.DisplayOrder
+                };
+
+                switch (mediaFile.FileType)
+                {
+                    case MediaFileType.Image:
+                        images.Add(responseItem);
+                        break;
+                    case MediaFileType.Video:
+                        videos.Add(responseItem);
+                        break;
+                    case MediaFileType.Document:
+                        documents.Add(responseItem);
+                        break;
+                }
+            }
+
+            return new GetPetMediaResponse
+            {
+                Success = true,
+                Images = images.OrderBy(i => i.DisplayOrder).ToList(),
+                Videos = videos.OrderBy(v => v.DisplayOrder).ToList(),
+                Documents = documents.OrderBy(d => d.DisplayOrder).ToList()
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get media for pet {PetId}", petId);
+            return new GetPetMediaResponse
+            {
+                Success = false,
+                ErrorMessage = "Failed to retrieve pet media"
+            };
+        }
+    }
+
+    public async Task<MediaFileUploadResponse> GenerateMediaUploadUrls(UploadMediaFilesRequest request)
+    {
+        try
+        {
+            var uploadUrls = new List<MediaFileUploadUrlResponse>();
+
+            foreach (var fileRequest in request.MediaFiles)
+            {
+                var mediaFileId = Guid.NewGuid();
+                var fileExtension = Path.GetExtension(fileRequest.FileName).ToLowerInvariant();
+                var s3Key = $"pets/{request.PetId}/media/{mediaFileId}{fileExtension}";
+
+                // Use the existing media upload service to generate presigned URL
+                var presignedRequest = new PresignedUrlRequest
+                {
+                    BucketName = _bucketName,
+                    Key = s3Key,
+                    ContentType = fileRequest.ContentType,
+                    FileSizeBytes = fileRequest.FileSizeBytes
+                };
+
+                var presignedResponse = await _mediaUploadService.GeneratePresignedUrlAsync(presignedRequest);
+
+                uploadUrls.Add(new MediaFileUploadUrlResponse
+                {
+                    MediaFileId = mediaFileId,
+                    FileName = fileRequest.FileName,
+                    PresignedUrl = presignedResponse.PresignedUrl ?? "",
+                    S3Key = s3Key,
+                    ExpiresAt = presignedResponse.ExpiresAt ?? DateTime.UtcNow.AddMinutes(30)
+                });
+            }
+
+            return new MediaFileUploadResponse
+            {
+                Success = true,
+                UploadUrls = uploadUrls
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to generate upload URLs for pet {PetId}", request.PetId);
+            return new MediaFileUploadResponse
+            {
+                Success = false,
+                ErrorMessage = "Failed to generate upload URLs"
+            };
+        }
+    }
+
+    public async Task<GetPetMediaResponse> ConfirmMediaUploads(Guid petId, List<Guid> mediaFileIds)
+    {
+        try
+        {
+            // Get current max display order for this pet
+            var existingMedia = await GetPetMedia(petId);
+            var maxDisplayOrder = 0;
+
+            if (existingMedia.Images.Any() || existingMedia.Videos.Any() || existingMedia.Documents.Any())
+            {
+                var allExisting = existingMedia.Images.Cast<PetMediaFileResponse>()
+                    .Concat(existingMedia.Videos)
+                    .Concat(existingMedia.Documents);
+                maxDisplayOrder = allExisting.Max(m => m.DisplayOrder);
+            }
+
+            var batchRequest = new BatchWriteItemRequest
+            {
+                RequestItems = new Dictionary<string, List<WriteRequest>>
+                {
+                    ["PetMediaFiles"] = new List<WriteRequest>()
+                }
+            };
+
+            foreach (var mediaFileId in mediaFileIds)
+            {
+                var displayOrder = ++maxDisplayOrder;
+
+                // Note: In a real implementation, you'd need to store the file metadata
+                // temporarily during the upload process and retrieve it here
+                var item = new Dictionary<string, AttributeValue>
+                {
+                    ["MediaFileId"] = new AttributeValue { S = mediaFileId.ToString() },
+                    ["PetId"] = new AttributeValue { S = petId.ToString() },
+                    ["DisplayOrder"] = new AttributeValue { N = displayOrder.ToString() },
+                    ["UploadedAt"] = new AttributeValue { S = DateTime.UtcNow.ToString("O") }
+                };
+
+                batchRequest.RequestItems["PetMediaFiles"].Add(new WriteRequest
+                {
+                    PutRequest = new PutRequest { Item = item }
+                });
+            }
+
+            await _dynamoDbClient.BatchWriteItemAsync(batchRequest);
+
+            // Return updated media list
+            return await GetPetMedia(petId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to confirm media uploads for pet {PetId}", petId);
+            return new GetPetMediaResponse
+            {
+                Success = false,
+                ErrorMessage = "Failed to confirm media uploads"
+            };
+        }
+    }
+
+    public async Task<DeleteMediaFilesResponse> DeleteMediaFiles(Guid petId, DeleteMediaFilesRequest request)
+    {
+        try
+        {
+            // Get the media files to delete first to know their S3 keys
+            var batchGetRequest = new BatchGetItemRequest
+            {
+                RequestItems = new Dictionary<string, KeysAndAttributes>
+                {
+                    ["PetMediaFiles"] = new KeysAndAttributes
+                    {
+                        Keys = request.MediaFileIds.Select(id => new Dictionary<string, AttributeValue>
+                        {
+                            ["MediaFileId"] = new AttributeValue { S = id.ToString() }
+                        }).ToList()
+                    }
+                }
+            };
+
+            var batchGetResponse = await _dynamoDbClient.BatchGetItemAsync(batchGetRequest);
+
+            // Delete files from S3 - note: we'd need to implement this in the media service
+            // For now, we'll just log it
+            foreach (var item in batchGetResponse.Responses["PetMediaFiles"])
+            {
+                var s3Key = item["S3Key"].S;
+                _logger.LogInformation("Would delete S3 file: {S3Key}", s3Key);
+                // TODO: Implement S3 deletion in IMediaService
+                // await _mediaUploadService.DeleteFileAsync(_bucketName, s3Key);
+            }
+
+            // Delete records from DynamoDB
+            var batchDeleteRequest = new BatchWriteItemRequest
+            {
+                RequestItems = new Dictionary<string, List<WriteRequest>>
+                {
+                    ["PetMediaFiles"] = request.MediaFileIds.Select(id => new WriteRequest
+                    {
+                        DeleteRequest = new DeleteRequest
+                        {
+                            Key = new Dictionary<string, AttributeValue>
+                            {
+                                ["MediaFileId"] = new AttributeValue { S = id.ToString() }
+                            }
+                        }
+                    }).ToList()
+                }
+            };
+
+            await _dynamoDbClient.BatchWriteItemAsync(batchDeleteRequest);
+
+            return new DeleteMediaFilesResponse
+            {
+                Success = true,
+                DeletedCount = request.MediaFileIds.Count
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to delete media files for pet {PetId}: {MediaFileIds}", petId, string.Join(", ", request.MediaFileIds));
+            return new DeleteMediaFilesResponse
+            {
+                Success = false,
+                ErrorMessage = "Failed to delete media files"
+            };
+        }
+    }
+
+    public async Task<GetPetMediaResponse> ReorderMediaFiles(Guid petId, Dictionary<Guid, int> mediaFileOrders)
+    {
+        try
+        {
+            var batchRequest = new BatchWriteItemRequest
+            {
+                RequestItems = new Dictionary<string, List<WriteRequest>>
+                {
+                    ["PetMediaFiles"] = new List<WriteRequest>()
+                }
+            };
+
+            foreach (var kvp in mediaFileOrders)
+            {
+                var updateRequest = new WriteRequest
+                {
+                    PutRequest = new PutRequest
+                    {
+                        Item = new Dictionary<string, AttributeValue>
+                        {
+                            ["MediaFileId"] = new AttributeValue { S = kvp.Key.ToString() },
+                            ["DisplayOrder"] = new AttributeValue { N = kvp.Value.ToString() }
+                        }
+                    }
+                };
+
+                batchRequest.RequestItems["PetMediaFiles"].Add(updateRequest);
+            }
+
+            await _dynamoDbClient.BatchWriteItemAsync(batchRequest);
+
+            // Return updated media list
+            return await GetPetMedia(petId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to reorder media files for pet {PetId}", petId);
+            return new GetPetMediaResponse
+            {
+                Success = false,
+                ErrorMessage = "Failed to reorder media files"
+            };
+        }
+    }
+
+    private MediaFileType DetermineFileType(string fileExtension)
+    {
+        var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
+        var videoExtensions = new[] { ".mp4", ".avi", ".mov", ".wmv", ".flv", ".webm" };
+
+        if (imageExtensions.Contains(fileExtension))
+            return MediaFileType.Image;
+
+        if (videoExtensions.Contains(fileExtension))
+            return MediaFileType.Video;
+
+        return MediaFileType.Document;
+    }
 }
+
