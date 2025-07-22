@@ -1,3 +1,5 @@
+using Longhl104.PawfectMatch.Utils;
+
 namespace Longhl104.PawfectMatch.Models;
 
 /// <summary>
@@ -45,25 +47,21 @@ public static class PawfectMatchServiceExtensions
     {
         const string apiSuffix = "/api/internal/";
 
-        // Check if running locally (development environment)
-        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
-        var isLocal = Environment.GetEnvironmentVariable("DOTNET_RUNNING_LOCALLY") == "true";
-
-        if (isLocal)
+        if (EnvironmentUrlHelper.IsRunningLocally())
         {
             // Local development URLs
-            return service switch
+            var localUrl = service switch
             {
-                PawfectMatchServices.Identity => "https://localhost:7000" + apiSuffix,
-                PawfectMatchServices.Matcher => "https://localhost:7001" + apiSuffix,
-                PawfectMatchServices.ShelterHub => "https://localhost:7002" + apiSuffix,
+                PawfectMatchServices.Identity => "https://localhost:7000",
+                PawfectMatchServices.Matcher => "https://localhost:7001",
+                PawfectMatchServices.ShelterHub => "https://localhost:7002",
                 _ => throw new ArgumentOutOfRangeException(nameof(service), service, "Unknown service")
             };
+            return localUrl + apiSuffix;
         }
         else
         {
             // Deployed environment URLs
-            var envName = environment.ToLowerInvariant();
             var serviceName = service switch
             {
                 PawfectMatchServices.Identity => "api-id",
@@ -72,9 +70,7 @@ public static class PawfectMatchServiceExtensions
                 _ => throw new ArgumentOutOfRangeException(nameof(service), service, "Unknown service")
             };
 
-            return string.Equals(envName, "production", StringComparison.OrdinalIgnoreCase)
-                ? $"https://{serviceName}.pawfectmatchnow.com" + apiSuffix
-                : $"https://{serviceName}.{envName}.pawfectmatchnow.com" + apiSuffix;
+            return EnvironmentUrlHelper.BuildServiceUrl(serviceName, pathSuffix: apiSuffix);
         }
     }
 }

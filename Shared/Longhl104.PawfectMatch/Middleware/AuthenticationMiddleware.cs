@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text.Json;
 using Longhl104.PawfectMatch.Models.Identity;
+using Longhl104.PawfectMatch.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -17,21 +18,7 @@ public class AuthenticationMiddleware(
     /// </summary>
     private static string GetIdentityUrl()
     {
-        // Check if running locally (development environment)
-        var isLocal = Environment.GetEnvironmentVariable("DOTNET_RUNNING_LOCALLY") == "true";
-
-        if (isLocal)
-        {
-            return "https://localhost:4200";
-        }
-        else
-        {
-            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
-            var envName = environment.ToLowerInvariant();
-            return string.Equals(envName, "production", StringComparison.OrdinalIgnoreCase)
-                ? $"https://id.pawfectmatchnow.com"
-                : $"https://id.{envName}.pawfectmatchnow.com";
-        }
+        return EnvironmentUrlHelper.BuildServiceUrl("id", "https://localhost:4200");
     }
 
     public async Task InvokeAsync(HttpContext context)
