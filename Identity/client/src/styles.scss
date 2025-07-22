@@ -1,3 +1,5 @@
+@use "primeicons/primeicons.css";
+
 /* Color System */
 :root {
   /* Primary Colors */
@@ -116,7 +118,8 @@ body {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: var(--color-text-primary);
   background-color: var(--color-background-primary);
 }
@@ -206,7 +209,9 @@ body {
   padding: 2.5rem;
   text-align: center;
   box-shadow: 0 8px 32px var(--shadow-light);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 
   &:hover {
     box-shadow: 0 12px 40px var(--shadow-medium);
@@ -249,6 +254,11 @@ body {
 
 .icon-container {
   margin-bottom: 1.5rem;
+
+  i {
+    color: var(--color-primary-500);
+    font-size: 48px;
+  }
 
   svg {
     color: var(--color-primary-500);
@@ -301,7 +311,9 @@ body {
     border: 2px solid var(--color-border-light);
     border-radius: 8px;
     font-size: 1rem;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    transition:
+      border-color 0.3s ease,
+      box-shadow 0.3s ease;
     box-sizing: border-box;
     color: var(--color-text-primary);
     background-color: var(--color-background-primary);
@@ -384,6 +396,10 @@ body {
 
     &:hover {
       color: var(--color-text-secondary);
+    }
+
+    i {
+      font-size: 1.25rem;
     }
 
     svg {
@@ -630,4 +646,28 @@ body {
     background: rgba(0, 0, 0, 0.1);
     border-color: var(--color-border-dark);
   }
+}
+
+/* PrimeIcon Utility Classes */
+.pi-small {
+  font-size: 1rem;
+}
+
+.pi-medium {
+  font-size: 1.5rem;
+}
+
+.pi-large {
+  font-size: 2rem;
+}
+
+.pi-xl {
+  font-size: 3rem;
+}
+
+/* Icon with text spacing */
+.icon-with-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
