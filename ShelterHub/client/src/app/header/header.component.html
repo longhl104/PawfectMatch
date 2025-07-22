@@ -31,12 +31,12 @@
           <p-button
             icon="pi pi-sign-out"
             severity="secondary"
-            [text]="true"
-            [rounded]="true"
             pTooltip="Logout"
             tooltipPosition="bottom"
-            (onClick)="onLogout()"
             styleClass="ml-2"
+            [text]="true"
+            [rounded]="true"
+            (onClick)="onLogout()"
           >
           </p-button>
           <p-menu #menu [popup]="true" [model]="userMenuItems"></p-menu>
