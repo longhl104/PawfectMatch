@@ -37,20 +37,42 @@ public static class PawfectMatchServiceExtensions
     }
 
     /// <summary>
-    /// Gets the default development URL for the service (fallback)
+    /// Gets the base URL for the service based on environment (local vs deployed)
     /// </summary>
     /// <param name="service">The service enum value</param>
-    /// <returns>Default development URL</returns>
+    /// <returns>Base URL for the service</returns>
     public static string GetBaseUrl(this PawfectMatchServices service)
     {
         const string apiSuffix = "/api/internal/";
 
-        return service switch
+        // Check if running locally (development environment)
+        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
+        var isLocal = Environment.GetEnvironmentVariable("DOTNET_RUNNING_LOCALLY") == "true";
+
+        if (isLocal)
         {
-            PawfectMatchServices.Identity => "https://localhost:7000" + apiSuffix,
-            PawfectMatchServices.Matcher => "https://localhost:7001" + apiSuffix,
-            PawfectMatchServices.ShelterHub => "https://localhost:7002" + apiSuffix,
-            _ => throw new ArgumentOutOfRangeException(nameof(service), service, "Unknown service")
-        };
+            // Local development URLs
+            return service switch
+            {
+                PawfectMatchServices.Identity => "https://localhost:7000" + apiSuffix,
+                PawfectMatchServices.Matcher => "https://localhost:7001" + apiSuffix,
+                PawfectMatchServices.ShelterHub => "https://localhost:7002" + apiSuffix,
+                _ => throw new ArgumentOutOfRangeException(nameof(service), service, "Unknown service")
+            };
+        }
+        else
+        {
+            // Deployed environment URLs
+            var envName = environment.ToLowerInvariant();
+            var serviceName = service switch
+            {
+                PawfectMatchServices.Identity => "id",
+                PawfectMatchServices.Matcher => "adopter",
+                PawfectMatchServices.ShelterHub => "shelter",
+                _ => throw new ArgumentOutOfRangeException(nameof(service), service, "Unknown service")
+            };
+
+            return $"https://{serviceName}.{envName}.pawfectmatchnow.com" + apiSuffix;
+        }
     }
 }

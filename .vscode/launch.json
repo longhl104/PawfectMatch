@@ -16,7 +16,8 @@
       "stopAtEntry": false,
       "env": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "AWS_PROFILE": "longhl104"
+        "AWS_PROFILE": "longhl104",
+        "DOTNET_RUNNING_LOCALLY": "true"
       },
       "sourceFileMap": {
         "/Views": "${workspaceFolder}/Views"
