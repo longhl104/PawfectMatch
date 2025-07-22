@@ -66,13 +66,15 @@ public static class PawfectMatchServiceExtensions
             var envName = environment.ToLowerInvariant();
             var serviceName = service switch
             {
-                PawfectMatchServices.Identity => "id",
-                PawfectMatchServices.Matcher => "adopter",
-                PawfectMatchServices.ShelterHub => "shelter",
+                PawfectMatchServices.Identity => "api-id",
+                PawfectMatchServices.Matcher => "api-matcher",
+                PawfectMatchServices.ShelterHub => "api-shelter",
                 _ => throw new ArgumentOutOfRangeException(nameof(service), service, "Unknown service")
             };
 
-            return $"https://{serviceName}.{envName}.pawfectmatchnow.com" + apiSuffix;
+            return string.Equals(envName, "production", StringComparison.OrdinalIgnoreCase)
+                ? $"https://{serviceName}.pawfectmatchnow.com" + apiSuffix
+                : $"https://{serviceName}.{envName}.pawfectmatchnow.com" + apiSuffix;
         }
     }
 }

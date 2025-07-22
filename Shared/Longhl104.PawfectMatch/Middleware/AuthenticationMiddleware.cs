@@ -12,7 +12,27 @@ public class AuthenticationMiddleware(
     ILogger<AuthenticationMiddleware> _logger
     )
 {
-    private static readonly string IdentityUrl = "https://localhost:4200"; // Default identity URL, can be overridden by configuration
+    /// <summary>
+    /// Gets the Identity URL based on environment (local vs deployed)
+    /// </summary>
+    private static string GetIdentityUrl()
+    {
+        // Check if running locally (development environment)
+        var isLocal = Environment.GetEnvironmentVariable("DOTNET_RUNNING_LOCALLY") == "true";
+
+        if (isLocal)
+        {
+            return "https://localhost:4200";
+        }
+        else
+        {
+            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
+            var envName = environment.ToLowerInvariant();
+            return string.Equals(envName, "production", StringComparison.OrdinalIgnoreCase)
+                ? $"https://id.pawfectmatchnow.com"
+                : $"https://id.{envName}.pawfectmatchnow.com";
+        }
+    }
 
     public async Task InvokeAsync(HttpContext context)
     {
@@ -45,7 +65,7 @@ public class AuthenticationMiddleware(
             }
 
             // For web requests, redirect to login
-            var loginUrl = $"{IdentityUrl}/auth/login";
+            var loginUrl = $"{GetIdentityUrl()}/auth/login";
 
             _logger.LogInformation("Redirecting to login: {LoginUrl}", loginUrl);
             context.Response.Redirect(loginUrl);
@@ -212,7 +232,7 @@ public class AuthenticationMiddleware(
             success = false,
             message = result.Message,
             isAuthenticated = result.IsAuthenticated,
-            redirectUrl = statusCode == 401 ? $"{IdentityUrl}/auth/login" : null,
+            redirectUrl = statusCode == 401 ? $"{GetIdentityUrl()}/auth/login" : null,
             requiresRefresh = result.RequiresRefresh
         };
 
