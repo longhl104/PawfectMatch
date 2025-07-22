@@ -251,18 +251,30 @@
           </div>
           <!-- Action Buttons -->
           <div class="form-actions">
-            <p-button
-              label="Cancel"
-              severity="secondary"
-              (onClick)="onCancel()"
-              [disabled]="saving"
-            ></p-button>
-            <p-button
-              [label]="isUploadingImage ? 'Uploading Image...' : 'Save Changes'"
-              type="submit"
-              [loading]="saving"
-              [disabled]="petForm.invalid"
-            ></p-button>
+            <div class="flex justify-content-between w-full">
+              <div class="flex gap-2">
+                <p-button
+                  label="Cancel"
+                  severity="secondary"
+                  (onClick)="onCancel()"
+                  [disabled]="saving"
+                ></p-button>
+                <p-button
+                  label="Delete Pet"
+                  severity="danger"
+                  icon="pi pi-trash"
+                  (onClick)="onDelete()"
+                  [disabled]="saving"
+                  [outlined]="true"
+                ></p-button>
+              </div>
+              <p-button
+                [label]="isUploadingImage ? 'Uploading Image...' : 'Save Changes'"
+                type="submit"
+                [loading]="saving"
+                [disabled]="petForm.invalid"
+              ></p-button>
+            </div>
           </div>
         </form>
       </div>
@@ -277,3 +289,4 @@
 </div>
 
 <p-toast />
+<p-confirmDialog />

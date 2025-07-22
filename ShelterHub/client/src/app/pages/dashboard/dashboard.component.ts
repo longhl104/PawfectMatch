@@ -17,7 +17,7 @@ import { ShelterService } from 'shared/services/shelter.service';
 import {
   ApplicationService,
   type Application,
-} from '../../shared/services/application.service';
+} from 'shared/services/application.service';
 import { AddPetFormComponent } from './add-pet-form/add-pet-form.component';
 import { ToastService } from '@longhl104/pawfect-match-ng';
 import { AuthService } from 'shared/services/auth.service';
@@ -30,7 +30,7 @@ import {
   Shelter,
   ShelterPetStatisticsResponse,
 } from 'shared/apis/generated-apis';
-import { PetCardComponent } from '../../shared/components';
+import { PetCardComponent } from 'shared/components';
 
 @Component({
   selector: 'app-dashboard',

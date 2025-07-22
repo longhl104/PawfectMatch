@@ -33,7 +33,7 @@ import {
   Shelter,
 } from 'shared/apis/generated-apis';
 import { AddPetFormComponent } from '../dashboard/add-pet-form/add-pet-form.component';
-import { PetCardComponent, PetCardAction } from '../../shared/components';
+import { PetCardComponent, PetCardAction } from 'shared/components';
 
 interface FilterOption {
   label: string;

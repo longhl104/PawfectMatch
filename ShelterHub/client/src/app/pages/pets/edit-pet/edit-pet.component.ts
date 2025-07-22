@@ -1,6 +1,11 @@
 import { Component, OnInit, inject } from '@angular/core';
 
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -12,11 +17,11 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { FileUploadModule, FileSelectEvent } from 'primeng/fileupload';
 import { CardModule } from 'primeng/card';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
-
-import { PetService } from '../../../shared/services/pet.service';
-import { Pet, UpdatePetRequest, PetStatus } from '../../../shared/apis/generated-apis';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { PetService } from 'shared/services/pet.service';
+import { Pet, UpdatePetRequest, PetStatus } from 'shared/apis/generated-apis';
 
 @Component({
   selector: 'app-edit-pet',
@@ -33,11 +38,12 @@ import { Pet, UpdatePetRequest, PetStatus } from '../../../shared/apis/generated
     FileUploadModule,
     CardModule,
     ToastModule,
-    ProgressSpinnerModule
-],
-  providers: [MessageService],
+    ProgressSpinnerModule,
+    ConfirmDialogModule,
+  ],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './edit-pet.component.html',
-  styleUrl: './edit-pet.component.scss'
+  styleUrl: './edit-pet.component.scss',
 })
 export class EditPetComponent implements OnInit {
   private fb = inject(FormBuilder);
@@ -45,6 +51,7 @@ export class EditPetComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private petService = inject(PetService);
   private messageService = inject(MessageService);
+  private confirmationService = inject(ConfirmationService);
 
   petForm: FormGroup;
   pet: Pet | null = null;
@@ -62,19 +69,19 @@ export class EditPetComponent implements OnInit {
     { label: 'Cat', value: 'Cat' },
     { label: 'Rabbit', value: 'Rabbit' },
     { label: 'Bird', value: 'Bird' },
-    { label: 'Other', value: 'Other' }
+    { label: 'Other', value: 'Other' },
   ];
 
   genderOptions = [
     { label: 'Male', value: 'Male' },
-    { label: 'Female', value: 'Female' }
+    { label: 'Female', value: 'Female' },
   ];
 
   statusOptions = [
     { label: 'Available', value: PetStatus.Available },
     { label: 'Pending', value: PetStatus.Pending },
     { label: 'Adopted', value: PetStatus.Adopted },
-    { label: 'Medical Hold', value: PetStatus.MedicalHold }
+    { label: 'Medical Hold', value: PetStatus.MedicalHold },
   ];
 
   constructor() {
@@ -93,7 +100,7 @@ export class EditPetComponent implements OnInit {
       isGoodWithKids: [false],
       isGoodWithPets: [false],
       specialNeeds: [''],
-      status: [PetStatus.Available, Validators.required]
+      status: [PetStatus.Available, Validators.required],
     });
   }
 
@@ -117,7 +124,7 @@ export class EditPetComponent implements OnInit {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Pet not found'
+          detail: 'Pet not found',
         });
         this.router.navigate(['/pets']);
       }
@@ -126,7 +133,7 @@ export class EditPetComponent implements OnInit {
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
-        detail: 'Failed to load pet information'
+        detail: 'Failed to load pet information',
       });
       this.router.navigate(['/pets']);
     } finally {
@@ -160,7 +167,7 @@ export class EditPetComponent implements OnInit {
       isGoodWithKids: pet.isGoodWithKids || false,
       isGoodWithPets: pet.isGoodWithPets || false,
       specialNeeds: pet.specialNeeds || '',
-      status: pet.status || PetStatus.Available
+      status: pet.status || PetStatus.Available,
     });
 
     // Load existing image
@@ -194,7 +201,7 @@ export class EditPetComponent implements OnInit {
           isGoodWithKids: formValue.isGoodWithKids,
           isGoodWithPets: formValue.isGoodWithPets,
           specialNeeds: formValue.specialNeeds || '',
-          status: formValue.status
+          status: formValue.status,
         });
 
         // Use the new upload method that handles S3 upload
@@ -208,14 +215,14 @@ export class EditPetComponent implements OnInit {
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
-            detail: 'Pet updated successfully'
+            detail: 'Pet updated successfully',
           });
           this.router.navigate(['/pets']);
         } else {
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: 'Failed to update pet'
+            detail: 'Failed to update pet',
           });
         }
       } catch (error) {
@@ -223,7 +230,7 @@ export class EditPetComponent implements OnInit {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Failed to update pet'
+          detail: 'Failed to update pet',
         });
       } finally {
         this.saving = false;
@@ -277,7 +284,8 @@ export class EditPetComponent implements OnInit {
         ],
       };
 
-      const response = await this.petService.getPetImageDownloadUrls(downloadUrlRequest);
+      const response =
+        await this.petService.getPetImageDownloadUrls(downloadUrlRequest);
       if (response.success && response.petImageUrls[this.pet.petId]) {
         this.currentPetImageUrl = response.petImageUrls[this.pet.petId];
         this.imagePreview = this.currentPetImageUrl;
@@ -289,9 +297,44 @@ export class EditPetComponent implements OnInit {
   }
 
   private markFormGroupTouched() {
-    Object.keys(this.petForm.controls).forEach(key => {
+    Object.keys(this.petForm.controls).forEach((key) => {
       const control = this.petForm.get(key);
       control?.markAsTouched();
+    });
+  }
+
+  onDelete() {
+    if (!this.pet) return;
+
+    this.confirmationService.confirm({
+      message: `Are you sure you want to delete ${this.pet.name}? This action cannot be undone.`,
+      header: 'Delete Pet',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: async () => {
+        try {
+          this.saving = true;
+          await this.petService.deletePet(this.pet!.petId!);
+
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Pet deleted successfully',
+          });
+
+          // Navigate back to pets list
+          this.router.navigate(['/pets']);
+        } catch (error) {
+          console.error('Error deleting pet:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to delete pet',
+          });
+        } finally {
+          this.saving = false;
+        }
+      },
     });
   }
 
@@ -305,7 +348,8 @@ export class EditPetComponent implements OnInit {
     if (field?.errors) {
       if (field.errors['required']) return `${fieldName} is required`;
       if (field.errors['minlength']) return `${fieldName} is too short`;
-      if (field.errors['min']) return `${fieldName} must be greater than ${field.errors['min'].min}`;
+      if (field.errors['min'])
+        return `${fieldName} must be greater than ${field.errors['min'].min}`;
     }
     return '';
   }

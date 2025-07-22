@@ -18,8 +18,11 @@ import {
   ShelterAdminRegistrationRequest,
   ShelterAdminService,
   ShelterAdminRegistrationResponse,
-} from '../../../../shared/services/shelter-admin.service';
-import { AddressInputComponent, AddressDetails } from '../../../../shared/components/address-input/address-input.component';
+} from 'shared/services/shelter-admin.service';
+import {
+  AddressInputComponent,
+  AddressDetails,
+} from 'shared/components/address-input/address-input.component';
 
 @Component({
   selector: 'app-shelter-admin-registration',
@@ -59,7 +62,10 @@ export class ShelterAdminRegistration {
         ],
         confirmPassword: ['', [Validators.required]],
         shelterName: ['', [Validators.required, Validators.minLength(2)]],
-        shelterContactNumber: ['', [Validators.required, this.australianPhoneValidator]],
+        shelterContactNumber: [
+          '',
+          [Validators.required, this.australianPhoneValidator],
+        ],
         shelterAddress: ['', [Validators.required]],
         shelterWebsiteUrl: ['', [this.urlValidator]],
         shelterAbn: ['', [this.abnValidator]],
@@ -115,9 +121,7 @@ export class ShelterAdminRegistration {
   }
 
   // Custom validator for URL
-  private urlValidator(
-    control: AbstractControl,
-  ): ValidationErrors | null {
+  private urlValidator(control: AbstractControl): ValidationErrors | null {
     if (!control.value) return null;
 
     try {
@@ -129,14 +133,14 @@ export class ShelterAdminRegistration {
   }
 
   // Custom validator for ABN
-  private abnValidator(
-    control: AbstractControl,
-  ): ValidationErrors | null {
+  private abnValidator(control: AbstractControl): ValidationErrors | null {
     if (!control.value) return null;
 
     // Basic ABN validation (11 digits)
     const abnRegex = /^\d{11}$/;
-    return abnRegex.test(control.value.replace(/\s/g, '')) ? null : { pattern: true };
+    return abnRegex.test(control.value.replace(/\s/g, ''))
+      ? null
+      : { pattern: true };
   }
 
   // Custom validator for confirm password field
@@ -202,9 +206,9 @@ export class ShelterAdminRegistration {
       try {
         console.log('Shelter admin registration data:', finalData);
 
-        const response = await firstValueFrom(
+        const response = (await firstValueFrom(
           this.shelterAdminService.register(finalData),
-        ) as ShelterAdminRegistrationResponse;
+        )) as ShelterAdminRegistrationResponse;
 
         console.log('Registration successful');
         this.toastService.success(
