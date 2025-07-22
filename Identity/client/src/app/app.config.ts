@@ -15,20 +15,7 @@ import {
   withFetch,
   withInterceptors,
 } from '@angular/common/http';
-import { GlobalErrorHandler } from '@longhl104/pawfect-match-ng';
-import { HttpInterceptorFn } from '@angular/common/http';
-
-// Credentials interceptor to include cookies in all requests
-const credentialsInterceptor: HttpInterceptorFn = (req, next) => {
-  const reqWithCredentials = req.clone({
-    setHeaders: {
-      'Content-Type': 'application/json',
-    },
-    withCredentials: true,
-  });
-
-  return next(reqWithCredentials);
-};
+import { GlobalErrorHandler, credentialsInterceptor } from '@longhl104/pawfect-match-ng';
 
 export const appConfig: ApplicationConfig = {
   providers: [

@@ -12,26 +12,13 @@ import {
   withEventReplay,
 } from '@angular/platform-browser';
 import {
-  HttpInterceptorFn,
   provideHttpClient,
   withFetch,
   withInterceptors,
   withInterceptorsFromDi,
 } from '@angular/common/http';
-import { GlobalErrorHandler } from '@longhl104/pawfect-match-ng';
+import { GlobalErrorHandler, credentialsInterceptor } from '@longhl104/pawfect-match-ng';
 import { authInitializer } from './initializers/auth.initializer';
-
-// Credentials interceptor to include cookies in all requests
-const credentialsInterceptor: HttpInterceptorFn = (req, next) => {
-  const reqWithCredentials = req.clone({
-    setHeaders: {
-      'Content-Type': 'application/json',
-    },
-    withCredentials: true,
-  });
-
-  return next(reqWithCredentials);
-};
 
 export const appConfig: ApplicationConfig = {
   providers: [
