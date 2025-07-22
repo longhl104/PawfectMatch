@@ -1,6 +1,6 @@
 <div class="edit-pet-container">
   <p-card header="Edit Pet" class="edit-pet-card">
-    @if (!loading) {
+    @if (!loading()) {
       <div class="card-content">
         <form [formGroup]="petForm" (ngSubmit)="onSubmit()" class="pet-form">
           <!-- Basic Information Section -->
@@ -232,15 +232,15 @@
             <small class="text-600 block mt-1">
               Maximum file size: 10MB. Supported formats: JPG, PNG, GIF
             </small>
-            @if (imagePreview) {
+            @if (imagePreview()) {
               <div class="mt-2">
                 <span class="text-sm text-600 block mb-1">
                   {{
-                    selectedImageFile ? "New image preview:" : "Current image:"
+                    selectedImageFile() ? "New image preview:" : "Current image:"
                   }}
                 </span>
                 <img
-                  [src]="imagePreview"
+                  [src]="imagePreview()"
                   alt="Image preview"
                   class="w-8rem h-6rem object-cover border-round border-2 border-gray-200"
                 />
@@ -252,10 +252,10 @@
           <div class="form-section">
             <h3>Media Files</h3>
             <app-pet-media-upload
-              [petId]="pet?.petId || null"
-              [existingImages]="existingMediaImages"
-              [existingVideos]="existingMediaVideos"
-              [existingDocuments]="existingMediaDocuments"
+              [petId]="pet()?.petId || null"
+              [existingImages]="existingMediaImages()"
+              [existingVideos]="existingMediaVideos()"
+              [existingDocuments]="existingMediaDocuments()"
               (mediaDataChange)="onMediaDataChange($event)"
               (uploadComplete)="onMediaUploadComplete()"
             ></app-pet-media-upload>
@@ -269,23 +269,23 @@
                   label="Cancel"
                   severity="secondary"
                   (onClick)="onCancel()"
-                  [disabled]="saving"
+                  [disabled]="saving()"
                 ></p-button>
                 <p-button
                   label="Delete Pet"
                   severity="danger"
                   icon="pi pi-trash"
                   (onClick)="onDelete()"
-                  [disabled]="saving"
+                  [disabled]="saving()"
                   [outlined]="true"
                 ></p-button>
               </div>
               <p-button
                 [label]="
-                  isUploadingImage ? 'Uploading Image...' : 'Save Changes'
+                  isUploadingImage() ? 'Uploading Image...' : 'Save Changes'
                 "
                 type="submit"
-                [loading]="saving"
+                [loading]="saving()"
                 [disabled]="petForm.invalid"
               ></p-button>
             </div>

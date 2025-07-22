@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 
 import {
   ReactiveFormsModule,
@@ -21,8 +21,16 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { PetService } from '../../../shared/services/pet.service';
-import { Pet, UpdatePetRequest, PetStatus } from '../../../shared/apis/generated-apis';
-import { PetMediaUploadComponent, MediaFile, MediaUploadData } from './pet-media-upload/pet-media-upload.component';
+import {
+  Pet,
+  UpdatePetRequest,
+  PetStatus,
+} from '../../../shared/apis/generated-apis';
+import {
+  PetMediaUploadComponent,
+  MediaFile,
+  MediaUploadData,
+} from './pet-media-upload/pet-media-upload.component';
 
 @Component({
   selector: 'app-edit-pet',
@@ -56,21 +64,21 @@ export class EditPetComponent implements OnInit {
   private confirmationService = inject(ConfirmationService);
 
   petForm: FormGroup;
-  pet: Pet | null = null;
-  loading = false;
-  saving = false;
+  pet = signal<Pet | null>(null);
+  loading = signal(false);
+  saving = signal(false);
 
   // Image upload properties
-  imagePreview: string | null = null;
-  selectedImageFile: File | null = null;
-  currentPetImageUrl: string | null = null;
-  isUploadingImage = false;
+  imagePreview = signal<string | null>(null);
+  selectedImageFile = signal<File | null>(null);
+  currentPetImageUrl = signal<string | null>(null);
+  isUploadingImage = signal(false);
 
   // Media upload properties
-  existingMediaImages: MediaFile[] = [];
-  existingMediaVideos: MediaFile[] = [];
-  existingMediaDocuments: MediaFile[] = [];
-  currentMediaData: MediaUploadData | null = null;
+  existingMediaImages = signal<MediaFile[]>([]);
+  existingMediaVideos = signal<MediaFile[]>([]);
+  existingMediaDocuments = signal<MediaFile[]>([]);
+  currentMediaData = signal<MediaUploadData | null>(null);
 
   speciesOptions = [
     { label: 'Dog', value: 'Dog' },
@@ -122,12 +130,12 @@ export class EditPetComponent implements OnInit {
   }
 
   private async loadPet(petId: string) {
-    this.loading = true;
+    this.loading.set(true);
     try {
       const pet = await this.petService.getPetById(petId);
       if (pet) {
-        this.pet = pet;
-        this.populateForm(this.pet);
+        this.pet.set(pet);
+        this.populateForm(pet);
         await this.loadExistingMedia(petId);
       } else {
         this.messageService.add({
@@ -146,7 +154,7 @@ export class EditPetComponent implements OnInit {
       });
       this.router.navigate(['/pets']);
     } finally {
-      this.loading = false;
+      this.loading.set(false);
     }
   }
 
@@ -184,9 +192,9 @@ export class EditPetComponent implements OnInit {
   }
 
   async onSubmit() {
-    if (this.petForm.valid && this.pet) {
-      this.saving = true;
-      this.isUploadingImage = !!this.selectedImageFile;
+    if (this.petForm.valid && this.pet()) {
+      this.saving.set(true);
+      this.isUploadingImage.set(!!this.selectedImageFile());
 
       try {
         const formValue = this.petForm.value;
@@ -215,9 +223,9 @@ export class EditPetComponent implements OnInit {
 
         // Use the new upload method that handles S3 upload
         const updatedPet = await this.petService.updatePetAndUploadImage(
-          this.pet.petId!,
+          this.pet()!.petId!,
           updateRequest,
-          this.selectedImageFile || undefined,
+          this.selectedImageFile() || undefined,
         );
 
         if (updatedPet) {
@@ -242,8 +250,8 @@ export class EditPetComponent implements OnInit {
           detail: 'Failed to update pet',
         });
       } finally {
-        this.saving = false;
-        this.isUploadingImage = false;
+        this.saving.set(false);
+        this.isUploadingImage.set(false);
       }
     } else {
       this.markFormGroupTouched();
@@ -257,12 +265,12 @@ export class EditPetComponent implements OnInit {
   onImageUpload(event: FileSelectEvent) {
     const file = event.files[0];
     if (file) {
-      this.selectedImageFile = file;
+      this.selectedImageFile.set(file);
 
       // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
-        this.imagePreview = e.target?.result as string;
+        this.imagePreview.set(e.target?.result as string);
       };
       reader.readAsDataURL(file);
     }
@@ -270,34 +278,35 @@ export class EditPetComponent implements OnInit {
 
   onImageRemove() {
     // If there was a newly selected file, remove it and revert to current image
-    if (this.selectedImageFile) {
-      this.selectedImageFile = null;
-      this.imagePreview = this.currentPetImageUrl;
+    if (this.selectedImageFile()) {
+      this.selectedImageFile.set(null);
+      this.imagePreview.set(this.currentPetImageUrl());
     } else {
-      this.selectedImageFile = null;
-      this.imagePreview = null;
+      this.selectedImageFile.set(null);
+      this.imagePreview.set(null);
     }
   }
 
   private async loadExistingImage() {
-    if (!this.pet?.petId || !this.pet.mainImageFileExtension) return;
+    const currentPet = this.pet();
+    if (!currentPet?.petId || !currentPet.mainImageFileExtension) return;
 
     try {
       // Get the download URL for the existing image
       const downloadUrlRequest = {
         petRequests: [
           {
-            petId: this.pet.petId,
-            mainImageFileExtension: this.pet.mainImageFileExtension,
+            petId: currentPet.petId,
+            mainImageFileExtension: currentPet.mainImageFileExtension,
           },
         ],
       };
 
       const response =
         await this.petService.getPetImageDownloadUrls(downloadUrlRequest);
-      if (response.success && response.petImageUrls[this.pet.petId]) {
-        this.currentPetImageUrl = response.petImageUrls[this.pet.petId];
-        this.imagePreview = this.currentPetImageUrl;
+      if (response.success && response.petImageUrls[currentPet.petId]) {
+        this.currentPetImageUrl.set(response.petImageUrls[currentPet.petId]);
+        this.imagePreview.set(this.currentPetImageUrl());
       }
     } catch (error) {
       console.log('Could not load existing pet image:', error);
@@ -309,15 +318,15 @@ export class EditPetComponent implements OnInit {
     try {
       // For now, initialize with empty arrays
       // In a real implementation, you would call an API to get existing media files
-      this.existingMediaImages = [];
-      this.existingMediaVideos = [];
-      this.existingMediaDocuments = [];
+      this.existingMediaImages.set([]);
+      this.existingMediaVideos.set([]);
+      this.existingMediaDocuments.set([]);
 
       // Example of how you might load existing media:
       // const mediaResponse = await this.petService.getPetMedia(petId);
-      // this.existingMediaImages = mediaResponse.images || [];
-      // this.existingMediaVideos = mediaResponse.videos || [];
-      // this.existingMediaDocuments = mediaResponse.documents || [];
+      // this.existingMediaImages.set(mediaResponse.images || []);
+      // this.existingMediaVideos.set(mediaResponse.videos || []);
+      // this.existingMediaDocuments.set(mediaResponse.documents || []);
 
       console.log('Loaded existing media for pet:', petId);
     } catch (error) {
@@ -334,7 +343,7 @@ export class EditPetComponent implements OnInit {
   }
 
   onMediaDataChange(mediaData: MediaUploadData) {
-    this.currentMediaData = mediaData;
+    this.currentMediaData.set(mediaData);
     console.log('Media data changed:', mediaData);
   }
 
@@ -342,7 +351,7 @@ export class EditPetComponent implements OnInit {
     this.messageService.add({
       severity: 'success',
       summary: 'Success',
-      detail: 'Media files uploaded successfully'
+      detail: 'Media files uploaded successfully',
     });
 
     // Optionally reload media data or refresh the component
@@ -350,17 +359,17 @@ export class EditPetComponent implements OnInit {
   }
 
   onDelete() {
-    if (!this.pet) return;
+    if (!this.pet()) return;
 
     this.confirmationService.confirm({
-      message: `Are you sure you want to delete ${this.pet.name}? This action cannot be undone.`,
+      message: `Are you sure you want to delete ${this.pet()!.name}? This action cannot be undone.`,
       header: 'Delete Pet',
       icon: 'pi pi-exclamation-triangle',
       acceptButtonStyleClass: 'p-button-danger',
       accept: async () => {
         try {
-          this.saving = true;
-          await this.petService.deletePet(this.pet!.petId!);
+          this.saving.set(true);
+          await this.petService.deletePet(this.pet()!.petId!);
 
           this.messageService.add({
             severity: 'success',
@@ -378,7 +387,7 @@ export class EditPetComponent implements OnInit {
             detail: 'Failed to delete pet',
           });
         } finally {
-          this.saving = false;
+          this.saving.set(false);
         }
       },
     });
