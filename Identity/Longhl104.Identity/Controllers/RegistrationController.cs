@@ -78,7 +78,7 @@ public partial class RegistrationController(
                 {
                     Message = "Registration successful",
                     UserId = userId,
-                    RedirectUrl = "https://localhost:4201",
+                    RedirectUrl = EnvironmentUrlHelper.BuildServiceUrl("matcher", "https://localhost:4201"),
                     Success = true,
                     Data = tokenData
                 },

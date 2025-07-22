@@ -2,7 +2,7 @@ import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { firstValueFrom } from 'rxjs';
+import { filter, firstValueFrom } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
@@ -55,8 +55,8 @@ interface FilterOption {
     ConfirmDialogModule,
     PaginatorModule,
     DynamicDialogModule,
-    PetCardComponent
-],
+    PetCardComponent,
+  ],
   providers: [ConfirmationService],
   templateUrl: './pets-list.component.html',
   styleUrl: './pets-list.component.scss',
@@ -107,7 +107,11 @@ export class PetsListComponent implements OnInit, OnDestroy {
   ];
 
   ngOnInit() {
-    this.loadPetsData();
+    this.shelterService.shelter$
+      .pipe(filter((shelter) => !!shelter))
+      .subscribe((shelter) => {
+        this.loadPetsData(0, shelter);
+      });
   }
 
   ngOnDestroy() {
@@ -117,13 +121,11 @@ export class PetsListComponent implements OnInit, OnDestroy {
     }
   }
 
-  async loadPetsData(page = 0) {
+  async loadPetsData(page = 0, shelter: Shelter | null = null) {
     try {
       this.isLoading = true;
-
-      // Load shelter information if not already loaded
-      if (!this.shelterInfo) {
-        this.shelterInfo = await this.shelterService.getShelterInfo();
+      if (shelter) {
+        this.shelterInfo = shelter;
       }
 
       // Calculate which token to use for this page
@@ -147,7 +149,7 @@ export class PetsListComponent implements OnInit, OnDestroy {
       // Load paginated pets with server-side filtering
       const response: GetPaginatedPetsResponse = await firstValueFrom(
         this.petsApi.paginated(
-          this.shelterInfo.shelterId,
+          this.shelterInfo!.shelterId,
           this.pageSize,
           tokenToUse,
           (this.selectedStatus as PetStatus | undefined) ?? undefined,
@@ -365,7 +367,11 @@ export class PetsListComponent implements OnInit, OnDestroy {
     });
   }
 
-  onPetCardAction(eventData: { action: PetCardAction; pet: Pet; event: Event }) {
+  onPetCardAction(eventData: {
+    action: PetCardAction;
+    pet: Pet;
+    event: Event;
+  }) {
     const { action, pet, event } = eventData;
 
     switch (action.type) {

@@ -20,18 +20,14 @@
           formControlName="fullName"
           placeholder="Enter your full name"
           [class.error]="isFieldInvalid('fullName')"
-          />
-        @if (isFieldInvalid('fullName')) {
+        />
+        @if (isFieldInvalid("fullName")) {
           <div class="error-message">
-            @if (registrationForm.get('fullName')?.errors?.['required']) {
-              <span>
-                Full name is required
-              </span>
+            @if (registrationForm.get("fullName")?.errors?.["required"]) {
+              <span> Full name is required </span>
             }
-            @if (registrationForm.get('fullName')?.errors?.['minlength']) {
-              <span>
-                Full name must be at least 2 characters
-              </span>
+            @if (registrationForm.get("fullName")?.errors?.["minlength"]) {
+              <span> Full name must be at least 2 characters </span>
             }
           </div>
         }
@@ -47,18 +43,14 @@
           placeholder="Enter your email address"
           autocomplete="email"
           [class.error]="isFieldInvalid('email')"
-          />
-        @if (isFieldInvalid('email')) {
+        />
+        @if (isFieldInvalid("email")) {
           <div class="error-message">
-            @if (registrationForm.get('email')?.errors?.['required']) {
-              <span>
-                Email is required
-              </span>
+            @if (registrationForm.get("email")?.errors?.["required"]) {
+              <span> Email is required </span>
             }
-            @if (registrationForm.get('email')?.errors?.['email']) {
-              <span>
-                Please enter a valid email address
-              </span>
+            @if (registrationForm.get("email")?.errors?.["email"]) {
+              <span> Please enter a valid email address </span>
             }
           </div>
         }
@@ -75,12 +67,12 @@
             placeholder="Create a strong password"
             autocomplete="new-password"
             [class.error]="isFieldInvalid('password')"
-            />
+          />
           <button
             type="button"
             class="password-toggle"
             (click)="togglePassword()"
-            >
+          >
             @if (!showPassword) {
               <i class="pi pi-eye"></i>
             }
@@ -89,19 +81,15 @@
             }
           </button>
         </div>
-        @if (isFieldInvalid('password')) {
+        @if (isFieldInvalid("password")) {
           <div class="error-message">
-            @if (registrationForm.get('password')?.errors?.['required']) {
-              <span>
-                Password is required
-              </span>
+            @if (registrationForm.get("password")?.errors?.["required"]) {
+              <span> Password is required </span>
             }
-            @if (registrationForm.get('password')?.errors?.['minlength']) {
-              <span>
-                Password must be at least 8 characters
-              </span>
+            @if (registrationForm.get("password")?.errors?.["minlength"]) {
+              <span> Password must be at least 8 characters </span>
             }
-            @if (registrationForm.get('password')?.errors?.['pattern']) {
+            @if (registrationForm.get("password")?.errors?.["pattern"]) {
               <span>
                 Password must contain uppercase, lowercase, number and special
                 character
@@ -121,23 +109,24 @@
           placeholder="Confirm your password"
           autocomplete="new-password"
           [class.error]="isFieldInvalid('confirmPassword')"
-          />
-        @if(registrationForm.get('confirmPassword')?.errors?.['required'] ||
-          (registrationForm.errors?.['passwordMismatch'] &&
-          registrationForm.get('confirmPassword')?.touched) ){
+        />
+        @if (
+          registrationForm.get("confirmPassword")?.errors?.["required"] ||
+          (registrationForm.errors?.["passwordMismatch"] &&
+            registrationForm.get("confirmPassword")?.touched)
+        ) {
           <div class="error-message">
-            @if (registrationForm.get('confirmPassword')?.errors?.['required']) {
-              <span
-                >
-                Please confirm your password
-              </span>
+            @if (
+              registrationForm.get("confirmPassword")?.errors?.["required"]
+            ) {
+              <span> Please confirm your password </span>
             }
 
-            @if (registrationForm.errors?.['passwordMismatch'] && registrationForm.get('confirmPassword')?.touched) {
-              <span
-                >
-                Passwords do not match
-              </span>
+            @if (
+              registrationForm.errors?.["passwordMismatch"] &&
+              registrationForm.get("confirmPassword")?.touched
+            ) {
+              <span> Passwords do not match </span>
             }
           </div>
         }
@@ -147,103 +136,97 @@
       <div class="form-group">
         <label for="phoneNumber"
           >Phone Number <span class="optional">(optional)</span></label
-          >
-          <input
-            type="tel"
-            id="phoneNumber"
-            formControlName="phoneNumber"
-            placeholder="04XX XXX XXX"
-            [class.error]="isFieldInvalid('phoneNumber')"
-            />
-          @if (isFieldInvalid('phoneNumber')) {
-            <div class="error-message">
-              @if (registrationForm.get('phoneNumber')?.errors?.['pattern']) {
-                <span
-                  >
-                  Please enter a valid Australian phone number
-                </span>
-              }
-            </div>
-          }
-        </div>
+        >
+        <input
+          type="tel"
+          id="phoneNumber"
+          formControlName="phoneNumber"
+          placeholder="04XX XXX XXX"
+          [class.error]="isFieldInvalid('phoneNumber')"
+        />
+        @if (isFieldInvalid("phoneNumber")) {
+          <div class="error-message">
+            @if (registrationForm.get("phoneNumber")?.errors?.["pattern"]) {
+              <span> Please enter a valid Australian phone number </span>
+            }
+          </div>
+        }
+      </div>
 
-        <!-- Address with Google Maps Autocomplete -->
-        <app-address-input
-          label="Address"
-          placeholder="Enter your full address"
-          [required]="true"
-          id="address"
-          formControlName="address"
-          (addressSelected)="onAddressSelected($event)"
+      <!-- Address with Google Maps Autocomplete -->
+      <app-address-input
+        label="Address"
+        placeholder="Enter your full address"
+        [required]="true"
+        id="address"
+        formControlName="address"
+        (addressSelected)="onAddressSelected($event)"
         [errorMessages]="{
           required: 'Address is required',
-          invalidAddress: 'Please select a valid address from the suggestions'
+          invalidAddress: 'Please select a valid address from the suggestions',
         }"
-        ></app-address-input>
+      ></app-address-input>
 
-        <!-- Bio/Motivation -->
-        <div class="form-group">
-          <label for="bio"
-            >Brief Bio / Motivation
-            <span class="optional">(optional)</span></label
-            >
-            <textarea
-              id="bio"
-              formControlName="bio"
-              placeholder="Tell us about yourself and why you want to adopt a pet..."
-              rows="4"
-              maxlength="500"
-            ></textarea>
-            <div class="char-count">
-              {{ registrationForm.get('bio')?.value?.length || 0 }}/500 characters
-            </div>
-          </div>
-
-          <!-- Terms and Conditions -->
-          <div class="form-group checkbox-group">
-            <label class="checkbox-label">
-              <input
-                type="checkbox"
-                formControlName="agreeToTerms"
-                [class.error]="isFieldInvalid('agreeToTerms')"
-                />
-              <span class="checkmark"></span>
-              I agree to the
-              <a href="/terms" target="_blank">Terms and Conditions</a> and
-              <a href="/privacy" target="_blank">Privacy Policy</a> *
-            </label>
-            @if (isFieldInvalid('agreeToTerms')) {
-              <div class="error-message">
-                @if (registrationForm.get('agreeToTerms')?.errors?.['required']) {
-                  <span
-                    >
-                    You must agree to the terms and conditions
-                  </span>
-                }
-              </div>
-            }
-          </div>
-
-          <!-- Submit Button -->
-          <button
-            type="submit"
-            class="submit-btn"
-            [disabled]="registrationForm.invalid || isSubmitting"
-            >
-            @if (!isSubmitting) {
-              <span>Create Account</span>
-            }
-            @if (isSubmitting) {
-              <span>Creating Account...</span>
-            }
-          </button>
-
-          <!-- Login Link -->
-          <div class="login-link">
-            <p>
-              Already have an account? <a routerLink="/auth/login">Sign in here</a>
-            </p>
-          </div>
-        </form>
+      <!-- Bio/Motivation -->
+      <div class="form-group">
+        <label for="bio"
+          >Brief Bio / Motivation
+          <span class="optional">(optional)</span></label
+        >
+        <textarea
+          id="bio"
+          formControlName="bio"
+          placeholder="Tell us about yourself and why you want to adopt a pet..."
+          rows="4"
+          maxlength="500"
+        ></textarea>
+        <div class="char-count">
+          {{ registrationForm.get("bio")?.value?.length || 0 }}/500 characters
+        </div>
       </div>
-    </div>
+
+      <!-- Terms and Conditions -->
+      <div class="form-group checkbox-group">
+        <label class="checkbox-label">
+          <input
+            type="checkbox"
+            formControlName="agreeToTerms"
+            [class.error]="isFieldInvalid('agreeToTerms')"
+          />
+          <span class="checkmark"></span>
+          I agree to the
+          <a href="/terms" target="_blank">Terms and Conditions</a> and
+          <a href="/privacy" target="_blank">Privacy Policy</a> *
+        </label>
+        @if (isFieldInvalid("agreeToTerms")) {
+          <div class="error-message">
+            @if (registrationForm.get("agreeToTerms")?.errors?.["required"]) {
+              <span> You must agree to the terms and conditions </span>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        class="submit-btn"
+        [disabled]="registrationForm.invalid || isSubmitting"
+      >
+        @if (!isSubmitting) {
+          <span>Create Account</span>
+        }
+        @if (isSubmitting) {
+          <span>Creating Account...</span>
+        }
+      </button>
+
+      <!-- Login Link -->
+      <div class="login-link">
+        <p>
+          Already have an account? <a routerLink="/auth/login">Sign in here</a>
+        </p>
+      </div>
+    </form>
+  </div>
+</div>

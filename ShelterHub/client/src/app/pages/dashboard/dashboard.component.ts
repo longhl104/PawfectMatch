@@ -1,4 +1,4 @@
-import { firstValueFrom } from 'rxjs';
+import { filter, firstValueFrom } from 'rxjs';
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -69,15 +69,19 @@ export class DashboardComponent implements OnInit {
   private dialogRef?: DynamicDialogRef;
 
   ngOnInit() {
-    this.loadDashboardData();
+    this.shelterService.shelter$
+      .pipe(filter((shelter) => !!shelter))
+      .subscribe((shelter) => {
+        this.loadDashboardData(shelter);
+      });
   }
 
-  async loadDashboardData() {
+  async loadDashboardData(shelter: Shelter) {
     try {
       this.isLoading = true;
 
       // Load shelter information
-      this.shelterInfo = await this.shelterService.getShelterInfo();
+      this.shelterInfo = shelter;
 
       // Load pet statistics
       try {
@@ -196,7 +200,11 @@ export class DashboardComponent implements OnInit {
   }
 
   onPetAdded() {
-    this.loadDashboardData(); // Refresh the data including pet statistics
+    if (!this.shelterInfo) {
+      throw new Error('Shelter information is not available');
+    }
+
+    this.loadDashboardData(this.shelterInfo); // Refresh the data including pet statistics
   }
 
   onSeeFullList() {

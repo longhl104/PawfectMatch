@@ -4,7 +4,7 @@ import {
   SheltersApi,
   ShelterPetStatisticsResponse,
 } from './../apis/generated-apis';
-import { firstValueFrom } from 'rxjs';
+import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { inject, Injectable } from '@angular/core';
 
 @Injectable({
@@ -12,6 +12,8 @@ import { inject, Injectable } from '@angular/core';
 })
 export class ShelterService {
   private sheltersApi = inject(SheltersApi);
+  private shelterSubject = new BehaviorSubject<Shelter | null>(null);
+  public shelter$ = this.shelterSubject.asObservable();
 
   async getShelterInfo(): Promise<Shelter> {
     const response = await firstValueFrom(
@@ -26,13 +28,12 @@ export class ShelterService {
       ),
     );
 
+    this.shelterSubject.next(response);
     return response;
   }
 
   async getPetStatistics(): Promise<ShelterPetStatisticsResponse> {
-    const response = await firstValueFrom(
-      this.sheltersApi.petStatistics()
-    );
+    const response = await firstValueFrom(this.sheltersApi.petStatistics());
 
     return response;
   }
