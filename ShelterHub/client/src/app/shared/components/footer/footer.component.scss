@@ -1,0 +1,123 @@
+.app-footer {
+  background: var(--surface-ground);
+  border-top: 1px solid var(--surface-border);
+  margin-top: auto;
+  padding: 2rem 0;
+
+  .footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      padding: 0 1rem;
+      gap: 1.5rem;
+    }
+  }
+
+  .footer-divider {
+    @media (max-width: 768px) {
+      display: none;
+    }
+  }
+
+  .footer-section {
+    flex: 1;
+
+    .footer-title {
+      color: var(--primary-color);
+      margin: 0 0 1rem 0;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .footer-description {
+      color: var(--text-color-secondary);
+      margin: 0 0 1rem 0;
+      line-height: 1.5;
+    }
+
+    .version-info {
+      color: var(--text-color-secondary);
+      font-size: 0.875rem;
+    }
+  }
+
+  .contact-section {
+    flex: 1.5;
+
+    .contact-description {
+      color: var(--text-color-secondary);
+      margin: 0 0 1.5rem 0;
+      line-height: 1.5;
+    }
+
+    .contact-options {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+
+      .contact-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem;
+        border-radius: var(--border-radius);
+        background: var(--surface-section);
+        border: 1px solid var(--surface-border);
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: var(--surface-hover);
+          border-color: var(--primary-color);
+        }
+
+        .contact-button {
+          flex-shrink: 0;
+
+          ::ng-deep .p-button {
+            color: var(--primary-color);
+
+            &:hover {
+              background: var(--primary-color);
+              color: var(--primary-color-text);
+            }
+          }
+        }
+
+        .contact-text {
+          color: var(--text-color-secondary);
+          font-size: 0.875rem;
+          line-height: 1.4;
+        }
+      }
+    }
+
+    .developer-info {
+      padding: 1rem;
+      background: var(--surface-section);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--surface-border);
+      text-align: center;
+
+      .email-link {
+        color: var(--primary-color);
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+}
+
+// Make sure the footer sticks to bottom of page
+:host {
+  display: block;
+  margin-top: auto;
+}

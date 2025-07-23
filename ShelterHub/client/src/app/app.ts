@@ -3,10 +3,11 @@ import { RouterOutlet } from '@angular/router';
 import { ToastContainerComponent } from '@longhl104/pawfect-match-ng';
 import { AuthService } from 'shared/services/auth.service';
 import { HeaderComponent } from './header/header.component';
+import { FooterComponent } from './shared/components/footer/footer.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, ToastContainerComponent, HeaderComponent],
+  imports: [RouterOutlet, ToastContainerComponent, HeaderComponent, FooterComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })

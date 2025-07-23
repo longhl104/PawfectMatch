@@ -1,0 +1,81 @@
+<footer class="app-footer">
+  <div class="footer-content">
+    <div class="footer-section">
+      <h5 class="footer-title">PawfectMatch ShelterHub</h5>
+      <p class="footer-description">
+        Helping shelters manage their pets and connect with loving families.
+      </p>
+      <small class="version-info">
+        Version {{ appVersion }} • © {{ currentYear }} PawfectMatch
+      </small>
+    </div>
+
+    <p-divider layout="vertical" class="footer-divider" />
+
+    <div class="footer-section contact-section">
+      <h5 class="footer-title">Need Help?</h5>
+      <p class="contact-description">
+        We'd love to hear from shelter administrators! Contact us for:
+      </p>
+
+      <div class="contact-options">
+        <div class="contact-item">
+          <p-button
+            icon="pi pi-envelope"
+            label="Report Bug"
+            [text]="true"
+            size="small"
+            (onClick)="openEmail('Bug Report')"
+            class="contact-button"
+          />
+          <span class="contact-text">Found an issue? Let us know!</span>
+        </div>
+
+        <div class="contact-item">
+          <p-button
+            icon="pi pi-comment"
+            label="Give Feedback"
+            [text]="true"
+            size="small"
+            (onClick)="openEmail('Feedback')"
+            class="contact-button"
+          />
+          <span class="contact-text">Share your thoughts and suggestions</span>
+        </div>
+
+        <div class="contact-item">
+          <p-button
+            icon="pi pi-star"
+            label="Request Review"
+            [text]="true"
+            size="small"
+            (onClick)="openEmail('Review Request')"
+            class="contact-button"
+          />
+          <span class="contact-text">Ask for app review or walkthrough</span>
+        </div>
+
+        <div class="contact-item">
+          <p-button
+            icon="pi pi-question-circle"
+            label="General Support"
+            [text]="true"
+            size="small"
+            (onClick)="openEmail('Support Request')"
+            class="contact-button"
+          />
+          <span class="contact-text">Get help with using the app</span>
+        </div>
+      </div>
+
+      <div class="developer-info">
+        <small>
+          <strong>Founder:</strong> {{ developerName }} •
+          <a [href]="'mailto:' + contactEmail" class="email-link">
+            {{ contactEmail }}
+          </a>
+        </small>
+      </div>
+    </div>
+  </div>
+</footer>
