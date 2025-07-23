@@ -83,7 +83,9 @@ export class Login {
         this.toastService.success(`Welcome back!`);
 
         // Wait for cookies to be set, then navigate
-        await this.waitForCookiesAndNavigate(response.data?.user?.userType || '');
+        await this.waitForCookiesAndNavigate(
+          response.data?.user?.userType || '',
+        );
       } catch (error: unknown) {
         // Handle specific error cases
         const httpError = error as HttpError;
@@ -151,8 +153,14 @@ export class Login {
       console.log('Raw document.cookie:', document.cookie);
       console.log('Cookie exists check - accessToken:', !!accessToken);
       console.log('Cookie exists check - userInfo:', !!userInfo);
-      console.log('Cookie value check - accessToken length:', accessToken?.length || 0);
-      console.log('Cookie value check - userInfo length:', userInfo?.length || 0);
+      console.log(
+        'Cookie value check - accessToken length:',
+        accessToken?.length || 0,
+      );
+      console.log(
+        'Cookie value check - userInfo length:',
+        userInfo?.length || 0,
+      );
 
       // Try to parse all cookies manually
       const allCookies = this.getAllCookies();
@@ -165,12 +173,14 @@ export class Login {
       }
 
       // Wait 100ms before checking again
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       attempts++;
     }
 
     // If cookies still not available after 1 second, navigate anyway
-    console.warn('❌ Cookies not detected after 1 second, navigating anyway...');
+    console.warn(
+      '❌ Cookies not detected after 1 second, navigating anyway...',
+    );
     console.log('Final cookie state:', document.cookie);
     console.log('Final cookie length:', document.cookie.length);
     console.log('=== End Cookie Debug ===');
@@ -189,7 +199,7 @@ export class Login {
   private getAllCookies(): Record<string, string> {
     const cookies: Record<string, string> = {};
     if (document.cookie) {
-      document.cookie.split(';').forEach(cookie => {
+      document.cookie.split(';').forEach((cookie) => {
         const [name, ...rest] = cookie.trim().split('=');
         if (name) {
           cookies[name] = rest.join('=');
@@ -203,34 +213,15 @@ export class Login {
     const currentHost = window.location.hostname;
     let targetUrl: string;
 
-    // Dynamically determine the correct URL based on current host
-    if (currentHost.includes('.pawfectmatchnow.com')) {
-      // Extract environment from current URL
-      const parts = currentHost.split('.');
-      const environment = parts.length >= 3 ? parts[1] : 'development'; // e.g., 'development' from 'id.development.pawfectmatchnow.com'
-
-      switch (userType) {
-        case 'adopter':
-          targetUrl = `https://adopter.${environment}.pawfectmatchnow.com`;
-          break;
-        case 'shelter_admin':
-          targetUrl = `https://shelter.${environment}.pawfectmatchnow.com`;
-          break;
-        default:
-          throw new Error(`Unknown user type: ${userType}`);
-      }
-    } else {
-      // Fallback to environment file for localhost/development
-      switch (userType) {
-        case 'adopter':
-          targetUrl = environment.matcherUrl;
-          break;
-        case 'shelter_admin':
-          targetUrl = environment.shelterHubUrl;
-          break;
-        default:
-          throw new Error(`Unknown user type: ${userType}`);
-      }
+    switch (userType) {
+      case 'adopter':
+        targetUrl = environment.matcherUrl;
+        break;
+      case 'shelter_admin':
+        targetUrl = environment.shelterHubUrl;
+        break;
+      default:
+        throw new Error(`Unknown user type: ${userType}`);
     }
 
     console.log(`Navigating from ${currentHost} to ${targetUrl}`);

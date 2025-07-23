@@ -1,5 +1,5 @@
 export interface Environment {
-  production: boolean;
+  environmentName: 'production' | 'development' | 'local';
   googleMapsApiKey: string;
   apiUrl: string;
   appName: string;
