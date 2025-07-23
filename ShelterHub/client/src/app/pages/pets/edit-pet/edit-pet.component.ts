@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 
 import {
@@ -41,6 +42,7 @@ import {
   selector: 'app-edit-pet',
   standalone: true,
   imports: [
+    CommonModule,
     ReactiveFormsModule,
     ButtonModule,
     InputTextModule,

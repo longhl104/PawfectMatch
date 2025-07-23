@@ -13,6 +13,25 @@
   .card-content {
     padding: 1.5rem;
   }
+
+  .top-actions {
+    padding: 1rem;
+    background: var(--surface-section);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--surface-border);
+
+    .flex {
+      @media (max-width: 768px) {
+        flex-direction: column-reverse;
+        gap: 1rem;
+
+        .flex.gap-2 {
+          flex-direction: row;
+          justify-content: space-between;
+        }
+      }
+    }
+  }
 }
 
 .pet-form {
