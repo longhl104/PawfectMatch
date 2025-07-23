@@ -155,11 +155,10 @@
                 @for (file of newVideos(); track file; let i = $index) {
                   <div class="video-preview-item">
                     <div class="video-thumbnail">
-                      <i class="pi pi-play-circle text-4xl text-primary"></i>
                       <video
                         [src]="getVideoPreview(file)"
                         class="preview-video"
-                        muted
+                        controls
                         preload="metadata"
                       ></video>
                     </div>
@@ -209,11 +208,10 @@
           @for (video of displayExistingVideos(); track video; let i = $index) {
             <div class="video-preview-item existing">
               <div class="video-thumbnail">
-                <i class="pi pi-play-circle text-4xl text-primary"></i>
                 <video
                   [src]="video.url"
                   class="preview-video"
-                  muted
+                  controls
                   preload="metadata"
                 ></video>
               </div>
