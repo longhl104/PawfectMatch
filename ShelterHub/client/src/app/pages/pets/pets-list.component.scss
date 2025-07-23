@@ -9,6 +9,30 @@
   }
 }
 
+.active-filters-summary {
+  .p-card {
+    background: var(--blue-50);
+    border: 1px solid var(--blue-200);
+  }
+
+  .p-card .p-card-body {
+    padding: 0.75rem 1rem;
+  }
+
+  .p-tag {
+    .ml-1 {
+      margin-left: 0.25rem;
+      padding: 0.125rem 0.25rem;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.5);
+      }
+    }
+  }
+}
+
 .pet-card {
   transition:
     transform var(--p-transition-duration) var(--p-transition-timing-function),

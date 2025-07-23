@@ -15,102 +15,105 @@
           <p-tag [value]="totalRecords.toString()" severity="info"></p-tag>
         }
       </div>
-      <p-button
-        label="Add New Pet"
-        icon="pi pi-plus"
-        (onClick)="onAddPet()"
-        [disabled]="isLoading"
-        [style]="{ 'z-index': -1 }"
-      ></p-button>
+      <div class="flex gap-2">
+        <p-button
+          label="Search & Filters"
+          icon="pi pi-filter"
+          [outlined]="true"
+          (onClick)="showFiltersDialog = true"
+          [badge]="getActiveFiltersCount().toString()"
+          [badgeClass]="getActiveFiltersCount() > 0 ? 'p-badge-info' : ''"
+        ></p-button>
+        <p-button
+          label="Add New Pet"
+          icon="pi pi-plus"
+          (onClick)="onAddPet()"
+          [disabled]="isLoading"
+        ></p-button>
+      </div>
     </div>
 
-    <!-- Filters Section -->
-    <p-card>
-      <div class="grid">
-        <!-- Name Search -->
-        <div class="col-12 md:col-2">
-          <span class="block text-sm font-medium mb-2">Pet Name</span>
-          <span class="p-input-icon-left w-full">
-            <input
-              type="text"
-              pInputText
-              placeholder="Search by name..."
-              [(ngModel)]="searchName"
-              (input)="onSearchChange()"
-              class="w-full"
-            />
-          </span>
-        </div>
-
-        <!-- Breed Search -->
-        <div class="col-12 md:col-2">
-          <span class="block text-sm font-medium mb-2">Breed</span>
-          <span class="p-input-icon-left w-full">
-            <input
-              type="text"
-              pInputText
-              placeholder="Search by breed..."
-              [(ngModel)]="searchBreed"
-              (input)="onSearchChange()"
-              class="w-full"
-            />
-          </span>
-        </div>
-
-        <!-- Status Filter -->
-        <div class="col-12 md:col-3">
-          <span class="block text-sm font-medium mb-2">Status</span>
-          <div class="flex flex-wrap gap-1">
-            @for (option of statusOptions; track option) {
-              <p-button
-                [label]="option.label"
-                [outlined]="selectedStatus !== option.value"
-                [text]="selectedStatus !== option.value"
-                size="small"
-                (onClick)="selectedStatus = option.value; onStatusChange()"
-                class="flex-shrink-0"
-              ></p-button>
+    <!-- Active Filters Summary -->
+    @if (getActiveFiltersCount() > 0) {
+      <div class="active-filters-summary mb-3">
+        <p-card>
+          <div class="flex align-items-center gap-2 flex-wrap">
+            <small class="text-600">Active filters:</small>
+            @if (searchName) {
+              <p-tag
+                value="Name: {{ searchName }}"
+                severity="info"
+                [rounded]="true"
+              >
+                <button
+                  class="ml-1 cursor-pointer bg-transparent border-none text-inherit p-0"
+                  (click)="searchName = ''; onSearchChange()"
+                  (keydown.enter)="searchName = ''; onSearchChange()"
+                  aria-label="Remove name filter"
+                >
+                  ×
+                </button>
+              </p-tag>
             }
-          </div>
-        </div>
-
-        <!-- Species Filter -->
-        <div class="col-12 md:col-3">
-          <span class="block text-sm font-medium mb-2">Species</span>
-          <div class="flex flex-wrap gap-1">
-            @for (option of speciesOptions; track option) {
-              <p-button
-                [label]="option.label"
-                [outlined]="selectedSpecies !== option.value"
-                [text]="selectedSpecies !== option.value"
-                size="small"
-                (onClick)="selectedSpecies = option.value; onSpeciesChange()"
-                class="flex-shrink-0"
-              ></p-button>
+            @if (searchBreed) {
+              <p-tag
+                value="Breed: {{ searchBreed }}"
+                severity="info"
+                [rounded]="true"
+              >
+                <button
+                  class="ml-1 cursor-pointer bg-transparent border-none text-inherit p-0"
+                  (click)="searchBreed = ''; onSearchChange()"
+                  (keydown.enter)="searchBreed = ''; onSearchChange()"
+                  aria-label="Remove breed filter"
+                >
+                  ×
+                </button>
+              </p-tag>
             }
+            @if (selectedStatus) {
+              <p-tag
+                value="Status: {{ getStatusLabel(selectedStatus) }}"
+                severity="info"
+                [rounded]="true"
+              >
+                <button
+                  class="ml-1 cursor-pointer bg-transparent border-none text-inherit p-0"
+                  (click)="selectedStatus = null; onStatusChange()"
+                  (keydown.enter)="selectedStatus = null; onStatusChange()"
+                  aria-label="Remove status filter"
+                >
+                  ×
+                </button>
+              </p-tag>
+            }
+            @if (selectedSpecies) {
+              <p-tag
+                value="Species: {{ getSpeciesLabel(selectedSpecies) }}"
+                severity="info"
+                [rounded]="true"
+              >
+                <button
+                  class="ml-1 cursor-pointer bg-transparent border-none text-inherit p-0"
+                  (click)="selectedSpecies = null; onSpeciesChange()"
+                  (keydown.enter)="selectedSpecies = null; onSpeciesChange()"
+                  aria-label="Remove species filter"
+                >
+                  ×
+                </button>
+              </p-tag>
+            }
+            <p-button
+              label="Clear All"
+              icon="pi pi-times"
+              [text]="true"
+              size="small"
+              (onClick)="clearFilters()"
+            ></p-button>
           </div>
-        </div>
-
-        <!-- Clear Filters -->
-        <div class="col-12 md:col-2 flex align-items-end">
-          <p-button
-            label="Clear"
-            icon="pi pi-times"
-            [outlined]="true"
-            (onClick)="clearFilters()"
-            class="w-full"
-          ></p-button>
-        </div>
+        </p-card>
       </div>
-
-      <!-- Filter Info -->
-      @if (searchName || searchBreed || selectedStatus || selectedSpecies) {
-        <div class="mt-2 text-sm text-gray-600">
-          <i class="pi pi-info-circle mr-1"></i>
-          Server-side filtering is applied across all results.
-        </div>
-      }
-    </p-card>
+    }
   </div>
 
   <!-- Loading State -->
@@ -204,5 +207,120 @@
     ></p-paginator>
   }
 </div>
+
+<!-- Filters Dialog -->
+<p-dialog
+  header="Search & Filters"
+  [(visible)]="showFiltersDialog"
+  [style]="{ width: '90vw', maxWidth: '800px' }"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [resizable]="false"
+>
+  <div class="grid">
+    <!-- Name Search -->
+    <div class="col-12 md:col-6">
+      <span class="block text-sm font-medium mb-2">Pet Name</span>
+      <span class="p-input-icon-left w-full">
+        <input
+          type="text"
+          pInputText
+          placeholder="Search by name..."
+          [(ngModel)]="searchName"
+          (input)="onSearchChange()"
+          class="w-full"
+        />
+      </span>
+    </div>
+
+    <!-- Breed Search -->
+    <div class="col-12 md:col-6">
+      <span class="block text-sm font-medium mb-2">Breed</span>
+      <span class="p-input-icon-left w-full">
+        <input
+          type="text"
+          pInputText
+          placeholder="Search by breed..."
+          [(ngModel)]="searchBreed"
+          (input)="onSearchChange()"
+          class="w-full"
+        />
+      </span>
+    </div>
+
+    <!-- Status Filter -->
+    <div class="col-12">
+      <span class="block text-sm font-medium mb-2">Status</span>
+      <div class="flex flex-wrap gap-2">
+        @for (option of statusOptions; track option) {
+          <p-button
+            [label]="option.label"
+            [outlined]="selectedStatus !== option.value"
+            [text]="selectedStatus !== option.value"
+            size="small"
+            (onClick)="selectedStatus = option.value; onStatusChange()"
+            class="flex-shrink-0"
+          ></p-button>
+        }
+      </div>
+    </div>
+
+    <!-- Species Filter -->
+    <div class="col-12">
+      <span class="block text-sm font-medium mb-2">Species</span>
+      <div class="flex flex-wrap gap-2">
+        @for (option of speciesOptions; track option) {
+          <p-button
+            [label]="option.label"
+            [outlined]="selectedSpecies !== option.value"
+            [text]="selectedSpecies !== option.value"
+            size="small"
+            (onClick)="selectedSpecies = option.value; onSpeciesChange()"
+            class="flex-shrink-0"
+          ></p-button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Info -->
+  @if (searchName || searchBreed || selectedStatus || selectedSpecies) {
+    <div class="mt-3 p-3 bg-blue-50 border-round">
+      <div class="flex align-items-center gap-2 text-blue-800">
+        <i class="pi pi-info-circle"></i>
+        <span class="text-sm"
+          >Server-side filtering is applied across all results.</span
+        >
+      </div>
+    </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-content-between w-full">
+      <p-button
+        label="Clear All Filters"
+        icon="pi pi-times"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="clearFilters()"
+        [disabled]="getActiveFiltersCount() === 0"
+      ></p-button>
+      <div class="flex gap-2">
+        <p-button
+          label="Cancel"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="showFiltersDialog = false"
+        ></p-button>
+        <p-button
+          label="Apply Filters"
+          icon="pi pi-check"
+          (onClick)="showFiltersDialog = false"
+        ></p-button>
+      </div>
+    </div>
+  </ng-template>
+</p-dialog>
 
 <p-confirmDialog />

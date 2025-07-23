@@ -12,6 +12,7 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { PaginatorModule } from 'primeng/paginator';
+import { DialogModule } from 'primeng/dialog';
 import { ConfirmationService } from 'primeng/api';
 import type { PaginatorState } from 'primeng/paginator';
 import {
@@ -54,6 +55,7 @@ interface FilterOption {
     TooltipModule,
     ConfirmDialogModule,
     PaginatorModule,
+    DialogModule,
     DynamicDialogModule,
     PetCardComponent,
   ],
@@ -88,6 +90,9 @@ export class PetsListComponent implements OnInit, OnDestroy {
 
   private dialogRef?: DynamicDialogRef;
   private searchDebounceTimer?: NodeJS.Timeout;
+
+  // Dialog properties
+  showFiltersDialog = false;
 
   statusOptions: FilterOption[] = [
     { label: 'All Statuses', value: null },
@@ -286,6 +291,25 @@ export class PetsListComponent implements OnInit, OnDestroy {
     this.selectedSpecies = null;
     this.resetPagination();
     this.loadPetsData(0);
+  }
+
+  getActiveFiltersCount(): number {
+    let count = 0;
+    if (this.searchName) count++;
+    if (this.searchBreed) count++;
+    if (this.selectedStatus) count++;
+    if (this.selectedSpecies) count++;
+    return count;
+  }
+
+  getStatusLabel(status: string): string {
+    const option = this.statusOptions.find(opt => opt.value === status);
+    return option?.label || status;
+  }
+
+  getSpeciesLabel(species: string): string {
+    const option = this.speciesOptions.find(opt => opt.value === species);
+    return option?.label || species;
   }
 
   onPageChange(event: PaginatorState) {

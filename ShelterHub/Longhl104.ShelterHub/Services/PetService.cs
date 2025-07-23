@@ -260,13 +260,13 @@ public class PetService : IPetService
             if (!string.IsNullOrWhiteSpace(request.Name))
             {
                 filterConditions.Add("contains(#petName, :petName)");
-                query.ExpressionAttributeValues[":petName"] = new AttributeValue { S = request.Name };
+                query.ExpressionAttributeValues[":petName"] = new AttributeValue { S = request.Name.ToLowerInvariant() };
             }
 
             if (!string.IsNullOrWhiteSpace(request.Breed))
             {
                 filterConditions.Add("contains(#breed, :breed)");
-                query.ExpressionAttributeValues[":breed"] = new AttributeValue { S = request.Breed };
+                query.ExpressionAttributeValues[":breed"] = new AttributeValue { S = request.Breed.ToLowerInvariant() };
             }
 
             if (filterConditions.Count > 0)
