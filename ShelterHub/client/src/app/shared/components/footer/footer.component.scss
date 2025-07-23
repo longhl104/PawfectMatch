@@ -111,12 +111,48 @@
               color: var(--primary-color-text);
             }
           }
+
+          &.support-button {
+            ::ng-deep .p-button {
+              color: #e91e63;
+              font-weight: 600;
+              animation: pulse 2s infinite;
+
+              &:hover {
+                background: linear-gradient(135deg, #e91e63 0%, #f06292 100%);
+                color: white;
+                transform: scale(1.05);
+              }
+            }
+          }
         }
 
         .contact-text {
           color: var(--text-color-secondary);
           font-size: 0.875rem;
           line-height: 1.4;
+
+          &.support-text {
+            color: var(--text-color);
+            font-size: 0.9rem;
+            background: linear-gradient(135deg, rgba(233, 30, 99, 0.1) 0%, rgba(240, 98, 146, 0.05) 100%);
+            padding: 0.75rem;
+            border-radius: var(--border-radius);
+            border-left: 3px solid #e91e63;
+            margin-top: 0.5rem;
+          }
+        }
+      }
+
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(233, 30, 99, 0.4);
+        }
+        70% {
+          box-shadow: 0 0 0 10px rgba(233, 30, 99, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(233, 30, 99, 0);
         }
       }
     }

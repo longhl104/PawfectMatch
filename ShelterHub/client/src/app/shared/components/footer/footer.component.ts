@@ -35,4 +35,8 @@ Best regards,
     const mailtoLink = `mailto:${this.contactEmail}?subject=${emailSubject}&body=${emailBody}`;
     window.open(mailtoLink);
   }
+
+  openGoFundMe(): void {
+    window.open('https://gofund.me/592f8eed', '_blank');
+  }
 }
