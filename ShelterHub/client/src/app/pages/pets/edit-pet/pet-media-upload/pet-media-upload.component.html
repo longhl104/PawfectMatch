@@ -29,11 +29,14 @@
               <div class="image-preview-grid">
                 @for (file of newImages(); track file; let i = $index) {
                   <div class="image-preview-item">
-                    <img
+                    <p-image
                       [src]="getImagePreview(file)"
                       [alt]="file.name"
-                      class="preview-image"
-                    />
+                      [preview]="true"
+                      height="120"
+                      imageClass="object-cover border-round border-2 border-gray-200"
+
+                    ></p-image>
                     <div class="image-overlay">
                       <p-button
                         icon="pi pi-times"
@@ -79,11 +82,12 @@
         <div class="image-preview-grid">
           @for (image of displayExistingImages(); track image; let i = $index) {
             <div class="image-preview-item existing">
-              <img
+              <p-image
                 [src]="image.url"
                 [alt]="image.name || 'Pet image'"
-                class="preview-image"
-              />
+                [preview]="true"
+                imageClass="preview-image"
+              ></p-image>
               <div class="image-overlay">
                 <p-button
                   icon="pi pi-times"

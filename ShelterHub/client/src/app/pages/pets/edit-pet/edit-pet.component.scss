@@ -5,6 +5,11 @@
 }
 
 .edit-pet-card {
+  background: var(--surface-100);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+
   .card-content {
     padding: 1.5rem;
   }
@@ -57,7 +62,11 @@
       margin-top: 0.25rem;
     }
 
-    input, textarea, p-dropdown, p-calendar, p-inputNumber {
+    input,
+    textarea,
+    p-dropdown,
+    p-calendar,
+    p-inputNumber {
       width: 100%;
     }
 

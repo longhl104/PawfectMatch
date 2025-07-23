@@ -20,6 +20,7 @@ import {
 } from 'primeng/fileupload';
 import { ButtonModule } from 'primeng/button';
 import { ProgressBarModule } from 'primeng/progressbar';
+import { ImageModule } from 'primeng/image';
 import { MessageService } from 'primeng/api';
 import {
   PetsApi,
@@ -54,7 +55,7 @@ export interface MediaUploadData {
 @Component({
   selector: 'app-pet-media-upload',
   standalone: true,
-  imports: [FileUploadModule, ButtonModule, ProgressBarModule],
+  imports: [FileUploadModule, ButtonModule, ProgressBarModule, ImageModule],
   templateUrl: './pet-media-upload.component.html',
   styleUrl: './pet-media-upload.component.scss',
 })
