@@ -1,5 +1,5 @@
 <div class="edit-pet-container">
-  <p-card header="Edit Pet" class="edit-pet-card">
+  <div header="Edit Pet" class="edit-pet-card">
     @if (!loading()) {
       <div class="card-content">
         <form [formGroup]="petForm" (ngSubmit)="onSubmit()" class="pet-form">
@@ -236,14 +236,19 @@
               <div class="mt-2">
                 <span class="text-sm text-600 block mb-1">
                   {{
-                    selectedImageFile() ? "New image preview:" : "Current image:"
+                    selectedImageFile()
+                      ? "New image preview:"
+                      : "Current image:"
                   }}
                 </span>
-                <img
-                  [src]="imagePreview()"
+                <p-image
+                  [src]="imagePreview()!"
                   alt="Image preview"
-                  class="w-8rem h-6rem object-cover border-round border-2 border-gray-200"
-                />
+                  width="128"
+                  height="96"
+                  [preview]="true"
+                  imageClass="object-cover border-round border-2 border-gray-200"
+                ></p-image>
               </div>
             }
           </div>
@@ -298,7 +303,7 @@
         <p>Loading pet information...</p>
       </div>
     }
-  </p-card>
+  </div>
 </div>
 
 <p-toast />

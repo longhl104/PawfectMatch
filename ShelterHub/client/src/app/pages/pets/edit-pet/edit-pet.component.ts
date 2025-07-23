@@ -21,6 +21,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ImageModule } from 'primeng/image';
 import { PetService } from '../../../shared/services/pet.service';
 import {
   Pet,
@@ -53,6 +54,7 @@ import {
     ToastModule,
     ProgressSpinnerModule,
     ConfirmDialogModule,
+    ImageModule,
     PetMediaUploadComponent,
   ],
   providers: [MessageService, ConfirmationService],
