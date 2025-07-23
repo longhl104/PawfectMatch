@@ -95,7 +95,7 @@ public class MediaService(
         "application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         "text/plain", "application/msword"];
-    private const int MaxFileSizeBytes = 10 * 1024 * 1024; // 10MB
+    private const int MaxFileSizeBytes = 100 * 1024 * 1024; // 100MB
     private const int PresignedUrlExpirationMinutes = 15;
     private const int CacheExpirationMinutes = 10; // Cache expires 5 minutes before presigned URL expires
 
