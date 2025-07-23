@@ -1352,10 +1352,16 @@ public class PetService : IPetService
             {
                 TableName = _petMediaFilesTableName,
                 KeyConditionExpression = "PetId = :petId",
+                FilterExpression = "attribute_not_exists(#status) OR #status <> :pendingStatus",
+                ExpressionAttributeNames = new Dictionary<string, string>
+                {
+                    { "#status", "Status" }
+                },
                 ExpressionAttributeValues = new Dictionary<string, AttributeValue>
-                    {
-                        { ":petId", new AttributeValue { S = petId.ToString() } }
-                    },
+                {
+                    { ":petId", new AttributeValue { S = petId.ToString() } },
+                    { ":pendingStatus", new AttributeValue { S = "Pending" } }
+                },
                 ScanIndexForward = true // Order by sort key ascending (DisplayOrder)
             };
 
@@ -1442,33 +1448,86 @@ public class PetService : IPetService
     {
         try
         {
+            // Get current max display order for this pet first
+            var existingMedia = await GetPetMedia(request.PetId);
+            var maxDisplayOrder = 0;
+
+            if (existingMedia.Images.Count != 0
+                || existingMedia.Videos.Count != 0
+                || existingMedia.Documents.Count != 0
+                )
+            {
+                var allExisting = existingMedia.Images.Cast<PetMediaFileResponse>()
+                    .Concat(existingMedia.Videos)
+                    .Concat(existingMedia.Documents);
+                maxDisplayOrder = allExisting.Max(m => m.DisplayOrder);
+            }
+
             var uploadUrls = new List<MediaFileUploadUrlResponse>();
+            var batchRequest = new BatchWriteItemRequest
+            {
+                RequestItems = new Dictionary<string, List<WriteRequest>>
+                {
+                    [_petMediaFilesTableName] = []
+                }
+            };
 
             foreach (var fileRequest in request.MediaFiles)
             {
                 var mediaFileId = Guid.NewGuid();
-                var fileExtension = Path.GetExtension(fileRequest.FileName).ToLowerInvariant();
+                var fileExtension = Path.GetExtension(fileRequest.FileName ?? "").ToLowerInvariant();
                 var s3Key = $"pets/{request.PetId}/media/{mediaFileId}{fileExtension}";
+                var fileType = fileRequest.FileType != default ? fileRequest.FileType : DetermineFileType(fileExtension);
+                var displayOrder = ++maxDisplayOrder; // Increment for each new file
 
                 // Use the existing media upload service to generate presigned URL
                 var presignedRequest = new PresignedUrlRequest
                 {
                     BucketName = _bucketName,
                     Key = s3Key,
-                    ContentType = fileRequest.ContentType,
+                    ContentType = fileRequest.ContentType ?? "",
                     FileSizeBytes = fileRequest.FileSizeBytes
                 };
 
                 var presignedResponse = await _mediaUploadService.GeneratePresignedUrlAsync(presignedRequest);
 
+                // Store media file metadata in DynamoDB with pending status
+                var mediaFileItem = new Dictionary<string, AttributeValue>
+                {
+                    ["MediaFileId"] = new AttributeValue { S = mediaFileId.ToString() },
+                    ["PetId"] = new AttributeValue { S = request.PetId.ToString() },
+                    ["FileName"] = new AttributeValue { S = fileRequest.FileName ?? "" },
+                    ["FileExtension"] = new AttributeValue { S = fileExtension },
+                    ["FileType"] = new AttributeValue { S = fileType.ToString() },
+                    ["ContentType"] = new AttributeValue { S = fileRequest.ContentType ?? "" },
+                    ["FileSizeBytes"] = new AttributeValue { N = fileRequest.FileSizeBytes.ToString() },
+                    ["S3Key"] = new AttributeValue { S = s3Key },
+                    ["Status"] = new AttributeValue { S = "Pending" }, // Mark as pending until confirmed
+                    ["CreatedAt"] = new AttributeValue { S = DateTime.UtcNow.ToString("O") },
+                    ["DisplayOrder"] = new AttributeValue { N = displayOrder.ToString() }
+                };
+
+                batchRequest.RequestItems[_petMediaFilesTableName].Add(new WriteRequest
+                {
+                    PutRequest = new PutRequest { Item = mediaFileItem }
+                });
+
                 uploadUrls.Add(new MediaFileUploadUrlResponse
                 {
                     MediaFileId = mediaFileId,
-                    FileName = fileRequest.FileName,
+                    FileName = fileRequest.FileName ?? "",
                     PresignedUrl = presignedResponse.PresignedUrl ?? "",
                     S3Key = s3Key,
                     ExpiresAt = presignedResponse.ExpiresAt ?? DateTime.UtcNow.AddMinutes(30)
                 });
+            }
+
+            // Store all media file metadata in DynamoDB
+            if (batchRequest.RequestItems[_petMediaFilesTableName].Count > 0)
+            {
+                await _dynamoDbClient.BatchWriteItemAsync(batchRequest);
+                _logger.LogInformation("Stored {FileCount} pending media files for pet {PetId}",
+                    batchRequest.RequestItems[_petMediaFilesTableName].Count, request.PetId);
             }
 
             return new MediaFileUploadResponse
@@ -1492,22 +1551,40 @@ public class PetService : IPetService
     {
         try
         {
-            // Get current max display order for this pet
-            var existingMedia = await GetPetMedia(petId);
-            var maxDisplayOrder = 0;
-
-            if (existingMedia.Images.Count != 0
-                || existingMedia.Videos.Count != 0
-                || existingMedia.Documents.Count != 0
-                )
+            // Query for pending media files for this pet
+            var queryRequest = new QueryRequest
             {
-                var allExisting = existingMedia.Images.Cast<PetMediaFileResponse>()
-                    .Concat(existingMedia.Videos)
-                    .Concat(existingMedia.Documents);
-                maxDisplayOrder = allExisting.Max(m => m.DisplayOrder);
+                TableName = _petMediaFilesTableName,
+                KeyConditionExpression = "PetId = :petId",
+                FilterExpression = "#status = :pendingStatus AND MediaFileId IN (" +
+                    string.Join(",", mediaFileIds.Select((_, index) => $":mediaFileId{index}")) + ")",
+                ExpressionAttributeNames = new Dictionary<string, string>
+                {
+                    { "#status", "Status" }
+                },
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                {
+                    { ":petId", new AttributeValue { S = petId.ToString() } },
+                    { ":pendingStatus", new AttributeValue { S = "Pending" } }
+                }
+            };
+
+            // Add media file IDs to expression attribute values
+            for (int i = 0; i < mediaFileIds.Count; i++)
+            {
+                queryRequest.ExpressionAttributeValues[$":mediaFileId{i}"] = new AttributeValue { S = mediaFileIds[i].ToString() };
             }
 
-            var batchRequest = new BatchWriteItemRequest
+            var queryResponse = await _dynamoDbClient.QueryAsync(queryRequest);
+            var pendingFiles = queryResponse.Items;
+
+            if (pendingFiles.Count != mediaFileIds.Count)
+            {
+                _logger.LogWarning("Not all pending media files found for confirmation. Expected: {ExpectedCount}, Found: {FoundCount}",
+                    mediaFileIds.Count, pendingFiles.Count);
+            }
+
+            var batchUpdateRequest = new BatchWriteItemRequest
             {
                 RequestItems = new Dictionary<string, List<WriteRequest>>
                 {
@@ -1515,27 +1592,29 @@ public class PetService : IPetService
                 }
             };
 
-            foreach (var mediaFileId in mediaFileIds)
+            foreach (var fileItem in pendingFiles)
             {
-                var displayOrder = ++maxDisplayOrder;
-
-                // Note: In a real implementation, you'd need to store the file metadata
-                // temporarily during the upload process and retrieve it here
-                var item = new Dictionary<string, AttributeValue>
+                // Create updated item with confirmed status, keeping existing DisplayOrder
+                var updatedItem = new Dictionary<string, AttributeValue>(fileItem)
                 {
-                    ["MediaFileId"] = new AttributeValue { S = mediaFileId.ToString() },
-                    ["PetId"] = new AttributeValue { S = petId.ToString() },
-                    ["DisplayOrder"] = new AttributeValue { N = displayOrder.ToString() },
                     ["UploadedAt"] = new AttributeValue { S = DateTime.UtcNow.ToString("O") }
                 };
 
-                batchRequest.RequestItems[_petMediaFilesTableName].Add(new WriteRequest
+                // Remove the Status field to make it a confirmed file (no status = confirmed)
+                updatedItem.Remove("Status");
+
+                batchUpdateRequest.RequestItems[_petMediaFilesTableName].Add(new WriteRequest
                 {
-                    PutRequest = new PutRequest { Item = item }
+                    PutRequest = new PutRequest { Item = updatedItem }
                 });
             }
 
-            await _dynamoDbClient.BatchWriteItemAsync(batchRequest);
+            if (batchUpdateRequest.RequestItems[_petMediaFilesTableName].Count > 0)
+            {
+                await _dynamoDbClient.BatchWriteItemAsync(batchUpdateRequest);
+                _logger.LogInformation("Confirmed {FileCount} media file uploads for pet {PetId}",
+                    batchUpdateRequest.RequestItems[_petMediaFilesTableName].Count, petId);
+            }
 
             // Return updated media list
             return await GetPetMedia(petId);
@@ -1676,6 +1755,73 @@ public class PetService : IPetService
             return MediaFileType.Video;
 
         return MediaFileType.Document;
+    }
+
+    /// <summary>
+    /// Cleans up pending media files that are older than the specified age
+    /// This can be called periodically to remove stale upload records
+    /// </summary>
+    /// <param name="olderThanHours">Remove pending files older than this many hours (default: 24)</param>
+    /// <returns>Number of files cleaned up</returns>
+    public async Task<int> CleanupPendingMediaFiles(int olderThanHours = 24)
+    {
+        try
+        {
+            var cutoffTime = DateTime.UtcNow.AddHours(-olderThanHours);
+            var scanRequest = new ScanRequest
+            {
+                TableName = _petMediaFilesTableName,
+                FilterExpression = "#status = :pendingStatus AND #createdAt < :cutoffTime",
+                ExpressionAttributeNames = new Dictionary<string, string>
+                {
+                    { "#status", "Status" },
+                    { "#createdAt", "CreatedAt" }
+                },
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                {
+                    { ":pendingStatus", new AttributeValue { S = "Pending" } },
+                    { ":cutoffTime", new AttributeValue { S = cutoffTime.ToString("O") } }
+                },
+                ProjectionExpression = "MediaFileId, S3Key"
+            };
+
+            var response = await _dynamoDbClient.ScanAsync(scanRequest);
+
+            if (response.Items.Count == 0)
+            {
+                return 0;
+            }
+
+            // Delete the stale pending records
+            var batchDeleteRequest = new BatchWriteItemRequest
+            {
+                RequestItems = new Dictionary<string, List<WriteRequest>>
+                {
+                    [_petMediaFilesTableName] = [.. response.Items.Select(item => new WriteRequest
+                    {
+                        DeleteRequest = new DeleteRequest
+                        {
+                            Key = new Dictionary<string, AttributeValue>
+                            {
+                                ["MediaFileId"] = item["MediaFileId"]
+                            }
+                        }
+                    })]
+                }
+            };
+
+            await _dynamoDbClient.BatchWriteItemAsync(batchDeleteRequest);
+
+            _logger.LogInformation("Cleaned up {Count} pending media files older than {Hours} hours",
+                response.Items.Count, olderThanHours);
+
+            return response.Items.Count;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to cleanup pending media files");
+            return 0;
+        }
     }
 }
 
