@@ -1634,50 +1634,61 @@ public class PetService : IPetService
     {
         try
         {
-            // Get the media files to delete first to know their S3 keys
-            var batchGetRequest = new BatchGetItemRequest
-            {
-                RequestItems = new Dictionary<string, KeysAndAttributes>
-                {
-                    [_petMediaFilesTableName] = new KeysAndAttributes
-                    {
-                        Keys = [.. request.MediaFileIds.Select(id => new Dictionary<string, AttributeValue>
-                        {
-                            ["MediaFileId"] = new AttributeValue { S = id.ToString() }
-                        })]
-                    }
-                }
-            };
+            // Get the media files to delete first to know their S3 keys using GSI
+            var mediaFilesToDelete = new List<Dictionary<string, AttributeValue>>();
 
-            var batchGetResponse = await _dynamoDbClient.BatchGetItemAsync(batchGetRequest);
+            foreach (var mediaFileId in request.MediaFileIds)
+            {
+                var queryRequest = new QueryRequest
+                {
+                    TableName = _petMediaFilesTableName,
+                    IndexName = "MediaFileIdIndex",
+                    KeyConditionExpression = "MediaFileId = :mediaFileId",
+                    ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                    {
+                        { ":mediaFileId", new AttributeValue { S = mediaFileId.ToString() } }
+                    }
+                };
+
+                var queryResponse = await _dynamoDbClient.QueryAsync(queryRequest);
+                mediaFilesToDelete.AddRange(queryResponse.Items);
+            }
 
             // Delete files from S3 - note: we'd need to implement this in the media service
             // For now, we'll just log it
-            foreach (var item in batchGetResponse.Responses[_petMediaFilesTableName])
+            foreach (var item in mediaFilesToDelete)
             {
                 var s3Key = item["S3Key"].S;
                 _logger.LogInformation("Would delete S3 file: {S3Key}", s3Key);
-                // TODO: Implement S3 deletion in IMediaService
-                // await _mediaUploadService.DeleteFileAsync(_bucketName, s3Key);
+                await _mediaUploadService.DeleteFileAsync(_bucketName, s3Key);
             }
 
-            // Delete records from DynamoDB
+            // Delete records from DynamoDB using the keys from GSI query results
             var batchDeleteRequest = new BatchWriteItemRequest
             {
                 RequestItems = new Dictionary<string, List<WriteRequest>>
                 {
-                    [_petMediaFilesTableName] = [.. request.MediaFileIds.Select(id => new WriteRequest
-                    {
-                        DeleteRequest = new DeleteRequest
-                        {
-                            Key = new Dictionary<string, AttributeValue>
-                            {
-                                ["MediaFileId"] = new AttributeValue { S = id.ToString() }
-                            }
-                        }
-                    })]
+                    [_petMediaFilesTableName] = []
                 }
             };
+
+            foreach (var item in mediaFilesToDelete)
+            {
+                // Use the actual table keys (PetId as partition key, DisplayOrder as sort key)
+                var deleteRequest = new WriteRequest
+                {
+                    DeleteRequest = new DeleteRequest
+                    {
+                        Key = new Dictionary<string, AttributeValue>
+                        {
+                            ["PetId"] = item["PetId"],
+                            ["DisplayOrder"] = item["DisplayOrder"]
+                        }
+                    }
+                };
+
+                batchDeleteRequest.RequestItems[_petMediaFilesTableName].Add(deleteRequest);
+            }
 
             await _dynamoDbClient.BatchWriteItemAsync(batchDeleteRequest);
 

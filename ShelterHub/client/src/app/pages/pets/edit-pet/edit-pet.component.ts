@@ -399,15 +399,18 @@ export class EditPetComponent implements OnInit {
     console.log('Media data changed:', mediaData);
   }
 
-  onMediaUploadComplete() {
+  async onMediaUploadComplete() {
     this.messageService.add({
       severity: 'success',
       summary: 'Success',
       detail: 'Media files uploaded successfully',
     });
 
-    // Optionally reload media data or refresh the component
-    // This could involve calling an API to get updated media file information
+    // Reload the existing media data to reflect the new uploads
+    const currentPet = this.pet();
+    if (currentPet?.petId) {
+      await this.loadExistingMedia(currentPet.petId);
+    }
   }
 
   onDelete() {

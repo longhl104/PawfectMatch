@@ -4,6 +4,7 @@ import {
   EventEmitter,
   OnInit,
   OnDestroy,
+  ViewChild,
   inject,
   signal,
   computed,
@@ -15,6 +16,7 @@ import {
   FileUploadModule,
   FileSelectEvent,
   FileRemoveEvent,
+  FileUpload,
 } from 'primeng/fileupload';
 import { ButtonModule } from 'primeng/button';
 import { ProgressBarModule } from 'primeng/progressbar';
@@ -26,6 +28,8 @@ import {
   UploadMediaFilesRequest,
   MediaFileUploadResponse,
   GetPetMediaResponse,
+  DeleteMediaFilesRequest,
+  DeleteMediaFilesResponse,
 } from '../../../../shared/apis/generated-apis';
 import { firstValueFrom } from 'rxjs';
 
@@ -62,6 +66,10 @@ export class PetMediaUploadComponent implements OnInit, OnDestroy {
 
   @Output() mediaDataChange = new EventEmitter<MediaUploadData>();
   @Output() uploadComplete = new EventEmitter<void>();
+
+  @ViewChild('imageUpload') imageUploadRef!: FileUpload;
+  @ViewChild('videoUpload') videoUploadRef!: FileUpload;
+  @ViewChild('documentUpload') documentUploadRef!: FileUpload;
 
   private messageService = inject(MessageService);
   private petsApi = inject(PetsApi);
@@ -299,36 +307,168 @@ export class PetMediaUploadComponent implements OnInit, OnDestroy {
     }
   }
 
-  removeExistingImage(index: number) {
+  async removeExistingImage(index: number) {
     const currentImages = this.displayExistingImages();
     const removedImage = currentImages[index];
+
     if (removedImage.id) {
-      this.removedMediaIds.push(removedImage.id);
+      const petId = this.petId();
+      if (!petId) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Delete Error',
+          detail: 'Pet ID is required to delete media',
+        });
+        return;
+      }
+
+      try {
+        // Call API to delete the media file
+        const deleteRequest = new DeleteMediaFilesRequest({
+          mediaFileIds: [removedImage.id]
+        });
+
+        const deleteResponse = await firstValueFrom(
+          this.petsApi.mediaDELETE(petId, deleteRequest)
+        ) as DeleteMediaFilesResponse;
+
+        if (!deleteResponse.success) {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Delete Error',
+            detail: deleteResponse.errorMessage || 'Failed to delete image',
+          });
+          return;
+        }
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Image deleted successfully',
+        });
+      } catch (error) {
+        console.error('Error deleting image:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Delete Error',
+          detail: 'Failed to delete image. Please try again.',
+        });
+        return;
+      }
     }
+
     this.displayExistingImages.update((images: MediaFile[]) =>
       images.filter((_, i) => i !== index),
     );
     this.emitMediaData();
   }
 
-  removeExistingVideo(index: number) {
+  async removeExistingVideo(index: number) {
     const currentVideos = this.displayExistingVideos();
     const removedVideo = currentVideos[index];
+
     if (removedVideo.id) {
-      this.removedMediaIds.push(removedVideo.id);
+      const petId = this.petId();
+      if (!petId) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Delete Error',
+          detail: 'Pet ID is required to delete media',
+        });
+        return;
+      }
+
+      try {
+        // Call API to delete the media file
+        const deleteRequest = new DeleteMediaFilesRequest({
+          mediaFileIds: [removedVideo.id]
+        });
+
+        const deleteResponse = await firstValueFrom(
+          this.petsApi.mediaDELETE(petId, deleteRequest)
+        ) as DeleteMediaFilesResponse;
+
+        if (!deleteResponse.success) {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Delete Error',
+            detail: deleteResponse.errorMessage || 'Failed to delete video',
+          });
+          return;
+        }
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Video deleted successfully',
+        });
+      } catch (error) {
+        console.error('Error deleting video:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Delete Error',
+          detail: 'Failed to delete video. Please try again.',
+        });
+        return;
+      }
     }
+
     this.displayExistingVideos.update((videos: MediaFile[]) =>
       videos.filter((_, i) => i !== index),
     );
     this.emitMediaData();
   }
 
-  removeExistingDocument(index: number) {
+  async removeExistingDocument(index: number) {
     const currentDocuments = this.displayExistingDocuments();
     const removedDocument = currentDocuments[index];
+
     if (removedDocument.id) {
-      this.removedMediaIds.push(removedDocument.id);
+      const petId = this.petId();
+      if (!petId) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Delete Error',
+          detail: 'Pet ID is required to delete media',
+        });
+        return;
+      }
+
+      try {
+        // Call API to delete the media file
+        const deleteRequest = new DeleteMediaFilesRequest({
+          mediaFileIds: [removedDocument.id]
+        });
+
+        const deleteResponse = await firstValueFrom(
+          this.petsApi.mediaDELETE(petId, deleteRequest)
+        ) as DeleteMediaFilesResponse;
+
+        if (!deleteResponse.success) {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Delete Error',
+            detail: deleteResponse.errorMessage || 'Failed to delete document',
+          });
+          return;
+        }
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Document deleted successfully',
+        });
+      } catch (error) {
+        console.error('Error deleting document:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Delete Error',
+          detail: 'Failed to delete document. Please try again.',
+        });
+        return;
+      }
     }
+
     this.displayExistingDocuments.update((documents: MediaFile[]) =>
       documents.filter((_, i) => i !== index),
     );
@@ -405,6 +545,11 @@ export class PetMediaUploadComponent implements OnInit, OnDestroy {
         detail: 'All files uploaded successfully',
       });
 
+      // Clear all file upload components
+      this.imageUploadRef?.clear();
+      this.videoUploadRef?.clear();
+      this.documentUploadRef?.clear();
+
       this.uploadComplete.emit();
       this.emitMediaData();
     } catch (error) {
@@ -449,6 +594,9 @@ export class PetMediaUploadComponent implements OnInit, OnDestroy {
         detail: `${imagesToUpload.length} image(s) uploaded successfully`,
       });
 
+      // Clear the file upload component
+      this.imageUploadRef?.clear();
+
       this.uploadComplete.emit();
       this.emitMediaData();
     } catch (error) {
@@ -492,6 +640,9 @@ export class PetMediaUploadComponent implements OnInit, OnDestroy {
         detail: `${videosToUpload.length} video(s) uploaded successfully`,
       });
 
+      // Clear the file upload component
+      this.videoUploadRef?.clear();
+
       this.uploadComplete.emit();
       this.emitMediaData();
     } catch (error) {
@@ -534,6 +685,9 @@ export class PetMediaUploadComponent implements OnInit, OnDestroy {
         summary: 'Success',
         detail: `${documentsToUpload.length} document(s) uploaded successfully`,
       });
+
+      // Clear the file upload component
+      this.documentUploadRef?.clear();
 
       this.uploadComplete.emit();
       this.emitMediaData();

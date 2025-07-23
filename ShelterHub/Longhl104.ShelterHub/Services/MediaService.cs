@@ -68,6 +68,7 @@ public interface IMediaService
     /// </summary>
     /// <returns>Cache statistics</returns>
     DownloadUrlCacheStats GetDownloadUrlCacheStats();
+    Task DeleteFileAsync(string bucketName, string s3Key);
 }
 
 
@@ -88,8 +89,12 @@ public class MediaService(
     private long _cacheHits = 0;
     private long _cacheMisses = 0;
 
-    private static readonly string[] AllowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
-    private static readonly string[] AllowedMimeTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    private static readonly string[] AllowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp4", ".avi", ".mov", ".pdf", ".docx", ".xlsx", ".txt", ".doc"];
+    private static readonly string[] AllowedMimeTypes = ["image/jpeg", "image/png", "image/gif", "image/webp",
+        "video/mp4", "video/x-msvideo", "video/quicktime",
+        "application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "text/plain", "application/msword"];
     private const int MaxFileSizeBytes = 10 * 1024 * 1024; // 10MB
     private const int PresignedUrlExpirationMinutes = 15;
     private const int CacheExpirationMinutes = 10; // Cache expires 5 minutes before presigned URL expires
@@ -329,6 +334,31 @@ public class MediaService(
         }
 
         return new ValidationResult { IsValid = true };
+    }
+
+    public Task DeleteFileAsync(string bucketName, string s3Key)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(bucketName) || string.IsNullOrEmpty(s3Key))
+            {
+                _logger.LogWarning("Invalid parameters for file deletion: BucketName={BucketName}, S3Key={S3Key}", bucketName, s3Key);
+                return Task.CompletedTask;
+            }
+
+            var deleteRequest = new DeleteObjectRequest
+            {
+                BucketName = bucketName,
+                Key = s3Key
+            };
+
+            return _s3Client.DeleteObjectAsync(deleteRequest);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to delete file from S3: BucketName={BucketName}, S3Key={S3Key}", bucketName, s3Key);
+            throw;
+        }
     }
 
     private class ValidationResult

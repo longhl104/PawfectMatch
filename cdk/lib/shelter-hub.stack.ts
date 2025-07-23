@@ -156,6 +156,16 @@ export class ShelterHubStack extends BaseStack {
         type: dynamodb.AttributeType.NUMBER,
       },
       description: 'Table for storing pet media files',
+      globalSecondaryIndexes: [
+        {
+          indexName: 'MediaFileIdIndex',
+          partitionKey: {
+            name: 'MediaFileId',
+            type: dynamodb.AttributeType.STRING,
+          },
+          nonKeyAttributes: ['S3Key'],
+        },
+      ],
     });
   }
 }
