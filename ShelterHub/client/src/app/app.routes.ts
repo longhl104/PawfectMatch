@@ -27,4 +27,9 @@ export const routes: Routes = [
         (m) => m.EditPetComponent,
       ),
   },
+  {
+    path: '**',
+    redirectTo: '/dashboard',
+    pathMatch: 'full',
+  },
 ];

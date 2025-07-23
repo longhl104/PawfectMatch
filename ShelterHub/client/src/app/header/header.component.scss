@@ -5,6 +5,27 @@
   border-bottom: 1px solid var(--surface-border);
 }
 
+.logo-container {
+  transition: all 0.2s ease;
+  border-radius: var(--border-radius);
+  padding: 0.5rem;
+  margin: -0.5rem;
+
+  &:hover {
+    background: var(--surface-hover);
+    transform: scale(1.02);
+  }
+
+  &:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
 .p-toolbar {
   background: var(--surface-card);
   border: none;

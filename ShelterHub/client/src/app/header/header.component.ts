@@ -1,5 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { ToolbarModule } from 'primeng/toolbar';
 import { ButtonModule } from 'primeng/button';
 import { AvatarModule } from 'primeng/avatar';
@@ -29,6 +30,7 @@ import { Observable } from 'rxjs';
 })
 export class HeaderComponent implements OnInit {
   private authService = inject(AuthService);
+  private router = inject(Router);
 
   authStatus$: Observable<AuthStatusResponse>;
   userMenuItems: MenuItem[] = [];
@@ -54,6 +56,10 @@ export class HeaderComponent implements OnInit {
         console.error('Logout failed:', error);
       },
     });
+  }
+
+  navigateToDashboard() {
+    this.router.navigate(['/dashboard']);
   }
 
   private setupUserMenu() {

@@ -1,6 +1,14 @@
 <p-toolbar styleClass="border-none shadow-2 px-4">
   <ng-template pTemplate="start">
-    <div class="flex align-items-center gap-3">
+    <div
+      class="flex align-items-center gap-3 cursor-pointer logo-container"
+      (click)="navigateToDashboard()"
+      (keydown.enter)="navigateToDashboard()"
+      (keydown.space)="navigateToDashboard()"
+      tabindex="0"
+      role="button"
+      aria-label="Navigate to dashboard"
+    >
       <i class="pi pi-heart-fill text-primary text-2xl"></i>
       <h2 class="m-0 text-xl font-bold text-primary">PawfectMatch</h2>
       <span
