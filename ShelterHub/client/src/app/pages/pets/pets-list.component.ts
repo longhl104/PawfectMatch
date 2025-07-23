@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
-
+import { NgTemplateOutlet } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { filter, firstValueFrom } from 'rxjs';
@@ -45,6 +45,7 @@ interface FilterOption {
   selector: 'app-pets-list',
   standalone: true,
   imports: [
+    NgTemplateOutlet,
     FormsModule,
     ButtonModule,
     CardModule,

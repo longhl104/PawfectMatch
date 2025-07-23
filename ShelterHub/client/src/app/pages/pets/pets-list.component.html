@@ -116,6 +116,13 @@
     }
   </div>
 
+  <!-- Top Paginator -->
+  @if (!isLoading && totalRecords > 0) {
+    <ng-container
+      *ngTemplateOutlet="paginatorTemplate; context: { styleClass: 'mb-4' }"
+    ></ng-container>
+  }
+
   <!-- Loading State -->
   @if (isLoading) {
     <div class="grid">
@@ -193,20 +200,27 @@
     </p-dataView>
   }
 
-  <!-- Server-side Paginator -->
+  <!-- Bottom Paginator -->
   @if (!isLoading && totalRecords > 0) {
-    <p-paginator
-      [rows]="pageSize"
-      [totalRecords]="totalRecords"
-      [first]="currentPage * pageSize"
-      (onPageChange)="onPageChange($event)"
-      [showCurrentPageReport]="true"
-      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} pets"
-      [rowsPerPageOptions]="[12, 24, 36]"
-      styleClass="mt-4"
-    ></p-paginator>
+    <ng-container
+      *ngTemplateOutlet="paginatorTemplate; context: { styleClass: 'mt-4' }"
+    ></ng-container>
   }
 </div>
+
+<!-- Reusable Paginator Template -->
+<ng-template #paginatorTemplate let-styleClass="styleClass">
+  <p-paginator
+    [rows]="pageSize"
+    [totalRecords]="totalRecords"
+    [first]="currentPage * pageSize"
+    (onPageChange)="onPageChange($event)"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} pets"
+    [rowsPerPageOptions]="[12, 24, 36]"
+    [styleClass]="styleClass"
+  ></p-paginator>
+</ng-template>
 
 <!-- Filters Dialog -->
 <p-dialog
