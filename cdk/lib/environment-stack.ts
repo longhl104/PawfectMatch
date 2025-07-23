@@ -143,6 +143,10 @@ export class EnvironmentStack extends cdk.Stack {
                 'ssm:GetParameter',
                 'ssm:GetParameters',
                 'ssm:GetParametersByPath',
+                'ssm:PutParameter',
+                'ssm:DeleteParameter',
+                'ssm:AddTagsToResource',
+                'ssm:RemoveTagsFromResource',
               ],
               resources: [
                 `arn:aws:ssm:${this.region}:${this.account}:parameter/PawfectMatch/*`,

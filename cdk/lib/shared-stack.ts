@@ -26,124 +26,74 @@ export class SharedStack extends cdk.Stack {
 
     // Only create Route 53 resources for production or if stage is specified
     if (stage) {
-      // Create or reference hosted zone
-      if (stage === 'production') {
-        // For production, create the main hosted zone
-        this.hostedZone = new route53.HostedZone(this, 'HostedZone', {
-          zoneName: DomainConfigManager.getRootDomain(stage),
-          comment: `Hosted zone for PawfectMatch ${stage} environment`,
-        });
+      // For other environments, reference the production hosted zone
+      // You'll need to manually provide the hosted zone ID from production
+      const hostedZoneId = ssm.StringParameter.valueFromLookup(
+        this,
+        '/PawfectMatch/Shared/HostedZoneId'
+      );
 
-        // Reference existing SSL certificate (created manually)
-        // You'll need to manually create the certificate in ACM us-east-1 region
-        // and update the certificate ARN in SSM parameter
-        try {
-          const certificateArn = ssm.StringParameter.valueFromLookup(
-            this,
-            '/PawfectMatch/Shared/CertificateArn'
-          );
-          if (certificateArn && certificateArn !== 'dummy-value-for-${Token}') {
-            this.certificate = acm.Certificate.fromCertificateArn(
-              this,
-              'ImportedCertificate',
-              certificateArn
-            );
-          }
-        } catch (error) {
-          console.warn(
-            'Certificate not found in SSM, will deploy without custom domains'
-          );
+      this.hostedZone = route53.HostedZone.fromHostedZoneAttributes(
+        this,
+        'ImportedHostedZone',
+        {
+          hostedZoneId: hostedZoneId,
+          zoneName: 'pawfectmatchnow.com', // Always reference the root domain
         }
+      );
 
-        // Store hosted zone ID in SSM for other stacks to reference
-        new ssm.StringParameter(this, 'HostedZoneId', {
-          parameterName: '/PawfectMatch/Shared/HostedZoneId',
-          stringValue: this.hostedZone.hostedZoneId,
-          description: 'Hosted Zone ID for PawfectMatch domain',
-        });
-
-        // Store domain name in SSM
-        new ssm.StringParameter(this, 'DomainName', {
-          parameterName: '/PawfectMatch/Shared/DomainName',
-          stringValue: DomainConfigManager.getRootDomain(stage),
-          description: 'Root domain name for PawfectMatch',
-        });
-
-        // Store certificate ARN in SSM
-        if (this.certificate) {
-          new ssm.StringParameter(this, 'CertificateArn', {
-            parameterName: '/PawfectMatch/Shared/CertificateArn',
-            stringValue: this.certificate.certificateArn,
-            description: 'SSL Certificate ARN for PawfectMatch domain',
-          });
-        }
-      } else {
-        // For other environments, reference the production hosted zone
-        // You'll need to manually provide the hosted zone ID from production
-        const hostedZoneId = ssm.StringParameter.valueFromLookup(
+      // Create certificate for the stage subdomain in us-east-1 for CloudFront
+      try {
+        const certificateArn = ssm.StringParameter.valueFromLookup(
           this,
-          '/PawfectMatch/Shared/HostedZoneId'
+          `/PawfectMatch/${BaseStack.getCapitalizedStage(
+            stage
+          )}/Common/CertificateArn`
         );
 
-        this.hostedZone = route53.HostedZone.fromHostedZoneAttributes(
+        console.log(
+          `Certificate ARN for ${stage} environment: ${certificateArn}`
+        );
+        if (certificateArn && certificateArn !== 'dummy-value-for-${Token}') {
+          this.certificate = acm.Certificate.fromCertificateArn(
+            this,
+            'ImportedCertificate',
+            certificateArn
+          );
+        }
+      } catch (error) {
+        console.warn(
+          `Certificate not found for ${stage} environment, will deploy without custom domains`
+        );
+      }
+
+      // Create regional certificate for ALB (Application Load Balancer) usage
+      // This is different from the CloudFront certificate which must be in us-east-1
+      try {
+        const regionalCertificateArn = ssm.StringParameter.valueFromLookup(
           this,
-          'ImportedHostedZone',
-          {
-            hostedZoneId: hostedZoneId,
-            zoneName: 'pawfectmatchnow.com', // Always reference the root domain
-          }
+          `/PawfectMatch/${BaseStack.getCapitalizedStage(
+            stage
+          )}/Common/RegionalCertificateArn`
         );
 
-        // Create certificate for the stage subdomain in us-east-1 for CloudFront
-        try {
-          const certificateArn = ssm.StringParameter.valueFromLookup(
+        console.log(
+          `Regional Certificate ARN for ${stage} environment: ${regionalCertificateArn}`
+        );
+        if (
+          regionalCertificateArn &&
+          regionalCertificateArn !== 'dummy-value-for-${Token}'
+        ) {
+          this.regionalCertificate = acm.Certificate.fromCertificateArn(
             this,
-            `/PawfectMatch/${BaseStack.getCapitalizedStage(
-              stage
-            )}/Common/CertificateArn`
-          );
-
-          console.log(
-            `Certificate ARN for ${stage} environment: ${certificateArn}`
-          );
-          if (certificateArn && certificateArn !== 'dummy-value-for-${Token}') {
-            this.certificate = acm.Certificate.fromCertificateArn(
-              this,
-              'ImportedCertificate',
-              certificateArn
-            );
-          }
-        } catch (error) {
-          console.warn(
-            `Certificate not found for ${stage} environment, will deploy without custom domains`
+            'ImportedRegionalCertificate',
+            regionalCertificateArn
           );
         }
-
-        // Create regional certificate for ALB (Application Load Balancer) usage
-        // This is different from the CloudFront certificate which must be in us-east-1
-        try {
-          const regionalCertificateArn = ssm.StringParameter.valueFromLookup(
-            this,
-            `/PawfectMatch/${BaseStack.getCapitalizedStage(
-              stage
-            )}/Common/RegionalCertificateArn`
-          );
-
-          console.log(
-            `Regional Certificate ARN for ${stage} environment: ${regionalCertificateArn}`
-          );
-          if (regionalCertificateArn && regionalCertificateArn !== 'dummy-value-for-${Token}') {
-            this.regionalCertificate = acm.Certificate.fromCertificateArn(
-              this,
-              'ImportedRegionalCertificate',
-              regionalCertificateArn
-            );
-          }
-        } catch (error) {
-          console.warn(
-            `Regional certificate not found for ${stage} environment, ALB will use HTTP only`
-          );
-        }
+      } catch (error) {
+        console.warn(
+          `Regional certificate not found for ${stage} environment, ALB will use HTTP only`
+        );
       }
     }
   }

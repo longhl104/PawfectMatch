@@ -10,5 +10,14 @@
   "ssm:account=141714874243:parameterName=/PawfectMatch/Shared/HostedZoneId:region=ap-southeast-2": "Z002750623WOVCCGCKDI7",
   "ssm:account=141714874243:parameterName=/PawfectMatch/Development/Common/CertificateArn:region=ap-southeast-2": "arn:aws:acm:us-east-1:141714874243:certificate/1e593ae8-a3b0-4015-84d9-6286e0104bf4",
   "ssm:account=141714874243:parameterName=/PawfectMatch/Development/Common/CertificateArn:region=us-east-1": "arn:aws:acm:us-east-1:141714874243:certificate/1e593ae8-a3b0-4015-84d9-6286e0104bf4",
-  "ssm:account=141714874243:parameterName=/PawfectMatch/Development/Common/RegionalCertificateArn:region=ap-southeast-2": "arn:aws:acm:ap-southeast-2:141714874243:certificate/9290f6f3-4ba6-44f4-bcf5-c2016e204354"
+  "ssm:account=141714874243:parameterName=/PawfectMatch/Development/Common/RegionalCertificateArn:region=ap-southeast-2": "arn:aws:acm:ap-southeast-2:141714874243:certificate/9290f6f3-4ba6-44f4-bcf5-c2016e204354",
+  "ssm:account=823357529295:parameterName=/PawfectMatch/Production/Common/CertificateArn:region=us-east-1": "arn:aws:acm:us-east-1:823357529295:certificate/1cdcf2a0-d91b-4634-839a-fdbb20d3507f",
+  "ssm:account=823357529295:parameterName=/PawfectMatch/Production/Common/CertificateArn:region=ap-southeast-2": "arn:aws:acm:us-east-1:823357529295:certificate/1cdcf2a0-d91b-4634-839a-fdbb20d3507f",
+  "availability-zones:account=823357529295:region=ap-southeast-2": [
+    "ap-southeast-2a",
+    "ap-southeast-2b",
+    "ap-southeast-2c"
+  ],
+  "ssm:account=823357529295:parameterName=/PawfectMatch/Production/Common/RegionalCertificateArn:region=ap-southeast-2": "arn:aws:acm:ap-southeast-2:823357529295:certificate/c0429f52-aeff-44f3-ba00-0bc43dcc557b",
+  "ssm:account=823357529295:parameterName=/PawfectMatch/Shared/HostedZoneId:region=ap-southeast-2": "Z00080962OAMLD5KTE6ZC"
 }

@@ -352,6 +352,39 @@ build_angular_clients() {
 	cd "$ROOT_DIR/scripts"
 }
 
+# Function to bootstrap CDK environment
+bootstrap_cdk() {
+	print_info "Bootstrapping CDK environment for: $ENVIRONMENT"
+
+	# Change to CDK directory
+	cd "$ROOT_DIR/cdk"
+
+	# Set CDK stage environment variable
+	export CDK_STAGE=$ENVIRONMENT
+
+	# Get AWS account ID and region
+	local aws_account_id=$(aws sts get-caller-identity --profile $AWS_PROFILE --query Account --output text)
+	local aws_region=$(aws configure get region --profile $AWS_PROFILE)
+
+	# Use default region if not configured
+	if [ -z "$aws_region" ]; then
+		aws_region="us-east-1"
+	fi
+
+	print_info "Bootstrapping AWS account $aws_account_id in region $aws_region"
+
+	# Bootstrap the environment
+	if cdk bootstrap aws://$aws_account_id/$aws_region --profile $AWS_PROFILE --no-notices; then
+		print_success "CDK bootstrap completed successfully"
+		cd "$ROOT_DIR/scripts"
+		return 0
+	else
+		print_error "CDK bootstrap failed"
+		cd "$ROOT_DIR/scripts"
+		return 1
+	fi
+}
+
 # Function to deploy CDK stacks
 deploy_cdk() {
 	print_info "Starting CDK deployment for environment: $ENVIRONMENT"
@@ -590,10 +623,11 @@ show_skip_menu() {
 		"Skip Angular build"
 		"Skip backend Docker build"
 		"Skip ECS redeployment"
+		"Run CDK bootstrap"
 	)
 
 	# Use individual variables instead of array
-	local sel0=0 sel1=0 sel2=0 sel3=0
+	local sel0=0 sel1=0 sel2=0 sel3=0 sel4=0
 	local current=0
 
 	# Handle input
@@ -623,6 +657,7 @@ show_skip_menu() {
 				1) [ $sel1 -eq 1 ] && checkbox="☑" ;;
 				2) [ $sel2 -eq 1 ] && checkbox="☑" ;;
 				3) [ $sel3 -eq 1 ] && checkbox="☑" ;;
+				4) [ $sel4 -eq 1 ] && checkbox="☑" ;;
 			esac
 
 			echo -e "${prefix}${checkbox} ${options[$i]}"
@@ -661,6 +696,7 @@ show_skip_menu() {
 					1) [ $sel1 -eq 1 ] && sel1=0 || sel1=1 ;;
 					2) [ $sel2 -eq 1 ] && sel2=0 || sel2=1 ;;
 					3) [ $sel3 -eq 1 ] && sel3=0 || sel3=1 ;;
+					4) [ $sel4 -eq 1 ] && sel4=0 || sel4=1 ;;
 				esac
 				;;
 			$'\n'|$'\r'|'') # Enter to confirm - try multiple formats
@@ -677,6 +713,7 @@ show_skip_menu() {
 	skip_angular_build=$( [ $sel1 -eq 1 ] && echo true || echo false )
 	skip_backend_build=$( [ $sel2 -eq 1 ] && echo true || echo false )
 	skip_ecs_redeploy=$( [ $sel3 -eq 1 ] && echo true || echo false )
+	run_cdk_bootstrap=$( [ $sel4 -eq 1 ] && echo true || echo false )
 
 	clear
 	echo "========================================="
@@ -694,9 +731,12 @@ show_skip_menu() {
 	if [ "$skip_ecs_redeploy" = true ]; then
 		print_warning "Will skip ECS service redeployment"
 	fi
+	if [ "$run_cdk_bootstrap" = true ]; then
+		print_info "Will run CDK bootstrap"
+	fi
 
-	if [ "$skip_lambda_build" = false ] && [ "$skip_angular_build" = false ] && [ "$skip_backend_build" = false ] && [ "$skip_ecs_redeploy" = false ]; then
-		print_info "Will run all build steps"
+	if [ "$skip_lambda_build" = false ] && [ "$skip_angular_build" = false ] && [ "$skip_backend_build" = false ] && [ "$skip_ecs_redeploy" = false ] && [ "$run_cdk_bootstrap" = false ]; then
+		print_info "Will run all build steps (no bootstrap)"
 	fi
 
 	echo
@@ -728,6 +768,7 @@ main() {
 	local skip_angular_build=false
 	local skip_backend_build=false
 	local skip_ecs_redeploy=false
+	local run_cdk_bootstrap=false
 
 	# Project deployment flags
 	local deploy_identity=true
@@ -756,6 +797,11 @@ main() {
 			interactive_mode=false
 			shift
 			;;
+		--bootstrap)
+			run_cdk_bootstrap=true
+			interactive_mode=false
+			shift
+			;;
 		--non-interactive)
 			interactive_mode=false
 			shift
@@ -769,6 +815,7 @@ main() {
 			echo "  --skip-angular-build    Skip building Angular client applications"
 			echo "  --skip-backend-build    Skip building and pushing backend Docker images"
 			echo "  --skip-ecs-redeploy     Skip forcing ECS service redeployment"
+			echo "  --bootstrap             Run CDK bootstrap before deployment"
 			echo "  --non-interactive       Skip the interactive menu (use with skip flags)"
 			exit 1
 			;;
@@ -795,6 +842,7 @@ main() {
 		echo "  --skip-angular-build    Skip building Angular client applications"
 		echo "  --skip-backend-build    Skip building and pushing backend Docker images"
 		echo "  --skip-ecs-redeploy     Skip forcing ECS service redeployment"
+		echo "  --bootstrap             Run CDK bootstrap before deployment"
 		echo "  --non-interactive       Skip the interactive menu (use with skip flags)"
 		exit 1
 	fi
@@ -822,6 +870,9 @@ main() {
 		if [ "$skip_ecs_redeploy" = true ]; then
 			print_warning "Skipping ECS service redeployment"
 		fi
+		if [ "$run_cdk_bootstrap" = true ]; then
+			print_info "Will run CDK bootstrap"
+		fi
 		echo
 	fi
 
@@ -829,8 +880,17 @@ main() {
 	aws_sso_login
 	verify_credentials
 
+	# Set CDK stage environment variable globally
+	export CDK_STAGE=$ENVIRONMENT
+	print_info "CDK_STAGE set to: $CDK_STAGE"
+
 	# Build and deploy
 	build_project
+
+	# Run CDK bootstrap if requested
+	if [ "$run_cdk_bootstrap" = true ]; then
+		bootstrap_cdk
+	fi
 
 	if [ "$skip_angular_build" = false ]; then
 		build_angular_clients
