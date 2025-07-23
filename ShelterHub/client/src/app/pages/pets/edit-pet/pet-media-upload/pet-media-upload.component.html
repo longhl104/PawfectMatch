@@ -1,305 +1,408 @@
 <div class="pet-media-upload">
+  <!-- Image Upload Section -->
   <div class="media-section">
+    <h4>Images</h4>
     <p class="section-description">
-      Upload images, videos, and documents for the pet
+      Upload images for the pet (JPG, PNG, GIF)
     </p>
 
     <div class="upload-area">
       <p-fileUpload
-        #mediaUpload
+        #imageUpload
         mode="advanced"
-        accept="image/*,video/*,.pdf,.doc,.docx,.txt"
+        accept="image/*"
         [multiple]="true"
         [maxFileSize]="100000000"
-        [fileLimit]="25"
+        [fileLimit]="10"
         [auto]="false"
         [customUpload]="true"
-        chooseLabel="Choose Files"
+        chooseLabel="Choose Images"
         uploadLabel="Upload"
         cancelLabel="Clear"
         [showUploadButton]="false"
         [showCancelButton]="true"
-        (onSelect)="onFilesSelect($event)"
-        (onRemove)="onFileRemove($event)"
-        (onClear)="onFilesClear()"
+        (onSelect)="onImageSelect($event)"
+        (onRemove)="onImageRemove($event)"
+        (onClear)="onImagesClear()"
       >
         <ng-template pTemplate="content">
-          @if (allNewFiles().length > 0) {
+          @if (newImages().length > 0) {
             <div class="uploaded-files-preview">
-              <!-- Images Grid -->
-              @if (newImages().length > 0) {
-                <div class="media-type-section">
-                  <h6 class="media-type-title">
-                    Images ({{ newImages().length }})
-                  </h6>
-                  <div class="image-preview-grid">
-                    @for (file of newImages(); track file; let i = $index) {
-                      <div class="image-preview-item">
-                        <img
-                          [src]="getImagePreview(file)"
-                          [alt]="file.name"
-                          class="preview-image"
-                        />
-                        <div class="image-overlay">
-                          <p-button
-                            icon="pi pi-times"
-                            severity="danger"
-                            [rounded]="true"
-                            size="small"
-                            (onClick)="removeFile(file)"
-                            class="remove-btn"
-                          />
-                        </div>
-                        <div class="image-info">
-                          <small class="file-name">{{ file.name }}</small>
-                          <small class="file-size">{{
-                            formatFileSize(file.size)
-                          }}</small>
-                        </div>
-                      </div>
-                    }
+              <div class="image-preview-grid">
+                @for (file of newImages(); track file; let i = $index) {
+                  <div class="image-preview-item">
+                    <img
+                      [src]="getImagePreview(file)"
+                      [alt]="file.name"
+                      class="preview-image"
+                    />
+                    <div class="image-overlay">
+                      <p-button
+                        icon="pi pi-times"
+                        severity="danger"
+                        [rounded]="true"
+                        size="small"
+                        (onClick)="removeImage(file)"
+                        class="remove-btn"
+                      />
+                    </div>
+                    <div class="image-info">
+                      <small class="file-name">{{ file.name }}</small>
+                      <small class="file-size">{{
+                        formatFileSize(file.size)
+                      }}</small>
+                    </div>
                   </div>
-                </div>
-              }
-              <!-- Videos Grid -->
-              @if (newVideos().length > 0) {
-                <div class="media-type-section">
-                  <h6 class="media-type-title">
-                    Videos ({{ newVideos().length }})
-                  </h6>
-                  <div class="video-preview-grid">
-                    @for (file of newVideos(); track file; let i = $index) {
-                      <div class="video-preview-item">
-                        <div class="video-thumbnail">
-                          <i
-                            class="pi pi-play-circle text-4xl text-primary"
-                          ></i>
-                          <video
-                            [src]="getVideoPreview(file)"
-                            class="preview-video"
-                            muted
-                            preload="metadata"
-                          ></video>
-                        </div>
-                        <div class="video-overlay">
-                          <p-button
-                            icon="pi pi-times"
-                            severity="danger"
-                            [rounded]="true"
-                            size="small"
-                            (onClick)="removeFile(file)"
-                            class="remove-btn"
-                          />
-                        </div>
-                        <div class="video-info">
-                          <small class="file-name">{{ file.name }}</small>
-                          <small class="file-size">{{
-                            formatFileSize(file.size)
-                          }}</small>
-                        </div>
-                      </div>
-                    }
-                  </div>
-                </div>
-              }
-              <!-- Documents List -->
-              @if (newDocuments().length > 0) {
-                <div class="media-type-section">
-                  <h6 class="media-type-title">
-                    Documents ({{ newDocuments().length }})
-                  </h6>
-                  <div class="document-list">
-                    @for (file of newDocuments(); track file; let i = $index) {
-                      <div class="document-item">
-                        <div class="document-icon">
-                          <i
-                            [class]="getDocumentIcon(file.name)"
-                            class="text-2xl"
-                          ></i>
-                        </div>
-                        <div class="document-details">
-                          <div class="document-name">{{ file.name }}</div>
-                          <div class="document-size">
-                            {{ formatFileSize(file.size) }}
-                          </div>
-                        </div>
-                        <p-button
-                          icon="pi pi-times"
-                          severity="danger"
-                          [text]="true"
-                          size="small"
-                          (onClick)="removeFile(file)"
-                          class="remove-btn"
-                        />
-                      </div>
-                    }
-                  </div>
-                </div>
-              }
+                }
+              </div>
             </div>
           }
         </ng-template>
 
         <ng-template pTemplate="empty">
           <div class="empty-state">
-            <i class="pi pi-cloud-upload text-4xl text-gray-400"></i>
+            <i class="pi pi-image text-4xl text-gray-400"></i>
             <p class="text-gray-600">
-              Drag and drop files here or click to browse
+              Drag and drop images here or click to browse
             </p>
             <small class="text-gray-500"
-              >Images (JPG, PNG, GIF), Videos (MP4, MOV, AVI), Documents (PDF,
-              DOC, DOCX, TXT)</small
-            >
-            <small class="text-gray-500 block mt-1"
-              >Max file size: 100MB • Max total files: 25</small
+              >Images (JPG, PNG, GIF) • Max file size: 100MB • Max files: 10</small
             >
           </div>
         </ng-template>
       </p-fileUpload>
     </div>
 
-    <!-- Existing Media Display -->
-    @if (hasExistingMedia()) {
+    <!-- Existing Images Display -->
+    @if (displayExistingImages().length > 0) {
       <div class="existing-media">
-        <h5>Current Media Files</h5>
-        <!-- Existing Images -->
-        @if (displayExistingImages().length > 0) {
-          <div class="media-type-section">
-            <h6 class="media-type-title">
-              Images ({{ displayExistingImages().length }})
-            </h6>
-            <div class="image-preview-grid">
-              @for (
-                image of displayExistingImages();
-                track image;
-                let i = $index
-              ) {
-                <div class="image-preview-item existing">
-                  <img
-                    [src]="image.url"
-                    [alt]="image.name || 'Pet image'"
-                    class="preview-image"
-                  />
-                  <div class="image-overlay">
-                    <p-button
-                      icon="pi pi-times"
-                      severity="danger"
-                      [rounded]="true"
-                      size="small"
-                      (onClick)="removeExistingImage(i)"
-                      class="remove-btn"
-                    />
-                  </div>
-                  <div class="image-info">
-                    <small class="file-name">{{
-                      image.name || "Image " + (i + 1)
-                    }}</small>
-                  </div>
-                </div>
-              }
+        <h5>Current Images</h5>
+        <div class="image-preview-grid">
+          @for (
+            image of displayExistingImages();
+            track image;
+            let i = $index
+          ) {
+            <div class="image-preview-item existing">
+              <img
+                [src]="image.url"
+                [alt]="image.name || 'Pet image'"
+                class="preview-image"
+              />
+              <div class="image-overlay">
+                <p-button
+                  icon="pi pi-times"
+                  severity="danger"
+                  [rounded]="true"
+                  size="small"
+                  (onClick)="removeExistingImage(i)"
+                  class="remove-btn"
+                />
+              </div>
+              <div class="image-info">
+                <small class="file-name">{{
+                  image.name || "Image " + (i + 1)
+                }}</small>
+              </div>
             </div>
-          </div>
-        }
-        <!-- Existing Videos -->
-        @if (displayExistingVideos().length > 0) {
-          <div class="media-type-section">
-            <h6 class="media-type-title">
-              Videos ({{ displayExistingVideos().length }})
-            </h6>
-            <div class="video-preview-grid">
-              @for (
-                video of displayExistingVideos();
-                track video;
-                let i = $index
-              ) {
-                <div class="video-preview-item existing">
-                  <div class="video-thumbnail">
-                    <i class="pi pi-play-circle text-4xl text-primary"></i>
-                    <video
-                      [src]="video.url"
-                      class="preview-video"
-                      muted
-                      preload="metadata"
-                    ></video>
-                  </div>
-                  <div class="video-overlay">
-                    <p-button
-                      icon="pi pi-times"
-                      severity="danger"
-                      [rounded]="true"
-                      size="small"
-                      (onClick)="removeExistingVideo(i)"
-                      class="remove-btn"
-                    />
-                  </div>
-                  <div class="video-info">
-                    <small class="file-name">{{
-                      video.name || "Video " + (i + 1)
-                    }}</small>
-                  </div>
-                </div>
-              }
-            </div>
-          </div>
-        }
-        <!-- Existing Documents -->
-        @if (displayExistingDocuments().length > 0) {
-          <div class="media-type-section">
-            <h6 class="media-type-title">
-              Documents ({{ displayExistingDocuments().length }})
-            </h6>
-            <div class="document-list">
-              @for (
-                document of displayExistingDocuments();
-                track document;
-                let i = $index
-              ) {
-                <div class="document-item existing">
-                  <div class="document-icon">
-                    <i
-                      [class]="getDocumentIcon(document.name)"
-                      class="text-2xl"
-                    ></i>
-                  </div>
-                  <div class="document-details">
-                    <div class="document-name">
-                      {{ document.name || "Document " + (i + 1) }}
-                    </div>
-                    <a
-                      [href]="document.url"
-                      target="_blank"
-                      class="text-primary text-sm"
-                    >
-                      <i class="pi pi-external-link mr-1"></i>View
-                    </a>
-                  </div>
-                  <p-button
-                    icon="pi pi-times"
-                    severity="danger"
-                    [text]="true"
-                    size="small"
-                    (onClick)="removeExistingDocument(i)"
-                    class="remove-btn"
-                  />
-                </div>
-              }
-            </div>
-          </div>
-        }
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Image Upload Actions -->
+    @if (newImages().length > 0) {
+      <div class="upload-actions">
+        <p-button
+          label="Upload Images"
+          icon="pi pi-upload"
+          [loading]="uploadingImages"
+          [disabled]="!newImages().length"
+          (onClick)="uploadImages()"
+          class="w-full"
+        />
       </div>
     }
   </div>
 
-  <!-- Upload Actions -->
+  <!-- Video Upload Section -->
+  <div class="media-section">
+    <h4>Videos</h4>
+    <p class="section-description">
+      Upload videos for the pet (MP4, MOV, AVI)
+    </p>
+
+    <div class="upload-area">
+      <p-fileUpload
+        #videoUpload
+        mode="advanced"
+        accept="video/*"
+        [multiple]="true"
+        [maxFileSize]="100000000"
+        [fileLimit]="5"
+        [auto]="false"
+        [customUpload]="true"
+        chooseLabel="Choose Videos"
+        uploadLabel="Upload"
+        cancelLabel="Clear"
+        [showUploadButton]="false"
+        [showCancelButton]="true"
+        (onSelect)="onVideoSelect($event)"
+        (onRemove)="onVideoRemove($event)"
+        (onClear)="onVideosClear()"
+      >
+        <ng-template pTemplate="content">
+          @if (newVideos().length > 0) {
+            <div class="uploaded-files-preview">
+              <div class="video-preview-grid">
+                @for (file of newVideos(); track file; let i = $index) {
+                  <div class="video-preview-item">
+                    <div class="video-thumbnail">
+                      <i
+                        class="pi pi-play-circle text-4xl text-primary"
+                      ></i>
+                      <video
+                        [src]="getVideoPreview(file)"
+                        class="preview-video"
+                        muted
+                        preload="metadata"
+                      ></video>
+                    </div>
+                    <div class="video-overlay">
+                      <p-button
+                        icon="pi pi-times"
+                        severity="danger"
+                        [rounded]="true"
+                        size="small"
+                        (onClick)="removeVideo(file)"
+                        class="remove-btn"
+                      />
+                    </div>
+                    <div class="video-info">
+                      <small class="file-name">{{ file.name }}</small>
+                      <small class="file-size">{{
+                        formatFileSize(file.size)
+                      }}</small>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </ng-template>
+
+        <ng-template pTemplate="empty">
+          <div class="empty-state">
+            <i class="pi pi-video text-4xl text-gray-400"></i>
+            <p class="text-gray-600">
+              Drag and drop videos here or click to browse
+            </p>
+            <small class="text-gray-500"
+              >Videos (MP4, MOV, AVI) • Max file size: 100MB • Max files: 5</small
+            >
+          </div>
+        </ng-template>
+      </p-fileUpload>
+    </div>
+
+    <!-- Existing Videos Display -->
+    @if (displayExistingVideos().length > 0) {
+      <div class="existing-media">
+        <h5>Current Videos</h5>
+        <div class="video-preview-grid">
+          @for (
+            video of displayExistingVideos();
+            track video;
+            let i = $index
+          ) {
+            <div class="video-preview-item existing">
+              <div class="video-thumbnail">
+                <i class="pi pi-play-circle text-4xl text-primary"></i>
+                <video
+                  [src]="video.url"
+                  class="preview-video"
+                  muted
+                  preload="metadata"
+                ></video>
+              </div>
+              <div class="video-overlay">
+                <p-button
+                  icon="pi pi-times"
+                  severity="danger"
+                  [rounded]="true"
+                  size="small"
+                  (onClick)="removeExistingVideo(i)"
+                  class="remove-btn"
+                />
+              </div>
+              <div class="video-info">
+                <small class="file-name">{{
+                  video.name || "Video " + (i + 1)
+                }}</small>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Video Upload Actions -->
+    @if (newVideos().length > 0) {
+      <div class="upload-actions">
+        <p-button
+          label="Upload Videos"
+          icon="pi pi-upload"
+          [loading]="uploadingVideos"
+          [disabled]="!newVideos().length"
+          (onClick)="uploadVideos()"
+          class="w-full"
+        />
+      </div>
+    }
+  </div>
+
+  <!-- Document Upload Section -->
+  <div class="media-section">
+    <h4>Documents</h4>
+    <p class="section-description">
+      Upload documents for the pet (PDF, DOC, DOCX, TXT)
+    </p>
+
+    <div class="upload-area">
+      <p-fileUpload
+        #documentUpload
+        mode="advanced"
+        accept=".pdf,.doc,.docx,.txt"
+        [multiple]="true"
+        [maxFileSize]="100000000"
+        [fileLimit]="10"
+        [auto]="false"
+        [customUpload]="true"
+        chooseLabel="Choose Documents"
+        uploadLabel="Upload"
+        cancelLabel="Clear"
+        [showUploadButton]="false"
+        [showCancelButton]="true"
+        (onSelect)="onDocumentSelect($event)"
+        (onRemove)="onDocumentRemove($event)"
+        (onClear)="onDocumentsClear()"
+      >
+        <ng-template pTemplate="content">
+          @if (newDocuments().length > 0) {
+            <div class="uploaded-files-preview">
+              <div class="document-list">
+                @for (file of newDocuments(); track file; let i = $index) {
+                  <div class="document-item">
+                    <div class="document-icon">
+                      <i
+                        [class]="getDocumentIcon(file.name)"
+                        class="text-2xl"
+                      ></i>
+                    </div>
+                    <div class="document-details">
+                      <div class="document-name">{{ file.name }}</div>
+                      <div class="document-size">
+                        {{ formatFileSize(file.size) }}
+                      </div>
+                    </div>
+                    <p-button
+                      icon="pi pi-times"
+                      severity="danger"
+                      [text]="true"
+                      size="small"
+                      (onClick)="removeDocument(file)"
+                      class="remove-btn"
+                    />
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </ng-template>
+
+        <ng-template pTemplate="empty">
+          <div class="empty-state">
+            <i class="pi pi-file text-4xl text-gray-400"></i>
+            <p class="text-gray-600">
+              Drag and drop documents here or click to browse
+            </p>
+            <small class="text-gray-500"
+              >Documents (PDF, DOC, DOCX, TXT) • Max file size: 100MB • Max files: 10</small
+            >
+          </div>
+        </ng-template>
+      </p-fileUpload>
+    </div>
+
+    <!-- Existing Documents Display -->
+    @if (displayExistingDocuments().length > 0) {
+      <div class="existing-media">
+        <h5>Current Documents</h5>
+        <div class="document-list">
+          @for (
+            document of displayExistingDocuments();
+            track document;
+            let i = $index
+          ) {
+            <div class="document-item existing">
+              <div class="document-icon">
+                <i
+                  [class]="getDocumentIcon(document.name)"
+                  class="text-2xl"
+                ></i>
+              </div>
+              <div class="document-details">
+                <div class="document-name">
+                  {{ document.name || "Document " + (i + 1) }}
+                </div>
+                <a
+                  [href]="document.url"
+                  target="_blank"
+                  class="text-primary text-sm"
+                >
+                  <i class="pi pi-external-link mr-1"></i>View
+                </a>
+              </div>
+              <p-button
+                icon="pi pi-times"
+                severity="danger"
+                [text]="true"
+                size="small"
+                (onClick)="removeExistingDocument(i)"
+                class="remove-btn"
+              />
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Document Upload Actions -->
+    @if (newDocuments().length > 0) {
+      <div class="upload-actions">
+        <p-button
+          label="Upload Documents"
+          icon="pi pi-upload"
+          [loading]="uploadingDocuments"
+          [disabled]="!newDocuments().length"
+          (onClick)="uploadDocuments()"
+          class="w-full"
+        />
+      </div>
+    }
+  </div>
+
+  <!-- Upload All Action -->
   @if (hasNewFiles()) {
-    <div class="upload-actions">
+    <div class="upload-all-actions">
       <p-button
         label="Upload All Files"
         icon="pi pi-upload"
         [loading]="uploading"
         [disabled]="!hasNewFiles()"
         (onClick)="uploadAllFiles()"
-        class="w-full"
+        class="w-full upload-all-btn"
+        severity="success"
       />
     </div>
   }

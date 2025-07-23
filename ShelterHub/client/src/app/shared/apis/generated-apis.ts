@@ -2345,7 +2345,7 @@ export class PetMediaFileResponse implements IPetMediaFileResponse {
     fileExtension?: string | undefined;
     fileType?: MediaFileType;
     contentType?: string | undefined;
-    fileSizeBytes?: number;
+    fileSizeBytes?: number | undefined;
     downloadUrl?: string | undefined;
     uploadedAt?: string;
     displayOrder?: number;
@@ -2401,7 +2401,7 @@ export interface IPetMediaFileResponse {
     fileExtension?: string | undefined;
     fileType?: MediaFileType;
     contentType?: string | undefined;
-    fileSizeBytes?: number;
+    fileSizeBytes?: number | undefined;
     downloadUrl?: string | undefined;
     uploadedAt?: string;
     displayOrder?: number;

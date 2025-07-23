@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 
 import {
   ReactiveFormsModule,
@@ -25,6 +26,9 @@ import {
   Pet,
   UpdatePetRequest,
   PetStatus,
+  PetsApi,
+  PetMediaFileResponse,
+  MediaFileType,
 } from '../../../shared/apis/generated-apis';
 import {
   PetMediaUploadComponent,
@@ -62,6 +66,7 @@ export class EditPetComponent implements OnInit {
   private petService = inject(PetService);
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
+  private petsApi = inject(PetsApi);
 
   petForm: FormGroup;
   pet = signal<Pet | null>(null);
@@ -316,22 +321,69 @@ export class EditPetComponent implements OnInit {
 
   private async loadExistingMedia(petId: string) {
     try {
-      // For now, initialize with empty arrays
-      // In a real implementation, you would call an API to get existing media files
+      // Call the API to get existing media files
+      const mediaResponse = await firstValueFrom(this.petsApi.mediaGET(petId));
+
+      if (mediaResponse.success) {
+        // Convert PetMediaFileResponse to MediaFile format for display
+        const convertToMediaFile = (
+          petMediaFile: PetMediaFileResponse,
+        ): MediaFile => ({
+          id: petMediaFile.mediaFileId,
+          name: petMediaFile.fileName || '',
+          url: petMediaFile.downloadUrl || '',
+          type: this.convertMediaFileType(petMediaFile.fileType),
+          size: petMediaFile.fileSizeBytes,
+        });
+
+        // Set the existing media arrays
+        this.existingMediaImages.set(
+          (mediaResponse.images || []).map(convertToMediaFile),
+        );
+        this.existingMediaVideos.set(
+          (mediaResponse.videos || []).map(convertToMediaFile),
+        );
+        this.existingMediaDocuments.set(
+          (mediaResponse.documents || []).map(convertToMediaFile),
+        );
+
+        console.log('Loaded existing media for pet:', petId, {
+          images: this.existingMediaImages().length,
+          videos: this.existingMediaVideos().length,
+          documents: this.existingMediaDocuments().length,
+        });
+      } else {
+        console.warn(
+          'Failed to load existing media:',
+          mediaResponse.errorMessage,
+        );
+        // Initialize with empty arrays on failure
+        this.existingMediaImages.set([]);
+        this.existingMediaVideos.set([]);
+        this.existingMediaDocuments.set([]);
+      }
+    } catch (error) {
+      console.log('Could not load existing pet media:', error);
+      // Initialize with empty arrays on error
       this.existingMediaImages.set([]);
       this.existingMediaVideos.set([]);
       this.existingMediaDocuments.set([]);
-
-      // Example of how you might load existing media:
-      // const mediaResponse = await this.petService.getPetMedia(petId);
-      // this.existingMediaImages.set(mediaResponse.images || []);
-      // this.existingMediaVideos.set(mediaResponse.videos || []);
-      // this.existingMediaDocuments.set(mediaResponse.documents || []);
-
-      console.log('Loaded existing media for pet:', petId);
-    } catch (error) {
-      console.log('Could not load existing pet media:', error);
       // Don't show error to user as this is not critical
+    }
+  }
+
+  private convertMediaFileType(
+    fileType: MediaFileType | undefined,
+  ): 'image' | 'video' | 'document' {
+    switch (fileType) {
+      case MediaFileType.Image:
+        return 'image';
+      case MediaFileType.Video:
+        return 'video';
+      case MediaFileType.Document:
+        return 'document';
+      default:
+        return 'document'; // Default fallback
     }
   }
 
