@@ -74,6 +74,20 @@
       </p-fileUpload>
     </div>
 
+    <!-- Image Upload Actions -->
+    @if (newImages().length > 0) {
+      <div class="upload-actions">
+        <p-button
+          label="Upload Images"
+          icon="pi pi-upload"
+          [loading]="uploadingImages"
+          [disabled]="!newImages().length"
+          (onClick)="uploadImages()"
+          class="w-full"
+        />
+      </div>
+    }
+
     <!-- Existing Images Display -->
     @if (displayExistingImages().length > 0) {
       <div class="existing-media">
@@ -106,20 +120,6 @@
             </div>
           }
         </div>
-      </div>
-    }
-
-    <!-- Image Upload Actions -->
-    @if (newImages().length > 0) {
-      <div class="upload-actions">
-        <p-button
-          label="Upload Images"
-          icon="pi pi-upload"
-          [loading]="uploadingImages"
-          [disabled]="!newImages().length"
-          (onClick)="uploadImages()"
-          class="w-full"
-        />
       </div>
     }
   </div>
@@ -200,6 +200,20 @@
       </p-fileUpload>
     </div>
 
+    <!-- Video Upload Actions -->
+    @if (newVideos().length > 0) {
+      <div class="upload-actions">
+        <p-button
+          label="Upload Videos"
+          icon="pi pi-upload"
+          [loading]="uploadingVideos"
+          [disabled]="!newVideos().length"
+          (onClick)="uploadVideos()"
+          class="w-full"
+        />
+      </div>
+    }
+
     <!-- Existing Videos Display -->
     @if (displayExistingVideos().length > 0) {
       <div class="existing-media">
@@ -233,20 +247,6 @@
             </div>
           }
         </div>
-      </div>
-    }
-
-    <!-- Video Upload Actions -->
-    @if (newVideos().length > 0) {
-      <div class="upload-actions">
-        <p-button
-          label="Upload Videos"
-          icon="pi pi-upload"
-          [loading]="uploadingVideos"
-          [disabled]="!newVideos().length"
-          (onClick)="uploadVideos()"
-          class="w-full"
-        />
       </div>
     }
   </div>
@@ -325,6 +325,20 @@
       </p-fileUpload>
     </div>
 
+    <!-- Document Upload Actions -->
+    @if (newDocuments().length > 0) {
+      <div class="upload-actions">
+        <p-button
+          label="Upload Documents"
+          icon="pi pi-upload"
+          [loading]="uploadingDocuments"
+          [disabled]="!newDocuments().length"
+          (onClick)="uploadDocuments()"
+          class="w-full"
+        />
+      </div>
+    }
+
     <!-- Existing Documents Display -->
     @if (displayExistingDocuments().length > 0) {
       <div class="existing-media">
@@ -365,20 +379,6 @@
             </div>
           }
         </div>
-      </div>
-    }
-
-    <!-- Document Upload Actions -->
-    @if (newDocuments().length > 0) {
-      <div class="upload-actions">
-        <p-button
-          label="Upload Documents"
-          icon="pi pi-upload"
-          [loading]="uploadingDocuments"
-          [disabled]="!newDocuments().length"
-          (onClick)="uploadDocuments()"
-          class="w-full"
-        />
       </div>
     }
   </div>
