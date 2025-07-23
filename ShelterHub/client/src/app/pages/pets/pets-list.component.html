@@ -12,10 +12,7 @@
         ></p-button>
         <h1 class="text-2xl font-bold m-0">All Pets</h1>
         @if (!isLoading) {
-          <p-tag
-            [value]="totalRecords.toString()"
-            severity="info"
-          ></p-tag>
+          <p-tag [value]="totalRecords.toString()" severity="info"></p-tag>
         }
       </div>
       <p-button
@@ -41,7 +38,7 @@
               [(ngModel)]="searchName"
               (input)="onSearchChange()"
               class="w-full"
-              />
+            />
           </span>
         </div>
 
@@ -56,7 +53,7 @@
               [(ngModel)]="searchBreed"
               (input)="onSearchChange()"
               class="w-full"
-              />
+            />
           </span>
         </div>
 
@@ -108,9 +105,7 @@
 
       <!-- Filter Info -->
       @if (searchName || searchBreed || selectedStatus || selectedSpecies) {
-        <div
-          class="mt-2 text-sm text-gray-600"
-          >
+        <div class="mt-2 text-sm text-gray-600">
           <i class="pi pi-info-circle mr-1"></i>
           Server-side filtering is applied across all results.
         </div>
@@ -147,21 +142,21 @@
       [paginator]="false"
       [sortField]="'name'"
       [sortOrder]="1"
-      >
+    >
       <ng-template pTemplate="empty">
         <div class="text-center p-6">
           <i class="pi pi-info-circle text-4xl text-gray-400 mb-3"></i>
           <h3 class="text-xl text-gray-600 mb-2">No pets found</h3>
           <p class="text-gray-500 mb-4">
             {{
-            searchName || searchBreed || selectedStatus || selectedSpecies
-            ? "Try adjusting your filters to see more results."
-            : "Get started by adding your first pet."
+              searchName || searchBreed || selectedStatus || selectedSpecies
+                ? "Try adjusting your filters to see more results."
+                : "Get started by adding your first pet."
             }}
           </p>
           @if (
             !searchName && !searchBreed && !selectedStatus && !selectedSpecies
-            ) {
+          ) {
             <p-button
               label="Add Your First Pet"
               icon="pi pi-plus"
@@ -175,6 +170,7 @@
           @for (pet of pets; track pet.petId) {
             <div class="col-12 md:col-6 lg:col-4 p-2">
               <app-pet-card
+                class="cursor-pointer"
                 [pet]="pet"
                 [imageUrl]="petMainImageUrls.get(pet.petId!)"
                 [showActions]="true"
@@ -185,6 +181,7 @@
                 [descriptionMaxLength]="100"
                 (imageError)="onImageError($event)"
                 (actionClick)="onPetCardAction($event)"
+                (click)="onEditPet(pet)"
               ></app-pet-card>
             </div>
           }
