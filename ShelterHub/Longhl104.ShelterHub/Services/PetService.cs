@@ -149,6 +149,7 @@ public class PetService : IPetService
     private readonly string _tableName;
     private readonly string _bucketName;
     private readonly string _shelterIdCreatedAtIndex = "ShelterIdCreatedAtIndex";
+    private readonly string _petMediaFilesTableName;
 
     public PetService(
         IAmazonDynamoDB dynamoDbClient,
@@ -165,6 +166,7 @@ public class PetService : IPetService
         _memoryCache = memoryCache;
         _tableName = $"pawfectmatch-{_environment.EnvironmentName.ToLowerInvariant()}-shelter-hub-pets";
         _bucketName = $"pawfectmatch-{_environment.EnvironmentName.ToLowerInvariant()}-shelter-hub-pet-media";
+        _petMediaFilesTableName = $"pawfectmatch-{_environment.EnvironmentName.ToLowerInvariant()}-shelter-hub-pet-media-files";
     }
 
     /// <summary>
@@ -527,7 +529,7 @@ public class PetService : IPetService
 
             var response = await _dynamoDbClient.UpdateItemAsync(updateRequest);
 
-            if (!response.Attributes.Any())
+            if (response.Attributes.Count == 0)
             {
                 _logger.LogWarning("Pet not found for update: {PetId}", petId);
                 return new PetResponse
@@ -604,7 +606,7 @@ public class PetService : IPetService
 
             var response = await _dynamoDbClient.UpdateItemAsync(updateRequest);
 
-            if (!response.Attributes.Any())
+            if (response.Attributes.Count == 0)
             {
                 _logger.LogWarning("Pet not found for status update: {PetId}", petId);
                 return new PetResponse
@@ -1348,7 +1350,7 @@ public class PetService : IPetService
         {
             var request = new QueryRequest
             {
-                TableName = "PetMediaFiles", // This would need to be a configurable table name
+                TableName = _petMediaFilesTableName,
                 KeyConditionExpression = "PetId = :petId",
                 ExpressionAttributeValues = new Dictionary<string, AttributeValue>
                     {
@@ -1366,12 +1368,16 @@ public class PetService : IPetService
                 {
                     MediaFileId = Guid.Parse(item["MediaFileId"].S),
                     PetId = Guid.Parse(item["PetId"].S),
-                    FileName = item["FileName"].S,
-                    FileExtension = item.ContainsKey("FileExtension") ? item["FileExtension"].S : "",
-                    FileType = Enum.Parse<MediaFileType>(item["FileType"].S),
-                    ContentType = item.ContainsKey("ContentType") ? item["ContentType"].S : "",
-                    FileSizeBytes = long.Parse(item["FileSizeBytes"].N),
-                    S3Key = item["S3Key"].S,
+                    FileName = item.TryGetValue("FileName", out AttributeValue? fileName) ? fileName.S : "",
+                    FileExtension = item.TryGetValue("FileExtension", out AttributeValue? fileExtension) ? fileExtension.S : "",
+                    FileType = item.TryGetValue("FileType", out AttributeValue? fileType)
+                        ? Enum.Parse<MediaFileType>(fileType.S, true)
+                        : null,
+                    ContentType = item.TryGetValue("ContentType", out AttributeValue? contentType) ? contentType.S : "",
+                    FileSizeBytes = item.TryGetValue("FileSizeBytes", out AttributeValue? fileSize)
+                        ? long.Parse(fileSize.N)
+                        : null,
+                    S3Key = item.TryGetValue("S3Key", out AttributeValue? s3Key) ? s3Key.S : "",
                     DisplayOrder = int.Parse(item["DisplayOrder"].N),
                     UploadedAt = DateTime.Parse(item["UploadedAt"].S)
                 });
@@ -1416,9 +1422,9 @@ public class PetService : IPetService
             return new GetPetMediaResponse
             {
                 Success = true,
-                Images = images.OrderBy(i => i.DisplayOrder).ToList(),
-                Videos = videos.OrderBy(v => v.DisplayOrder).ToList(),
-                Documents = documents.OrderBy(d => d.DisplayOrder).ToList()
+                Images = [.. images.OrderBy(i => i.DisplayOrder)],
+                Videos = [.. videos.OrderBy(v => v.DisplayOrder)],
+                Documents = [.. documents.OrderBy(d => d.DisplayOrder)]
             };
         }
         catch (Exception ex)
@@ -1490,7 +1496,10 @@ public class PetService : IPetService
             var existingMedia = await GetPetMedia(petId);
             var maxDisplayOrder = 0;
 
-            if (existingMedia.Images.Any() || existingMedia.Videos.Any() || existingMedia.Documents.Any())
+            if (existingMedia.Images.Count != 0
+                || existingMedia.Videos.Count != 0
+                || existingMedia.Documents.Count != 0
+                )
             {
                 var allExisting = existingMedia.Images.Cast<PetMediaFileResponse>()
                     .Concat(existingMedia.Videos)
@@ -1502,7 +1511,7 @@ public class PetService : IPetService
             {
                 RequestItems = new Dictionary<string, List<WriteRequest>>
                 {
-                    ["PetMediaFiles"] = new List<WriteRequest>()
+                    [_petMediaFilesTableName] = []
                 }
             };
 
@@ -1520,7 +1529,7 @@ public class PetService : IPetService
                     ["UploadedAt"] = new AttributeValue { S = DateTime.UtcNow.ToString("O") }
                 };
 
-                batchRequest.RequestItems["PetMediaFiles"].Add(new WriteRequest
+                batchRequest.RequestItems[_petMediaFilesTableName].Add(new WriteRequest
                 {
                     PutRequest = new PutRequest { Item = item }
                 });
@@ -1551,12 +1560,12 @@ public class PetService : IPetService
             {
                 RequestItems = new Dictionary<string, KeysAndAttributes>
                 {
-                    ["PetMediaFiles"] = new KeysAndAttributes
+                    [_petMediaFilesTableName] = new KeysAndAttributes
                     {
-                        Keys = request.MediaFileIds.Select(id => new Dictionary<string, AttributeValue>
+                        Keys = [.. request.MediaFileIds.Select(id => new Dictionary<string, AttributeValue>
                         {
                             ["MediaFileId"] = new AttributeValue { S = id.ToString() }
-                        }).ToList()
+                        })]
                     }
                 }
             };
@@ -1565,7 +1574,7 @@ public class PetService : IPetService
 
             // Delete files from S3 - note: we'd need to implement this in the media service
             // For now, we'll just log it
-            foreach (var item in batchGetResponse.Responses["PetMediaFiles"])
+            foreach (var item in batchGetResponse.Responses[_petMediaFilesTableName])
             {
                 var s3Key = item["S3Key"].S;
                 _logger.LogInformation("Would delete S3 file: {S3Key}", s3Key);
@@ -1578,7 +1587,7 @@ public class PetService : IPetService
             {
                 RequestItems = new Dictionary<string, List<WriteRequest>>
                 {
-                    ["PetMediaFiles"] = request.MediaFileIds.Select(id => new WriteRequest
+                    [_petMediaFilesTableName] = [.. request.MediaFileIds.Select(id => new WriteRequest
                     {
                         DeleteRequest = new DeleteRequest
                         {
@@ -1587,7 +1596,7 @@ public class PetService : IPetService
                                 ["MediaFileId"] = new AttributeValue { S = id.ToString() }
                             }
                         }
-                    }).ToList()
+                    })]
                 }
             };
 
@@ -1618,7 +1627,7 @@ public class PetService : IPetService
             {
                 RequestItems = new Dictionary<string, List<WriteRequest>>
                 {
-                    ["PetMediaFiles"] = new List<WriteRequest>()
+                    [_petMediaFilesTableName] = []
                 }
             };
 
@@ -1636,7 +1645,7 @@ public class PetService : IPetService
                     }
                 };
 
-                batchRequest.RequestItems["PetMediaFiles"].Add(updateRequest);
+                batchRequest.RequestItems[_petMediaFilesTableName].Add(updateRequest);
             }
 
             await _dynamoDbClient.BatchWriteItemAsync(batchRequest);

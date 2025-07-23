@@ -839,6 +839,296 @@ export class PetsApi {
         }
         return _observableOf(null as any);
     }
+
+    /**
+     * @return OK
+     */
+    mediaGET(petId: string): Observable<GetPetMediaResponse> {
+        let url_ = this.baseUrl + "/api/Pets/{petId}/media";
+        if (petId === undefined || petId === null)
+            throw new Error("The parameter 'petId' must be defined.");
+        url_ = url_.replace("{petId}", encodeURIComponent("" + petId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processMediaGET(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processMediaGET(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<GetPetMediaResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<GetPetMediaResponse>;
+        }));
+    }
+
+    protected processMediaGET(response: HttpResponseBase): Observable<GetPetMediaResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = GetPetMediaResponse.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    mediaDELETE(petId: string, body?: DeleteMediaFilesRequest | undefined): Observable<DeleteMediaFilesResponse> {
+        let url_ = this.baseUrl + "/api/Pets/{petId}/media";
+        if (petId === undefined || petId === null)
+            throw new Error("The parameter 'petId' must be defined.");
+        url_ = url_.replace("{petId}", encodeURIComponent("" + petId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processMediaDELETE(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processMediaDELETE(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<DeleteMediaFilesResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<DeleteMediaFilesResponse>;
+        }));
+    }
+
+    protected processMediaDELETE(response: HttpResponseBase): Observable<DeleteMediaFilesResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = DeleteMediaFilesResponse.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    uploadUrls(petId: string, body?: UploadMediaFilesRequest | undefined): Observable<MediaFileUploadResponse> {
+        let url_ = this.baseUrl + "/api/Pets/{petId}/media/upload-urls";
+        if (petId === undefined || petId === null)
+            throw new Error("The parameter 'petId' must be defined.");
+        url_ = url_.replace("{petId}", encodeURIComponent("" + petId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUploadUrls(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUploadUrls(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<MediaFileUploadResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<MediaFileUploadResponse>;
+        }));
+    }
+
+    protected processUploadUrls(response: HttpResponseBase): Observable<MediaFileUploadResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = MediaFileUploadResponse.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    confirmUploads(petId: string, body?: string[] | undefined): Observable<GetPetMediaResponse> {
+        let url_ = this.baseUrl + "/api/Pets/{petId}/media/confirm-uploads";
+        if (petId === undefined || petId === null)
+            throw new Error("The parameter 'petId' must be defined.");
+        url_ = url_.replace("{petId}", encodeURIComponent("" + petId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processConfirmUploads(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processConfirmUploads(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<GetPetMediaResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<GetPetMediaResponse>;
+        }));
+    }
+
+    protected processConfirmUploads(response: HttpResponseBase): Observable<GetPetMediaResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = GetPetMediaResponse.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    reorder(petId: string, body?: { [key: string]: number; } | undefined): Observable<GetPetMediaResponse> {
+        let url_ = this.baseUrl + "/api/Pets/{petId}/media/reorder";
+        if (petId === undefined || petId === null)
+            throw new Error("The parameter 'petId' must be defined.");
+        url_ = url_.replace("{petId}", encodeURIComponent("" + petId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processReorder(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processReorder(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<GetPetMediaResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<GetPetMediaResponse>;
+        }));
+    }
+
+    protected processReorder(response: HttpResponseBase): Observable<GetPetMediaResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = GetPetMediaResponse.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
 }
 
 @Injectable()
@@ -1303,6 +1593,106 @@ export interface ICreateShelterAdminRequest {
     shelterDescription?: string | undefined;
 }
 
+export class DeleteMediaFilesRequest implements IDeleteMediaFilesRequest {
+    mediaFileIds?: string[] | undefined;
+
+    constructor(data?: IDeleteMediaFilesRequest) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["mediaFileIds"])) {
+                this.mediaFileIds = [] as any;
+                for (let item of _data["mediaFileIds"])
+                    this.mediaFileIds!.push(item);
+            }
+        }
+    }
+
+    static fromJS(data: any): DeleteMediaFilesRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new DeleteMediaFilesRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.mediaFileIds)) {
+            data["mediaFileIds"] = [];
+            for (let item of this.mediaFileIds)
+                data["mediaFileIds"].push(item);
+        }
+        return data;
+    }
+}
+
+export interface IDeleteMediaFilesRequest {
+    mediaFileIds?: string[] | undefined;
+}
+
+export class DeleteMediaFilesResponse implements IDeleteMediaFilesResponse {
+    success?: boolean;
+    deletedCount?: number;
+    failedDeletes?: string[] | undefined;
+    errorMessage?: string | undefined;
+
+    constructor(data?: IDeleteMediaFilesResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.success = _data["success"];
+            this.deletedCount = _data["deletedCount"];
+            if (Array.isArray(_data["failedDeletes"])) {
+                this.failedDeletes = [] as any;
+                for (let item of _data["failedDeletes"])
+                    this.failedDeletes!.push(item);
+            }
+            this.errorMessage = _data["errorMessage"];
+        }
+    }
+
+    static fromJS(data: any): DeleteMediaFilesResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new DeleteMediaFilesResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["success"] = this.success;
+        data["deletedCount"] = this.deletedCount;
+        if (Array.isArray(this.failedDeletes)) {
+            data["failedDeletes"] = [];
+            for (let item of this.failedDeletes)
+                data["failedDeletes"].push(item);
+        }
+        data["errorMessage"] = this.errorMessage;
+        return data;
+    }
+}
+
+export interface IDeleteMediaFilesResponse {
+    success?: boolean;
+    deletedCount?: number;
+    failedDeletes?: string[] | undefined;
+    errorMessage?: string | undefined;
+}
+
 export class DownloadUrlCacheStats implements IDownloadUrlCacheStats {
     totalCachedUrls?: number;
     cacheHitRate?: number;
@@ -1459,6 +1849,82 @@ export interface IGetPetImageDownloadUrlsRequest {
     petRequests?: PetImageDownloadUrlRequest[] | undefined;
 }
 
+export class GetPetMediaResponse implements IGetPetMediaResponse {
+    success?: boolean;
+    images?: PetMediaFileResponse[] | undefined;
+    videos?: PetMediaFileResponse[] | undefined;
+    documents?: PetMediaFileResponse[] | undefined;
+    errorMessage?: string | undefined;
+
+    constructor(data?: IGetPetMediaResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.success = _data["success"];
+            if (Array.isArray(_data["images"])) {
+                this.images = [] as any;
+                for (let item of _data["images"])
+                    this.images!.push(PetMediaFileResponse.fromJS(item));
+            }
+            if (Array.isArray(_data["videos"])) {
+                this.videos = [] as any;
+                for (let item of _data["videos"])
+                    this.videos!.push(PetMediaFileResponse.fromJS(item));
+            }
+            if (Array.isArray(_data["documents"])) {
+                this.documents = [] as any;
+                for (let item of _data["documents"])
+                    this.documents!.push(PetMediaFileResponse.fromJS(item));
+            }
+            this.errorMessage = _data["errorMessage"];
+        }
+    }
+
+    static fromJS(data: any): GetPetMediaResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new GetPetMediaResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["success"] = this.success;
+        if (Array.isArray(this.images)) {
+            data["images"] = [];
+            for (let item of this.images)
+                data["images"].push(item ? item.toJSON() : <any>undefined);
+        }
+        if (Array.isArray(this.videos)) {
+            data["videos"] = [];
+            for (let item of this.videos)
+                data["videos"].push(item ? item.toJSON() : <any>undefined);
+        }
+        if (Array.isArray(this.documents)) {
+            data["documents"] = [];
+            for (let item of this.documents)
+                data["documents"].push(item ? item.toJSON() : <any>undefined);
+        }
+        data["errorMessage"] = this.errorMessage;
+        return data;
+    }
+}
+
+export interface IGetPetMediaResponse {
+    success?: boolean;
+    images?: PetMediaFileResponse[] | undefined;
+    videos?: PetMediaFileResponse[] | undefined;
+    documents?: PetMediaFileResponse[] | undefined;
+    errorMessage?: string | undefined;
+}
+
 export class GetPetsResponse implements IGetPetsResponse {
     success?: boolean;
     pets?: Pet[] | undefined;
@@ -1509,6 +1975,164 @@ export interface IGetPetsResponse {
     success?: boolean;
     pets?: Pet[] | undefined;
     errorMessage?: string | undefined;
+}
+
+export enum MediaFileType {
+    Image = "Image",
+    Video = "Video",
+    Document = "Document",
+}
+
+export class MediaFileUploadRequest implements IMediaFileUploadRequest {
+    fileName?: string | undefined;
+    contentType?: string | undefined;
+    fileSizeBytes?: number;
+    fileType?: MediaFileType;
+
+    constructor(data?: IMediaFileUploadRequest) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.fileName = _data["fileName"];
+            this.contentType = _data["contentType"];
+            this.fileSizeBytes = _data["fileSizeBytes"];
+            this.fileType = _data["fileType"];
+        }
+    }
+
+    static fromJS(data: any): MediaFileUploadRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new MediaFileUploadRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["fileName"] = this.fileName;
+        data["contentType"] = this.contentType;
+        data["fileSizeBytes"] = this.fileSizeBytes;
+        data["fileType"] = this.fileType;
+        return data;
+    }
+}
+
+export interface IMediaFileUploadRequest {
+    fileName?: string | undefined;
+    contentType?: string | undefined;
+    fileSizeBytes?: number;
+    fileType?: MediaFileType;
+}
+
+export class MediaFileUploadResponse implements IMediaFileUploadResponse {
+    success?: boolean;
+    uploadUrls?: MediaFileUploadUrlResponse[] | undefined;
+    errorMessage?: string | undefined;
+
+    constructor(data?: IMediaFileUploadResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.success = _data["success"];
+            if (Array.isArray(_data["uploadUrls"])) {
+                this.uploadUrls = [] as any;
+                for (let item of _data["uploadUrls"])
+                    this.uploadUrls!.push(MediaFileUploadUrlResponse.fromJS(item));
+            }
+            this.errorMessage = _data["errorMessage"];
+        }
+    }
+
+    static fromJS(data: any): MediaFileUploadResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new MediaFileUploadResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["success"] = this.success;
+        if (Array.isArray(this.uploadUrls)) {
+            data["uploadUrls"] = [];
+            for (let item of this.uploadUrls)
+                data["uploadUrls"].push(item ? item.toJSON() : <any>undefined);
+        }
+        data["errorMessage"] = this.errorMessage;
+        return data;
+    }
+}
+
+export interface IMediaFileUploadResponse {
+    success?: boolean;
+    uploadUrls?: MediaFileUploadUrlResponse[] | undefined;
+    errorMessage?: string | undefined;
+}
+
+export class MediaFileUploadUrlResponse implements IMediaFileUploadUrlResponse {
+    mediaFileId?: string;
+    fileName?: string | undefined;
+    presignedUrl?: string | undefined;
+    s3Key?: string | undefined;
+    expiresAt?: string;
+
+    constructor(data?: IMediaFileUploadUrlResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.mediaFileId = _data["mediaFileId"];
+            this.fileName = _data["fileName"];
+            this.presignedUrl = _data["presignedUrl"];
+            this.s3Key = _data["s3Key"];
+            this.expiresAt = _data["expiresAt"];
+        }
+    }
+
+    static fromJS(data: any): MediaFileUploadUrlResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new MediaFileUploadUrlResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["mediaFileId"] = this.mediaFileId;
+        data["fileName"] = this.fileName;
+        data["presignedUrl"] = this.presignedUrl;
+        data["s3Key"] = this.s3Key;
+        data["expiresAt"] = this.expiresAt;
+        return data;
+    }
+}
+
+export interface IMediaFileUploadUrlResponse {
+    mediaFileId?: string;
+    fileName?: string | undefined;
+    presignedUrl?: string | undefined;
+    s3Key?: string | undefined;
+    expiresAt?: string;
 }
 
 export class Pet implements IPet {
@@ -1713,6 +2337,74 @@ export interface IPetImageDownloadUrlsResponse {
     success?: boolean;
     petImageUrls?: { [key: string]: string; } | undefined;
     errorMessage?: string | undefined;
+}
+
+export class PetMediaFileResponse implements IPetMediaFileResponse {
+    mediaFileId?: string;
+    fileName?: string | undefined;
+    fileExtension?: string | undefined;
+    fileType?: MediaFileType;
+    contentType?: string | undefined;
+    fileSizeBytes?: number;
+    downloadUrl?: string | undefined;
+    uploadedAt?: string;
+    displayOrder?: number;
+
+    constructor(data?: IPetMediaFileResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.mediaFileId = _data["mediaFileId"];
+            this.fileName = _data["fileName"];
+            this.fileExtension = _data["fileExtension"];
+            this.fileType = _data["fileType"];
+            this.contentType = _data["contentType"];
+            this.fileSizeBytes = _data["fileSizeBytes"];
+            this.downloadUrl = _data["downloadUrl"];
+            this.uploadedAt = _data["uploadedAt"];
+            this.displayOrder = _data["displayOrder"];
+        }
+    }
+
+    static fromJS(data: any): PetMediaFileResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new PetMediaFileResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["mediaFileId"] = this.mediaFileId;
+        data["fileName"] = this.fileName;
+        data["fileExtension"] = this.fileExtension;
+        data["fileType"] = this.fileType;
+        data["contentType"] = this.contentType;
+        data["fileSizeBytes"] = this.fileSizeBytes;
+        data["downloadUrl"] = this.downloadUrl;
+        data["uploadedAt"] = this.uploadedAt;
+        data["displayOrder"] = this.displayOrder;
+        return data;
+    }
+}
+
+export interface IPetMediaFileResponse {
+    mediaFileId?: string;
+    fileName?: string | undefined;
+    fileExtension?: string | undefined;
+    fileType?: MediaFileType;
+    contentType?: string | undefined;
+    fileSizeBytes?: number;
+    downloadUrl?: string | undefined;
+    uploadedAt?: string;
+    displayOrder?: number;
 }
 
 export class PetResponse implements IPetResponse {
@@ -2176,6 +2868,54 @@ export interface IUpdatePetRequest {
     isGoodWithPets?: boolean;
     specialNeeds?: string | undefined;
     status?: PetStatus;
+}
+
+export class UploadMediaFilesRequest implements IUploadMediaFilesRequest {
+    petId?: string;
+    mediaFiles?: MediaFileUploadRequest[] | undefined;
+
+    constructor(data?: IUploadMediaFilesRequest) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.petId = _data["petId"];
+            if (Array.isArray(_data["mediaFiles"])) {
+                this.mediaFiles = [] as any;
+                for (let item of _data["mediaFiles"])
+                    this.mediaFiles!.push(MediaFileUploadRequest.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): UploadMediaFilesRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new UploadMediaFilesRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["petId"] = this.petId;
+        if (Array.isArray(this.mediaFiles)) {
+            data["mediaFiles"] = [];
+            for (let item of this.mediaFiles)
+                data["mediaFiles"].push(item ? item.toJSON() : <any>undefined);
+        }
+        return data;
+    }
+}
+
+export interface IUploadMediaFilesRequest {
+    petId?: string;
+    mediaFiles?: MediaFileUploadRequest[] | undefined;
 }
 
 export class ApiException extends Error {

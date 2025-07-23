@@ -495,7 +495,7 @@ public class PetMediaFile
     /// <summary>
     /// Type of media file
     /// </summary>
-    public MediaFileType FileType { get; set; }
+    public MediaFileType? FileType { get; set; }
 
     /// <summary>
     /// Content type/MIME type
@@ -505,7 +505,7 @@ public class PetMediaFile
     /// <summary>
     /// File size in bytes
     /// </summary>
-    public long FileSizeBytes { get; set; }
+    public long? FileSizeBytes { get; set; }
 
     /// <summary>
     /// S3 key/path for the file
@@ -671,7 +671,7 @@ public class PetMediaFileResponse
     /// <summary>
     /// Type of media file
     /// </summary>
-    public MediaFileType FileType { get; set; }
+    public MediaFileType? FileType { get; set; }
 
     /// <summary>
     /// Content type/MIME type
@@ -681,7 +681,7 @@ public class PetMediaFileResponse
     /// <summary>
     /// File size in bytes
     /// </summary>
-    public long FileSizeBytes { get; set; }
+    public long? FileSizeBytes { get; set; }
 
     /// <summary>
     /// Presigned download URL

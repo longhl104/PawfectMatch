@@ -62,7 +62,7 @@ export class ShelterHubStack extends BaseStack {
             'Gender',
             'Status',
             'MainImageFileExtension',
-            'AdoptionFee'
+            'AdoptionFee',
           ],
         },
       ],
@@ -140,9 +140,22 @@ export class ShelterHubStack extends BaseStack {
       healthCheckPath: '/health',
       subdomain: 'api-shelter',
       environment: {
-        'PawfectMatch__Environment': this.stage,
-        'PawfectMatch__ServiceName': 'ShelterHub',
+        PawfectMatch__Environment: this.stage,
+        PawfectMatch__ServiceName: 'ShelterHub',
       },
+    });
+
+    this.createDynamoDbTable({
+      tableName: 'pet-media-files',
+      partitionKey: {
+        name: 'PetId',
+        type: dynamodb.AttributeType.STRING,
+      },
+      sortKey: {
+        name: 'DisplayOrder',
+        type: dynamodb.AttributeType.NUMBER,
+      },
+      description: 'Table for storing pet media files',
     });
   }
 }

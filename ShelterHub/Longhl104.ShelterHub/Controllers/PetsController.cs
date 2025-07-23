@@ -284,7 +284,8 @@ public class PetsController(IPetService petService) : ControllerBase
     [HttpPost("{petId:guid}/media/confirm-uploads")]
     public async Task<ActionResult<GetPetMediaResponse>> ConfirmMediaUploads(
         Guid petId,
-        [FromBody] List<Guid> mediaFileIds)
+        [FromBody] List<Guid> mediaFileIds
+        )
     {
         if (mediaFileIds == null || mediaFileIds.Count == 0)
         {
