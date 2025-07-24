@@ -6,6 +6,7 @@ using Longhl104.PawfectMatch.HttpClient;
 using Longhl104.PawfectMatch.Models;
 using Amazon.SimpleSystemsManagement.Model;
 using Longhl104.PawfectMatch.Utils;
+using Longhl104.PawfectMatch.Services;
 
 namespace Longhl104.Identity.Controllers;
 
@@ -15,7 +16,8 @@ public partial class RegistrationController(
     ILogger<RegistrationController> _logger,
     IAuthenticationService _authenticationService,
     ICognitoService _cognitoService,
-    IInternalHttpClientFactory _internalHttpClientFactory
+    IInternalHttpClientFactory _internalHttpClientFactory,
+    IEmailService _emailService
     ) : ControllerBase
 {
     [System.Text.RegularExpressions.GeneratedRegex(@"^\d{11}$")]
@@ -67,6 +69,31 @@ public partial class RegistrationController(
             await SaveAdopterProfile(registrationRequest, userId);
 
             _logger.LogInformation("Adopter registration successful for email: {Email}, UserId: {UserId}", registrationRequest.Email, userId);
+
+            // Send welcome email
+            try
+            {
+                var loginUrl = EnvironmentUrlHelper.BuildServiceUrl("matcher", "https://localhost:4201");
+                var emailSent = await _emailService.SendWelcomeEmailAsync(
+                    registrationRequest.Email,
+                    registrationRequest.FullName,
+                    loginUrl
+                );
+
+                if (emailSent)
+                {
+                    _logger.LogInformation("Welcome email sent successfully to {Email}", registrationRequest.Email);
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to send welcome email to {Email}", registrationRequest.Email);
+                }
+            }
+            catch (Exception emailEx)
+            {
+                // Don't fail registration if email fails
+                _logger.LogError(emailEx, "Error sending welcome email to {Email}", registrationRequest.Email);
+            }
 
             // Auto-login the user after successful registration using shared authentication service
             var authResult = await _authenticationService.AuthenticateAndSetCookiesAsync(

@@ -9,11 +9,11 @@
 
     <!-- Package Metadata -->
     <PackageId>Longhl104.PawfectMatch</PackageId>
-    <Version>1.4.0</Version>
+    <Version>1.5.0</Version>
     <Authors>Longhl104</Authors>
     <Description>Shared services and models for PawfectMatch application with internal service
-      authorization and HTTP client factory</Description>
-    <PackageTags>PawfectMatch;AWS;Cognito;JWT;DynamoDB;Authorization;Internal;HttpClient</PackageTags>
+      authorization, HTTP client factory, and email services using AWS SES</Description>
+    <PackageTags>PawfectMatch;AWS;Cognito;JWT;DynamoDB;Authorization;Internal;HttpClient;SES;Email</PackageTags>
     <RepositoryUrl>https://github.com/longhl104/PawfectMatch</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
@@ -26,6 +26,7 @@
   <ItemGroup>
     <PackageReference Include="AWSSDK.CognitoIdentityProvider" Version="4.0.1.10" />
     <PackageReference Include="AWSSDK.DynamoDBv2" Version="4.0.2.1" />
+    <PackageReference Include="AWSSDK.SimpleEmail" Version="4.0.0.15" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />

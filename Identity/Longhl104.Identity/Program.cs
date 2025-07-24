@@ -55,6 +55,9 @@ builder.Services.AddScoped<ICognitoService, CognitoService>();
 builder.Services.AddScoped<ICookieService, CookieService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
+// Add email services
+builder.Services.AddPawfectMatchEmailServices();
+
 // Configure JWT authentication
 var jwtKey = builder.Configuration["JWT:Key"] ?? throw new InvalidOperationException("JWT:Key configuration is required");
 var jwtIssuer = builder.Configuration["JWT:Issuer"] ?? "PawfectMatch";

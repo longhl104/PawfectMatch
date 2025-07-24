@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.DataProtection;
 using Amazon.AspNetCore.DataProtection.SSM;
+using Amazon.SimpleEmail;
+using Longhl104.PawfectMatch.Services;
 
 namespace Longhl104.PawfectMatch.Extensions;
 
@@ -37,6 +39,22 @@ public static class BuilderServicesExtensions
 
         // Add internal HTTP client for service-to-service communication
         services.AddInternalHttpClient();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds email services using AWS SES for sending emails
+    /// </summary>
+    /// <param name="services">The service collection</param>
+    /// <returns>The service collection for chaining</returns>
+    public static IServiceCollection AddPawfectMatchEmailServices(this IServiceCollection services)
+    {
+        // Register AWS SES client
+        services.AddAWSService<IAmazonSimpleEmailService>();
+
+        // Register email service
+        services.AddScoped<IEmailService, EmailService>();
 
         return services;
     }

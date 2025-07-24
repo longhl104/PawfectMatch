@@ -4,8 +4,10 @@ import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
+import * as ses from 'aws-cdk-lib/aws-ses';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
-import { StageType, DomainConfigManager } from './utils';
+import { StageType } from './utils';
 import { BaseStack } from './base-stack';
 
 export interface SharedStackProps extends cdk.StackProps {
@@ -18,6 +20,8 @@ export class SharedStack extends cdk.Stack {
   public readonly certificate?: acm.ICertificate;
   public readonly distribution?: cloudfront.Distribution;
   public readonly regionalCertificate?: acm.ICertificate;
+  public emailIdentity?: ses.EmailIdentity;
+  public sesConfigurationSet?: ses.ConfigurationSet;
 
   constructor(scope: Construct, id: string, props: SharedStackProps) {
     super(scope, id, props);
@@ -95,6 +99,80 @@ export class SharedStack extends cdk.Stack {
           `Regional certificate not found for ${stage} environment, ALB will use HTTP only`
         );
       }
+
+      // Set up SES (Simple Email Service) for sending emails
+      this.setupEmailService(stage);
     }
+  }
+
+  private setupEmailService(stage: StageType): void {
+    // Create SES Configuration Set for email tracking and management
+    this.sesConfigurationSet = new ses.ConfigurationSet(
+      this,
+      'EmailConfigurationSet',
+      {
+        configurationSetName: `pawfectmatch-${stage}`,
+        sendingEnabled: true,
+      }
+    );
+
+    // Create email identity for the domain
+    const domainName = stage === 'production'
+      ? 'pawfectmatchnow.com'
+      : `${stage}.pawfectmatchnow.com`;
+
+    this.emailIdentity = new ses.EmailIdentity(
+      this,
+      'EmailIdentity',
+      {
+        identity: ses.Identity.domain(domainName),
+        configurationSet: this.sesConfigurationSet,
+        mailFromDomain: `mail.${domainName}`,
+        // Enable DKIM signing for better deliverability
+        dkimSigning: true,
+      }
+    );
+
+    // Store SES configuration in SSM for applications to use
+    new ssm.StringParameter(this, 'SESConfigurationSetName', {
+      parameterName: `/PawfectMatch/${BaseStack.getCapitalizedStage(stage)}/Common/SESConfigurationSetName`,
+      stringValue: this.sesConfigurationSet.configurationSetName,
+      description: `SES Configuration Set name for ${stage} environment`,
+    });
+
+    new ssm.StringParameter(this, 'SESFromDomain', {
+      parameterName: `/PawfectMatch/${BaseStack.getCapitalizedStage(stage)}/Common/SESFromDomain`,
+      stringValue: domainName,
+      description: `SES verified domain for ${stage} environment`,
+    });
+
+    // Create predefined email addresses for different purposes
+    const emailAddresses = {
+      noreply: `noreply@${domainName}`,
+      support: `support@${domainName}`,
+      notifications: `notifications@${domainName}`,
+      welcome: `welcome@${domainName}`,
+      admin: `admin@${domainName}`,
+    };
+
+    // Store email addresses in SSM
+    Object.entries(emailAddresses).forEach(([key, email]) => {
+      new ssm.StringParameter(this, `SESEmail${key.charAt(0).toUpperCase() + key.slice(1)}`, {
+        parameterName: `/PawfectMatch/${BaseStack.getCapitalizedStage(stage)}/Common/Email${key.charAt(0).toUpperCase() + key.slice(1)}`,
+        stringValue: email,
+        description: `${key} email address for ${stage} environment`,
+      });
+    });
+
+    // Output the DNS records needed for domain verification
+    new cdk.CfnOutput(this, 'SESVerificationInstructions', {
+      value: `Add the following DNS records to verify domain ${domainName} in SES`,
+      description: 'SES Domain Verification Instructions',
+    });
+
+    new cdk.CfnOutput(this, 'SESDomainIdentity', {
+      value: this.emailIdentity.emailIdentityName,
+      description: 'SES Email Identity Name',
+    });
   }
 }
