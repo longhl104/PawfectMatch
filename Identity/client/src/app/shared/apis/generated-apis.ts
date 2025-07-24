@@ -247,69 +247,6 @@ export class AuthApi {
 }
 
 @Injectable()
-export class Longhl104.IdentityApi {
-    private http: HttpClient;
-    private baseUrl: string;
-    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
-
-    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
-        this.http = http;
-        this.baseUrl = baseUrl ?? "";
-    }
-
-    /**
-     * @return OK
-     */
-    health(): Observable<StringDateTimeOfF__AnonymousType2> {
-        let url_ = this.baseUrl + "/health";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processHealth(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processHealth(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<StringDateTimeOfF__AnonymousType2>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<StringDateTimeOfF__AnonymousType2>;
-        }));
-    }
-
-    protected processHealth(response: HttpResponseBase): Observable<StringDateTimeOfF__AnonymousType2> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = StringDateTimeOfF__AnonymousType2.fromJS(resultData200);
-            return _observableOf(result200);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-}
-
-@Injectable()
 export class RegistrationApi {
     private http: HttpClient;
     private baseUrl: string;
@@ -913,46 +850,6 @@ export interface IShelterAdminRegistrationResponse {
     userId?: string | undefined;
     redirectUrl?: string | undefined;
     data?: TokenData;
-}
-
-export class StringDateTimeOfF__AnonymousType2 implements IStringDateTimeOfF__AnonymousType2 {
-    status?: string | undefined;
-    timestamp?: string;
-
-    constructor(data?: IStringDateTimeOfF__AnonymousType2) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.status = _data["status"];
-            this.timestamp = _data["timestamp"];
-        }
-    }
-
-    static fromJS(data: any): StringDateTimeOfF__AnonymousType2 {
-        data = typeof data === 'object' ? data : {};
-        let result = new StringDateTimeOfF__AnonymousType2();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["status"] = this.status;
-        data["timestamp"] = this.timestamp;
-        return data;
-    }
-}
-
-export interface IStringDateTimeOfF__AnonymousType2 {
-    status?: string | undefined;
-    timestamp?: string;
 }
 
 /** Contains token data for authentication */
