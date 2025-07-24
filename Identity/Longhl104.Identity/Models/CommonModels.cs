@@ -53,6 +53,42 @@ public class RefreshTokenRequest
 }
 
 /// <summary>
+/// Request model for password reset initiation
+/// </summary>
+public class ForgotPasswordRequest
+{
+    public string Email { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Response model for password reset initiation
+/// </summary>
+public class ForgotPasswordResponse
+{
+    public bool Success { get; set; }
+    public string Message { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Request model for confirming password reset
+/// </summary>
+public class ResetPasswordRequest
+{
+    public string Email { get; set; } = string.Empty;
+    public string ResetCode { get; set; } = string.Empty;
+    public string NewPassword { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Response model for password reset confirmation
+/// </summary>
+public class ResetPasswordResponse
+{
+    public bool Success { get; set; }
+    public string Message { get; set; } = string.Empty;
+}
+
+/// <summary>
 /// Response model for refresh token operations
 /// </summary>
 public class RefreshTokenResponse

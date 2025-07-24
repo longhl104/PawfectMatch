@@ -18,7 +18,57 @@ builder.AddPawfectMatchSystemsManager("Identity");
 
 // Add services to the container
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+
+// Add Swagger/OpenAPI services
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "PawfectMatch Identity API",
+        Version = "v1",
+        Description = "Authentication and user management API for PawfectMatch",
+        Contact = new Microsoft.OpenApi.Models.OpenApiContact
+        {
+            Name = "PawfectMatch Support",
+            Email = "support@pawfectmatchnow.com"
+        }
+    });
+
+    // Add JWT Bearer authentication to Swagger
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+        Name = "Authorization",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+
+    // Include XML comments if available
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        c.IncludeXmlComments(xmlPath);
+    }
+});
+
 builder.Services.AddPawfectMatchInternalHttpClients(
     [
         PawfectMatchServices.Matcher,
@@ -120,8 +170,25 @@ app.UseForwardedHeaders();
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "PawfectMatch Identity API v1");
+        c.RoutePrefix = "swagger"; // Set Swagger UI at /swagger
+        c.DocumentTitle = "PawfectMatch Identity API Documentation";
+    });
     app.UseDeveloperExceptionPage();
+}
+else
+{
+    // Enable Swagger in production for API documentation
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "PawfectMatch Identity API v1");
+        c.RoutePrefix = "swagger";
+        c.DocumentTitle = "PawfectMatch Identity API Documentation";
+    });
 }
 
 // Note: UseHttpsRedirection is NOT needed here because:

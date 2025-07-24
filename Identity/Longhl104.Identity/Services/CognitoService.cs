@@ -16,6 +16,8 @@ public interface ICognitoService
     Task<bool> CheckIfEmailExistsAsync(string email);
     Task<string> CreateCognitoAdopterUserAsync(AdopterRegistrationRequest request);
     Task<string> CreateCognitoShelterAdminUserAsync(ShelterAdminRegistrationRequest request);
+    Task<(bool Success, string Message)> InitiatePasswordResetAsync(string email);
+    Task<(bool Success, string Message)> ConfirmPasswordResetAsync(string email, string resetCode, string newPassword);
 }
 
 /// <summary>
@@ -372,5 +374,102 @@ public class CognitoService : ICognitoService
         Console.WriteLine($"Created Cognito shelter admin user for email: {request.Email}");
 
         return response.User.Username;
+    }
+
+    /// <summary>
+    /// Initiates password reset process by sending reset code to user's email
+    /// </summary>
+    /// <param name="email">User's email address</param>
+    /// <returns>Success status and message</returns>
+    public async Task<(bool Success, string Message)> InitiatePasswordResetAsync(string email)
+    {
+        try
+        {
+            var request = new Amazon.CognitoIdentityProvider.Model.ForgotPasswordRequest
+            {
+                ClientId = _clientId,
+                Username = email
+            };
+
+            await _cognitoClient.ForgotPasswordAsync(request);
+
+            return (true, "Password reset instructions have been sent to your email address.");
+        }
+        catch (UserNotFoundException)
+        {
+            // For security reasons, don't reveal if the user exists or not
+            return (true, "If an account with this email exists, password reset instructions have been sent.");
+        }
+        catch (InvalidParameterException ex)
+        {
+            return (false, $"Invalid request: {ex.Message}");
+        }
+        catch (LimitExceededException)
+        {
+            return (false, "Too many password reset attempts. Please try again later.");
+        }
+        catch (NotAuthorizedException ex)
+        {
+            return (false, $"Password reset not allowed: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error initiating password reset for {email}: {ex.Message}");
+            return (false, "An error occurred while processing your request. Please try again later.");
+        }
+    }
+
+    /// <summary>
+    /// Confirms password reset using the reset code sent to user's email
+    /// </summary>
+    /// <param name="email">User's email address</param>
+    /// <param name="resetCode">Reset code from email</param>
+    /// <param name="newPassword">New password</param>
+    /// <returns>Success status and message</returns>
+    public async Task<(bool Success, string Message)> ConfirmPasswordResetAsync(string email, string resetCode, string newPassword)
+    {
+        try
+        {
+            var request = new ConfirmForgotPasswordRequest
+            {
+                ClientId = _clientId,
+                Username = email,
+                ConfirmationCode = resetCode,
+                Password = newPassword
+            };
+
+            await _cognitoClient.ConfirmForgotPasswordAsync(request);
+
+            return (true, "Password has been reset successfully. You can now log in with your new password.");
+        }
+        catch (UserNotFoundException)
+        {
+            return (false, "User not found.");
+        }
+        catch (CodeMismatchException)
+        {
+            return (false, "Invalid reset code. Please check your email for the correct code.");
+        }
+        catch (ExpiredCodeException)
+        {
+            return (false, "Reset code has expired. Please request a new password reset.");
+        }
+        catch (InvalidPasswordException ex)
+        {
+            return (false, $"Password does not meet requirements: {ex.Message}");
+        }
+        catch (InvalidParameterException ex)
+        {
+            return (false, $"Invalid request: {ex.Message}");
+        }
+        catch (LimitExceededException)
+        {
+            return (false, "Too many attempts. Please try again later.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error confirming password reset for {email}: {ex.Message}");
+            return (false, "An error occurred while resetting your password. Please try again later.");
+        }
     }
 }

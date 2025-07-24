@@ -12,7 +12,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:client": "node dist/client/server/server.mjs",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "nswag": "nswag openapi2tsclient /Input:https://localhost:7000/swagger/v1/swagger.json /output:./src/app/shared/apis/generated-apis.ts /template:Angular /injectionTokenType:InjectionToken /className:{controller}Api /operationGenerationMode:MultipleClientsFromFirstTagAndOperationId /typeScriptVersion:5.8 /rxJsVersion:7.8 /dateTimeType:String /EnumStyle:Enum /GenerateOptionalParameters:true"
   },
   "private": true,
   "dependencies": {
@@ -47,6 +48,7 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "nswag": "^14.4.0",
     "prettier": "^3.6.2",
     "typescript": "~5.8.2",
     "typescript-eslint": "8.34.1"

@@ -1,6 +1,7 @@
 using Longhl104.Identity.Models;
 using Longhl104.Identity.Services;
 using Microsoft.AspNetCore.Mvc;
+using Longhl104.PawfectMatch.Utils;
 
 namespace Longhl104.Identity.Controllers;
 
@@ -9,6 +10,7 @@ namespace Longhl104.Identity.Controllers;
 public class AuthController(
     IAuthenticationService authenticationService,
     ICookieService cookieService,
+    ICognitoService cognitoService,
     ILogger<AuthController> logger
     ) : ControllerBase
 {
@@ -134,5 +136,141 @@ public class AuthController(
         {
             return false;
         }
+    }
+
+    /// <summary>
+    /// Initiate password reset process
+    /// </summary>
+    [HttpPost("forgot-password")]
+    public async Task<ActionResult<ForgotPasswordResponse>> ForgotPassword([FromBody] ForgotPasswordRequest request)
+    {
+        logger.LogInformation("Password reset requested for email: {Email}", request.Email);
+
+        try
+        {
+            // Validate input
+            if (string.IsNullOrWhiteSpace(request.Email) || !IsValidEmail(request.Email))
+            {
+                return BadRequest(new ForgotPasswordResponse
+                {
+                    Success = false,
+                    Message = "Valid email is required"
+                });
+            }
+
+            // Initiate password reset with Cognito
+            var (Success, Message) = await cognitoService.InitiatePasswordResetAsync(request.Email);
+
+            if (Success)
+            {
+                return Ok(new ForgotPasswordResponse
+                {
+                    Success = true,
+                    Message = Message
+                });
+            }
+
+            return BadRequest(new ForgotPasswordResponse
+            {
+                Success = false,
+                Message = Message
+            });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Unexpected error during password reset initiation for email: {Email}", request.Email);
+            return StatusCode(500, new ForgotPasswordResponse
+            {
+                Success = false,
+                Message = "Internal server error"
+            });
+        }
+    }
+
+    /// <summary>
+    /// Confirm password reset with verification code
+    /// </summary>
+    [HttpPost("reset-password")]
+    public async Task<ActionResult<ResetPasswordResponse>> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        logger.LogInformation("Password reset confirmation for email: {Email}", request.Email);
+
+        try
+        {
+            // Validate input
+            var (IsValid, ErrorMessage) = ValidateResetPasswordRequest(request);
+            if (!IsValid)
+            {
+                return BadRequest(new ResetPasswordResponse
+                {
+                    Success = false,
+                    Message = ErrorMessage
+                });
+            }
+
+            // Confirm password reset with Cognito
+            var (Success, Message) = await cognitoService.ConfirmPasswordResetAsync(
+                request.Email,
+                request.ResetCode,
+                request.NewPassword
+            );
+
+            if (Success)
+            {
+                return Ok(new ResetPasswordResponse
+                {
+                    Success = true,
+                    Message = "Password has been reset successfully"
+                });
+            }
+
+            return BadRequest(new ResetPasswordResponse
+            {
+                Success = false,
+                Message = Message
+            });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Unexpected error during password reset confirmation for email: {Email}", request.Email);
+            return StatusCode(500, new ResetPasswordResponse
+            {
+                Success = false,
+                Message = "Internal server error"
+            });
+        }
+    }
+
+    private static (bool IsValid, string ErrorMessage) ValidateResetPasswordRequest(ResetPasswordRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Email))
+        {
+            return (false, "Email is required");
+        }
+
+        if (!IsValidEmail(request.Email))
+        {
+            return (false, "Invalid email format");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.ResetCode))
+        {
+            return (false, "Reset code is required");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.NewPassword))
+        {
+            return (false, "New password is required");
+        }
+
+        if (request.NewPassword.Length < 8)
+        {
+            return (false, "Password must be at least 8 characters long");
+        }
+
+        // Add more password complexity validation if needed
+        // For example: uppercase, lowercase, numbers, special characters
+
+        return (true, string.Empty);
     }
 }
