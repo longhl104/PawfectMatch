@@ -15,7 +15,11 @@ import {
   withFetch,
   withInterceptors,
 } from '@angular/common/http';
-import { GlobalErrorHandler, credentialsInterceptor } from '@longhl104/pawfect-match-ng';
+import {
+  GlobalErrorHandler,
+  credentialsInterceptor,
+} from '@longhl104/pawfect-match-ng';
+import { AuthApi } from 'shared/apis/generated-apis';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -25,5 +29,6 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(withEventReplay()),
     provideHttpClient(withFetch(), withInterceptors([credentialsInterceptor])),
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
+    AuthApi,
   ],
 };
