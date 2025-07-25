@@ -2,6 +2,12 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup, AbstractControl } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { InputTextModule } from 'primeng/inputtext';
+import { PasswordModule } from 'primeng/password';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { FloatLabelModule } from 'primeng/floatlabel';
+import { MessageModule } from 'primeng/message';
 import { AuthApi, ForgotPasswordRequest, ResetPasswordRequest } from '../../../shared/apis/generated-apis';
 import { firstValueFrom } from 'rxjs';
 
@@ -17,7 +23,13 @@ interface StepConfig {
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterModule
+    RouterModule,
+    InputTextModule,
+    PasswordModule,
+    ButtonModule,
+    CardModule,
+    FloatLabelModule,
+    MessageModule
   ],
   templateUrl: './forgot-password.html',
   styleUrl: './forgot-password.scss',
@@ -178,6 +190,12 @@ export class ForgotPassword {
       if (field.errors['passwordMismatch']) return 'Passwords do not match';
     }
     return '';
+  }
+
+  // Helper method to check if field is invalid
+  isFieldInvalid(formGroup: FormGroup, fieldName: string): boolean {
+    const field = formGroup.get(fieldName);
+    return !!(field?.invalid && field?.touched);
   }
 
   private getFieldLabel(fieldName: string): string {
