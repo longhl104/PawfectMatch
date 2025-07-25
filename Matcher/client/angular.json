@@ -69,6 +69,17 @@
                   "with": "src/environments/environment.dev.ts"
                 }
               ]
+            },
+            "local": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.local.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -81,9 +92,12 @@
             },
             "development": {
               "buildTarget": "client:build:development"
+            },
+            "local": {
+              "buildTarget": "client:build:local"
             }
           },
-          "defaultConfiguration": "development",
+          "defaultConfiguration": "local",
           "options": {
             "port": 4201
           }

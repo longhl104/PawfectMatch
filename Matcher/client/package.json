@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --ssl",
+    "start": "ng serve --ssl true --ssl-cert ../../Shared/local-certs/localhost.pem --ssl-key ../../Shared/local-certs/localhost-key.pem",
     "start:prod": "ng serve --configuration production",
     "build": "ng build",
     "build:development": "ng build --configuration development",
@@ -12,7 +12,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:client": "node dist/client/server/server.mjs",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "nswag": "nswag openapi2tsclient /Input:https://localhost:7001/swagger/v1/swagger.json /output:./src/app/shared/apis/generated-apis.ts /template:Angular /injectionTokenType:InjectionToken /className:{controller}Api /operationGenerationMode:MultipleClientsFromFirstTagAndOperationId /typeScriptVersion:5.8 /rxJsVersion:7.8 /dateTimeType:String /EnumStyle:Enum /GenerateOptionalParameters:true"
   },
   "private": true,
   "dependencies": {
@@ -28,6 +29,7 @@
     "@longhl104/pawfect-match-ng": "^0.2.0",
     "@primeuix/themes": "^1.2.1",
     "express": "^5.1.0",
+    "nswag": "^14.4.0",
     "primeflex": "^4.0.0",
     "primeng": "^20.0.0",
     "rxjs": "~7.8.0",

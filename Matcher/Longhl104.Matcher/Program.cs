@@ -1,6 +1,7 @@
 using Longhl104.PawfectMatch.Extensions;
 using Amazon.DynamoDBv2;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,16 @@ builder.AddPawfectMatchSystemsManager("Matcher");
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "Matcher API",
+        Version = "v1",
+        Description = "PawfectMatch Matcher Service API"
+    });
+});
 builder.Services.AddPawfectMatchInternalHttpClients();
 
 // Add authentication and authorization services
@@ -61,7 +72,13 @@ app.UseForwardedHeaders();
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.MapOpenApi().AllowAnonymous();
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Matcher API V1");
+        c.RoutePrefix = "swagger";
+    });
     app.UseDeveloperExceptionPage();
 }
 
@@ -79,6 +96,7 @@ app.MapControllers();
 
 // Health check endpoint - allow anonymous access for ALB health checks
 app.MapGet("/health", () => new { Status = "Healthy", Timestamp = DateTime.UtcNow })
-    .AllowAnonymous();
+    .AllowAnonymous()
+    .ExcludeFromDescription();
 
 app.Run();
