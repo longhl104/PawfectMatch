@@ -1,9 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
 
 @Component({
   selector: 'app-choice',
-  imports: [RouterModule],
+  imports: [RouterModule, ButtonModule, CardModule],
   templateUrl: './choice.html',
   styleUrl: './choice.scss',
 })

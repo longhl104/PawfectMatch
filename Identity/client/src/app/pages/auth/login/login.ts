@@ -9,6 +9,11 @@ import {
 import { Router, RouterModule } from '@angular/router';
 import { LoginRequest, UsersService } from 'shared/services/users.service';
 import { firstValueFrom } from 'rxjs';
+import { InputTextModule } from 'primeng/inputtext';
+import { PasswordModule } from 'primeng/password';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { FloatLabelModule } from 'primeng/floatlabel';
 import {
   ToastService,
   ErrorHandlingService,
@@ -25,7 +30,15 @@ interface HttpError {
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterModule],
+  imports: [
+    ReactiveFormsModule,
+    RouterModule,
+    InputTextModule,
+    PasswordModule,
+    ButtonModule,
+    CardModule,
+    FloatLabelModule
+  ],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
@@ -37,7 +50,6 @@ export class Login {
   private errorHandlingService = inject(ErrorHandlingService);
 
   loginForm: FormGroup;
-  showPassword = false;
   isSubmitting = false;
 
   constructor() {
@@ -49,10 +61,6 @@ export class Login {
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required]],
     });
-  }
-
-  togglePassword(): void {
-    this.showPassword = !this.showPassword;
   }
 
   isFieldInvalid(fieldName: string): boolean {

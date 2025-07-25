@@ -20,6 +20,8 @@ import {
   credentialsInterceptor,
 } from '@longhl104/pawfect-match-ng';
 import { AuthApi } from 'shared/apis/generated-apis';
+import { providePrimeNG } from 'primeng/config';
+import Aura from '@primeuix/themes/aura';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -30,5 +32,15 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withFetch(), withInterceptors([credentialsInterceptor])),
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
     AuthApi,
+    providePrimeNG({
+      theme: {
+        preset: Aura,
+        options: {
+          prefix: 'p',
+          darkModeSelector: false,
+          cssLayer: false,
+        },
+      },
+    }),
   ],
 };

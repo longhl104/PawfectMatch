@@ -10,6 +10,13 @@ import {
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
+import { InputTextModule } from 'primeng/inputtext';
+import { PasswordModule } from 'primeng/password';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { FloatLabelModule } from 'primeng/floatlabel';
+import { CheckboxModule } from 'primeng/checkbox';
+import { TextareaModule } from 'primeng/textarea';
 import {
   ToastService,
   ErrorHandlingService,
@@ -26,8 +33,15 @@ import {
   imports: [
     ReactiveFormsModule,
     RouterModule,
-    AddressInputComponent
-],
+    AddressInputComponent,
+    InputTextModule,
+    PasswordModule,
+    ButtonModule,
+    CardModule,
+    FloatLabelModule,
+    CheckboxModule,
+    TextareaModule
+  ],
   templateUrl: './registration.html',
   styleUrl: './registration.scss',
 })
@@ -39,7 +53,6 @@ export class Registration {
   private errorHandlingService = inject(ErrorHandlingService);
 
   registrationForm: FormGroup;
-  showPassword = false;
   isSubmitting = false;
   selectedAddress: AddressDetails | null = null;
 
@@ -153,10 +166,6 @@ export class Registration {
     return password.value === confirmPassword.value
       ? null
       : { passwordMismatch: true };
-  }
-
-  togglePassword(): void {
-    this.showPassword = !this.showPassword;
   }
 
   isFieldInvalid(fieldName: string): boolean {

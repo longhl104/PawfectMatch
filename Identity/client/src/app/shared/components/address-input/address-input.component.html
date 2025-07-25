@@ -1,46 +1,43 @@
 <div class="address-input-container">
   <div class="form-group">
-    <label [for]="id()">
-      {{ label() }}
-      @if (required()) {
-        <span>*</span>
-      }
-    </label>
-
-    <input
-      [id]="id()"
-      #addressInput
-      type="text"
-      [formControl]="addressControl"
-      [placeholder]="placeholder()"
-      [class.error]="addressControl.invalid && addressControl.touched"
-      [readonly]="readonly()"
-      autocomplete="off"
-    />
+    <p-floatlabel>
+      <input
+        pInputText
+        [id]="id()"
+        #addressInput
+        type="text"
+        [formControl]="addressControl"
+        [class.ng-invalid]="addressControl.invalid && addressControl.touched"
+        [readonly]="readonly()"
+        autocomplete="off"
+      />
+      <label [for]="id()">
+        {{ label() }}
+        @if (required()) {
+          <span>*</span>
+        }
+      </label>
+    </p-floatlabel>
 
     @if (showHelperText() && !isGoogleMapsLoading) {
-      <div class="help-text">
+      <small class="help-text">
         Start typing your address and select from the suggestions
-      </div>
+      </small>
     }
 
     @if (showHelperText() && isGoogleMapsLoading) {
-      <div class="help-text">Loading address suggestions...</div>
+      <small class="help-text">Loading address suggestions...</small>
     }
 
     @if (addressControl.invalid && addressControl.touched) {
-      <div class="error-message">
+      <small class="p-error">
         @if (addressControl.hasError("required")) {
-          <span>
-            {{ getErrorMessage("required") }}
-          </span>
+          {{ getErrorMessage("required") }}
         }
         @if (addressControl.hasError("invalidAddress")) {
-          <span>
-            {{ getErrorMessage("invalidAddress") }}
-          </span>
+          {{ getErrorMessage("invalidAddress") }}
         }
-      </div>
+      </small>
     }
   </div>
 </div>

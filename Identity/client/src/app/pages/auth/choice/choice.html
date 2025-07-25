@@ -5,27 +5,31 @@
   </div>
 
   <div class="choice-options">
-    <div class="choice-card">
+    <p-card styleClass="choice-card">
       <div class="choice-icon">
         <i class="pi pi-user" style="font-size: 3rem"></i>
       </div>
       <h2>I'm Looking to Adopt</h2>
       <p>Find your perfect companion and give a pet a loving home</p>
-      <button class="choice-btn adopter-btn" (click)="selectAdopter()">
-        Register as Adopter
-      </button>
-    </div>
+      <p-button
+        label="Register as Adopter"
+        (onClick)="selectAdopter()"
+        styleClass="choice-btn adopter-btn w-full">
+      </p-button>
+    </p-card>
 
-    <div class="choice-card">
+    <p-card styleClass="choice-card">
       <div class="choice-icon">
         <i class="pi pi-building" style="font-size: 3rem"></i>
       </div>
       <h2>I'm a Shelter Admin</h2>
       <p>Manage your shelter and help pets find their forever homes</p>
-      <button class="choice-btn shelter-btn" (click)="selectShelter()">
-        Register as Shelter Admin
-      </button>
-    </div>
+      <p-button
+        label="Register as Shelter Admin"
+        (onClick)="selectShelter()"
+        styleClass="choice-btn shelter-btn w-full">
+      </p-button>
+    </p-card>
   </div>
 
   <div class="choice-footer">

@@ -18,6 +18,8 @@ import {
   FormControl,
   ReactiveFormsModule,
 } from '@angular/forms';
+import { InputTextModule } from 'primeng/inputtext';
+import { FloatLabelModule } from 'primeng/floatlabel';
 import {
   GoogleMapsService,
   ErrorHandlingService,
@@ -42,7 +44,7 @@ export interface AddressDetails {
 @Component({
   selector: 'app-address-input',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, InputTextModule, FloatLabelModule],
   templateUrl: './address-input.component.html',
   styleUrl: './address-input.component.scss',
   providers: [

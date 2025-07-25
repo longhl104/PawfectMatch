@@ -10,6 +10,13 @@ import {
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
+import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
+import { PasswordModule } from 'primeng/password';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { FloatLabelModule } from 'primeng/floatlabel';
+import { CheckboxModule } from 'primeng/checkbox';
 import {
   ToastService,
   ErrorHandlingService,
@@ -27,7 +34,18 @@ import {
 @Component({
   selector: 'app-shelter-admin-registration',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterModule, AddressInputComponent],
+  imports: [
+    ReactiveFormsModule,
+    RouterModule,
+    AddressInputComponent,
+    InputTextModule,
+    TextareaModule,
+    PasswordModule,
+    ButtonModule,
+    CardModule,
+    FloatLabelModule,
+    CheckboxModule
+  ],
   templateUrl: './registration.html',
   styleUrl: './registration.scss',
 })
@@ -39,8 +57,6 @@ export class ShelterAdminRegistration {
   private errorHandlingService = inject(ErrorHandlingService);
 
   registrationForm: FormGroup;
-  showPassword = false;
-  showConfirmPassword = false;
   isSubmitting = false;
   selectedAddress: AddressDetails | null = null;
 
@@ -167,14 +183,6 @@ export class ShelterAdminRegistration {
     return password.value === confirmPassword.value
       ? null
       : { passwordMismatch: true };
-  }
-
-  togglePassword(): void {
-    this.showPassword = !this.showPassword;
-  }
-
-  toggleConfirmPassword(): void {
-    this.showConfirmPassword = !this.showConfirmPassword;
   }
 
   isFieldInvalid(fieldName: string): boolean {
