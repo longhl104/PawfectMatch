@@ -1,39 +1,49 @@
 <p-toolbar styleClass="border-none shadow-2 px-4 py-3">
   <ng-template pTemplate="start">
-    <div class="flex align-items-center gap-3 cursor-pointer" routerLink="/home">
+    <div
+      class="flex align-items-center gap-3 cursor-pointer"
+      routerLink="/home"
+    >
       <i class="pi pi-heart-fill text-primary text-3xl"></i>
       <h2 class="m-0 text-2xl font-bold text-primary">PawfectMatch</h2>
-      <span class="text-sm text-600 bg-blue-100 text-blue-800 px-2 py-1 border-round">
-        Adopter
-      </span>
     </div>
   </ng-template>
 
   <ng-template pTemplate="center">
     <div class="hidden lg:flex align-items-center gap-4">
-      <a routerLink="/home"
+      <a
+        routerLink="/home"
         routerLinkActive="text-primary font-semibold"
-        class="text-700 hover:text-primary transition-colors duration-200 no-underline">
+        class="text-700 hover:text-primary transition-colors duration-200 no-underline"
+      >
         <i class="pi pi-home mr-2"></i>Home
       </a>
-      <a routerLink="/browse"
+      <a
+        routerLink="/browse"
         routerLinkActive="text-primary font-semibold"
-        class="text-700 hover:text-primary transition-colors duration-200 no-underline">
+        class="text-700 hover:text-primary transition-colors duration-200 no-underline"
+      >
         <i class="pi pi-search mr-2"></i>Browse Pets
       </a>
-      <a routerLink="/match"
+      <a
+        routerLink="/match"
         routerLinkActive="text-primary font-semibold"
-        class="text-700 hover:text-primary transition-colors duration-200 no-underline">
+        class="text-700 hover:text-primary transition-colors duration-200 no-underline"
+      >
         <i class="pi pi-heart mr-2"></i>Find Match
       </a>
-      <a routerLink="/about"
+      <a
+        routerLink="/about"
         routerLinkActive="text-primary font-semibold"
-        class="text-700 hover:text-primary transition-colors duration-200 no-underline">
+        class="text-700 hover:text-primary transition-colors duration-200 no-underline"
+      >
         <i class="pi pi-info-circle mr-2"></i>About
       </a>
-      <a routerLink="/contact"
+      <a
+        routerLink="/contact"
         routerLinkActive="text-primary font-semibold"
-        class="text-700 hover:text-primary transition-colors duration-200 no-underline">
+        class="text-700 hover:text-primary transition-colors duration-200 no-underline"
+      >
         <i class="pi pi-envelope mr-2"></i>Contact
       </a>
     </div>
@@ -42,12 +52,14 @@
   <ng-template pTemplate="end">
     <div class="flex align-items-center gap-3">
       <!-- Mobile menu button -->
-      <p-button icon="pi pi-bars"
+      <p-button
+        icon="pi pi-bars"
         styleClass="lg:hidden"
         [text]="true"
         [rounded]="true"
         (onClick)="toggleMenu()"
-        [attr.aria-expanded]="isMenuOpen" />
+        [attr.aria-expanded]="isMenuOpen"
+      />
 
       <!-- User Actions -->
       @if (isAuthenticated$ | async; as authStatus) {
@@ -56,41 +68,51 @@
           @if (currentUser$ | async; as user) {
             <div class="flex align-items-center gap-2">
               <span class="text-sm text-600 hidden md:inline">
-                Welcome, {{ getUserDisplayName(user).split(' ')[0] }}!
+                Welcome, {{ getUserDisplayName(user).split(" ")[0] }}!
               </span>
-              <p-avatar #avatar
+              <p-avatar
+                #avatar
                 styleClass="cursor-pointer"
                 size="normal"
                 shape="circle"
                 [label]="getUserInitials(user)"
-                (click)="menu.toggle($event)" />
-              <p-button icon="pi pi-sign-out"
+                (click)="menu.toggle($event)"
+              />
+              <p-button
+                icon="pi pi-sign-out"
                 severity="secondary"
                 pTooltip="Logout"
                 tooltipPosition="bottom"
                 styleClass="ml-2"
                 [text]="true"
                 [rounded]="true"
-                (onClick)="onLogout()" />
-              <p-menu #menu
+                (onClick)="onLogout()"
+              />
+              <p-menu
+                #menu
                 [popup]="true"
                 [model]="userMenuItems"
                 appendTo="body"
                 [style]="{ 'min-width': '12rem' }"
-                position="bottom-right" />
+                position="bottom-right"
+              />
             </div>
           }
         } @else {
           <!-- Not authenticated actions -->
-          <p-button label="Sign In"
+          <p-button
+            label="Sign In"
             icon="pi pi-sign-in"
             severity="secondary"
             [outlined]="true"
-            (onClick)="onLogin()" />
-          <p-button label="Sign Up"
+            (onClick)="onLogin()"
+          />
+          <p-button
+            label="Sign Up"
             icon="pi pi-user-plus"
             severity="info"
-            (onClick)="onLogin()" />
+            (onClick)="onLogin()"
+          />
         }
       }
     </div>
@@ -106,40 +128,52 @@
       (keydown.escape)="closeMenu()"
       tabindex="0"
       role="button"
-      aria-label="Close menu overlay">
-    </div>
+      aria-label="Close menu overlay"
+    ></div>
     <div class="fixed top-0 right-0 w-20rem h-full bg-white shadow-8 z-6 p-4">
       <div class="flex justify-content-between align-items-center mb-4">
         <h3 class="m-0 text-primary">Menu</h3>
-        <p-button icon="pi pi-times"
+        <p-button
+          icon="pi pi-times"
           [text]="true"
           [rounded]="true"
-          (onClick)="closeMenu()" />
+          (onClick)="closeMenu()"
+        />
       </div>
       <div class="flex flex-column gap-3">
-        <a routerLink="/home"
+        <a
+          routerLink="/home"
           class="flex align-items-center gap-2 p-3 border-round hover:bg-primary-50 text-700 no-underline"
-          (click)="closeMenu()">
+          (click)="closeMenu()"
+        >
           <i class="pi pi-home"></i>Home
         </a>
-        <a routerLink="/browse"
+        <a
+          routerLink="/browse"
           class="flex align-items-center gap-2 p-3 border-round hover:bg-primary-50 text-700 no-underline"
-          (click)="closeMenu()">
+          (click)="closeMenu()"
+        >
           <i class="pi pi-search"></i>Browse Pets
         </a>
-        <a routerLink="/match"
+        <a
+          routerLink="/match"
           class="flex align-items-center gap-2 p-3 border-round hover:bg-primary-50 text-700 no-underline"
-          (click)="closeMenu()">
+          (click)="closeMenu()"
+        >
           <i class="pi pi-heart"></i>Find Match
         </a>
-        <a routerLink="/about"
+        <a
+          routerLink="/about"
           class="flex align-items-center gap-2 p-3 border-round hover:bg-primary-50 text-700 no-underline"
-          (click)="closeMenu()">
+          (click)="closeMenu()"
+        >
           <i class="pi pi-info-circle"></i>About
         </a>
-        <a routerLink="/contact"
+        <a
+          routerLink="/contact"
           class="flex align-items-center gap-2 p-3 border-round hover:bg-primary-50 text-700 no-underline"
-          (click)="closeMenu()">
+          (click)="closeMenu()"
+        >
           <i class="pi pi-envelope"></i>Contact
         </a>
       </div>
