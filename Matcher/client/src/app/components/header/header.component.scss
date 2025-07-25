@@ -5,6 +5,62 @@
   cursor: pointer;
 }
 
+// Mobile menu button styling
+::ng-deep .mobile-menu-btn {
+  .p-button {
+    background: linear-gradient(135deg, var(--primary-500) 0%, var(--blue-600) 100%);
+    border: 2px solid var(--primary-400);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    position: relative;
+
+    &:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+      background: linear-gradient(135deg, var(--primary-600) 0%, var(--blue-700) 100%);
+    }
+
+    &:active {
+      transform: translateY(0) scale(1);
+    }
+
+    // Add a subtle pulsing animation
+    &::before {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      right: -4px;
+      bottom: -4px;
+      background: linear-gradient(135deg, var(--primary-300) 0%, var(--blue-400) 100%);
+      border-radius: 50%;
+      opacity: 0.3;
+      animation: pulse 2s infinite;
+      z-index: -1;
+    }
+  }
+
+  .p-button-icon {
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+}
+
 // Mobile menu overlay z-index adjustments
 .z-5 {
   z-index: 1000;

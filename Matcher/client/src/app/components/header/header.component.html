@@ -10,7 +10,7 @@
   </ng-template>
 
   <ng-template pTemplate="center">
-    <div class="hidden lg:flex align-items-center gap-4">
+    <div class="hidden xl:flex align-items-center gap-4">
       <a
         routerLink="/home"
         routerLinkActive="text-primary font-semibold"
@@ -54,11 +54,16 @@
       <!-- Mobile menu button -->
       <p-button
         icon="pi pi-bars"
-        styleClass="lg:hidden"
-        [text]="true"
+        styleClass="xl:hidden mobile-menu-btn"
+        severity="info"
+        [outlined]="true"
         [rounded]="true"
+        size="large"
+        pTooltip="Open Menu"
+        tooltipPosition="bottom"
         (onClick)="toggleMenu()"
         [attr.aria-expanded]="isMenuOpen"
+        [attr.aria-label]="'Toggle navigation menu'"
       />
 
       <!-- User Actions -->
@@ -121,7 +126,7 @@
 
 <!-- Mobile Menu Overlay -->
 @if (isMenuOpen) {
-  <div class="lg:hidden">
+  <div class="xl:hidden">
     <div
       class="fixed top-0 left-0 w-full h-full bg-black-alpha-50 z-5"
       (click)="closeMenu()"
