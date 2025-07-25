@@ -5,7 +5,8 @@
       label="Back to Choice"
       [text]="true"
       (onClick)="goBack()"
-      styleClass="back-btn">
+      styleClass="back-btn"
+    >
     </p-button>
 
     <h1>Join as a Shelter Admin</h1>
@@ -27,12 +28,12 @@
           />
           <label for="email">Email Address *</label>
         </p-floatlabel>
-        @if (isFieldInvalid('email')) {
+        @if (isFieldInvalid("email")) {
           <small class="p-error">
-            @if (registrationForm.get('email')?.errors?.['required']) {
+            @if (registrationForm.get("email")?.errors?.["required"]) {
               Email is required
             }
-            @if (registrationForm.get('email')?.errors?.['email']) {
+            @if (registrationForm.get("email")?.errors?.["email"]) {
               Please enter a valid email address
             }
           </small>
@@ -49,20 +50,22 @@
             [feedback]="true"
             autocomplete="new-password"
             [class.ng-invalid]="isFieldInvalid('password')"
-            styleClass="w-full">
+            styleClass="w-full"
+          >
           </p-password>
           <label for="password">Password *</label>
         </p-floatlabel>
-        @if (isFieldInvalid('password')) {
+        @if (isFieldInvalid("password")) {
           <small class="p-error">
-            @if (registrationForm.get('password')?.errors?.['required']) {
+            @if (registrationForm.get("password")?.errors?.["required"]) {
               Password is required
             }
-            @if (registrationForm.get('password')?.errors?.['minlength']) {
+            @if (registrationForm.get("password")?.errors?.["minlength"]) {
               Password must be at least 8 characters
             }
-            @if (registrationForm.get('password')?.errors?.['pattern']) {
-              Password must contain uppercase, lowercase, number and special character
+            @if (registrationForm.get("password")?.errors?.["pattern"]) {
+              Password must contain uppercase, lowercase, number and special
+              character
             }
           </small>
         }
@@ -78,18 +81,26 @@
             [feedback]="false"
             autocomplete="new-password"
             [class.ng-invalid]="isFieldInvalid('confirmPassword')"
-            styleClass="w-full">
+            styleClass="w-full"
+          >
           </p-password>
           <label for="confirmPassword">Confirm Password *</label>
         </p-floatlabel>
-        @if(registrationForm.get('confirmPassword')?.errors?.['required'] ||
-          (registrationForm.errors?.['passwordMismatch'] &&
-          registrationForm.get('confirmPassword')?.touched) ){
+        @if (
+          registrationForm.get("confirmPassword")?.errors?.["required"] ||
+          (registrationForm.errors?.["passwordMismatch"] &&
+            registrationForm.get("confirmPassword")?.touched)
+        ) {
           <small class="p-error">
-            @if (registrationForm.get('confirmPassword')?.errors?.['required']) {
+            @if (
+              registrationForm.get("confirmPassword")?.errors?.["required"]
+            ) {
               Please confirm your password
             }
-            @if (registrationForm.errors?.['passwordMismatch'] && registrationForm.get('confirmPassword')?.touched) {
+            @if (
+              registrationForm.errors?.["passwordMismatch"] &&
+              registrationForm.get("confirmPassword")?.touched
+            ) {
               Passwords do not match
             }
           </small>
@@ -107,12 +118,12 @@
           />
           <label for="shelterName">Shelter Name *</label>
         </p-floatlabel>
-        @if (isFieldInvalid('shelterName')) {
+        @if (isFieldInvalid("shelterName")) {
           <small class="p-error">
-            @if (registrationForm.get('shelterName')?.errors?.['required']) {
+            @if (registrationForm.get("shelterName")?.errors?.["required"]) {
               Shelter name is required
             }
-            @if (registrationForm.get('shelterName')?.errors?.['minlength']) {
+            @if (registrationForm.get("shelterName")?.errors?.["minlength"]) {
               Shelter name must be at least 2 characters
             }
           </small>
@@ -131,12 +142,16 @@
           />
           <label for="shelterContactNumber">Shelter Contact Number *</label>
         </p-floatlabel>
-        @if (isFieldInvalid('shelterContactNumber')) {
+        @if (isFieldInvalid("shelterContactNumber")) {
           <small class="p-error">
-            @if (registrationForm.get('shelterContactNumber')?.errors?.['required']) {
+            @if (
+              registrationForm.get("shelterContactNumber")?.errors?.["required"]
+            ) {
               Shelter contact number is required
             }
-            @if (registrationForm.get('shelterContactNumber')?.errors?.['pattern']) {
+            @if (
+              registrationForm.get("shelterContactNumber")?.errors?.["pattern"]
+            ) {
               Please enter a valid Australian phone number
             }
           </small>
@@ -153,7 +168,7 @@
         (addressSelected)="onAddressSelected($event)"
         [errorMessages]="{
           required: 'Shelter address is required',
-          invalidAddress: 'Please select a valid address from the suggestions'
+          invalidAddress: 'Please select a valid address from the suggestions',
         }"
       ></app-address-input>
 
@@ -169,96 +184,97 @@
           />
           <label for="shelterWebsiteUrl">Website URL (optional)</label>
         </p-floatlabel>
-        @if (isFieldInvalid('shelterWebsiteUrl')) {
+        @if (isFieldInvalid("shelterWebsiteUrl")) {
           <small class="p-error">
-            @if (registrationForm.get('shelterWebsiteUrl')?.errors?.['invalidUrl']) {
+            @if (
+              registrationForm.get("shelterWebsiteUrl")?.errors?.["invalidUrl"]
+            ) {
               Please enter a valid URL
             }
           </small>
         }
       </div>
 
-                <!-- ABN (Optional) -->
-        <div class="form-group">
-          <p-floatlabel>
-            <input
-              pInputText
-              id="shelterAbn"
-              formControlName="shelterAbn"
-              [class.ng-invalid]="isFieldInvalid('shelterAbn')"
-            />
-            <label for="shelterAbn">ABN (optional)</label>
-          </p-floatlabel>
-          @if (isFieldInvalid('shelterAbn')) {
-            <small class="p-error">
-              @if (registrationForm.get('shelterAbn')?.errors?.['pattern']) {
-                Please enter a valid 11-digit ABN
-              }
-            </small>
-          }
-        </div>
-
-          <!-- Shelter Description (Optional) -->
-          <div class="form-group">
-            <p-floatlabel>
-              <textarea
-                pInputTextarea
-                id="shelterDescription"
-                formControlName="shelterDescription"
-                rows="4"
-                maxlength="1000"
-              ></textarea>
-              <label for="shelterDescription">Shelter Description (optional)</label>
-            </p-floatlabel>
-            <div class="char-count">
-              {{ registrationForm.get('shelterDescription')?.value?.length || 0 }}/1000 characters
-            </div>
-          </div>
-
-            <!-- Terms and Conditions -->
-            <div class="form-group checkbox-group">
-              <p-checkbox
-                formControlName="agreeToTerms"
-                [binary]="true"
-                inputId="agreeToTerms"
-                [class.ng-invalid]="isFieldInvalid('agreeToTerms')"
-              />
-              <label for="agreeToTerms" class="ml-2">
-                I agree to the
-                <a href="/terms" target="_blank">Terms and Conditions</a> and
-                <a href="/privacy" target="_blank">Privacy Policy</a> *
-              </label>
-              @if (isFieldInvalid('agreeToTerms')) {
-                <small class="p-error block">
-                  @if (registrationForm.get('agreeToTerms')?.errors?.['required']) {
-                    You must agree to the terms and conditions
-                  }
-                </small>
-              }
-            </div>
-
-            <!-- Submit Button -->
-            <p-button
-              type="submit"
-              label="Create Shelter Admin Account"
-              [loading]="isSubmitting"
-              loadingIcon="pi pi-spinner"
-              [disabled]="registrationForm.invalid"
-              styleClass="w-full"
-            >
-              @if (isSubmitting) {
-                <span>Creating Account...</span>
-              } @else {
-                <span>Create Shelter Admin Account</span>
-              }
-            </p-button>
-
-            <!-- Login Link -->
-            <div class="login-link">
-              <p>
-                Already have an account? <a routerLink="/auth/login">Sign in here</a>
-              </p>
-            </div>
-          </form>
-        </p-card>
+      <!-- ABN (Optional) -->
+      <div class="form-group">
+        <p-floatlabel>
+          <input
+            pInputText
+            id="shelterAbn"
+            formControlName="shelterAbn"
+            [class.ng-invalid]="isFieldInvalid('shelterAbn')"
+          />
+          <label for="shelterAbn">ABN (optional)</label>
+        </p-floatlabel>
+        @if (isFieldInvalid("shelterAbn")) {
+          <small class="p-error">
+            @if (registrationForm.get("shelterAbn")?.errors?.["pattern"]) {
+              Please enter a valid 11-digit ABN
+            }
+          </small>
+        }
       </div>
+
+      <!-- Shelter Description (Optional) -->
+      <div class="form-group">
+        <p-floatlabel>
+          <textarea
+            pInputTextarea
+            id="shelterDescription"
+            formControlName="shelterDescription"
+            rows="4"
+            maxlength="1000"
+          ></textarea>
+          <label for="shelterDescription">Shelter Description (optional)</label>
+        </p-floatlabel>
+        <div class="char-count">
+          {{
+            registrationForm.get("shelterDescription")?.value?.length || 0
+          }}/1000 characters
+        </div>
+      </div>
+
+      <!-- Terms and Conditions -->
+      <div class="form-group checkbox-group">
+        <p-checkbox
+          formControlName="agreeToTerms"
+          [binary]="true"
+          inputId="agreeToTerms"
+          [class.ng-invalid]="isFieldInvalid('agreeToTerms')"
+        />
+        <label for="agreeToTerms" class="ml-2">
+          I agree to the
+          <a href="/terms" target="_blank">Terms and Conditions</a> and
+          <a href="/privacy" target="_blank">Privacy Policy</a> *
+        </label>
+        @if (isFieldInvalid("agreeToTerms")) {
+          <small class="p-error block">
+            @if (registrationForm.get("agreeToTerms")?.errors?.["required"]) {
+              You must agree to the terms and conditions
+            }
+          </small>
+        }
+      </div>
+
+      <!-- Submit Button -->
+      <p-button
+        type="submit"
+        [label]="
+          isSubmitting ? 'Creating Account...' : 'Create Shelter Admin Account'
+        "
+        [loading]="isSubmitting"
+        loadingIcon="pi pi-spinner"
+        [disabled]="registrationForm.invalid"
+        styleClass="w-full"
+      >
+      </p-button>
+
+      <!-- Login Link -->
+      <div class="login-link">
+        <p>
+          Already have an account? <a routerLink="/auth/login">Sign in here</a>
+        </p>
+      </div>
+    </form>
+  </p-card>
+</div>
