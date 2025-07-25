@@ -19,9 +19,11 @@ import {
   GlobalErrorHandler,
   credentialsInterceptor,
 } from '@longhl104/pawfect-match-ng';
-import { AuthApi } from 'shared/apis/generated-apis';
+import { API_BASE_URL, AuthApi } from 'shared/apis/generated-apis';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeuix/themes/aura';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { environment } from 'environments/environment';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -42,5 +44,10 @@ export const appConfig: ApplicationConfig = {
         },
       },
     }),
+    provideAnimationsAsync(),
+    {
+      provide: API_BASE_URL,
+      useValue: environment.apiUrl,
+    },
   ],
 };

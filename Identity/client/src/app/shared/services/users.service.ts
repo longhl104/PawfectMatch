@@ -50,7 +50,7 @@ export interface LoginResponse {
 export class UsersService {
   private http = inject(HttpClient);
 
-  private readonly authUrl = `${environment.apiUrl}/auth`;
+  private readonly authUrl = `${environment.apiUrl}/api/auth`;
 
   /**
    * Login user
