@@ -1,0 +1,75 @@
+// Home page styling now handled by PrimeNG components and PrimeFlex
+// Custom overrides and additional styles can be added here
+
+// Gradient backgrounds
+.bg-gradient-to-br {
+  background: linear-gradient(135deg, var(--primary-50) 0%, var(--blue-50) 100%);
+}
+
+.bg-gradient-to-r {
+  background: linear-gradient(90deg, var(--primary-500) 0%, var(--blue-600) 100%);
+}
+
+// Card hover effects
+p-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
+}
+
+// Image object-fit support for older browsers
+.object-cover {
+  object-fit: cover;
+  object-position: center;
+}
+
+// Statistics cards animation on hover
+.stat-card:hover {
+  transform: scale(1.05);
+  transition: all 0.3s ease;
+}
+
+// Pet card image overlay effect
+.pet-image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.pet-card:hover .pet-image-overlay {
+  opacity: 1;
+}
+
+// Step cards animation
+.step-card {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .text-5xl {
+    font-size: 2.5rem !important;
+  }
+
+  .text-4xl {
+    font-size: 2rem !important;
+  }
+}

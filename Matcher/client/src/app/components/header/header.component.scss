@@ -1,0 +1,32 @@
+// Header styling now handled by PrimeNG Toolbar and PrimeFlex
+// Custom overrides can be added here if needed
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+// Mobile menu overlay z-index adjustments
+.z-5 {
+  z-index: 1000;
+}
+
+.z-6 {
+  z-index: 1001;
+}
+
+// Smooth transitions for mobile menu
+.fixed {
+  transition: all 0.3s ease;
+}
+
+// Brand hover effect
+.brand-link:hover {
+  transform: scale(1.02);
+  transition: transform 0.2s ease;
+}
+
+// Navigation link hover states
+.nav-link:hover {
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}

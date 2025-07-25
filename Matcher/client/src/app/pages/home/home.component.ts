@@ -3,11 +3,14 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService, UserProfile } from 'shared/services/auth.service';
 import { Observable } from 'rxjs';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { TagModule } from 'primeng/tag';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ButtonModule, CardModule, TagModule],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
 })

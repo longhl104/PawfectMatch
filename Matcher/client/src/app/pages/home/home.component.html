@@ -1,121 +1,203 @@
 <!-- Hero Section -->
-<div class="hero-section">
-  <div class="hero-content">
-    <!-- Personalized greeting for authenticated users -->
-    <ng-container *ngIf="isAuthenticated$ | async as authStatus">
-      <ng-container *ngIf="authStatus.isAuthenticated && (currentUser$ | async) as user; else defaultTitle">
-        <h1 class="hero-title">Welcome back, {{ user.fullName.split(' ')[0] }}!</h1>
-        <p class="hero-subtitle">
-          Ready to find your perfect companion? Let's continue your journey to find the ideal furry friend!
-        </p>
-      </ng-container>
-      <ng-template #defaultTitle>
-        <h1 class="hero-title">Find Your Perfect Companion</h1>
-        <p class="hero-subtitle">
-          Welcome to PawfectMatch - where loving pets meet loving families.
-          Discover your ideal furry friend today!
-        </p>
-      </ng-template>
-    </ng-container>
+<div class="bg-gradient-to-br from-primary-50 to-blue-50 py-8">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="grid align-items-center">
+      <div class="col-12 lg:col-6">
+        <!-- Personalized greeting for authenticated users -->
+        <ng-container *ngIf="isAuthenticated$ | async as authStatus">
+          <ng-container *ngIf="authStatus.isAuthenticated && (currentUser$ | async) as user; else defaultTitle">
+            <h1 class="text-5xl font-bold text-900 mb-4 line-height-2">
+              <i class="pi pi-hand-peace mr-3 text-primary"></i>
+              Welcome back, {{ user.fullName.split(' ')[0] }}!
+            </h1>
+            <p class="text-xl text-600 mb-6 line-height-3">
+              Ready to find your perfect companion? Let's continue your journey to find the ideal furry friend!
+            </p>
+          </ng-container>
+          <ng-template #defaultTitle>
+            <h1 class="text-5xl font-bold text-900 mb-4 line-height-2">
+              <i class="pi pi-heart-fill mr-3 text-primary"></i>
+              Find Your Perfect Companion
+            </h1>
+            <p class="text-xl text-600 mb-6 line-height-3">
+              Welcome to PawfectMatch - where loving pets meet loving families.
+              Discover your ideal furry friend today!
+            </p>
+          </ng-template>
+        </ng-container>
 
-    <div class="hero-buttons">
-      <button class="btn btn-primary" (click)="onFindMatch()">
-        Find My Match
-      </button>
-      <button class="btn btn-secondary" (click)="onBrowsePets()">
-        Browse All Pets
-      </button>
+        <div class="flex gap-3 flex-wrap">
+          <p-button
+            label="Find My Match"
+            icon="pi pi-heart"
+            size="large"
+            styleClass="font-bold"
+            (onClick)="onFindMatch()">
+          </p-button>
+          <p-button
+            label="Browse All Pets"
+            icon="pi pi-search"
+            severity="secondary"
+            [outlined]="true"
+            size="large"
+            (onClick)="onBrowsePets()">
+          </p-button>
+        </div>
+      </div>
+
+      <div class="col-12 lg:col-6">
+        <div class="text-center">
+          <img
+            src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=600&h=400&fit=crop"
+            alt="Happy family with adopted dog"
+            class="border-round-lg shadow-4 w-full max-w-30rem">
+        </div>
+      </div>
     </div>
-  </div>
-  <div class="hero-image">
-    <img src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=600&h=400&fit=crop"
-         alt="Happy family with adopted dog"
-         class="hero-img">
   </div>
 </div>
 
 <!-- Featured Pets Section -->
-<section class="featured-pets">
-  <div class="container">
-    <h2 class="section-title">Featured Pets</h2>
-    <p class="section-subtitle">Meet some of our wonderful pets looking for their forever homes</p>
+<section class="py-8">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="text-center mb-6">
+      <h2 class="text-4xl font-bold text-900 mb-3">
+        <i class="pi pi-star-fill mr-3 text-yellow-500"></i>
+        Featured Pets
+      </h2>
+      <p class="text-xl text-600">Meet some of our wonderful pets looking for their forever homes</p>
+    </div>
 
-    <div class="pets-grid">
-      <div class="pet-card" *ngFor="let pet of featuredPets"
-           (click)="onViewPet(pet.id)"
-           (keyup.enter)="onViewPet(pet.id)"
-           (keyup.space)="onViewPet(pet.id)"
-           tabindex="0"
-           role="button"
-           [attr.aria-label]="'View details for ' + pet.name">
-        <div class="pet-image">
-          <img [src]="pet.image" [alt]="pet.name" />
-          <div class="pet-overlay">
-            <button class="btn btn-small">View Details</button>
+    <div class="grid">
+      <div class="col-12 sm:col-6 lg:col-3" *ngFor="let pet of featuredPets">
+        <p-card
+          styleClass="h-full cursor-pointer transition-all transition-duration-300 hover:shadow-8"
+          (click)="onViewPet(pet.id)"
+          (keyup.enter)="onViewPet(pet.id)"
+          (keyup.space)="onViewPet(pet.id)"
+          tabindex="0"
+          role="button"
+          [attr.aria-label]="'View details for ' + pet.name">
+
+          <ng-template pTemplate="header">
+            <div class="relative">
+              <img
+                [src]="pet.image"
+                [alt]="pet.name"
+                class="w-full h-12rem object-cover">
+              <div class="absolute top-2 right-2">
+                <p-tag
+                  [value]="pet.age + ' years'"
+                  severity="info"
+                  icon="pi pi-calendar">
+                </p-tag>
+              </div>
+            </div>
+          </ng-template>
+
+          <div class="pt-0">
+            <h3 class="text-xl font-bold text-900 mb-2 flex align-items-center gap-2">
+              <i class="pi pi-heart text-primary"></i>
+              {{ pet.name }}
+            </h3>
+            <p class="text-600 mb-3 flex align-items-center gap-2">
+              <i class="pi pi-tag"></i>
+              {{ pet.breed }}
+            </p>
+            <p class="text-700 line-height-3 mb-4">{{ pet.description }}</p>
+
+            <p-button
+              label="View Details"
+              icon="pi pi-external-link"
+              severity="info"
+              [outlined]="true"
+              size="small"
+              styleClass="w-full">
+            </p-button>
           </div>
-        </div>
-        <div class="pet-info">
-          <h3 class="pet-name">{{ pet.name }}</h3>
-          <p class="pet-breed">{{ pet.breed }} • {{ pet.age }} years old</p>
-          <p class="pet-description">{{ pet.description }}</p>
-        </div>
+        </p-card>
       </div>
     </div>
   </div>
 </section>
 
 <!-- How It Works Section -->
-<section class="how-it-works">
-  <div class="container">
-    <h2 class="section-title">How It Works</h2>
-    <p class="section-subtitle">Simple steps to find your perfect pet companion</p>
+<section class="bg-surface-50 py-8">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="text-center mb-6">
+      <h2 class="text-4xl font-bold text-900 mb-3">
+        <i class="pi pi-cog mr-3 text-blue-500"></i>
+        How It Works
+      </h2>
+      <p class="text-xl text-600">Simple steps to find your perfect pet companion</p>
+    </div>
 
-    <div class="steps-grid">
-      <div class="step-card" *ngFor="let step of adoptionSteps">
-        <div class="step-icon">{{ step.icon }}</div>
-        <div class="step-number">{{ step.step }}</div>
-        <h3 class="step-title">{{ step.title }}</h3>
-        <p class="step-description">{{ step.description }}</p>
+    <div class="grid">
+      <div class="col-12 sm:col-6 lg:col-3" *ngFor="let step of adoptionSteps">
+        <div class="text-center p-4">
+          <div class="bg-primary text-white border-circle w-4rem h-4rem flex align-items-center justify-content-center text-2xl font-bold mx-auto mb-3">
+            {{ step.step }}
+          </div>
+          <div class="text-4xl mb-3">{{ step.icon }}</div>
+          <h3 class="text-xl font-bold text-900 mb-3">{{ step.title }}</h3>
+          <p class="text-600 line-height-3">{{ step.description }}</p>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- Statistics Section -->
-<section class="stats-section">
-  <div class="container">
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-number">500+</div>
-        <div class="stat-label">Happy Adoptions</div>
+<section class="py-8">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="grid">
+      <div class="col-12 sm:col-6 lg:col-3">
+        <div class="text-center p-4 border-round-lg bg-green-50 border-1 border-green-200">
+          <i class="pi pi-check-circle text-6xl text-green-500 mb-3"></i>
+          <div class="text-4xl font-bold text-green-600 mb-2">500+</div>
+          <div class="text-600 font-semibold">Happy Adoptions</div>
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-number">200+</div>
-        <div class="stat-label">Pets Available</div>
+      <div class="col-12 sm:col-6 lg:col-3">
+        <div class="text-center p-4 border-round-lg bg-blue-50 border-1 border-blue-200">
+          <i class="pi pi-heart text-6xl text-blue-500 mb-3"></i>
+          <div class="text-4xl font-bold text-blue-600 mb-2">200+</div>
+          <div class="text-600 font-semibold">Pets Available</div>
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-number">50+</div>
-        <div class="stat-label">Partner Shelters</div>
+      <div class="col-12 sm:col-6 lg:col-3">
+        <div class="text-center p-4 border-round-lg bg-purple-50 border-1 border-purple-200">
+          <i class="pi pi-home text-6xl text-purple-500 mb-3"></i>
+          <div class="text-4xl font-bold text-purple-600 mb-2">50+</div>
+          <div class="text-600 font-semibold">Partner Shelters</div>
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-number">98%</div>
-        <div class="stat-label">Success Rate</div>
+      <div class="col-12 sm:col-6 lg:col-3">
+        <div class="text-center p-4 border-round-lg bg-orange-50 border-1 border-orange-200">
+          <i class="pi pi-star-fill text-6xl text-orange-500 mb-3"></i>
+          <div class="text-4xl font-bold text-orange-600 mb-2">98%</div>
+          <div class="text-600 font-semibold">Success Rate</div>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- Call to Action Section -->
-<section class="cta-section">
-  <div class="container">
-    <div class="cta-content">
-      <h2 class="cta-title">Ready to Find Your Perfect Match?</h2>
-      <p class="cta-subtitle">
-        Join thousands of happy families who found their furry companions through PawfectMatch
-      </p>
-      <button class="btn btn-primary btn-large" (click)="onFindMatch()">
-        Start Your Journey
-      </button>
-    </div>
+<section class="bg-gradient-to-r from-primary-500 to-blue-600 py-8">
+  <div class="max-w-4xl mx-auto px-4 text-center">
+    <i class="pi pi-sparkle text-6xl text-white mb-4"></i>
+    <h2 class="text-4xl font-bold text-white mb-4">Ready to Find Your Perfect Match?</h2>
+    <p class="text-xl text-white opacity-90 mb-6 line-height-3">
+      Join thousands of happy families who found their furry companions through PawfectMatch
+    </p>
+    <p-button
+      label="Start Your Journey"
+      icon="pi pi-arrow-right"
+      severity="secondary"
+      size="large"
+      styleClass="font-bold"
+      (onClick)="onFindMatch()">
+    </p-button>
   </div>
 </section>
