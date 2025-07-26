@@ -147,6 +147,25 @@
     @media (max-width: 768px) {
       justify-content: center;
     }
+
+    .hero-btn-big {
+      ::ng-deep .p-button {
+        padding: 1rem 2rem;
+        font-size: 1.125rem;
+        font-weight: 600;
+        min-width: 160px;
+        height: 56px;
+        border-radius: 0.75rem;
+      }
+
+      ::ng-deep .p-button-label {
+        font-weight: 600;
+      }
+
+      ::ng-deep .p-button-icon {
+        font-size: 1.125rem;
+      }
+    }
   }
 
   .hero-image {
