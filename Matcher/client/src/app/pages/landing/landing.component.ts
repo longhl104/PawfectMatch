@@ -7,6 +7,9 @@ import {
   PLATFORM_ID,
   ViewChild,
   ElementRef,
+  signal,
+  computed,
+  effect,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
@@ -50,12 +53,13 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   testimonialsSection!: ElementRef;
   @ViewChild('finalCtaSection', { static: false }) finalCtaSection!: ElementRef;
 
-  benefits = [
+  // Convert arrays to signals for better reactivity
+  benefits = signal([
     {
       icon: 'pi pi-cog',
       title: 'Smart Matchmaking Algorithm',
       description:
-        'Our advanced Gale-Shapley algorithm ensures perfect matches between pets and families.',
+        'Our advanced algorithm ensures perfect matches between pets and families.',
     },
     {
       icon: 'pi pi-clock',
@@ -75,9 +79,9 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
       description:
         'Built with scalability in mind to serve shelters and adopters worldwide.',
     },
-  ];
+  ]);
 
-  stats = [
+  stats = signal([
     {
       number: 340,
       label: '🐾 Dog Breeds Supported',
@@ -88,7 +92,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     {
       number: 1,
       label: '⏱ Second Matching',
-      description: 'Instant matching with Gale-Shapley Algorithm',
+      description: 'Instant matching with our advanced algorithm',
       icon: 'pi pi-bolt',
       color: 'text-secondary',
     },
@@ -99,9 +103,9 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
       icon: 'pi pi-map-marker',
       color: 'text-orange-500',
     },
-  ];
+  ]);
 
-  testimonials = [
+  testimonials = signal([
     {
       quote:
         'PawfectMatch has revolutionized how we connect pets with families. The matching algorithm is incredibly accurate and saves us so much time.',
@@ -123,10 +127,30 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
       role: 'Shelter Volunteer',
       avatar: 'images/pexels-babydov-7790096.jpg',
     },
-  ];
+  ]);
 
-  currentTestimonialIndex = 0;
+  // Convert testimonial index to signal
+  currentTestimonialIndex = signal(0);
+
+  // Computed property for current testimonial
+  currentTestimonial = computed(() => {
+    const testimonials = this.testimonials();
+    const index = this.currentTestimonialIndex();
+    return testimonials[index];
+  });
+
+  // Computed property for testimonials count
+  testimonialsCount = computed(() => this.testimonials().length);
+
   private testimonialInterval: NodeJS.Timeout | null = null;
+
+  constructor() {
+    // Use effect to handle authentication state changes
+    effect(() => {
+      // This will automatically run when auth status changes if using signals in AuthService
+      // For now, we'll keep the subscription approach in ngOnInit
+    });
+  }
 
   ngOnInit() {
     // Check if user is already authenticated and redirect if needed
@@ -307,7 +331,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private animateCounters() {
-    this.stats.forEach((stat, index) => {
+    this.stats().forEach((stat, index) => {
       const element = document.querySelector(`.stat-number-${index}`);
       if (element) {
         ScrollTrigger.create({
@@ -325,7 +349,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
               onUpdate: () => {
                 currentValue = Math.round(counter.value);
                 if (element) {
-                  element.innerHTML = currentValue.toString();
+                  element.textContent = currentValue.toString();
                 }
               },
               onComplete: () => {
@@ -341,6 +365,8 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
             });
           },
         });
+      } else {
+        console.warn(`Element with class stat-number-${index} not found`);
       }
     });
   }
@@ -384,9 +410,10 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   nextTestimonial() {
-    if (this.testimonials.length > 1) {
-      this.currentTestimonialIndex =
-        (this.currentTestimonialIndex + 1) % this.testimonials.length;
+    const testimonialsLength = this.testimonialsCount();
+    if (testimonialsLength > 1) {
+      const currentIndex = this.currentTestimonialIndex();
+      this.currentTestimonialIndex.set((currentIndex + 1) % testimonialsLength);
 
       // Animate testimonial change
       gsap.fromTo(

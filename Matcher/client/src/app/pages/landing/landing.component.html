@@ -55,7 +55,7 @@
     </div>
 
     <div class="benefits-grid">
-      @for (benefit of benefits; track benefit.title; let i = $index) {
+      @for (benefit of benefits(); track benefit.title; let i = $index) {
         <div class="benefit-card">
           <div class="benefit-icon">
             <i [class]="benefit.icon"></i>
@@ -108,12 +108,12 @@
     </div>
 
     <div class="stats-grid">
-      @for (stat of stats; track stat.label; let i = $index) {
+      @for (stat of stats(); track stat.label; let i = $index) {
         <div class="stat-card">
           <div class="stat-icon">
             <i [class]="stat.icon + ' ' + stat.color"></i>
           </div>
-          <div class="stat-number stat-number-{{ i }}" [class]="stat.color">
+          <div class="stat-number stat-number-{{ i }}" [ngClass]="stat.color">
             0
           </div>
           <h3 class="stat-label">{{ stat.label }}</h3>
@@ -136,13 +136,13 @@
 
     <div class="testimonials-grid">
       @for (
-        testimonial of testimonials;
+        testimonial of testimonials();
         track testimonial.name;
         let i = $index
       ) {
         <div
           class="testimonial-card"
-          [class.active-testimonial]="i === currentTestimonialIndex"
+          [class.active-testimonial]="i === currentTestimonialIndex()"
         >
           <p-card styleClass="h-full">
             <div class="testimonial-content">
@@ -171,14 +171,14 @@
     <!-- Testimonial Navigation -->
     <div class="testimonial-nav">
       @for (
-        testimonial of testimonials;
+        testimonial of testimonials();
         track testimonial.name;
         let i = $index
       ) {
         <button
           class="nav-dot"
-          [class.active]="i === currentTestimonialIndex"
-          (click)="currentTestimonialIndex = i"
+          [class.active]="i === currentTestimonialIndex()"
+          (click)="currentTestimonialIndex.set(i)"
           [attr.aria-label]="'View testimonial from ' + testimonial.name"
         ></button>
       }
