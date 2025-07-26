@@ -235,15 +235,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
       y: -50,
       ease: 'none',
     });
-
-    // Continuous animation for attention-grabbing elements
-    gsap.to('.pulse-animation', {
-      duration: 2,
-      scale: 1.05,
-      ease: 'power1.inOut',
-      yoyo: true,
-      repeat: -1,
-    });
   }
 
   onFindMatch(event?: Event) {
