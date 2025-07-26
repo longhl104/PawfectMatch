@@ -13,6 +13,7 @@ import { Observable } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
+import { AvatarModule } from 'primeng/avatar';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -22,7 +23,7 @@ gsap.registerPlugin(ScrollTrigger);
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, ButtonModule, CardModule, TagModule],
+  imports: [CommonModule, RouterModule, ButtonModule, CardModule, TagModule, AvatarModule],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
 })
@@ -280,5 +281,15 @@ export class HomeComponent implements OnInit, AfterViewInit {
   onViewPet(petId: number) {
     // Navigate to pet details page
     console.log('Viewing pet:', petId);
+  }
+
+  onRegister() {
+    // Redirect to Identity service for registration
+    this.authService.redirectToLogin();
+  }
+
+  onLogin() {
+    // Redirect to Identity service for login
+    this.authService.redirectToLogin();
   }
 }

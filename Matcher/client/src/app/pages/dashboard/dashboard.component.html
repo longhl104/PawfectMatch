@@ -1,0 +1,51 @@
+<div class="dashboard-container">
+  <div class="welcome-section">
+    @if (currentUser$ | async; as user) {
+      <h1>Welcome, {{ user.fullName }}!</h1>
+      <p>You are successfully logged in to your PawfectMatch dashboard.</p>
+    } @else {
+      <h1>Welcome to PawfectMatch Dashboard</h1>
+      <p>Loading your profile...</p>
+    }
+  </div>
+
+  <div class="quick-actions">
+    <p-card>
+      <h2>Quick Actions</h2>
+      <div class="actions-grid">
+        <p-button
+          label="Find Pets"
+          icon="pi pi-search"
+          styleClass="w-full"
+        ></p-button>
+        <p-button
+          label="My Applications"
+          icon="pi pi-file"
+          styleClass="w-full"
+          severity="secondary"
+        ></p-button>
+        <p-button
+          label="Favorites"
+          icon="pi pi-heart"
+          styleClass="w-full"
+          severity="info"
+        ></p-button>
+        <p-button
+          label="Profile Settings"
+          icon="pi pi-cog"
+          styleClass="w-full"
+          severity="help"
+        ></p-button>
+      </div>
+    </p-card>
+  </div>
+
+  <div class="logout-section">
+    <p-button
+      label="Logout"
+      icon="pi pi-sign-out"
+      severity="danger"
+      (onClick)="onLogout()"
+    ></p-button>
+  </div>
+</div>

@@ -1,0 +1,200 @@
+<!-- Hero Section -->
+<section class="hero-section" #heroSection>
+  <div class="hero-content">
+    <div class="container">
+      <div class="hero-text">
+        <h1 class="hero-headline">Adopt Better. Love Smarter.</h1>
+        <p class="hero-subheadline">
+          Smarter matches for pets and people, powered by data & compassion.
+        </p>
+        <div class="hero-buttons">
+          <p-button
+            label="Register Now"
+            icon="pi pi-user-plus"
+            size="large"
+            class="animated-button register-btn"
+            (onClick)="onRegister()"
+            [style]="{ 'margin-right': '1rem' }"
+          ></p-button>
+          <p-button
+            label="Log In"
+            icon="pi pi-sign-in"
+            size="large"
+            severity="secondary"
+            class="animated-button login-btn"
+            (onClick)="onLogin()"
+          ></p-button>
+        </div>
+      </div>
+      <div class="hero-image">
+        <img
+          src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=600&h=400&fit=crop&crop=faces"
+          alt="Happy family with their adopted pet"
+          class="hero-img"
+          (load)="onImageLoad($event)"
+          (error)="onImageError($event)"
+        />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Benefits Section -->
+<section class="benefits-section" id="benefits" #benefitsSection>
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">Why Choose PawfectMatch?</h2>
+      <p class="section-subtitle">
+        Experience the future of pet adoption with our innovative platform designed for both shelters and adopters.
+      </p>
+    </div>
+
+    <div class="benefits-grid">
+      @for (benefit of benefits; track benefit.title; let i = $index) {
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <i [class]="benefit.icon"></i>
+          </div>
+          <h3 class="benefit-title">{{ benefit.title }}</h3>
+          <p class="benefit-description">{{ benefit.description }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- Call to Action Section -->
+<section class="primary-cta">
+  <div class="container">
+    <div class="cta-content">
+      <i class="pi pi-heart-fill heart-icon pulse-animation"></i>
+      <h2 class="cta-headline">Ready to meet your perfect match?</h2>
+      <p class="cta-text">
+        Join thousands of happy families who found their furry companions through PawfectMatch.
+      </p>
+      <div class="cta-buttons">
+        <p-button
+          label="Register Now"
+          icon="pi pi-user-plus"
+          size="large"
+          class="animated-button cta-primary"
+          (onClick)="onRegister()"
+        ></p-button>
+        <p-button
+          label="Log In"
+          icon="pi pi-sign-in"
+          size="large"
+          severity="secondary"
+          outlined="true"
+          class="animated-button cta-secondary"
+          (onClick)="onLogin()"
+        ></p-button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="stats-section" id="stats" #statsSection>
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">Powering Better Adoptions</h2>
+    </div>
+
+    <div class="stats-grid">
+      @for (stat of stats; track stat.label; let i = $index) {
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i [class]="stat.icon + ' ' + stat.color"></i>
+          </div>
+          <div class="stat-number stat-number-{{i}}" [class]="stat.color">0</div>
+          <h3 class="stat-label">{{ stat.label }}</h3>
+          <p class="stat-description">{{ stat.description }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonials-section" id="testimonials" #testimonialsSection>
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">What Our Users Say</h2>
+      <p class="section-subtitle">
+        Hear from shelter administrators and adopters who love PawfectMatch
+      </p>
+    </div>
+
+    <div class="testimonials-grid">
+      @for (testimonial of testimonials; track testimonial.name; let i = $index) {
+        <div class="testimonial-card"
+             [class.active-testimonial]="i === currentTestimonialIndex">
+          <p-card styleClass="h-full">
+            <div class="testimonial-content">
+              <i class="pi pi-quote-left quote-icon"></i>
+              <blockquote class="testimonial-quote">
+                "{{ testimonial.quote }}"
+              </blockquote>
+              <div class="testimonial-author">
+                <p-avatar
+                  [image]="testimonial.avatar"
+                  size="large"
+                  shape="circle"
+                  class="author-avatar"
+                />
+                <div class="author-info">
+                  <p class="author-name">{{ testimonial.name }}</p>
+                  <p class="author-role">{{ testimonial.role }}</p>
+                </div>
+              </div>
+            </div>
+          </p-card>
+        </div>
+      }
+    </div>
+
+    <!-- Testimonial Navigation -->
+    <div class="testimonial-nav">
+      @for (testimonial of testimonials; track testimonial.name; let i = $index) {
+        <button
+          class="nav-dot"
+          [class.active]="i === currentTestimonialIndex"
+          (click)="currentTestimonialIndex = i"
+          [attr.aria-label]="'View testimonial from ' + testimonial.name"
+        ></button>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- Final CTA Banner -->
+<section class="final-cta" #finalCtaSection>
+  <div class="final-cta-bg"></div>
+  <div class="container">
+    <div class="final-cta-content">
+      <h2 class="final-cta-headline">Start Your Journey Today</h2>
+      <p class="final-cta-text">
+        Join the PawfectMatch community and help create more happy endings for pets and families.
+      </p>
+      <p-button
+        label="Get Started Now"
+        icon="pi pi-arrow-right"
+        size="large"
+        class="cta-pulse animated-button"
+        (onClick)="onRegister()"
+      ></p-button>
+    </div>
+  </div>
+</section>
+
+<!-- Floating CTA Button -->
+<div class="floating-cta">
+  <p-button
+    label="Register"
+    icon="pi pi-user-plus"
+    size="large"
+    class="floating-button animated-button"
+    (onClick)="onRegister()"
+  ></p-button>
+</div>
