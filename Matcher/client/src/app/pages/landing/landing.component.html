@@ -2,6 +2,19 @@
 <section class="hero-section" #heroSection>
   <div class="hero-content">
     <div class="container">
+      <div class="hero-image">
+        <img
+          src="images/pexels-chetanvlad-3051528.jpg"
+          alt="Happy family with their adopted pet"
+          class="hero-img"
+          width="500"
+          height="400"
+          loading="lazy"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 500px"
+          (load)="onImageLoad($event)"
+          (error)="onImageError($event)"
+        />
+      </div>
       <div class="hero-text">
         <h1 class="hero-headline">Adopt Better. Love Smarter.</h1>
         <p class="hero-subheadline">
@@ -25,19 +38,6 @@
             (onClick)="onLogin()"
           ></p-button>
         </div>
-      </div>
-      <div class="hero-image">
-        <img
-          src="images/pexels-chetanvlad-3051528.jpg"
-          alt="Happy family with their adopted pet"
-          class="hero-img"
-          width="500"
-          height="400"
-          loading="lazy"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 500px"
-          (load)="onImageLoad($event)"
-          (error)="onImageError($event)"
-        />
       </div>
     </div>
   </div>
