@@ -17,7 +17,7 @@ import { DividerModule } from 'primeng/divider';
 import { AvatarModule } from 'primeng/avatar';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { AuthService } from '../../shared/services/auth.service';
+import { AuthService } from 'shared/services/auth.service';
 
 // Register GSAP plugins
 if (typeof window !== 'undefined') {
