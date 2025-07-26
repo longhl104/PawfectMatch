@@ -107,23 +107,21 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
         'PawfectMatch has revolutionized how we connect pets with families. The matching algorithm is incredibly accurate and saves us so much time.',
       name: 'Sarah M.',
       role: 'Shelter Manager',
-      avatar: 'images/pexels-chetanvlad-3051528.jpg',
+      avatar: 'images/pexels-babydov-7788649.jpg',
     },
     {
       quote:
         'We found our perfect companion through PawfectMatch. The process was smooth, and the match was spot-on. Highly recommended!',
       name: 'Mike D.',
       role: 'Happy Adopter',
-      avatar:
-        '/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+      avatar: 'images/pexels-babydov-7788874.jpg',
     },
     {
       quote:
         'As a volunteer, I love how PawfectMatch makes it easier to help pets find loving homes. The interface is intuitive and powerful.',
       name: 'Emma L.',
       role: 'Shelter Volunteer',
-      avatar:
-        '/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
+      avatar: 'images/pexels-babydov-7790096.jpg',
     },
   ];
 

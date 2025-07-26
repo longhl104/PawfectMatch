@@ -1,6 +1,6 @@
 /* Import PrimeNG styles */
-@use 'primeicons/primeicons.css';
-@use 'primeflex/primeflex.css';
+@use "primeicons/primeicons.css";
+@use "primeflex/primeflex.css";
 
 /* Color System */
 :root {
@@ -128,4 +128,11 @@ body {
 
 * {
   box-sizing: border-box;
+}
+
+// Global p-avatar image fix - prevents stretching
+.p-avatar img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
 }
