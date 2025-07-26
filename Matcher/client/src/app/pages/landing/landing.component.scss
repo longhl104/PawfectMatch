@@ -302,8 +302,42 @@
 .primary-cta {
   padding: 6rem 0;
   background: var(--cta-gradient);
-  color: white;
+  color: var(--gray-800);
   text-align: center;
+  position: relative;
+  overflow: hidden;
+
+  // Background image with overlay
+  &:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("/images/pexels-chevanon-1108099.jpg") center/cover;
+    opacity: 0.3;
+    z-index: 0;
+  }
+
+  // Gradient overlay for better text readability
+  &:after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--cta-gradient);
+    opacity: 0.8;
+    z-index: 1;
+  }
+
+  // Ensure content is above background
+  .container {
+    position: relative;
+    z-index: 2;
+  }
 
   .heart-icon {
     font-size: 4rem;
