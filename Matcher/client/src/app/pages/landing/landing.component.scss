@@ -147,25 +147,6 @@
     @media (max-width: 768px) {
       justify-content: center;
     }
-
-    .hero-btn-big {
-      ::ng-deep .p-button {
-        padding: 1rem 2rem;
-        font-size: 1.125rem;
-        font-weight: 600;
-        min-width: 160px;
-        height: 56px;
-        border-radius: 0.75rem;
-      }
-
-      ::ng-deep .p-button-label {
-        font-weight: 600;
-      }
-
-      ::ng-deep .p-button-icon {
-        font-size: 1.125rem;
-      }
-    }
   }
 
   .hero-image {
@@ -584,6 +565,26 @@
 
   &:active {
     transform: translateY(0);
+  }
+}
+
+// Big Button Styling - Global
+.hero-btn-big {
+  ::ng-deep .p-button {
+    padding: 1rem 2rem !important;
+    font-size: 1.125rem !important;
+    font-weight: 600 !important;
+    min-width: 160px !important;
+    height: 56px !important;
+    border-radius: 0.75rem !important;
+  }
+
+  ::ng-deep .p-button-label {
+    font-weight: 600 !important;
+  }
+
+  ::ng-deep .p-button-icon {
+    font-size: 1.125rem !important;
   }
 }
 
