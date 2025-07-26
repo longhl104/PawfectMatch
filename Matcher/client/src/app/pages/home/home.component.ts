@@ -1,4 +1,11 @@
-import { Component, inject } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  AfterViewInit,
+  ElementRef,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService, UserProfile } from 'shared/services/auth.service';
@@ -6,6 +13,11 @@ import { Observable } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+// Register GSAP plugins
+gsap.registerPlugin(ScrollTrigger);
 
 @Component({
   selector: 'app-home',
@@ -14,8 +26,11 @@ import { TagModule } from 'primeng/tag';
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit, AfterViewInit {
   private authService = inject(AuthService);
+  @ViewChild('heroSection', { static: true }) heroSection!: ElementRef;
+  @ViewChild('featuredSection', { static: true }) featuredSection!: ElementRef;
+  @ViewChild('statsSection', { static: true }) statsSection!: ElementRef;
 
   currentUser$: Observable<UserProfile | null> = this.authService.currentUser$;
   isAuthenticated$ = this.authService.authStatus$;
@@ -88,7 +103,161 @@ export class HomeComponent {
     },
   ];
 
-  onFindMatch() {
+  ngOnInit() {
+    // Initialize component state
+    console.log('Home component initialized with GSAP animations');
+  }
+
+  ngAfterViewInit() {
+    this.initializeAnimations();
+  }
+
+  private initializeAnimations() {
+    // Hero section entrance animation
+    const heroTimeline = gsap.timeline();
+
+    // Animate hero text elements
+    heroTimeline
+      .from('.hero-title', {
+        duration: 1.2,
+        y: 50,
+        opacity: 0,
+        ease: 'power3.out',
+      })
+      .from(
+        '.hero-subtitle',
+        {
+          duration: 1,
+          y: 30,
+          opacity: 0,
+          ease: 'power2.out',
+        },
+        '-=0.8',
+      )
+      .from(
+        '.hero-buttons',
+        {
+          duration: 0.8,
+          y: 20,
+          opacity: 0,
+          ease: 'power2.out',
+        },
+        '-=0.6',
+      )
+      .from(
+        '.hero-image',
+        {
+          duration: 1.5,
+          scale: 0.8,
+          opacity: 0,
+          ease: 'power3.out',
+        },
+        '-=1',
+      );
+
+    // Floating animation for hero image
+    gsap.to('.hero-image img', {
+      duration: 3,
+      y: -10,
+      ease: 'power1.inOut',
+      yoyo: true,
+      repeat: -1,
+    });
+
+    // Pet cards stagger animation on scroll
+    gsap.from('.pet-card', {
+      scrollTrigger: {
+        trigger: '.featured-pets',
+        start: 'top 80%',
+        end: 'bottom 20%',
+        toggleActions: 'play none none reverse',
+      },
+      duration: 0.8,
+      y: 60,
+      opacity: 0,
+      stagger: 0.2,
+      ease: 'power2.out',
+    });
+
+    // Statistics counter animation
+    gsap.from('.stat-number', {
+      scrollTrigger: {
+        trigger: '.stats-section',
+        start: 'top 80%',
+        end: 'bottom 20%',
+        toggleActions: 'play none none reverse',
+      },
+      duration: 2,
+      textContent: 0,
+      ease: 'power2.out',
+      snap: { textContent: 1 },
+      stagger: 0.3,
+    });
+
+    // Steps animation
+    gsap.from('.step-card', {
+      scrollTrigger: {
+        trigger: '.how-it-works',
+        start: 'top 80%',
+        end: 'bottom 20%',
+        toggleActions: 'play none none reverse',
+      },
+      duration: 0.8,
+      y: 50,
+      opacity: 0,
+      rotation: 5,
+      stagger: 0.2,
+      ease: 'back.out(1.7)',
+    });
+
+    // CTA section dramatic entrance
+    gsap.from('.cta-section', {
+      scrollTrigger: {
+        trigger: '.cta-section',
+        start: 'top 90%',
+        end: 'bottom 20%',
+        toggleActions: 'play none none reverse',
+      },
+      duration: 1.2,
+      scale: 0.9,
+      opacity: 0,
+      ease: 'power3.out',
+    });
+
+    // Add parallax effect to hero background
+    gsap.to('.hero-bg', {
+      scrollTrigger: {
+        trigger: '.hero-section',
+        start: 'top top',
+        end: 'bottom top',
+        scrub: 1,
+      },
+      y: -50,
+      ease: 'none',
+    });
+
+    // Continuous animation for attention-grabbing elements
+    gsap.to('.pulse-animation', {
+      duration: 2,
+      scale: 1.05,
+      ease: 'power1.inOut',
+      yoyo: true,
+      repeat: -1,
+    });
+  }
+
+  onFindMatch(event?: Event) {
+    // Add button click animation
+    if (event?.target) {
+      gsap.to(event.target, {
+        duration: 0.1,
+        scale: 0.95,
+        yoyo: true,
+        repeat: 1,
+        ease: 'power2.inOut',
+      });
+    }
+
     // Check if user is authenticated before proceeding
     if (this.authService.isAuthenticated()) {
       // Navigate to pet matching page
@@ -100,7 +269,18 @@ export class HomeComponent {
     }
   }
 
-  onBrowsePets() {
+  onBrowsePets(event?: Event) {
+    // Add button click animation
+    if (event?.target) {
+      gsap.to(event.target, {
+        duration: 0.1,
+        scale: 0.95,
+        yoyo: true,
+        repeat: 1,
+        ease: 'power2.inOut',
+      });
+    }
+
     // Browse pets doesn't require authentication
     console.log('Navigating to browse pets...');
     // TODO: Implement navigation to browse pets page

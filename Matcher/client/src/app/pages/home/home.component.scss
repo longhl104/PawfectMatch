@@ -1,75 +1,300 @@
-// Home page styling now handled by PrimeNG components and PrimeFlex
-// Custom overrides and additional styles can be added here
+// Home page styling with GSAP animations and PrimeNG components
+// Advanced animations and visual effects
 
-// Gradient backgrounds
-.bg-gradient-to-br {
-  background: linear-gradient(135deg, var(--primary-50) 0%, var(--blue-50) 100%);
+// Hero section enhancements
+.hero-section {
+  position: relative;
+  overflow: hidden;
+  min-height: 70vh;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+    animation: rotate 20s linear infinite;
+    z-index: 0;
+  }
 }
 
-.bg-gradient-to-r {
-  background: linear-gradient(90deg, var(--primary-500) 0%, var(--blue-600) 100%);
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-// Card hover effects
-p-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
+// Hero content positioning
+.hero-title {
+  position: relative;
+  z-index: 2;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-// Image object-fit support for older browsers
-.object-cover {
-  object-fit: cover;
-  object-position: center;
+.hero-subtitle {
+  position: relative;
+  z-index: 2;
 }
 
-// Statistics cards animation on hover
-.stat-card:hover {
-  transform: scale(1.05);
-  transition: all 0.3s ease;
+.hero-buttons {
+  position: relative;
+  z-index: 2;
 }
 
-// Pet card image overlay effect
-.pet-image-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+.hero-image {
+  position: relative;
+  z-index: 2;
+
+  img {
+    filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.15));
+    transition: filter 0.3s ease;
+
+    &:hover {
+      filter: drop-shadow(0 25px 50px rgba(0, 0, 0, 0.2));
+    }
+  }
 }
 
-.pet-card:hover .pet-image-overlay {
-  opacity: 1;
+// Pulse animation for attention-grabbing elements
+.pulse-animation {
+  animation: pulse-glow 2s ease-in-out infinite alternate;
 }
 
-// Step cards animation
-.step-card {
-  animation: fadeInUp 0.6s ease forwards;
-}
-
-@keyframes fadeInUp {
+@keyframes pulse-glow {
   from {
-    opacity: 0;
-    transform: translateY(30px);
+    text-shadow: 0 0 5px currentColor, 0 0 10px currentColor, 0 0 15px currentColor;
+    transform: scale(1);
   }
   to {
-    opacity: 1;
-    transform: translateY(0);
+    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
+    transform: scale(1.05);
+  }
+}
+
+// Pet cards enhanced styling
+.pet-card {
+  transform-origin: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow:
+      0 20px 40px rgba(0, 0, 0, 0.15),
+      0 0 0 1px rgba(99, 102, 241, 0.1);
+  }
+
+  ::ng-deep .p-card-body {
+    padding: 0;
+  }
+
+  ::ng-deep .p-card-content {
+    padding: 1rem;
+  }
+}
+
+// Statistics section enhancements
+.stats-section {
+  background: linear-gradient(135deg,
+    var(--surface-50) 0%,
+    var(--surface-100) 50%,
+    var(--surface-50) 100%);
+}
+
+.stat-card {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.3),
+      transparent);
+    transition: left 0.6s ease;
+  }
+
+  &:hover {
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+
+    &::before {
+      left: 100%;
+    }
+  }
+}
+
+.stat-number {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+// Step cards with enhanced animations
+.step-card {
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-2px);
+
+    .bg-primary {
+      transform: rotate(5deg) scale(1.1);
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+    }
+  }
+
+  .bg-primary {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+// CTA section enhancements
+.cta-section {
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="white" opacity="0.1"><animate attributeName="opacity" values="0.1;0.3;0.1" dur="2s" repeatCount="indefinite"/></circle><circle cx="80" cy="30" r="1.5" fill="white" opacity="0.1"><animate attributeName="opacity" values="0.1;0.4;0.1" dur="3s" repeatCount="indefinite"/></circle><circle cx="40" cy="70" r="2.5" fill="white" opacity="0.1"><animate attributeName="opacity" values="0.1;0.2;0.1" dur="2.5s" repeatCount="indefinite"/></circle></svg>');
+    pointer-events: none;
+  }
+}
+
+// Featured pets section
+.featured-pets {
+  .section-title {
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary-400), var(--blue-500));
+      border-radius: 2px;
+    }
+  }
+}
+
+// How it works section
+.how-it-works {
+  .step-card {
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      right: -20px;
+      width: 40px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--primary-300), transparent);
+      transform: translateY(-50%);
+      z-index: -1;
+    }
+
+    &:last-child::after {
+      display: none;
+    }
+  }
+}
+
+// Button enhancements
+::ng-deep .p-button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+  }
+
+  &:hover::before {
+    width: 300px;
+    height: 300px;
+  }
+
+  &:active {
+    transform: scale(0.98);
   }
 }
 
 // Responsive adjustments
 @media (max-width: 768px) {
+  .hero-section {
+    min-height: 60vh;
+
+    &::before {
+      animation-duration: 30s;
+    }
+  }
+
   .text-5xl {
     font-size: 2.5rem !important;
+    line-height: 1.2;
   }
 
   .text-4xl {
     font-size: 2rem !important;
   }
+
+  .stat-card {
+    margin-bottom: 1rem;
+  }
+
+  .step-card::after {
+    display: none;
+  }
+}
+
+@media (max-width: 576px) {
+  .hero-buttons {
+    flex-direction: column;
+    align-items: center;
+
+    ::ng-deep .p-button {
+      width: 100%;
+      max-width: 280px;
+    }
+  }
+}
+
+// Loading states and micro-interactions
+.loading-shimmer {
+  background: linear-gradient(90deg,
+    var(--surface-200) 25%,
+    var(--surface-100) 50%,
+    var(--surface-200) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
