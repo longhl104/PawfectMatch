@@ -2,9 +2,21 @@
 
 // Color variables for consistency
 :host {
-  --hero-gradient: linear-gradient(135deg, var(--primary-50) 0%, var(--blue-50) 100%);
-  --cta-gradient: linear-gradient(135deg, var(--primary-500) 0%, var(--secondary-600) 100%);
-  --final-cta-gradient: linear-gradient(135deg, var(--secondary-500) 0%, var(--primary-600) 100%);
+  --hero-gradient: linear-gradient(
+    135deg,
+    var(--primary-50) 0%,
+    var(--blue-50) 100%
+  );
+  --cta-gradient: linear-gradient(
+    135deg,
+    var(--primary-500) 0%,
+    var(--secondary-600) 100%
+  );
+  --final-cta-gradient: linear-gradient(
+    135deg,
+    var(--secondary-500) 0%,
+    var(--primary-600) 100%
+  );
   --text-primary: var(--gray-900);
   --text-secondary: var(--gray-600);
   --border-radius: 1rem;
@@ -14,7 +26,9 @@
 
 // Accessibility: Respect reduced motion preferences
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -68,14 +82,14 @@
   overflow: hidden;
 
   &:before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: url('https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=1200&h=800&fit=crop') center/cover;
-    opacity: 0.05;
+    background: url("/images/hero-pet-family.jpg") center/cover;
+    opacity: 0.15;
     z-index: 0;
   }
 
@@ -138,6 +152,10 @@
       width: 100%;
       max-width: 500px;
       height: auto;
+      aspect-ratio: 5/4; // Maintain consistent aspect ratio
+      object-fit: cover; // Ensure proper image scaling
+      opacity: 0; // Start hidden for GSAP animation
+      transform: scale(0.8); // Start scaled down for GSAP animation
       border-radius: var(--border-radius);
       box-shadow: var(--box-shadow);
       transition: var(--transition);
@@ -404,7 +422,8 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: url('https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=1200&h=400&fit=crop') center/cover;
+    background: url("/photo-1548199973-03cce0bbc87b?w=1200&h=400&fit=crop")
+      center/cover;
     opacity: 0.2;
     z-index: 0;
   }

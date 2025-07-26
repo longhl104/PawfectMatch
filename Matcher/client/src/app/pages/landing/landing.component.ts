@@ -1,4 +1,13 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, inject, PLATFORM_ID, ViewChild, ElementRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  AfterViewInit,
+  OnDestroy,
+  inject,
+  PLATFORM_ID,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -24,10 +33,10 @@ if (typeof window !== 'undefined') {
     CardModule,
     CarouselModule,
     DividerModule,
-    AvatarModule
+    AvatarModule,
   ],
   templateUrl: './landing.component.html',
-  styleUrls: ['./landing.component.scss']
+  styleUrls: ['./landing.component.scss'],
 })
 export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   private router = inject(Router);
@@ -37,30 +46,35 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('heroSection', { static: false }) heroSection!: ElementRef;
   @ViewChild('benefitsSection', { static: false }) benefitsSection!: ElementRef;
   @ViewChild('statsSection', { static: false }) statsSection!: ElementRef;
-  @ViewChild('testimonialsSection', { static: false }) testimonialsSection!: ElementRef;
+  @ViewChild('testimonialsSection', { static: false })
+  testimonialsSection!: ElementRef;
   @ViewChild('finalCtaSection', { static: false }) finalCtaSection!: ElementRef;
 
   benefits = [
     {
       icon: 'pi pi-cog',
       title: 'Smart Matchmaking Algorithm',
-      description: 'Our advanced Gale-Shapley algorithm ensures perfect matches between pets and families.'
+      description:
+        'Our advanced Gale-Shapley algorithm ensures perfect matches between pets and families.',
     },
     {
       icon: 'pi pi-clock',
       title: 'Reduce Time to Adoption',
-      description: 'Streamlined process gets pets into loving homes faster than traditional methods.'
+      description:
+        'Streamlined process gets pets into loving homes faster than traditional methods.',
     },
     {
       icon: 'pi pi-heart',
       title: 'Built for Shelters & Adopters',
-      description: 'Designed with input from shelter staff and adopters to meet real-world needs.'
+      description:
+        'Designed with input from shelter staff and adopters to meet real-world needs.',
     },
     {
       icon: 'pi pi-globe',
       title: 'Designed to Scale Globally',
-      description: 'Built with scalability in mind to serve shelters and adopters worldwide.'
-    }
+      description:
+        'Built with scalability in mind to serve shelters and adopters worldwide.',
+    },
   ];
 
   stats = [
@@ -69,43 +83,48 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
       label: '🐾 Dog Breeds Supported',
       description: 'Comprehensive breed database for accurate matching',
       icon: 'pi pi-users',
-      color: 'text-primary'
+      color: 'text-primary',
     },
     {
       number: 1,
       label: '⏱ Second Matching',
       description: 'Instant matching with Gale-Shapley Algorithm',
       icon: 'pi pi-bolt',
-      color: 'text-secondary'
+      color: 'text-secondary',
     },
     {
       number: 100,
       label: '🧡 Shelters Across Australia',
       description: 'Built for shelters across Australia and beyond',
       icon: 'pi pi-map-marker',
-      color: 'text-orange-500'
-    }
+      color: 'text-orange-500',
+    },
   ];
 
   testimonials = [
     {
-      quote: "PawfectMatch has revolutionized how we connect pets with families. The matching algorithm is incredibly accurate and saves us so much time.",
-      name: "Sarah M.",
-      role: "Shelter Manager",
-      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b886?w=150&h=150&fit=crop&crop=face"
+      quote:
+        'PawfectMatch has revolutionized how we connect pets with families. The matching algorithm is incredibly accurate and saves us so much time.',
+      name: 'Sarah M.',
+      role: 'Shelter Manager',
+      avatar: 'images/pexels-chetanvlad-3051528.jpg',
     },
     {
-      quote: "We found our perfect companion through PawfectMatch. The process was smooth, and the match was spot-on. Highly recommended!",
-      name: "Mike D.",
-      role: "Happy Adopter",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face"
+      quote:
+        'We found our perfect companion through PawfectMatch. The process was smooth, and the match was spot-on. Highly recommended!',
+      name: 'Mike D.',
+      role: 'Happy Adopter',
+      avatar:
+        '/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
     },
     {
-      quote: "As a volunteer, I love how PawfectMatch makes it easier to help pets find loving homes. The interface is intuitive and powerful.",
-      name: "Emma L.",
-      role: "Shelter Volunteer",
-      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face"
-    }
+      quote:
+        'As a volunteer, I love how PawfectMatch makes it easier to help pets find loving homes. The interface is intuitive and powerful.',
+      name: 'Emma L.',
+      role: 'Shelter Volunteer',
+      avatar:
+        '/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
+    },
   ];
 
   currentTestimonialIndex = 0;
@@ -113,7 +132,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit() {
     // Check if user is already authenticated and redirect if needed
-    this.authService.authStatus$.subscribe(status => {
+    this.authService.authStatus$.subscribe((status) => {
       if (status.isAuthenticated) {
         this.router.navigate(['/dashboard']);
       }
@@ -140,32 +159,36 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
       duration: 1,
       y: 50,
       opacity: 0,
-      ease: 'power3.out'
+      ease: 'power3.out',
     })
-    .from('.hero-subheadline', {
-      duration: 0.8,
-      y: 30,
-      opacity: 0,
-      ease: 'power3.out'
-    }, '-=0.5')
-    .from('.hero-buttons', {
-      duration: 0.8,
-      y: 30,
-      opacity: 0,
-      ease: 'power3.out'
-    }, '-=0.3')
-    .from('.hero-image img', {
-      duration: 1.5,
-      scale: 0.8,
-      opacity: 0,
-      ease: 'power3.out'
-    }, '-=0.6');
+      .from(
+        '.hero-subheadline',
+        {
+          duration: 0.8,
+          y: 30,
+          opacity: 0,
+          ease: 'power3.out',
+        },
+        '-=0.5',
+      )
+      .from(
+        '.hero-buttons',
+        {
+          duration: 0.8,
+          y: 30,
+          opacity: 0,
+          ease: 'power3.out',
+        },
+        '-=0.3',
+      );
+    // Hero image animation is now handled by onImageLoad() event
 
     // Benefits section scroll animations
-    gsap.fromTo('.benefit-card',
+    gsap.fromTo(
+      '.benefit-card',
       {
         y: 60,
-        opacity: 0
+        opacity: 0,
       },
       {
         y: 0,
@@ -177,16 +200,17 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
           trigger: '.benefits-section',
           start: 'top 80%',
           end: 'bottom 20%',
-          toggleActions: 'play none none reverse'
-        }
-      }
+          toggleActions: 'play none none reverse',
+        },
+      },
     );
 
     // Stats section animations
-    gsap.fromTo('.stat-card',
+    gsap.fromTo(
+      '.stat-card',
       {
         scale: 0.8,
-        opacity: 0
+        opacity: 0,
       },
       {
         scale: 1,
@@ -198,16 +222,17 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
           trigger: '.stats-section',
           start: 'top 80%',
           end: 'bottom 20%',
-          toggleActions: 'play none none reverse'
-        }
-      }
+          toggleActions: 'play none none reverse',
+        },
+      },
     );
 
     // Testimonials section animations
-    gsap.fromTo('.testimonial-card',
+    gsap.fromTo(
+      '.testimonial-card',
       {
         y: 50,
-        opacity: 0
+        opacity: 0,
       },
       {
         y: 0,
@@ -219,15 +244,16 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
           trigger: '.testimonials-section',
           start: 'top 85%',
           end: 'bottom 20%',
-          toggleActions: 'play none none reverse'
-        }
-      }
+          toggleActions: 'play none none reverse',
+        },
+      },
     );
 
     // Final CTA section with parallax effect
-    gsap.fromTo('.final-cta-bg',
+    gsap.fromTo(
+      '.final-cta-bg',
       {
-        backgroundPosition: 'center 20%'
+        backgroundPosition: 'center 20%',
       },
       {
         backgroundPosition: 'center 80%',
@@ -237,9 +263,9 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
           trigger: '.final-cta',
           start: 'top bottom',
           end: 'bottom top',
-          scrub: 1
-        }
-      }
+          scrub: 1,
+        },
+      },
     );
 
     // Floating CTA button scroll behavior
@@ -252,7 +278,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
           opacity: 1,
           y: 0,
           duration: 0.5,
-          ease: 'power3.out'
+          ease: 'power3.out',
         });
       },
       onLeave: () => {
@@ -260,7 +286,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
           opacity: 0,
           y: 100,
           duration: 0.5,
-          ease: 'power3.in'
+          ease: 'power3.in',
         });
       },
       onEnterBack: () => {
@@ -268,7 +294,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
           opacity: 1,
           y: 0,
           duration: 0.5,
-          ease: 'power3.out'
+          ease: 'power3.out',
         });
       },
       onLeaveBack: () => {
@@ -276,9 +302,9 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
           opacity: 0,
           y: 100,
           duration: 0.5,
-          ease: 'power3.in'
+          ease: 'power3.in',
         });
-      }
+      },
     });
   }
 
@@ -311,11 +337,11 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
                   duration: 0.3,
                   yoyo: true,
                   repeat: 1,
-                  ease: "power2.inOut"
+                  ease: 'power2.inOut',
                 });
-              }
+              },
             });
-          }
+          },
         });
       }
     });
@@ -325,12 +351,12 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     // CTA button hover animations
     const buttons = document.querySelectorAll('.animated-button');
 
-    buttons.forEach(button => {
+    buttons.forEach((button) => {
       button.addEventListener('mouseenter', () => {
         gsap.to(button, {
           scale: 1.05,
           duration: 0.3,
-          ease: 'power2.out'
+          ease: 'power2.out',
         });
       });
 
@@ -338,7 +364,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
         gsap.to(button, {
           scale: 1,
           duration: 0.3,
-          ease: 'power2.out'
+          ease: 'power2.out',
         });
       });
     });
@@ -349,7 +375,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
       duration: 1.5,
       repeat: -1,
       yoyo: true,
-      ease: 'power2.inOut'
+      ease: 'power2.inOut',
     });
   }
 
@@ -361,12 +387,14 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
 
   nextTestimonial() {
     if (this.testimonials.length > 1) {
-      this.currentTestimonialIndex = (this.currentTestimonialIndex + 1) % this.testimonials.length;
+      this.currentTestimonialIndex =
+        (this.currentTestimonialIndex + 1) % this.testimonials.length;
 
       // Animate testimonial change
-      gsap.fromTo('.active-testimonial',
+      gsap.fromTo(
+        '.active-testimonial',
         { opacity: 0, x: 50 },
-        { opacity: 1, x: 0, duration: 0.5, ease: 'power2.out' }
+        { opacity: 1, x: 0, duration: 0.5, ease: 'power2.out' },
       );
     }
   }
@@ -395,17 +423,26 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onImageError(event: Event) {
     const img = event.target as HTMLImageElement;
-    img.src = 'https://via.placeholder.com/600x400/f3f4f6/6b7280?text=Happy+Pet+Family';
+    img.src = '';
   }
 
   onImageLoad(event: Event) {
     const img = event.target as HTMLImageElement;
-    gsap.from(img, {
-      opacity: 0,
-      scale: 0.95,
-      duration: 0.8,
-      ease: 'power2.out'
-    });
+    // Set initial state and animate to final state for stable animation
+    gsap.fromTo(
+      img,
+      {
+        opacity: 0,
+        scale: 0.8,
+      },
+      {
+        opacity: 1,
+        scale: 1,
+        duration: 1.5,
+        ease: 'power3.out',
+        delay: 0.5, // Small delay to sync with other hero animations
+      },
+    );
   }
 
   ngOnDestroy() {

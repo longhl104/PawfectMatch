@@ -28,9 +28,13 @@
       </div>
       <div class="hero-image">
         <img
-          src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=600&h=400&fit=crop&crop=faces"
+          src="images/pexels-chetanvlad-3051528.jpg"
           alt="Happy family with their adopted pet"
           class="hero-img"
+          width="500"
+          height="400"
+          loading="lazy"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 500px"
           (load)="onImageLoad($event)"
           (error)="onImageError($event)"
         />
@@ -45,7 +49,8 @@
     <div class="section-header">
       <h2 class="section-title">Why Choose PawfectMatch?</h2>
       <p class="section-subtitle">
-        Experience the future of pet adoption with our innovative platform designed for both shelters and adopters.
+        Experience the future of pet adoption with our innovative platform
+        designed for both shelters and adopters.
       </p>
     </div>
 
@@ -70,7 +75,8 @@
       <i class="pi pi-heart-fill heart-icon pulse-animation"></i>
       <h2 class="cta-headline">Ready to meet your perfect match?</h2>
       <p class="cta-text">
-        Join thousands of happy families who found their furry companions through PawfectMatch.
+        Join thousands of happy families who found their furry companions
+        through PawfectMatch.
       </p>
       <div class="cta-buttons">
         <p-button
@@ -107,7 +113,9 @@
           <div class="stat-icon">
             <i [class]="stat.icon + ' ' + stat.color"></i>
           </div>
-          <div class="stat-number stat-number-{{i}}" [class]="stat.color">0</div>
+          <div class="stat-number stat-number-{{ i }}" [class]="stat.color">
+            0
+          </div>
           <h3 class="stat-label">{{ stat.label }}</h3>
           <p class="stat-description">{{ stat.description }}</p>
         </div>
@@ -127,9 +135,15 @@
     </div>
 
     <div class="testimonials-grid">
-      @for (testimonial of testimonials; track testimonial.name; let i = $index) {
-        <div class="testimonial-card"
-             [class.active-testimonial]="i === currentTestimonialIndex">
+      @for (
+        testimonial of testimonials;
+        track testimonial.name;
+        let i = $index
+      ) {
+        <div
+          class="testimonial-card"
+          [class.active-testimonial]="i === currentTestimonialIndex"
+        >
           <p-card styleClass="h-full">
             <div class="testimonial-content">
               <i class="pi pi-quote-left quote-icon"></i>
@@ -156,7 +170,11 @@
 
     <!-- Testimonial Navigation -->
     <div class="testimonial-nav">
-      @for (testimonial of testimonials; track testimonial.name; let i = $index) {
+      @for (
+        testimonial of testimonials;
+        track testimonial.name;
+        let i = $index
+      ) {
         <button
           class="nav-dot"
           [class.active]="i === currentTestimonialIndex"
@@ -175,7 +193,8 @@
     <div class="final-cta-content">
       <h2 class="final-cta-headline">Start Your Journey Today</h2>
       <p class="final-cta-text">
-        Join the PawfectMatch community and help create more happy endings for pets and families.
+        Join the PawfectMatch community and help create more happy endings for
+        pets and families.
       </p>
       <p-button
         label="Get Started Now"
