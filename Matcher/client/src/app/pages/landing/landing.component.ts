@@ -5,11 +5,11 @@ import {
   OnDestroy,
   inject,
   PLATFORM_ID,
-  ViewChild,
   ElementRef,
   signal,
   computed,
   effect,
+  viewChild
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
@@ -46,12 +46,11 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   private authService = inject(AuthService);
   private platformId = inject(PLATFORM_ID);
 
-  @ViewChild('heroSection', { static: false }) heroSection!: ElementRef;
-  @ViewChild('benefitsSection', { static: false }) benefitsSection!: ElementRef;
-  @ViewChild('statsSection', { static: false }) statsSection!: ElementRef;
-  @ViewChild('testimonialsSection', { static: false })
-  testimonialsSection!: ElementRef;
-  @ViewChild('finalCtaSection', { static: false }) finalCtaSection!: ElementRef;
+  readonly heroSection = viewChild.required<ElementRef>('heroSection');
+  readonly benefitsSection = viewChild.required<ElementRef>('benefitsSection');
+  readonly statsSection = viewChild.required<ElementRef>('statsSection');
+  readonly testimonialsSection = viewChild.required<ElementRef>('testimonialsSection');
+  readonly finalCtaSection = viewChild.required<ElementRef>('finalCtaSection');
 
   // Convert arrays to signals for better reactivity
   benefits = signal([

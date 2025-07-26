@@ -4,7 +4,7 @@ import {
   OnInit,
   AfterViewInit,
   ElementRef,
-  ViewChild,
+  viewChild
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -29,9 +29,9 @@ gsap.registerPlugin(ScrollTrigger);
 })
 export class HomeComponent implements OnInit, AfterViewInit {
   private authService = inject(AuthService);
-  @ViewChild('heroSection', { static: true }) heroSection!: ElementRef;
-  @ViewChild('featuredSection', { static: true }) featuredSection!: ElementRef;
-  @ViewChild('statsSection', { static: true }) statsSection!: ElementRef;
+  readonly heroSection = viewChild.required<ElementRef>('heroSection');
+  readonly featuredSection = viewChild.required<ElementRef>('featuredSection');
+  readonly statsSection = viewChild.required<ElementRef>('statsSection');
 
   currentUser$: Observable<UserProfile | null> = this.authService.currentUser$;
   isAuthenticated$ = this.authService.authStatus$;
