@@ -1,52 +1,144 @@
-# PawfectMatchNg
+# PawfectMatch Angular Library
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.0.0.
+A comprehensive Angular library providing reusable components, services, and utilities for the PawfectMatch application suite.
 
-## Code scaffolding
+## Features
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+### 🎨 **Custom Icon Component**
+- Flexible, expandable icon system with 16+ built-in icons
+- Support for custom sizing, colors, and animations
+- Easy icon addition through centralized service
+- Built with Angular signals for optimal performance
+
+### 🍞 **Toast Service**
+- Centralized notification system
+- Multiple toast types and customization options
+
+### 🌐 **Google Maps Service**
+- Google Maps integration utilities
+
+### ⚡ **Error Handling**
+- Global error handling and reporting services
+
+## Installation
 
 ```bash
-ng generate component component-name
+npm install @longhl104/pawfect-match-ng
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Quick Start
 
-```bash
-ng generate --help
+### Using the Custom Icon Component
+
+```typescript
+import { CustomIconComponent } from '@longhl104/pawfect-match-ng';
+
+@Component({
+  standalone: true,
+  imports: [CustomIconComponent],
+  template: `
+    <pm-custom-icon name="heart" width="24" color="red"></pm-custom-icon>
+    <pm-custom-icon name="star" width="32" color="gold" cssClass="pulse"></pm-custom-icon>
+  `
+})
+export class MyComponent {}
 ```
 
-## Building
+### Adding Custom Icons
 
-To build the library, run:
+```typescript
+import { IconService, IconDefinition } from '@longhl104/pawfect-match-ng';
+
+@Component({...})
+export class MyComponent {
+  constructor(private iconService: IconService) {}
+
+  ngOnInit() {
+    const customIcon: IconDefinition = {
+      name: 'my-icon',
+      content: `<path d="M12 2l3.09 6.26L22 9.27..."/>`,
+      viewBox: '0 0 24 24'
+    };
+    
+    this.iconService.addIcon(customIcon);
+  }
+}
+```
+
+## Built-in Icons
+
+The library includes these ready-to-use icons:
+- `heart`, `heart-filled`
+- `star`, `star-filled`
+- `paw`, `dog`, `cat`
+- `user`, `home`, `search`
+- `plus`, `minus`, `check`, `x`
+- `arrow-right`, `arrow-left`
+- `menu`, `close`
+
+## Components
+
+### Custom Icon Component (`pm-custom-icon`)
+
+| Input | Type | Default | Description |
+|-------|------|---------|-------------|
+| `name` | `string` | `''` | Icon name |
+| `width` | `number \| string` | `24` | Icon size (square) |
+| `color` | `string` | `'currentColor'` | Icon color |
+| `cssClass` | `string` | `''` | Additional CSS classes |
+
+### Icon Demo Component (`pm-icon-demo`)
+
+A showcase component displaying all available icons and usage examples.
+
+## Services
+
+### IconService
+
+Centralized icon management with methods for adding, removing, and querying icons.
+
+### ToastService
+
+Global notification system for displaying user messages.
+
+### ErrorHandlingService
+
+Centralized error handling and reporting.
+
+## Development
+
+### Building the Library
 
 ```bash
 ng build pawfect-match-ng
 ```
 
-This command will compile your project, and the build artifacts will be placed in the `dist/` directory.
+### Running Tests
 
-### Publishing the Library
+```bash
+ng test pawfect-match-ng
+```
 
-Once the project is built, you can publish your library by following these steps:
+### Publishing
 
-1. Navigate to the `dist` directory:
+1. Build the library:
    ```bash
-   cd dist/pawfect-match-ng
+   ng build pawfect-match-ng
    ```
 
-2. Run the `npm publish` command to publish your library to the npm registry:
+2. Navigate to dist and publish:
    ```bash
+   cd dist/pawfect-match-ng
    npm publish
    ```
 
-## Running unit tests
+## Documentation
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+For detailed component documentation, see the individual README files in each component directory.
 
-```bash
-ng test
-```
+## License
+
+This library is part of the PawfectMatch application suite.
 
 ## Running end-to-end tests
 

@@ -1,0 +1,102 @@
+.custom-icon {
+  display: inline-block;
+  vertical-align: middle;
+  transition: all 0.2s ease;
+
+  // Ensure proper scaling
+  width: auto;
+  height: auto;
+
+  // Default stroke properties for outlined icons
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+
+  // Ensure icon scales properly
+  &:not([fill]) {
+    fill: none;
+  }
+
+  // Hover effects (can be customized via CSS classes)
+  &.hoverable {
+    cursor: pointer;
+
+    &:hover {
+      transform: scale(1.1);
+      opacity: 0.8;
+    }
+  }
+
+  // Animation classes
+  &.spin {
+    animation: icon-spin 1s linear infinite;
+  }
+
+  &.pulse {
+    animation: icon-pulse 2s infinite;
+  }
+
+  &.bounce {
+    animation: icon-bounce 1s infinite;
+  }
+}
+
+// Animation keyframes
+@keyframes icon-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes icon-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes icon-bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40%, 43% {
+    transform: translateY(-8px);
+  }
+  70% {
+    transform: translateY(-4px);
+  }
+  90% {
+    transform: translateY(-2px);
+  }
+}
+
+// Size variants
+.icon-xs {
+  width: 12px;
+  height: 12px;
+}
+
+.icon-sm {
+  width: 16px;
+  height: 16px;
+}
+
+.icon-md {
+  width: 24px;
+  height: 24px;
+}
+
+.icon-lg {
+  width: 32px;
+  height: 32px;
+}
+
+.icon-xl {
+  width: 48px;
+  height: 48px;
+}
