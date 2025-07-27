@@ -9,6 +9,7 @@ import { AvatarModule } from 'primeng/avatar';
 import { MenuModule } from 'primeng/menu';
 import { TooltipModule } from 'primeng/tooltip';
 import { MenuItem } from 'primeng/api';
+import { CustomIconComponent } from '@longhl104/pawfect-match-ng';
 
 @Component({
   selector: 'app-header',
@@ -20,7 +21,8 @@ import { MenuItem } from 'primeng/api';
     ButtonModule,
     AvatarModule,
     MenuModule,
-    TooltipModule
+    TooltipModule,
+    CustomIconComponent,
   ],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],

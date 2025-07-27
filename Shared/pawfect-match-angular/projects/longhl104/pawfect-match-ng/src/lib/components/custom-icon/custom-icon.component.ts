@@ -1,6 +1,15 @@
-import { Component, Input, OnInit, OnChanges, signal, computed, inject } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  OnChanges,
+  signal,
+  computed,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IconService, IconDefinition } from '../../services/icon.service';
+import { DomSanitizer } from '@angular/platform-browser';
+import { IconService, IconDefinition } from '../../services';
 
 @Component({
   selector: 'pm-custom-icon',
@@ -12,14 +21,12 @@ import { IconService, IconDefinition } from '../../services/icon.service';
       [attr.height]="width"
       [attr.viewBox]="currentIcon()?.viewBox || '0 0 24 24'"
       [attr.fill]="color"
-      [attr.stroke]="color"
       class="custom-icon"
       [class]="cssClass"
-      [innerHTML]="currentIcon()?.content || ''"
-    >
-    </svg>
+      [innerHTML]="safeIconContent()"
+    ></svg>
   `,
-  styleUrls: ['./custom-icon.component.scss']
+  styleUrls: ['./custom-icon.component.scss'],
 })
 export class CustomIconComponent implements OnInit, OnChanges {
   @Input() name = '';
@@ -28,6 +35,7 @@ export class CustomIconComponent implements OnInit, OnChanges {
   @Input() cssClass = '';
 
   private iconService = inject(IconService);
+  private sanitizer = inject(DomSanitizer);
 
   // Signal for reactive icon lookup
   private iconName = signal<string>('');
@@ -36,6 +44,16 @@ export class CustomIconComponent implements OnInit, OnChanges {
   currentIcon = computed(() => {
     const name = this.iconName();
     return this.iconService.getIcon(name);
+  });
+
+  // Computed signal for sanitized icon content
+  safeIconContent = computed(() => {
+    const icon = this.currentIcon();
+    if (!icon?.content) {
+      return '';
+    }
+
+    return this.sanitizer.bypassSecurityTrustHtml(icon.content);
   });
 
   ngOnInit() {

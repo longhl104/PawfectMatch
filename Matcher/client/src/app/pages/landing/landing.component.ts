@@ -21,6 +21,7 @@ import { AvatarModule } from 'primeng/avatar';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { AuthService } from 'shared/services/auth.service';
+import { CustomIconComponent } from '@longhl104/pawfect-match-ng';
 
 // Register GSAP plugins
 if (typeof window !== 'undefined') {
@@ -37,6 +38,7 @@ if (typeof window !== 'undefined') {
     CarouselModule,
     DividerModule,
     AvatarModule,
+    CustomIconComponent,
   ],
   templateUrl: './landing.component.html',
   styleUrls: ['./landing.component.scss'],

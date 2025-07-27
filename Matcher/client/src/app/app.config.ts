@@ -19,6 +19,7 @@ import {
 } from '@angular/common/http';
 import {
   GlobalErrorHandler,
+  IconService,
   credentialsInterceptor,
 } from '@longhl104/pawfect-match-ng';
 import { authInitializer } from './initializers/auth.initializer';
@@ -56,5 +57,6 @@ export const appConfig: ApplicationConfig = {
       provide: API_BASE_URL,
       useValue: environment.apiUrl,
     },
+    IconService,
   ],
 };
