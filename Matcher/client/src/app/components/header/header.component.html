@@ -10,7 +10,9 @@
         width="32"
         color="var(--p-primary-color)"
       ></pm-custom-icon>
-      <h2 class="m-0 text-2xl font-bold text-primary">PawfectMatch</h2>
+      <h2 class="hidden md:inline-block m-0 text-2xl font-bold text-primary">
+        PawfectMatch
+      </h2>
     </div>
   </ng-template>
 
@@ -134,13 +136,19 @@
   <div class="xl:hidden">
     <div
       class="fixed top-0 left-0 w-full h-full bg-black-alpha-50 z-5"
+      [class.mobile-menu-overlay]="!isMenuClosing"
+      [class.mobile-menu-overlay-closing]="isMenuClosing"
       (click)="closeMenu()"
       (keydown.escape)="closeMenu()"
       tabindex="0"
       role="button"
       aria-label="Close menu overlay"
     ></div>
-    <div class="fixed top-0 right-0 w-20rem h-full bg-white shadow-8 z-6 p-4">
+    <div
+      class="fixed top-0 right-0 w-20rem h-full bg-white shadow-8 z-6 p-4"
+      [class.mobile-menu-panel]="!isMenuClosing"
+      [class.mobile-menu-panel-closing]="isMenuClosing"
+    >
       <div class="flex justify-content-between align-items-center mb-4">
         <h3 class="m-0 text-primary">Menu</h3>
         <p-button
@@ -153,35 +161,35 @@
       <div class="flex flex-column gap-3">
         <a
           routerLink="/home"
-          class="flex align-items-center gap-2 p-3 border-round hover:bg-primary-50 text-700 no-underline"
+          class="flex align-items-center gap-2 p-3 border-round hover:bg-primary-50 text-700 no-underline mobile-menu-item"
           (click)="closeMenu()"
         >
           <i class="pi pi-home"></i>Home
         </a>
         <a
           routerLink="/browse"
-          class="flex align-items-center gap-2 p-3 border-round hover:bg-primary-50 text-700 no-underline"
+          class="flex align-items-center gap-2 p-3 border-round hover:bg-primary-50 text-700 no-underline mobile-menu-item"
           (click)="closeMenu()"
         >
           <i class="pi pi-search"></i>Browse Pets
         </a>
         <a
           routerLink="/match"
-          class="flex align-items-center gap-2 p-3 border-round hover:bg-primary-50 text-700 no-underline"
+          class="flex align-items-center gap-2 p-3 border-round hover:bg-primary-50 text-700 no-underline mobile-menu-item"
           (click)="closeMenu()"
         >
           <i class="pi pi-heart"></i>Find Match
         </a>
         <a
           routerLink="/about"
-          class="flex align-items-center gap-2 p-3 border-round hover:bg-primary-50 text-700 no-underline"
+          class="flex align-items-center gap-2 p-3 border-round hover:bg-primary-50 text-700 no-underline mobile-menu-item"
           (click)="closeMenu()"
         >
           <i class="pi pi-info-circle"></i>About
         </a>
         <a
           routerLink="/contact"
-          class="flex align-items-center gap-2 p-3 border-round hover:bg-primary-50 text-700 no-underline"
+          class="flex align-items-center gap-2 p-3 border-round hover:bg-primary-50 text-700 no-underline mobile-menu-item"
           (click)="closeMenu()"
         >
           <i class="pi pi-envelope"></i>Contact

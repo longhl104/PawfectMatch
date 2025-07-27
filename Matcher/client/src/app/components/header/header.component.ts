@@ -31,6 +31,7 @@ export class HeaderComponent {
   private authService = inject(AuthService);
 
   isMenuOpen = false;
+  isMenuClosing = false;
   currentUser$: Observable<UserProfile | null> = this.authService.currentUser$;
   isAuthenticated$ = this.authService.authStatus$;
   userMenuItems: MenuItem[] = [];
@@ -41,10 +42,18 @@ export class HeaderComponent {
 
   toggleMenu() {
     this.isMenuOpen = !this.isMenuOpen;
+    this.isMenuClosing = false;
   }
 
   closeMenu() {
-    this.isMenuOpen = false;
+    if (this.isMenuOpen) {
+      this.isMenuClosing = true;
+      // Wait for animation to complete before hiding
+      setTimeout(() => {
+        this.isMenuOpen = false;
+        this.isMenuClosing = false;
+      }, 300); // Match animation duration
+    }
   }
 
   onLogin() {
