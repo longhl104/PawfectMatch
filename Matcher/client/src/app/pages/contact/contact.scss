@@ -1,0 +1,123 @@
+.contact-page {
+  // Ensure proper grid alignment
+  .grid {
+    align-items: stretch; // Make all grid items same height
+  }
+
+  .contact-card {
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%; // Ensure cards take full height of their container
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  .contact-card-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem 1rem;
+    background: linear-gradient(
+      135deg,
+      var(--color-primary-50) 0%,
+      var(--color-primary-100) 100%
+    );
+    border-radius: 12px 12px 0 0;
+  }
+
+  .contact-card-content {
+    padding: 1.5rem;
+    text-align: center;
+    flex-grow: 1; // Allow content to grow and push button to bottom
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; // Distribute content evenly
+  }
+
+  .contact-info {
+    padding: 1rem;
+    background-color: var(--color-background-secondary);
+    border-radius: 8px;
+    border-left: 4px solid var(--color-primary-500);
+  }
+
+  .social-media-card {
+    background: linear-gradient(
+      135deg,
+      var(--color-background-primary) 0%,
+      var(--color-background-secondary) 100%
+    );
+  }
+
+  .social-item {
+    flex: 1;
+    max-width: 120px;
+  }
+
+  .social-button {
+    width: 4rem;
+    height: 4rem;
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+
+    &.facebook-btn {
+      background: #1877f2;
+      border-color: #1877f2;
+
+      &:hover {
+        background: #166fe5;
+        border-color: #166fe5;
+        transform: scale(1.1);
+      }
+    }
+
+    &.instagram-btn {
+      background: linear-gradient(
+        45deg,
+        #f09433 0%,
+        #e6683c 25%,
+        #dc2743 50%,
+        #cc2366 75%,
+        #bc1888 100%
+      );
+      border: none;
+
+      &:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 15px rgba(188, 24, 136, 0.4);
+      }
+    }
+  }
+
+  .note-section {
+    background: var(--color-primary-50);
+    border: 1px solid var(--color-primary-200);
+  }
+
+  .back-home-btn {
+    min-width: 150px;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .contact-page {
+    .contact-card-header {
+      padding: 1.5rem 1rem 0.5rem;
+    }
+
+    .social-item {
+      max-width: 100px;
+    }
+
+    .social-button {
+      width: 3rem;
+      height: 3rem;
+      font-size: 1.2rem;
+    }
+  }
+}

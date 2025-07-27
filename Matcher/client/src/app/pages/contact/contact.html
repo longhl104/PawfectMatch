@@ -1,0 +1,160 @@
+<div class="contact-page min-h-screen bg-surface-50 py-8">
+  <div class="max-w-4xl mx-auto px-4">
+    <!-- Page Header -->
+    <div class="text-center mb-8">
+      <h1 class="text-5xl font-bold text-900 mb-4">
+        <i class="pi pi-envelope mr-3 text-primary"></i>
+        Contact Us
+      </h1>
+      <p class="text-xl text-600 max-w-2xl mx-auto">
+        We'd love to hear from you! Get in touch with us through any of the
+        channels below.
+      </p>
+    </div>
+
+    <!-- Contact Information Cards -->
+    <div class="grid gap-6 align-items-stretch justify-content-center">
+      <!-- Email Card -->
+      <div class="col-12 md:col-6 flex justify-content-center">
+        <p-card styleClass="h-full contact-card w-full max-w-30rem">
+          <ng-template pTemplate="header">
+            <div class="contact-card-header">
+              <i class="pi pi-envelope text-4xl text-primary mb-3"></i>
+              <h3 class="text-2xl font-semibold text-900 m-0">Email</h3>
+            </div>
+          </ng-template>
+
+          <div class="contact-card-content">
+            <div class="flex-grow-1">
+              <p class="text-600 mb-4">
+                Send us an email and we'll get back to you as soon as possible.
+              </p>
+              <div class="contact-info mb-4">
+                <span class="text-900 font-medium"
+                  >{{ contactInfo.email }}</span
+                >
+              </div>
+            </div>
+            <p-button
+              label="Send Email"
+              icon="pi pi-external-link"
+              styleClass="w-full"
+              (onClick)="openEmail()"
+            />
+          </div>
+        </p-card>
+      </div>
+
+      <!-- Phone Card -->
+      <div class="col-12 md:col-6 flex justify-content-center">
+        <p-card styleClass="h-full contact-card w-full max-w-30rem">
+          <ng-template pTemplate="header">
+            <div class="contact-card-header">
+              <i class="pi pi-phone text-4xl text-primary mb-3"></i>
+              <h3 class="text-2xl font-semibold text-900 m-0">Phone</h3>
+            </div>
+          </ng-template>
+
+          <div class="contact-card-content">
+            <div class="flex-grow-1">
+              <p class="text-600 mb-4">
+                Give us a call during business hours for immediate assistance.
+              </p>
+              <div class="contact-info mb-4">
+                <span class="text-900 font-medium"
+                  >{{ contactInfo.phone }}</span
+                >
+              </div>
+            </div>
+            <p-button
+              label="Call Now"
+              icon="pi pi-phone"
+              styleClass="w-full"
+              (onClick)="callPhone()"
+            />
+          </div>
+        </p-card>
+      </div>
+
+      <!-- Social Media Section -->
+      <div class="col-12">
+        <p-card styleClass="social-media-card">
+          <ng-template pTemplate="header">
+            <div class="contact-card-header">
+              <i class="pi pi-share-alt text-4xl text-primary mb-3"></i>
+              <h3 class="text-2xl font-semibold text-900 m-0">Follow Us</h3>
+            </div>
+          </ng-template>
+
+          <div class="contact-card-content">
+            <p class="text-600 mb-6 text-center">
+              Connect with us on social media for updates and more!
+            </p>
+
+            <div class="flex justify-content-center gap-4">
+              <!-- Facebook -->
+              <div class="social-item text-center">
+                <p-button
+                  icon="pi pi-facebook"
+                  [rounded]="true"
+                  size="large"
+                  styleClass="social-button facebook-btn mb-3"
+                  (onClick)="openFacebook()"
+                  pTooltip="Follow us on Facebook"
+                  tooltipPosition="top"
+                />
+                <p class="text-sm text-600 m-0">Facebook</p>
+              </div>
+
+              <!-- Instagram -->
+              <div class="social-item text-center">
+                <p-button
+                  icon="pi pi-instagram"
+                  [rounded]="true"
+                  size="large"
+                  styleClass="social-button instagram-btn mb-3"
+                  (onClick)="openInstagram()"
+                  pTooltip="Follow us on Instagram"
+                  tooltipPosition="top"
+                />
+                <p class="text-sm text-600 m-0">Instagram</p>
+              </div>
+            </div>
+          </div>
+        </p-card>
+      </div>
+
+      <!-- Note Section -->
+      <div class="col-12">
+        <div
+          class="note-section bg-primary-50 border-left-3 border-primary p-4 border-round"
+        >
+          <div class="flex align-items-start gap-3">
+            <i class="pi pi-info-circle text-primary text-xl mt-1"></i>
+            <div>
+              <h4 class="text-900 font-semibold mb-2 m-0">
+                Contact Form Coming Soon!
+              </h4>
+              <p class="text-600 m-0">
+                We're currently working on implementing a contact form to make
+                it even easier to reach us. In the meantime, please use any of
+                the contact methods above.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Back to Home -->
+    <div class="text-center mt-8">
+      <p-button
+        label="Back to Home"
+        icon="pi pi-home"
+        [outlined]="true"
+        routerLink="/"
+        styleClass="back-home-btn"
+      />
+    </div>
+  </div>
+</div>
