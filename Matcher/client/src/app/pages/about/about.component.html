@@ -1,0 +1,253 @@
+<!-- Hero Section -->
+<div
+  class="about-hero-section bg-gradient-to-br from-primary-50 to-blue-50 py-12 relative overflow-hidden"
+  #heroSection
+>
+  <div class="max-w-6xl mx-auto px-4 relative z-1">
+    <div class="text-center">
+      <h1
+        class="about-hero-title text-5xl lg:text-6xl font-bold text-primary mb-6 leading-tight"
+      >
+        About PawfectMatch
+      </h1>
+      <p
+        class="about-hero-subtitle text-xl lg:text-2xl text-700 mb-8 line-height-3 max-w-4xl mx-auto"
+      >
+        We're on a mission to revolutionize pet adoption through smart
+        technology, compassionate design, and a deep understanding of what makes
+        the perfect match.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Mission Section -->
+<section class="mission-section py-12 bg-surface-0" #missionSection>
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="grid align-items-center">
+      <div class="col-12 lg:col-6">
+        <div class="mission-content">
+          <h2 class="text-4xl font-bold text-900 mb-6">Our Mission</h2>
+          <p class="text-lg text-700 mb-4 line-height-3">
+            Every year, millions of pets wait in shelters for their forever
+            homes, while families search for the perfect companion. Traditional
+            adoption processes can be overwhelming and inefficient, leading to
+            mismatches and returns.
+          </p>
+          <p class="text-lg text-700 mb-6 line-height-3">
+            PawfectMatch bridges this gap with intelligent matching technology
+            that considers lifestyle, preferences, and compatibility factors to
+            create lasting bonds between pets and families.
+          </p>
+          <div class="flex gap-3">
+            <p-button
+              label="Learn More"
+              icon="pi pi-arrow-right"
+              severity="info"
+              [outlined]="true"
+              routerLink="/home"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="col-12 lg:col-6">
+        <div class="text-center">
+          <i
+            class="pi pi-heart text-primary"
+            style="font-size: 12rem; opacity: 0.1"
+          ></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Values Section -->
+<section class="values-section py-12 bg-surface-50" #valuesSection>
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="text-center mb-12">
+      <h2 class="text-4xl font-bold text-900 mb-4">Our Values</h2>
+      <p class="text-lg text-600 max-w-3xl mx-auto">
+        These core values guide everything we do, from product development to
+        community engagement.
+      </p>
+    </div>
+    <div class="grid">
+      @for (value of values; track value.title) {
+        <div class="col-12 md:col-6 lg:col-3 mb-4">
+          <p-card
+            class="value-card h-full hover:shadow-lg transition-shadow duration-300"
+          >
+            <ng-template pTemplate="header">
+              <div class="text-center p-4">
+                <i [class]="value.icon + ' text-5xl ' + value.color"></i>
+              </div>
+            </ng-template>
+            <div class="text-center">
+              <h3 class="text-xl font-semibold text-900 mb-3">
+                {{ value.title }}
+              </h3>
+              <p class="text-600 line-height-3">{{ value.description }}</p>
+            </div>
+          </p-card>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="stats-section py-12 bg-primary-50">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="text-center mb-8">
+      <h2 class="text-4xl font-bold text-900 mb-4">Making a Difference</h2>
+      <p class="text-lg text-600">
+        Our impact grows every day as we help more pets find loving homes.
+      </p>
+    </div>
+    <div class="grid">
+      @for (stat of stats; track stat.label) {
+        <div class="col-12 md:col-6 lg:col-3">
+          <div class="stat-item text-center p-6">
+            <i [class]="stat.icon + ' text-4xl text-primary mb-3'"></i>
+            <div class="text-4xl font-bold text-primary mb-2">
+              {{ stat.value }}
+            </div>
+            <div class="text-lg text-600">{{ stat.label }}</div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- Timeline Section -->
+<section class="timeline-section py-12 bg-surface-0">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="text-center mb-12">
+      <h2 class="text-4xl font-bold text-900 mb-4">Our Journey</h2>
+      <p class="text-lg text-600 max-w-3xl mx-auto">
+        From concept to reality, here's how we've grown to serve the pet
+        adoption community.
+      </p>
+    </div>
+    <div class="timeline-container">
+      <p-timeline
+        [value]="timelineEvents"
+        align="alternate"
+        styleClass="timeline-custom"
+      >
+        <ng-template pTemplate="marker" let-event>
+          <div class="timeline-item">
+            <span
+              class="flex w-3rem h-3rem align-items-center justify-content-center text-white border-circle z-1 shadow-1"
+              [style.background-color]="event.color"
+            >
+              <i [class]="event.icon"></i>
+            </span>
+          </div>
+        </ng-template>
+        <ng-template pTemplate="content" let-event>
+          <p-card class="timeline-item">
+            <ng-template pTemplate="title">
+              <div class="flex align-items-center gap-2">
+                <p-tag
+                  [value]="event.status"
+                  [style.background-color]="event.color"
+                ></p-tag>
+                <span class="text-600">{{ event.date }}</span>
+              </div>
+            </ng-template>
+            <ng-template pTemplate="subtitle">
+              {{ event.title }}
+            </ng-template>
+            <p class="text-600 line-height-3">{{ event.description }}</p>
+          </p-card>
+        </ng-template>
+      </p-timeline>
+    </div>
+  </div>
+</section>
+
+<!-- Team Section -->
+<section class="team-section py-12 bg-surface-50" #teamSection>
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="text-center mb-12">
+      <h2 class="text-4xl font-bold text-900 mb-4">Our Team</h2>
+      <p class="text-lg text-600 max-w-3xl mx-auto">
+        A passionate group of professionals dedicated to improving pet adoption
+        through innovation and compassion.
+      </p>
+    </div>
+    <div class="grid">
+      @for (member of teamMembers; track member.name) {
+        <div class="col-12 md:col-6 lg:col-4 mb-6">
+          <p-card
+            class="team-card h-full hover:shadow-lg transition-shadow duration-300"
+          >
+            <ng-template pTemplate="header">
+              <div
+                class="text-center p-6 bg-gradient-to-br from-primary-50 to-blue-50"
+              >
+                <div
+                  class="w-4rem h-4rem bg-primary-100 border-circle flex align-items-center justify-content-center mx-auto mb-3"
+                >
+                  <i [class]="member.avatar + ' text-2xl text-primary'"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-900 mb-1">
+                  {{ member.name }}
+                </h3>
+                <p class="text-primary font-medium">{{ member.role }}</p>
+              </div>
+            </ng-template>
+            <div class="p-4">
+              <p class="text-600 line-height-3 mb-4">
+                {{ member.description }}
+              </p>
+              <div class="flex flex-wrap gap-2">
+                @for (skill of member.skills; track skill) {
+                  <p-tag
+                    [value]="skill"
+                    severity="info"
+                    styleClass="text-xs"
+                  ></p-tag>
+                }
+              </div>
+            </div>
+          </p-card>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- Call to Action Section -->
+<section
+  class="cta-section py-12 bg-gradient-to-r from-primary-500 to-blue-500 text-white"
+>
+  <div class="max-w-4xl mx-auto px-4 text-center">
+    <h2 class="text-4xl font-bold mb-4">Join Our Mission</h2>
+    <p class="text-xl mb-8 opacity-90">
+      Whether you're looking to adopt a pet or you're a shelter wanting to
+      improve your adoption process, we're here to help create perfect matches.
+    </p>
+    <div class="flex flex-column sm:flex-row gap-3 justify-content-center">
+      <p-button
+        label="Start Matching"
+        icon="pi pi-heart"
+        size="large"
+        severity="secondary"
+        styleClass="text-lg px-6 py-3"
+        routerLink="/home"
+      />
+      <p-button
+        label="Contact Us"
+        icon="pi pi-envelope"
+        size="large"
+        [text]="true"
+        styleClass="text-lg px-6 py-3 text-white border-white hover:bg-white hover:text-primary"
+        routerLink="/contact"
+      />
+    </div>
+  </div>
+</section>

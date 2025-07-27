@@ -1,0 +1,213 @@
+// About page styling with GSAP animations and PrimeNG components
+
+// Hero section
+.about-hero-section {
+  position: relative;
+  overflow: hidden;
+  min-height: 50vh;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+    z-index: 0;
+  }
+}
+
+.about-hero-title {
+  position: relative;
+  z-index: 2;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.about-hero-subtitle {
+  position: relative;
+  z-index: 2;
+}
+
+// Mission section
+.mission-section {
+  .mission-content {
+    padding: 2rem 0;
+  }
+}
+
+// Values section
+.values-section {
+  .value-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    &:hover {
+      transform: translateY(-5px);
+    }
+
+    ::ng-deep .p-card-body {
+      padding: 1.5rem;
+    }
+
+    ::ng-deep .p-card-header {
+      padding: 0;
+      border-bottom: none;
+    }
+  }
+}
+
+// Statistics section
+.stats-section {
+  .stat-item {
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+}
+
+// Timeline section
+.timeline-section {
+  .timeline-container {
+    ::ng-deep .p-timeline {
+      .p-timeline-event {
+        .p-timeline-event-marker {
+          background: transparent;
+          border: none;
+        }
+
+        .p-timeline-event-content {
+          margin: 0 1rem;
+        }
+      }
+
+      .p-timeline-event-opposite {
+        .p-card {
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          border: 1px solid var(--surface-border);
+        }
+      }
+    }
+  }
+
+  .timeline-item {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+}
+
+// Team section
+.team-section {
+  .team-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    &:hover {
+      transform: translateY(-10px);
+    }
+
+    ::ng-deep .p-card-header {
+      padding: 0;
+      border-bottom: none;
+    }
+
+    ::ng-deep .p-card-body {
+      padding: 0;
+    }
+
+    ::ng-deep .p-card-content {
+      padding-top: 0;
+    }
+  }
+}
+
+// Call to action section
+.cta-section {
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%),
+                linear-gradient(-45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.1) 75%),
+                linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.1) 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    opacity: 0.3;
+    animation: float 10s linear infinite;
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateX(0px);
+  }
+  100% {
+    transform: translateX(20px);
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .about-hero-title {
+    font-size: 3rem !important;
+  }
+
+  .about-hero-subtitle {
+    font-size: 1.25rem !important;
+  }
+
+  .timeline-section {
+    ::ng-deep .p-timeline-alternate {
+      .p-timeline-event {
+        &:nth-child(even) {
+          flex-direction: row !important;
+
+          .p-timeline-event-content {
+            text-align: left !important;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Custom timeline styling
+::ng-deep .timeline-custom {
+  .p-timeline-event-marker {
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+
+  .p-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+    }
+  }
+}
+
+// Animation classes for GSAP
+.value-card,
+.stat-item,
+.team-card,
+.timeline-item {
+  opacity: 0;
+  transform: translateY(50px);
+}
+
+.mission-content {
+  opacity: 0;
+  transform: translateY(50px);
+}
