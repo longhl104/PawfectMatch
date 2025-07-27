@@ -146,6 +146,10 @@ export class AuthService {
     window.location.href = loginUrl;
   }
 
+  redirectToSignUp() {
+    window.location.href = `${this.identityUrl}/auth/choice`;
+  }
+
   /**
    * Get identity application URL
    */

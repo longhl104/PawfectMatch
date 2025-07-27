@@ -60,6 +60,10 @@ export class HeaderComponent {
     this.authService.redirectToLogin();
   }
 
+  onSignUp() {
+    this.authService.redirectToSignUp();
+  }
+
   onLogout() {
     this.authService.logout().subscribe();
   }
