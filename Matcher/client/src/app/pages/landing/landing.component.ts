@@ -9,7 +9,7 @@ import {
   signal,
   computed,
   effect,
-  viewChild
+  viewChild,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
@@ -51,7 +51,9 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly heroSection = viewChild.required<ElementRef>('heroSection');
   readonly benefitsSection = viewChild.required<ElementRef>('benefitsSection');
   readonly statsSection = viewChild.required<ElementRef>('statsSection');
-  readonly testimonialsSection = viewChild.required<ElementRef>('testimonialsSection');
+  readonly testimonialsSection = viewChild.required<ElementRef>(
+    'testimonialsSection',
+  );
   readonly finalCtaSection = viewChild.required<ElementRef>('finalCtaSection');
 
   // Convert arrays to signals for better reactivity
@@ -164,14 +166,44 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     if (isPlatformBrowser(this.platformId)) {
-      // Small delay to ensure DOM is ready
+      // Longer delay to ensure DOM is fully ready and Angular components are rendered
       setTimeout(() => {
-        this.initializeAnimations();
-        this.animateCounters();
-        this.setupButtonAnimations();
-        this.startTestimonialCarousel();
-      }, 100);
+        if (this.checkDOMElements()) {
+          this.initializeAnimations();
+          this.animateCounters();
+          this.setupButtonAnimations();
+          this.startTestimonialCarousel();
+        } else {
+          console.warn('Some DOM elements are not ready, retrying...');
+          // Retry after another delay if elements aren't ready
+          setTimeout(() => {
+            this.initializeAnimations();
+            this.animateCounters();
+            this.setupButtonAnimations();
+            this.startTestimonialCarousel();
+          }, 500);
+        }
+      }, 300);
     }
+  }
+
+  private checkDOMElements(): boolean {
+    const criticalElements = [
+      '.hero-headline',
+      '.primary-cta',
+      '.floating-cta',
+      '.final-cta-bg',
+      '.animated-button',
+    ];
+
+    return criticalElements.every((selector) => {
+      const element = document.querySelector(selector);
+      if (!element) {
+        console.warn(`Critical element not found: ${selector}`);
+        return false;
+      }
+      return true;
+    });
   }
 
   private initializeAnimations() {
@@ -273,62 +305,77 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     );
 
     // Final CTA section with parallax effect
-    gsap.fromTo(
-      '.final-cta-bg',
-      {
-        backgroundPosition: 'center 20%',
-      },
-      {
-        backgroundPosition: 'center 80%',
-        duration: 2,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: '.final-cta',
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: 1,
+    const finalCtaBg = document.querySelector('.final-cta-bg');
+    if (finalCtaBg) {
+      gsap.fromTo(
+        '.final-cta-bg',
+        {
+          backgroundPosition: 'center 20%',
         },
-      },
-    );
+        {
+          backgroundPosition: 'center 80%',
+          duration: 2,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '.final-cta',
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: 1,
+          },
+        },
+      );
+    } else {
+      console.warn('Final CTA background element not found');
+    }
 
     // Floating CTA button scroll behavior
-    ScrollTrigger.create({
-      trigger: '.primary-cta',
-      start: 'top center',
-      end: 'bottom bottom',
-      onEnter: () => {
-        gsap.to('.floating-cta', {
-          opacity: 1,
-          y: 0,
-          duration: 0.5,
-          ease: 'power3.out',
-        });
-      },
-      onLeave: () => {
-        gsap.to('.floating-cta', {
-          opacity: 0,
-          y: 100,
-          duration: 0.5,
-          ease: 'power3.in',
-        });
-      },
-      onEnterBack: () => {
-        gsap.to('.floating-cta', {
-          opacity: 1,
-          y: 0,
-          duration: 0.5,
-          ease: 'power3.out',
-        });
-      },
-      onLeaveBack: () => {
-        gsap.to('.floating-cta', {
-          opacity: 0,
-          y: 100,
-          duration: 0.5,
-          ease: 'power3.in',
-        });
-      },
-    });
+    const floatingCta = document.querySelector('.floating-cta');
+    const primaryCta = document.querySelector('.primary-cta');
+
+    if (floatingCta && primaryCta) {
+      ScrollTrigger.create({
+        trigger: '.primary-cta',
+        start: 'top center',
+        end: 'bottom bottom',
+        onEnter: () => {
+          gsap.to('.floating-cta', {
+            opacity: 1,
+            y: 0,
+            duration: 0.5,
+            ease: 'power3.out',
+          });
+        },
+        onLeave: () => {
+          gsap.to('.floating-cta', {
+            opacity: 0,
+            y: 100,
+            duration: 0.5,
+            ease: 'power3.in',
+          });
+        },
+        onEnterBack: () => {
+          gsap.to('.floating-cta', {
+            opacity: 1,
+            y: 0,
+            duration: 0.5,
+            ease: 'power3.out',
+          });
+        },
+        onLeaveBack: () => {
+          gsap.to('.floating-cta', {
+            opacity: 0,
+            y: 100,
+            duration: 0.5,
+            ease: 'power3.in',
+          });
+        },
+      });
+    } else {
+      console.warn('Floating CTA or Primary CTA elements not found:', {
+        floatingCta: !!floatingCta,
+        primaryCta: !!primaryCta,
+      });
+    }
   }
 
   private animateCounters() {
@@ -376,32 +423,41 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     // CTA button hover animations
     const buttons = document.querySelectorAll('.animated-button');
 
-    buttons.forEach((button) => {
-      button.addEventListener('mouseenter', () => {
-        gsap.to(button, {
-          scale: 1.05,
-          duration: 0.3,
-          ease: 'power2.out',
+    if (buttons.length > 0) {
+      buttons.forEach((button) => {
+        button.addEventListener('mouseenter', () => {
+          gsap.to(button, {
+            scale: 1.05,
+            duration: 0.3,
+            ease: 'power2.out',
+          });
         });
-      });
 
-      button.addEventListener('mouseleave', () => {
-        gsap.to(button, {
-          scale: 1,
-          duration: 0.3,
-          ease: 'power2.out',
+        button.addEventListener('mouseleave', () => {
+          gsap.to(button, {
+            scale: 1,
+            duration: 0.3,
+            ease: 'power2.out',
+          });
         });
       });
-    });
+    } else {
+      console.warn('No animated buttons found');
+    }
 
     // Pulse animation for primary CTA
-    gsap.to('.cta-pulse', {
-      scale: 1.05,
-      duration: 1.5,
-      repeat: -1,
-      yoyo: true,
-      ease: 'power2.inOut',
-    });
+    const ctaPulse = document.querySelector('.cta-pulse');
+    if (ctaPulse) {
+      gsap.to('.cta-pulse', {
+        scale: 1.05,
+        duration: 1.5,
+        repeat: -1,
+        yoyo: true,
+        ease: 'power2.inOut',
+      });
+    } else {
+      console.warn('CTA pulse element not found');
+    }
   }
 
   private startTestimonialCarousel() {
