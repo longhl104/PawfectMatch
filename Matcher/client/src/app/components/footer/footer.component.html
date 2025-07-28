@@ -125,7 +125,9 @@
         <ul class="list-none p-0 m-0">
           <li class="mb-2">
             <a
-              routerLink="/privacy"
+              [href]="privacyUrl"
+              target="_blank"
+              rel="noopener,noreferrer"
               class="text-600 hover:text-primary transition-colors duration-200 no-underline flex align-items-center gap-2"
             >
               <i class="pi pi-eye-slash text-xs"></i>Privacy Policy
@@ -133,18 +135,12 @@
           </li>
           <li class="mb-2">
             <a
-              routerLink="/terms"
+              [href]="termsUrl"
+              target="_blank"
+              rel="noopener,noreferrer"
               class="text-600 hover:text-primary transition-colors duration-200 no-underline flex align-items-center gap-2"
             >
               <i class="pi pi-file-edit text-xs"></i>Terms of Service
-            </a>
-          </li>
-          <li class="mb-2">
-            <a
-              routerLink="/disclaimer"
-              class="text-600 hover:text-primary transition-colors duration-200 no-underline flex align-items-center gap-2"
-            >
-              <i class="pi pi-exclamation-triangle text-xs"></i>Disclaimer
             </a>
           </li>
         </ul>
