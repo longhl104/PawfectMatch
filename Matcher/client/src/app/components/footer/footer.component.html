@@ -4,32 +4,42 @@
       <!-- Brand Section -->
       <div class="col-12 lg:col-4 mb-4">
         <div class="flex align-items-center gap-3 mb-3">
-          <i class="pi pi-heart-fill text-primary text-3xl"></i>
+          <pm-custom-icon
+            name="pawfectmatch"
+            width="32"
+            color="var(--p-primary-color)"
+          ></pm-custom-icon>
           <span class="text-2xl font-bold text-primary">PawfectMatch</span>
         </div>
         <p class="text-600 line-height-3 mb-4">
-          Connecting loving pets with loving families.
-          Your perfect companion is waiting for you.
+          Connecting loving pets with loving families. Your perfect companion is
+          waiting for you.
         </p>
         <div class="flex gap-2">
-          <p-button icon="pi pi-facebook"
+          <p-button
+            icon="pi pi-facebook"
             [rounded]="true"
             [text]="true"
             severity="info"
             (onClick)="openSocialLink('Facebook')"
-            pTooltip="Follow us on Facebook" />
-          <p-button icon="pi pi-twitter"
+            pTooltip="Follow us on Facebook"
+          />
+          <p-button
+            icon="pi pi-twitter"
             [rounded]="true"
             [text]="true"
             severity="info"
             (onClick)="openSocialLink('Twitter')"
-            pTooltip="Follow us on Twitter" />
-          <p-button icon="pi pi-instagram"
+            pTooltip="Follow us on Twitter"
+          />
+          <p-button
+            icon="pi pi-instagram"
             [rounded]="true"
             [text]="true"
             severity="info"
             (onClick)="openSocialLink('Instagram')"
-            pTooltip="Follow us on Instagram" />
+            pTooltip="Follow us on Instagram"
+          />
         </div>
       </div>
 
@@ -40,26 +50,34 @@
         </h4>
         <ul class="list-none p-0 m-0">
           <li class="mb-2">
-            <a routerLink="/home"
-               class="text-600 hover:text-primary transition-colors duration-200 no-underline flex align-items-center gap-2">
+            <a
+              routerLink="/home"
+              class="text-600 hover:text-primary transition-colors duration-200 no-underline flex align-items-center gap-2"
+            >
               <i class="pi pi-home text-xs"></i>Home
             </a>
           </li>
           <li class="mb-2">
-            <a routerLink="/browse"
-               class="text-600 hover:text-primary transition-colors duration-200 no-underline flex align-items-center gap-2">
+            <a
+              routerLink="/browse"
+              class="text-600 hover:text-primary transition-colors duration-200 no-underline flex align-items-center gap-2"
+            >
               <i class="pi pi-search text-xs"></i>Browse Pets
             </a>
           </li>
           <li class="mb-2">
-            <a routerLink="/match"
-               class="text-600 hover:text-primary transition-colors duration-200 no-underline flex align-items-center gap-2">
+            <a
+              routerLink="/match"
+              class="text-600 hover:text-primary transition-colors duration-200 no-underline flex align-items-center gap-2"
+            >
               <i class="pi pi-heart text-xs"></i>Find Match
             </a>
           </li>
           <li class="mb-2">
-            <a routerLink="/about"
-               class="text-600 hover:text-primary transition-colors duration-200 no-underline flex align-items-center gap-2">
+            <a
+              routerLink="/about"
+              class="text-600 hover:text-primary transition-colors duration-200 no-underline flex align-items-center gap-2"
+            >
               <i class="pi pi-info-circle text-xs"></i>About Us
             </a>
           </li>
@@ -73,26 +91,34 @@
         </h4>
         <ul class="list-none p-0 m-0">
           <li class="mb-2">
-            <a routerLink="/contact"
-               class="text-600 hover:text-primary transition-colors duration-200 no-underline flex align-items-center gap-2">
+            <a
+              routerLink="/contact"
+              class="text-600 hover:text-primary transition-colors duration-200 no-underline flex align-items-center gap-2"
+            >
               <i class="pi pi-envelope text-xs"></i>Contact Us
             </a>
           </li>
           <li class="mb-2">
-            <a routerLink="/help"
-               class="text-600 hover:text-primary transition-colors duration-200 no-underline flex align-items-center gap-2">
+            <a
+              routerLink="/help"
+              class="text-600 hover:text-primary transition-colors duration-200 no-underline flex align-items-center gap-2"
+            >
               <i class="pi pi-question text-xs"></i>Help Center
             </a>
           </li>
           <li class="mb-2">
-            <a routerLink="/faq"
-               class="text-600 hover:text-primary transition-colors duration-200 no-underline flex align-items-center gap-2">
+            <a
+              routerLink="/faq"
+              class="text-600 hover:text-primary transition-colors duration-200 no-underline flex align-items-center gap-2"
+            >
               <i class="pi pi-list text-xs"></i>FAQ
             </a>
           </li>
           <li class="mb-2">
-            <a routerLink="/support"
-               class="text-600 hover:text-primary transition-colors duration-200 no-underline flex align-items-center gap-2">
+            <a
+              routerLink="/support"
+              class="text-600 hover:text-primary transition-colors duration-200 no-underline flex align-items-center gap-2"
+            >
               <i class="pi pi-headphones text-xs"></i>Support
             </a>
           </li>
@@ -106,26 +132,34 @@
         </h4>
         <ul class="list-none p-0 m-0">
           <li class="mb-2">
-            <a routerLink="/privacy"
-               class="text-600 hover:text-primary transition-colors duration-200 no-underline flex align-items-center gap-2">
+            <a
+              routerLink="/privacy"
+              class="text-600 hover:text-primary transition-colors duration-200 no-underline flex align-items-center gap-2"
+            >
               <i class="pi pi-eye-slash text-xs"></i>Privacy Policy
             </a>
           </li>
           <li class="mb-2">
-            <a routerLink="/terms"
-               class="text-600 hover:text-primary transition-colors duration-200 no-underline flex align-items-center gap-2">
+            <a
+              routerLink="/terms"
+              class="text-600 hover:text-primary transition-colors duration-200 no-underline flex align-items-center gap-2"
+            >
               <i class="pi pi-file-edit text-xs"></i>Terms of Service
             </a>
           </li>
           <li class="mb-2">
-            <a routerLink="/cookies"
-               class="text-600 hover:text-primary transition-colors duration-200 no-underline flex align-items-center gap-2">
+            <a
+              routerLink="/cookies"
+              class="text-600 hover:text-primary transition-colors duration-200 no-underline flex align-items-center gap-2"
+            >
               <i class="pi pi-cookie text-xs"></i>Cookie Policy
             </a>
           </li>
           <li class="mb-2">
-            <a routerLink="/disclaimer"
-               class="text-600 hover:text-primary transition-colors duration-200 no-underline flex align-items-center gap-2">
+            <a
+              routerLink="/disclaimer"
+              class="text-600 hover:text-primary transition-colors duration-200 no-underline flex align-items-center gap-2"
+            >
               <i class="pi pi-exclamation-triangle text-xs"></i>Disclaimer
             </a>
           </li>
@@ -137,19 +171,25 @@
         <h4 class="text-900 font-semibold mb-3">
           <i class="pi pi-send mr-2 text-primary"></i>Stay Updated
         </h4>
-        <p class="text-600 text-sm mb-3">Get updates about new pets and adoption events</p>
-        <p-button label="Subscribe"
+        <p class="text-600 text-sm mb-3">
+          Get updates about new pets and adoption events
+        </p>
+        <p-button
+          label="Subscribe"
           icon="pi pi-bell"
           severity="info"
           [outlined]="true"
           size="small"
-          styleClass="w-full" />
+          styleClass="w-full"
+        />
       </div>
     </div>
 
     <p-divider />
 
-    <div class="flex flex-column md:flex-row justify-content-between align-items-center pt-3">
+    <div
+      class="flex flex-column md:flex-row justify-content-between align-items-center pt-3"
+    >
       <p class="text-600 text-sm m-0">
         <i class="pi pi-copyright mr-1"></i>
         {{ currentYear }} PawfectMatch. All rights reserved.

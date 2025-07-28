@@ -3,7 +3,11 @@
 
 // Gradient background utility
 .bg-gradient-to-br {
-  background: linear-gradient(135deg, var(--primary-50) 0%, var(--blue-50) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary-50) 0%,
+    var(--blue-50) 100%
+  );
 }
 
 // Social button hover effects
