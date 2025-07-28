@@ -3,6 +3,7 @@ import { RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { TooltipModule } from 'primeng/tooltip';
+import { CONTACT_INFO, CONTACT_ACTIONS, type ContactInfo } from '../../shared';
 
 @Component({
   selector: 'app-contact',
@@ -16,26 +17,21 @@ import { TooltipModule } from 'primeng/tooltip';
   styleUrl: './contact.scss',
 })
 export class ContactComponent {
-  contactInfo = {
-    email: 'yenngo20199@gmail.com',
-    phone: '+61451920109',
-    facebook: 'https://www.facebook.com/ngo.hai.yen.932779',
-    instagram: 'https://www.instagram.com/n.g.o_haiyen/'
-  };
+  readonly contactInfo: ContactInfo = CONTACT_INFO;
 
   openEmail() {
-    window.open(`mailto:${this.contactInfo.email}`, '_blank');
+    CONTACT_ACTIONS.openEmail(this.contactInfo.email);
   }
 
   callPhone() {
-    window.open(`tel:${this.contactInfo.phone}`, '_blank');
+    CONTACT_ACTIONS.callPhone(this.contactInfo.phone);
   }
 
   openFacebook() {
-    window.open(this.contactInfo.facebook, '_blank', 'noopener,noreferrer');
+    CONTACT_ACTIONS.openUrl(this.contactInfo.facebook);
   }
 
   openInstagram() {
-    window.open(this.contactInfo.instagram, '_blank', 'noopener,noreferrer');
+    CONTACT_ACTIONS.openUrl(this.contactInfo.instagram);
   }
 }
