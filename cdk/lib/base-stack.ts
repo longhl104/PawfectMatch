@@ -510,7 +510,7 @@ export class BaseStack extends cdk.Stack {
       cluster,
       taskDefinition,
       serviceName: `${this.stackName}-service`,
-      desiredCount: 1, // Single instance even in production to minimize costs
+      desiredCount: 0,
       assignPublicIp: false,
       securityGroups: [serviceSecurityGroup],
       vpcSubnets: {
