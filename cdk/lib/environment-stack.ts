@@ -31,10 +31,10 @@ export class EnvironmentStack extends cdk.Stack {
 
     const { stage } = props;
 
-    // Create VPC
+    // Create VPC with cost optimization - single NAT gateway even in production
     this.vpc = new ec2.Vpc(this, 'PawfectMatchVpc', {
       maxAzs: 2,
-      natGateways: stage === 'production' ? 2 : 1,
+      natGateways: 1, // Single NAT Gateway to save $45/month per additional gateway
       subnetConfiguration: [
         {
           cidrMask: 24,
@@ -54,24 +54,18 @@ export class EnvironmentStack extends cdk.Stack {
       ],
     });
 
-    // Create ECS Cluster
+    // Create ECS Cluster with cost optimization
     this.ecsCluster = new ecs.Cluster(this, 'PawfectMatchCluster', {
       vpc: this.vpc,
       clusterName: `pawfectmatch-${stage}-cluster`,
-      containerInsights: stage === 'production',
+      containerInsights: false, // Disable to save $0.50 per container per month
     });
 
-    // Create CloudWatch Log Group
+    // Create CloudWatch Log Group with cost optimization
     this.logGroup = new logs.LogGroup(this, 'PawfectMatchLogGroup', {
       logGroupName: `/aws/ecs/pawfectmatch-${stage}`,
-      retention:
-        stage === 'production'
-          ? logs.RetentionDays.ONE_MONTH
-          : logs.RetentionDays.ONE_WEEK,
-      removalPolicy:
-        stage === 'production'
-          ? cdk.RemovalPolicy.RETAIN
-          : cdk.RemovalPolicy.DESTROY,
+      retention: logs.RetentionDays.THREE_DAYS, // Minimal retention to save on log storage
+      removalPolicy: cdk.RemovalPolicy.DESTROY, // Allow deletion to avoid retention costs
     });
 
     // Create Task Execution Role

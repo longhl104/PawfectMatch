@@ -68,31 +68,15 @@ export class ShelterHubStack extends BaseStack {
       ],
     });
 
-    // Create S3 Bucket for Pet Media (images and videos)
+    // Create S3 Bucket for Pet Media with aggressive cost optimization
     this.petMediaBucket = new s3.Bucket(this, `${this.stackName}-pet-media`, {
       bucketName: `${this.stackName}-pet-media`.toLowerCase(),
-      versioned: true,
-      removalPolicy:
-        this.stage === 'production'
-          ? RemovalPolicy.RETAIN
-          : RemovalPolicy.DESTROY,
+      versioned: false, // Disable versioning to save storage costs
+      removalPolicy: RemovalPolicy.DESTROY, // Allow deletion for all environments
       lifecycleRules: [
         {
           id: 'delete-incomplete-multipart-uploads',
-          abortIncompleteMultipartUploadAfter: Duration.days(7),
-        },
-        {
-          id: 'transition-to-ia',
-          transitions: [
-            {
-              storageClass: s3.StorageClass.INFREQUENT_ACCESS,
-              transitionAfter: Duration.days(30),
-            },
-            {
-              storageClass: s3.StorageClass.GLACIER,
-              transitionAfter: Duration.days(90),
-            },
-          ],
+          abortIncompleteMultipartUploadAfter: Duration.days(1), // Faster cleanup
         },
       ],
       cors: [
@@ -131,12 +115,12 @@ export class ShelterHubStack extends BaseStack {
       'S3 bucket for storing pet images and videos'
     );
 
-    // Create ECS service for ShelterHub API
+    // Create ECS service for ShelterHub API with minimal resources
     this.createEcsService({
       repository: this.environmentStack.shelterHubRepository,
       containerPort: 8080,
-      cpu: 512,
-      memory: 1024,
+      cpu: 256, // Reduced from 512 to save ~50% on compute costs
+      memory: 512, // Reduced from 1024 to save ~50% on memory costs
       healthCheckPath: '/health',
       subdomain: 'api-shelter',
       environment: {

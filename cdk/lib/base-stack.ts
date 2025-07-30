@@ -144,13 +144,10 @@ export class BaseStack extends cdk.Stack {
       ...(config.sortKey && { sortKey: config.sortKey }),
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       pointInTimeRecoverySpecification: {
-        pointInTimeRecoveryEnabled: this.stage === 'production',
+        pointInTimeRecoveryEnabled: false, // Disable to save costs, rely on application-level data protection
       },
-      deletionProtection: this.stage === 'production',
-      removalPolicy:
-        this.stage === 'production'
-          ? RemovalPolicy.RETAIN
-          : RemovalPolicy.DESTROY,
+      deletionProtection: false, // Allow deletion to avoid accidental retention costs
+      removalPolicy: RemovalPolicy.DESTROY, // Allow deletion for all environments
     };
 
     // Create the table
@@ -452,7 +449,7 @@ export class BaseStack extends cdk.Stack {
       }
     );
 
-    // Create target group
+    // Create target group with cost-optimized health checks
     this.targetGroup = new elbv2.ApplicationTargetGroup(this, 'TargetGroup', {
       vpc,
       port: containerPort,
@@ -462,8 +459,8 @@ export class BaseStack extends cdk.Stack {
         enabled: true,
         path: healthCheckPath,
         healthyHttpCodes: '200',
-        interval: cdk.Duration.seconds(30),
-        timeout: cdk.Duration.seconds(5),
+        interval: cdk.Duration.seconds(60), // Longer interval to reduce health check requests
+        timeout: cdk.Duration.seconds(10),
         healthyThresholdCount: 2,
         unhealthyThresholdCount: 3,
       },
@@ -508,18 +505,18 @@ export class BaseStack extends cdk.Stack {
       protocol: ecs.Protocol.TCP,
     });
 
-    // Create ECS service
+    // Create ECS service with cost optimization
     this.ecsService = new ecs.FargateService(this, 'Service', {
       cluster,
       taskDefinition,
       serviceName: `${this.stackName}-service`,
-      desiredCount: this.stage === 'production' ? 2 : 1,
+      desiredCount: 1, // Single instance even in production to minimize costs
       assignPublicIp: false,
       securityGroups: [serviceSecurityGroup],
       vpcSubnets: {
         subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
       },
-      enableExecuteCommand: this.stage !== 'production',
+      enableExecuteCommand: false, // Disable to save on CloudWatch logs for exec sessions
     });
 
     // Attach the service to the target group
