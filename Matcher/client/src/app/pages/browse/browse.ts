@@ -303,6 +303,36 @@ export class BrowseComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Override attachShadow to enable styling of Google PlaceAutocompleteElement
+    const attachShadow = Element.prototype.attachShadow;
+    Element.prototype.attachShadow = function (init: ShadowRootInit) {
+      // Check if we are the new Google places autocomplete element...
+      if (this.localName === 'gmp-place-autocomplete') {
+        // If we are, we need to override the default behaviour of attachShadow() to
+        // set the mode to open to allow us to crowbar a style element into the shadow DOM.
+        const shadow = attachShadow.call(this, {
+          ...init,
+          mode: 'open',
+        });
+
+        const style = document.createElement('style');
+
+        // Apply our own styles to the shadow DOM.
+        style.textContent = `
+          input {
+            color: var(--p-inputtext-color);
+          }
+        `;
+
+        shadow.appendChild(style);
+
+        // Set the shadowRoot property to the new shadow root that has our styles in it.
+        return shadow;
+      }
+      // ...for other elements, proceed with the original behaviour of attachShadow().
+      return attachShadow.call(this, init);
+    };
+
     // Create the PlaceAutocompleteElement
     const autocompleteElement = new google.maps.places.PlaceAutocompleteElement(
       {
