@@ -322,6 +322,10 @@ export class BrowseComponent implements OnInit, OnDestroy {
           input {
             color: var(--p-inputtext-color);
           }
+
+          .focus-ring {
+            border: 2px solid var(--p-primary-color) !important;
+          }
         `;
 
         shadow.appendChild(style);
