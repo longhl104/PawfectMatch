@@ -394,6 +394,15 @@ export class BrowseComponent implements OnInit, OnDestroy {
           });
         },
       );
+
+      const clearButton = this.getAutoCompleteClearButton();
+      if (clearButton) {
+        clearButton.addEventListener('click', () => {
+          this.searchLocation.set('');
+          this.currentLocationCoords.set(null);
+          this.applyFilters();
+        });
+      }
     }
   }
 
@@ -449,15 +458,34 @@ export class BrowseComponent implements OnInit, OnDestroy {
         // Use the full formatted address instead of extracting components
         this.searchLocation.set(result.formatted_address);
 
-        // Also set result.formatted_address to the autocomplete input if it exists
-        if (this.autocomplete && 'Dg' in this.autocomplete) {
-          (this.autocomplete.Dg as HTMLInputElement).value =
-            result.formatted_address;
+        const inputElement = this.getAutoCompleteInputElement();
+        if (inputElement) {
+          inputElement.value = result.formatted_address;
         }
       }
     } catch (error) {
       console.error('Reverse geocoding failed:', error);
     }
+  }
+
+  private getAutoCompleteInputElement(): HTMLInputElement | null {
+    for (const [, value] of Object.entries(this.autocomplete)) {
+      if (value instanceof HTMLInputElement) {
+        return value;
+      }
+    }
+
+    return null;
+  }
+
+  private getAutoCompleteClearButton(): HTMLButtonElement | null {
+    const inputElement = this.getAutoCompleteInputElement();
+    if (!inputElement) return null;
+
+    const siblings = Array.from(inputElement.parentElement?.children || []);
+    return siblings.find((sibling) =>
+      sibling.classList.contains('clear-button'),
+    ) as HTMLButtonElement | null;
   }
 
   onLocationChange() {
