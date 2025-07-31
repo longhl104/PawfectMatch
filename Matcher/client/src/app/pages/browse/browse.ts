@@ -77,15 +77,17 @@ declare const google: {
       }>;
     };
     places: {
-      Autocomplete: new (
-        input: HTMLInputElement,
-        options?: {
-          componentRestrictions?: { country: string };
-          fields?: string[];
-          types?: string[];
-        },
-      ) => {
-        addListener: (event: string, callback: () => void) => void;
+      PlaceAutocompleteElement: new ({
+        includedRegionCodes,
+      }: {
+        includedRegionCodes: string[];
+      }) => HTMLElement & {
+        componentRestrictions: { country: string };
+        types: string[];
+        addEventListener: (
+          event: string,
+          callback: (event: Event) => void,
+        ) => void;
         getPlace: () => {
           formatted_address?: string;
           address_components?: GoogleMapsAddressComponent[];
@@ -282,6 +284,11 @@ export class BrowseComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     // Clean up event listeners
     this.eventListeners.forEach((removeListener) => removeListener());
+
+    // Clean up autocomplete element if it exists
+    if (this.autocomplete) {
+      this.autocomplete.remove();
+    }
   }
 
   private initializeLocationAutocomplete() {
@@ -296,38 +303,55 @@ export class BrowseComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const options = {
-      componentRestrictions: { country: 'AU' },
-      fields: ['formatted_address', 'address_components', 'geometry'],
-      types: ['(cities)'], // Focus on cities and places
-    };
-
-    this.autocomplete = new google.maps.places.Autocomplete(
-      locationInputRef.nativeElement,
-      options,
+    // Create the PlaceAutocompleteElement
+    const autocompleteElement = new google.maps.places.PlaceAutocompleteElement(
+      {
+        includedRegionCodes: ['au'],
+      },
     );
 
-    this.autocomplete.addListener('place_changed', () => {
-      this.ngZone.run(() => {
-        const place = this.autocomplete.getPlace();
+    // Replace the input with the autocomplete element
+    const parentElement = locationInputRef.nativeElement.parentElement;
+    if (parentElement) {
+      // Copy styles and attributes from the original input
+      autocompleteElement.className = locationInputRef.nativeElement.className;
+      autocompleteElement.style.padding = '0';
+      autocompleteElement.id = locationInputRef.nativeElement.id;
 
-        if (!place.formatted_address) {
-          return;
-        }
+      autocompleteElement.setAttribute('placeholder', 'Enter your location...');
 
-        this.searchLocation.set(place.formatted_address);
+      // Replace the input element
+      parentElement.replaceChild(
+        autocompleteElement,
+        locationInputRef.nativeElement,
+      );
 
-        if (place.geometry?.location) {
-          this.currentLocationCoords.set({
-            lat: place.geometry.location.lat(),
-            lng: place.geometry.location.lng(),
-          });
-        }
+      // Store reference to the new element
+      this.autocomplete = autocompleteElement;
 
-        this.updatePetDistances();
-        this.applyFilters();
+      // Listen for place selection
+      autocompleteElement.addEventListener('gmp-placeselect', () => {
+        this.ngZone.run(() => {
+          const place = autocompleteElement.getPlace();
+
+          if (!place.formatted_address) {
+            return;
+          }
+
+          this.searchLocation.set(place.formatted_address);
+
+          if (place.geometry?.location) {
+            this.currentLocationCoords.set({
+              lat: place.geometry.location.lat(),
+              lng: place.geometry.location.lng(),
+            });
+          }
+
+          this.updatePetDistances();
+          this.applyFilters();
+        });
       });
-    });
+    }
   }
 
   private initializeMockData() {
@@ -585,6 +609,12 @@ export class BrowseComponent implements OnInit, OnDestroy {
     this.maxDistance.set(50);
     this.ageRange.set([0, 15]);
     this.searchLocation.set('');
+
+    // Clear the autocomplete element value if it exists
+    if (this.autocomplete && 'value' in this.autocomplete) {
+      (this.autocomplete as HTMLInputElement).value = '';
+    }
+
     this.filteredPets.set(this.pets());
     this.totalRecords.set(this.pets().length);
     this.currentPage.set(0);

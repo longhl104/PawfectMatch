@@ -19,24 +19,18 @@
           >
             <i class="pi pi-map-marker mr-1"></i>Location
           </label>
-          <div class="p-input-icon-left w-full">
-            <i class="pi pi-search"></i>
-                      <div class="p-input-icon-left w-full">
-            <i class="pi pi-map-marker"></i>
-            <input
-              #locationInput
-              id="location-input"
-              type="text"
-              pInputText
-              placeholder="Enter your location..."
-              [(ngModel)]="searchLocation"
-              (input)="onLocationChange()"
-              class="w-full"
-              [class.p-invalid]="isLoadingLocation()"
-              autocomplete="off"
-            />
-          </div>
-          </div>
+          <input
+            #locationInput
+            id="location-input"
+            type="text"
+            pInputText
+            placeholder="Enter your location..."
+            [(ngModel)]="searchLocation"
+            (input)="onLocationChange()"
+            class="w-full"
+            [class.p-invalid]="isLoadingLocation()"
+            autocomplete="off"
+          />
           @if (isLoadingLocation()) {
           <small class="text-primary">
             <i class="pi pi-spin pi-spinner mr-1"></i>Getting your location...
