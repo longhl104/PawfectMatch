@@ -47,16 +47,27 @@ interface GoogleMapsAddressComponent {
   short_name: string;
 }
 
+interface GoogleMapsGeometry {
+  location: {
+    lat(): number;
+    lng(): number;
+  };
+}
+
+interface GoogleMapsGeocoderResult {
+  formatted_address: string;
+  address_components: GoogleMapsAddressComponent[];
+  geometry: GoogleMapsGeometry;
+}
+
 declare const google: {
   maps: {
     Geocoder: new () => {
       geocode: (request: {
-        location: { lat: number; lng: number };
+        location?: { lat: number; lng: number };
+        address?: string;
       }) => Promise<{
-        results: {
-          formatted_address: string;
-          address_components: GoogleMapsAddressComponent[];
-        }[];
+        results: GoogleMapsGeocoderResult[];
       }>;
     };
   };
@@ -331,7 +342,76 @@ export class BrowseComponent implements OnInit {
   }
 
   onLocationChange() {
-    // TODO: Implement location-based search
+    const location = this.searchLocation().trim();
+
+    if (location.length > 2) {
+      // Debounce the geocoding request
+      if (this.geocodeTimeout) {
+        clearTimeout(this.geocodeTimeout);
+      }
+
+      this.geocodeTimeout = setTimeout(() => {
+        this.geocodeLocation(location);
+      }, 500); // Wait 500ms after user stops typing
+    }
+
+    this.applyFilters();
+  }
+
+  private geocodeTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  private async geocodeLocation(address: string) {
+    try {
+      if (typeof google === 'undefined') {
+        console.warn('Google Maps not loaded');
+        return;
+      }
+
+      const geocoder = new google.maps.Geocoder();
+      const response = await geocoder.geocode({
+        address: address,
+      });
+
+      if (response.results && response.results.length > 0) {
+        const result = response.results[0];
+        const location = result.geometry.location;
+
+        // Update current location coordinates
+        this.currentLocationCoords.set({
+          lat: location.lat(),
+          lng: location.lng(),
+        });
+
+        // Update the display location if it's more specific
+        const formattedAddress = result.formatted_address;
+        if (formattedAddress !== address) {
+          // Only update if the user hasn't typed something else while geocoding
+          if (this.searchLocation().trim() === address) {
+            this.searchLocation.set(formattedAddress);
+          }
+        }
+
+        // Re-calculate distances for mock pets based on new location
+        this.updatePetDistances();
+      }
+    } catch (error) {
+      console.error('Geocoding failed:', error);
+    }
+  }
+
+  private updatePetDistances() {
+    const currentCoords = this.currentLocationCoords();
+    if (!currentCoords) return;
+
+    // Update distances for mock pets (in a real app, this would be an API call)
+    const updatedPets = this.pets().map((pet) => {
+      // For mock data, generate random distances based on location
+      // In a real app, you'd calculate actual distances or get them from API
+      const mockDistance = Math.round(Math.random() * 50 + 5); // 5-55km
+      return { ...pet, distance: mockDistance };
+    });
+
+    this.pets.set(updatedPets);
     this.applyFilters();
   }
 
