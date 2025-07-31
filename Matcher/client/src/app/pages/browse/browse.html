@@ -21,7 +21,10 @@
           </label>
           <div class="p-input-icon-left w-full">
             <i class="pi pi-search"></i>
+                      <div class="p-input-icon-left w-full">
+            <i class="pi pi-map-marker"></i>
             <input
+              #locationInput
               id="location-input"
               type="text"
               pInputText
@@ -30,7 +33,9 @@
               (input)="onLocationChange()"
               class="w-full"
               [class.p-invalid]="isLoadingLocation()"
+              autocomplete="off"
             />
+          </div>
           </div>
           @if (isLoadingLocation()) {
           <small class="text-primary">

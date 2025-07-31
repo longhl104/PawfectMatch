@@ -3,6 +3,11 @@ import {
   Component,
   OnInit,
   signal,
+  ElementRef,
+  NgZone,
+  inject,
+  viewChild,
+  OnDestroy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -15,6 +20,7 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { DividerModule } from 'primeng/divider';
+import { GoogleMapsService } from '@longhl104/pawfect-match-ng';
 import { environment } from '../../../environments/environment';
 
 // Types
@@ -70,6 +76,53 @@ declare const google: {
         results: GoogleMapsGeocoderResult[];
       }>;
     };
+    places: {
+      Autocomplete: new (
+        input: HTMLInputElement,
+        options?: {
+          componentRestrictions?: { country: string };
+          fields?: string[];
+          types?: string[];
+        },
+      ) => {
+        addListener: (event: string, callback: () => void) => void;
+        getPlace: () => {
+          formatted_address?: string;
+          address_components?: GoogleMapsAddressComponent[];
+          geometry?: GoogleMapsGeometry;
+        };
+      };
+      AutocompleteService: new () => {
+        getPlacePredictions: (
+          request: {
+            input: string;
+            types?: string[];
+            componentRestrictions?: { country: string[] };
+          },
+          callback: (
+            predictions:
+              | {
+                  description: string;
+                  place_id: string;
+                }[]
+              | null,
+            status: string,
+          ) => void,
+        ) => void;
+      };
+      PlacesService: new (map: HTMLDivElement) => {
+        getDetails: (
+          request: { placeId: string },
+          callback: (
+            place: {
+              formatted_address: string;
+              geometry: GoogleMapsGeometry;
+            } | null,
+            status: string,
+          ) => void,
+        ) => void;
+      };
+    };
   };
 };
 
@@ -91,8 +144,13 @@ declare const google: {
   styleUrl: './browse.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class BrowseComponent implements OnInit {
+export class BrowseComponent implements OnInit, OnDestroy {
+  private ngZone = inject(NgZone);
+  private googleMapsService = inject(GoogleMapsService);
+
   protected readonly Math = Math;
+
+  readonly locationInputRef = viewChild<ElementRef>('locationInput');
 
   // Search and filters
   searchLocation = signal('');
@@ -108,6 +166,11 @@ export class BrowseComponent implements OnInit {
   breeds = signal<DropdownOption[]>([]);
   isLoading = signal(false);
   isLoadingLocation = signal(false);
+
+  // Google Places Autocomplete
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private autocomplete: any = null;
+  private eventListeners: (() => void)[] = [];
 
   // Pagination
   currentPage = signal(0);
@@ -138,7 +201,7 @@ export class BrowseComponent implements OnInit {
       location: 'Melbourne, VIC',
       distance: 5.2,
       imageUrl:
-        'https://images.unsplash.com/photo-1551717748-d3dc486c9d3d?w=400',
+        'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400',
       shelter: 'Melbourne Animal Rescue',
       isSpayedNeutered: true,
       isGoodWithKids: true,
@@ -201,72 +264,69 @@ export class BrowseComponent implements OnInit {
   ];
 
   ngOnInit() {
-    this.loadGoogleMaps();
     this.initializeMockData();
     this.getCurrentLocation();
+    this.initializeGoogleMapsAndAutocomplete();
   }
 
-  private async loadGoogleMaps() {
+  private async initializeGoogleMapsAndAutocomplete() {
     try {
-      if (
-        environment.googleMapsApiKey &&
-        environment.googleMapsApiKey !== 'YOUR_GOOGLE_MAPS_API_KEY_HERE'
-      ) {
-        // Load Google Maps script dynamically
-        await this.loadGoogleMapsScript(environment.googleMapsApiKey);
-      }
+      await this.googleMapsService.loadGoogleMaps(environment.googleMapsApiKey);
+      // Wait for view to be ready then initialize autocomplete
+      setTimeout(() => this.initializeLocationAutocomplete(), 100);
     } catch (error) {
       console.error('Failed to load Google Maps:', error);
     }
   }
 
-  private loadGoogleMapsScript(apiKey: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      // Check if Google Maps is already loaded
-      if (typeof google !== 'undefined' && google.maps) {
-        resolve();
-        return;
-      }
+  ngOnDestroy(): void {
+    // Clean up event listeners
+    this.eventListeners.forEach((removeListener) => removeListener());
+  }
 
-      // Check if script is already being loaded
-      const existingScript = document.querySelector(
-        'script[src*="maps.googleapis.com"]',
-      );
-      if (existingScript) {
-        // Wait for existing script to load
-        const checkGoogleMaps = () => {
-          if (typeof google !== 'undefined' && google.maps) {
-            resolve();
-          } else {
-            setTimeout(checkGoogleMaps, 100);
-          }
-        };
-        checkGoogleMaps();
-        return;
-      }
+  private initializeLocationAutocomplete() {
+    const locationInputRef = this.locationInputRef();
+    if (!locationInputRef?.nativeElement) {
+      setTimeout(() => this.initializeLocationAutocomplete(), 100);
+      return;
+    }
 
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&loading=async`;
-      script.async = true;
-      script.defer = true;
+    if (typeof google === 'undefined' || !google.maps?.places) {
+      console.warn('Google Maps Places API not available');
+      return;
+    }
 
-      script.onload = () => {
-        // Wait for Google Maps to be available
-        const checkGoogleMaps = () => {
-          if (typeof google !== 'undefined' && google.maps) {
-            resolve();
-          } else {
-            setTimeout(checkGoogleMaps, 100);
-          }
-        };
-        checkGoogleMaps();
-      };
+    const options = {
+      componentRestrictions: { country: 'AU' },
+      fields: ['formatted_address', 'address_components', 'geometry'],
+      types: ['(cities)'], // Focus on cities and places
+    };
 
-      script.onerror = () => {
-        reject(new Error('Failed to load Google Maps API'));
-      };
+    this.autocomplete = new google.maps.places.Autocomplete(
+      locationInputRef.nativeElement,
+      options,
+    );
 
-      document.head.appendChild(script);
+    this.autocomplete.addListener('place_changed', () => {
+      this.ngZone.run(() => {
+        const place = this.autocomplete.getPlace();
+
+        if (!place.formatted_address) {
+          return;
+        }
+
+        this.searchLocation.set(place.formatted_address);
+
+        if (place.geometry?.location) {
+          this.currentLocationCoords.set({
+            lat: place.geometry.location.lat(),
+            lng: place.geometry.location.lng(),
+          });
+        }
+
+        this.updatePetDistances();
+        this.applyFilters();
+      });
     });
   }
 
@@ -342,19 +402,8 @@ export class BrowseComponent implements OnInit {
   }
 
   onLocationChange() {
-    const location = this.searchLocation().trim();
-
-    if (location.length > 2) {
-      // Debounce the geocoding request
-      if (this.geocodeTimeout) {
-        clearTimeout(this.geocodeTimeout);
-      }
-
-      this.geocodeTimeout = setTimeout(() => {
-        this.geocodeLocation(location);
-      }, 500); // Wait 500ms after user stops typing
-    }
-
+    // This method is now handled by Google Places Autocomplete
+    // We can keep it for manual input validation if needed
     this.applyFilters();
   }
 
