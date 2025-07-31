@@ -364,27 +364,36 @@ export class BrowseComponent implements OnInit, OnDestroy {
       this.autocomplete = autocompleteElement;
 
       // Listen for place selection
-      autocompleteElement.addEventListener('gmp-placeselect', () => {
-        this.ngZone.run(() => {
-          const place = autocompleteElement.getPlace();
-
-          if (!place.formatted_address) {
-            return;
-          }
-
-          this.searchLocation.set(place.formatted_address);
-
-          if (place.geometry?.location) {
-            this.currentLocationCoords.set({
-              lat: place.geometry.location.lat(),
-              lng: place.geometry.location.lng(),
+      autocompleteElement.addEventListener(
+        'gmp-select',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        async ({ placePrediction }: any) => {
+          this.ngZone.run(async () => {
+            const place = placePrediction.toPlace();
+            await place.fetchFields({
+              fields: ['displayName', 'formattedAddress', 'location'],
             });
-          }
 
-          this.updatePetDistances();
-          this.applyFilters();
-        });
-      });
+            const placeData = place.toJSON();
+
+            if (!placeData.formattedAddress) {
+              return;
+            }
+
+            this.searchLocation.set(placeData.formattedAddress);
+
+            if (placeData.location) {
+              this.currentLocationCoords.set({
+                lat: placeData.location.lat,
+                lng: placeData.location.lng,
+              });
+            }
+
+            this.updatePetDistances();
+            this.applyFilters();
+          });
+        },
+      );
     }
   }
 
@@ -436,23 +445,15 @@ export class BrowseComponent implements OnInit, OnDestroy {
 
       if (response.results && response.results.length > 0) {
         const result = response.results[0];
-        const addressComponents = result.address_components;
 
-        // Extract suburb and city
-        const suburb = addressComponents.find(
-          (comp: GoogleMapsAddressComponent) =>
-            comp.types.includes('locality') ||
-            comp.types.includes('sublocality'),
-        )?.long_name;
+        // Use the full formatted address instead of extracting components
+        this.searchLocation.set(result.formatted_address);
 
-        const city = addressComponents.find(
-          (comp: GoogleMapsAddressComponent) =>
-            comp.types.includes('administrative_area_level_1'),
-        )?.short_name;
-
-        const locationString =
-          suburb && city ? `${suburb}, ${city}` : result.formatted_address;
-        this.searchLocation.set(locationString);
+        // Also set result.formatted_address to the autocomplete input if it exists
+        if (this.autocomplete && 'Dg' in this.autocomplete) {
+          (this.autocomplete.Dg as HTMLInputElement).value =
+            result.formatted_address;
+        }
       }
     } catch (error) {
       console.error('Reverse geocoding failed:', error);
@@ -463,47 +464,6 @@ export class BrowseComponent implements OnInit, OnDestroy {
     // This method is now handled by Google Places Autocomplete
     // We can keep it for manual input validation if needed
     this.applyFilters();
-  }
-
-  private geocodeTimeout: ReturnType<typeof setTimeout> | null = null;
-
-  private async geocodeLocation(address: string) {
-    try {
-      if (typeof google === 'undefined') {
-        console.warn('Google Maps not loaded');
-        return;
-      }
-
-      const geocoder = new google.maps.Geocoder();
-      const response = await geocoder.geocode({
-        address: address,
-      });
-
-      if (response.results && response.results.length > 0) {
-        const result = response.results[0];
-        const location = result.geometry.location;
-
-        // Update current location coordinates
-        this.currentLocationCoords.set({
-          lat: location.lat(),
-          lng: location.lng(),
-        });
-
-        // Update the display location if it's more specific
-        const formattedAddress = result.formatted_address;
-        if (formattedAddress !== address) {
-          // Only update if the user hasn't typed something else while geocoding
-          if (this.searchLocation().trim() === address) {
-            this.searchLocation.set(formattedAddress);
-          }
-        }
-
-        // Re-calculate distances for mock pets based on new location
-        this.updatePetDistances();
-      }
-    } catch (error) {
-      console.error('Geocoding failed:', error);
-    }
   }
 
   private updatePetDistances() {
