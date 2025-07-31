@@ -1,0 +1,190 @@
+.browse-pets-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: 80vh;
+}
+
+.header-section {
+  .filters-section {
+    .p-input-icon-left input {
+      padding-left: 2.5rem;
+    }
+  }
+}
+
+.pet-card {
+  &:hover {
+    transform: translateY(-2px);
+    .pet-image-container img {
+      transform: scale(1.05);
+    }
+  }
+
+  .pet-image-container {
+    overflow: hidden;
+
+    img {
+      transition: transform 0.3s ease;
+    }
+  }
+
+  .distance-badge {
+    backdrop-filter: blur(4px);
+  }
+
+  .favorite-btn {
+    border: none;
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+
+  .pet-attributes {
+    .p-tag {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+    }
+  }
+}
+
+.active-filters {
+  .p-tag {
+    .ml-1 {
+      margin-left: 0.25rem;
+      padding: 0.125rem 0.25rem;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.5);
+      }
+    }
+  }
+}
+
+.no-results {
+  .pi-search {
+    opacity: 0.5;
+  }
+}
+
+// Range slider styling
+input[type="range"] {
+  appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--surface-300);
+  outline: none;
+
+  &::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+
+  &::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+}
+
+// Custom dropdown styling
+.p-dropdown {
+  appearance: none;
+  border: 1px solid var(--surface-300);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  background: white;
+  color: var(--text-color);
+  transition: border-color 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem var(--primary-color-200);
+  }
+
+  &:disabled {
+    background: var(--surface-100);
+    color: var(--text-color-secondary);
+    cursor: not-allowed;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .browse-pets-container {
+    padding: 1rem;
+  }
+
+  .filters-section {
+    .grid > div {
+      margin-bottom: 1rem;
+    }
+  }
+
+  .results-summary {
+    .flex {
+      flex-direction: column;
+      gap: 0.5rem;
+      align-items: flex-start !important;
+    }
+  }
+
+  .pet-card {
+    .pet-card-content {
+      .flex {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .pet-attributes {
+        .flex {
+          flex-direction: row;
+          flex-wrap: wrap;
+        }
+      }
+    }
+  }
+}
+
+// Animation keyframes
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pet-card {
+  animation: fadeIn 0.5s ease-out;
+}
+
+// Loading state improvements
+.p-skeleton {
+  border-radius: 6px;
+}

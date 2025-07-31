@@ -136,3 +136,46 @@ body {
   width: 100%;
   height: 100%;
 }
+
+/* Input with Icon Styles */
+.p-input-icon-left {
+  position: relative;
+
+  > i {
+    position: absolute;
+    top: 50%;
+    margin-top: -0.5rem;
+    left: 0.75rem;
+    color: var(--color-gray-400);
+    z-index: 1;
+  }
+
+  > .p-inputtext {
+    padding-left: 2.5rem;
+  }
+
+  > input[pInputText] {
+    padding-left: 2.5rem;
+  }
+}
+
+.p-input-icon-right {
+  position: relative;
+
+  > i {
+    position: absolute;
+    top: 50%;
+    margin-top: -0.5rem;
+    right: 0.75rem;
+    color: var(--color-gray-400);
+    z-index: 1;
+  }
+
+  > .p-inputtext {
+    padding-right: 2.5rem;
+  }
+
+  > input[pInputText] {
+    padding-right: 2.5rem;
+  }
+}

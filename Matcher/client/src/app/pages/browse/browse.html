@@ -1,0 +1,382 @@
+<div class="browse-pets-container p-4">
+  <!-- Header Section -->
+  <div class="header-section mb-6">
+    <div class="text-center mb-4">
+      <h1 class="text-4xl font-bold text-900 mb-2">Browse Available Pets</h1>
+      <p class="text-xl text-600">
+        Find your perfect companion from shelters near you
+      </p>
+    </div>
+
+    <!-- Search and Filter Controls -->
+    <div class="filters-section bg-white p-4 border-round-xl shadow-2">
+      <div class="grid">
+        <!-- Location Search -->
+        <div class="col-12 lg:col-6 xl:col-4">
+          <label
+            for="location-input"
+            class="block text-sm font-medium mb-2 text-900"
+          >
+            <i class="pi pi-map-marker mr-1"></i>Location
+          </label>
+          <div class="p-input-icon-left w-full">
+            <i class="pi pi-search"></i>
+            <input
+              id="location-input"
+              type="text"
+              pInputText
+              placeholder="Enter your location..."
+              [(ngModel)]="searchLocation"
+              (input)="onLocationChange()"
+              class="w-full"
+              [class.p-invalid]="isLoadingLocation()"
+            />
+          </div>
+          @if (isLoadingLocation()) {
+          <small class="text-primary">
+            <i class="pi pi-spin pi-spinner mr-1"></i>Getting your location...
+          </small>
+          }
+          <div class="mt-2">
+            <p-button
+              label="Use My Location"
+              icon="pi pi-map-marker"
+              size="small"
+              [text]="true"
+              (onClick)="getCurrentLocation()"
+              [loading]="isLoadingLocation()"
+              pTooltip="Use your current location"
+            />
+          </div>
+        </div>
+
+        <!-- Distance -->
+        <div class="col-12 lg:col-6 xl:col-2">
+          <label
+            for="distance-range"
+            class="block text-sm font-medium mb-2 text-900"
+          >
+            Max Distance: {{ maxDistance() }}km
+          </label>
+          <input
+            id="distance-range"
+            type="range"
+            min="5"
+            max="100"
+            step="5"
+            [value]="maxDistance()"
+            (input)="maxDistance.set(+$any($event).target.value); onDistanceChange()"
+            class="w-full"
+          />
+          <div class="flex justify-content-between text-xs text-600 mt-1">
+            <span>5km</span>
+            <span>100km</span>
+          </div>
+        </div>
+
+        <!-- Species Filter -->
+        <div class="col-12 lg:col-6 xl:col-3">
+          <label
+            for="species-select"
+            class="block text-sm font-medium mb-2 text-900"
+          >
+            <i class="pi pi-star mr-1"></i>Pet Type
+          </label>
+          <select
+            id="species-select"
+            class="p-dropdown w-full"
+            [value]="selectedSpecies()"
+            (change)="selectedSpecies.set($any($event).target.value || null); onSpeciesChange()"
+          >
+            @for (option of speciesOptions(); track option.value) {
+            <option [value]="option.value || ''">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Breed Filter -->
+        <div class="col-12 lg:col-6 xl:col-3">
+          <label
+            for="breed-select"
+            class="block text-sm font-medium mb-2 text-900"
+          >
+            <i class="pi pi-heart mr-1"></i>Breed
+          </label>
+          <select
+            id="breed-select"
+            class="p-dropdown w-full"
+            [value]="selectedBreed()"
+            (change)="selectedBreed.set($any($event).target.value || null); onBreedChange()"
+            [disabled]="!selectedSpecies()"
+          >
+            @for (option of breeds(); track option.value) {
+            <option [value]="option.value || ''">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <!-- Active Filters -->
+      @if (getActiveFiltersCount() > 0) {
+      <p-divider />
+      <div class="active-filters">
+        <div class="flex align-items-center gap-2 flex-wrap">
+          <span class="text-sm font-medium text-900">Active filters:</span>
+
+          @if (searchLocation()) {
+          <p-tag
+            value="Location: {{ searchLocation() }}"
+            severity="info"
+            [rounded]="true"
+          >
+            <button
+              class="ml-1 cursor-pointer bg-transparent border-none text-inherit p-0"
+              (click)="searchLocation.set(''); onLocationChange()"
+              aria-label="Remove location filter"
+            >
+              ×
+            </button>
+          </p-tag>
+          } @if (selectedSpecies()) {
+          <p-tag
+            value="Type: {{ selectedSpecies() }}"
+            severity="info"
+            [rounded]="true"
+          >
+            <button
+              class="ml-1 cursor-pointer bg-transparent border-none text-inherit p-0"
+              (click)="selectedSpecies.set(null); onSpeciesChange()"
+              aria-label="Remove species filter"
+            >
+              ×
+            </button>
+          </p-tag>
+          } @if (selectedBreed()) {
+          <p-tag
+            value="Breed: {{ selectedBreed() }}"
+            severity="info"
+            [rounded]="true"
+          >
+            <button
+              class="ml-1 cursor-pointer bg-transparent border-none text-inherit p-0"
+              (click)="selectedBreed.set(null); onBreedChange()"
+              aria-label="Remove breed filter"
+            >
+              ×
+            </button>
+          </p-tag>
+          } @if (maxDistance() !== 50) {
+          <p-tag
+            value="Distance: {{ maxDistance() }}km"
+            severity="info"
+            [rounded]="true"
+          >
+            <button
+              class="ml-1 cursor-pointer bg-transparent border-none text-inherit p-0"
+              (click)="maxDistance.set(50); onDistanceChange()"
+              aria-label="Remove distance filter"
+            >
+              ×
+            </button>
+          </p-tag>
+          }
+
+          <p-button
+            label="Clear All"
+            icon="pi pi-times"
+            [text]="true"
+            size="small"
+            (onClick)="clearFilters()"
+          />
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+
+  <!-- Results Summary -->
+  <div class="results-summary mb-4">
+    <div class="flex justify-content-between align-items-center">
+      <h2 class="text-xl font-semibold text-900 m-0">
+        {{ filteredPets().length }} pets found @if (searchLocation()) {
+        <span class="text-600 font-normal">near {{ searchLocation() }}</span>
+        }
+      </h2>
+
+      @if (filteredPets().length > 0) {
+      <span class="text-sm text-600">
+        Showing {{ currentPage() * pageSize() + 1 }}-{{ Math.min((currentPage()
+        + 1) * pageSize(), filteredPets().length) }} of {{ filteredPets().length
+        }} results
+      </span>
+      }
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (isLoading()) {
+  <div class="grid">
+    @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+    <div class="col-12 md:col-6 lg:col-4 xl:col-3 mb-4">
+      <p-card styleClass="h-full">
+        <div class="flex flex-column gap-3">
+          <p-skeleton height="200px" />
+          <p-skeleton height="1.5rem" width="80%" />
+          <p-skeleton height="1rem" width="60%" />
+          <div class="flex gap-2">
+            <p-skeleton height="2rem" width="4rem" />
+            <p-skeleton height="2rem" width="4rem" />
+          </div>
+        </div>
+      </p-card>
+    </div>
+    }
+  </div>
+  }
+
+  <!-- Pet Grid -->
+  @if (!isLoading() && filteredPets().length > 0) {
+  <div class="grid">
+    @for (pet of getPaginatedPets(); track pet.id) {
+    <div class="col-12 md:col-6 lg:col-4 xl:col-3 mb-4">
+      <p-card
+        styleClass="pet-card h-full cursor-pointer hover:shadow-3 transition-all transition-duration-200"
+        (click)="onPetClick(pet)"
+      >
+        <div class="pet-card-content">
+          <!-- Pet Image -->
+          <div class="pet-image-container mb-3 relative">
+            <img
+              [src]="pet.imageUrl"
+              [alt]="pet.name"
+              class="w-full h-12rem object-cover border-round"
+              loading="lazy"
+            />
+            <div class="distance-badge absolute top-2 right-2">
+              <p-tag
+                value="{{ pet.distance }}km away"
+                severity="info"
+                [rounded]="true"
+              />
+            </div>
+
+            <!-- Favorite Button -->
+            <button
+              class="favorite-btn absolute top-2 left-2 bg-white border-circle p-2 shadow-2 hover:bg-primary hover:text-white transition-colors"
+              (click)="onFavorite(pet, $event)"
+              pTooltip="Add to favorites"
+              aria-label="Add to favorites"
+            >
+              <i class="pi pi-heart text-sm"></i>
+            </button>
+          </div>
+
+          <!-- Pet Info -->
+          <div class="pet-info">
+            <div class="flex justify-content-between align-items-start mb-2">
+              <h3 class="text-xl font-bold text-900 m-0">{{ pet.name }}</h3>
+              <span class="text-lg font-semibold text-primary"
+                >${{ pet.adoptionFee }}</span
+              >
+            </div>
+
+            <div class="pet-details mb-3">
+              <p class="text-600 text-sm m-0 mb-1">
+                <i class="pi pi-info-circle mr-1"></i>
+                {{ pet.species }} • {{ pet.breed }} • {{ pet.age }} years old
+              </p>
+              <p class="text-600 text-sm m-0 mb-2">
+                <i class="pi pi-map-marker mr-1"></i>
+                {{ pet.location }} • {{ pet.shelter }}
+              </p>
+              <p class="text-700 text-sm line-height-3 mb-3">
+                {{ pet.description }}
+              </p>
+            </div>
+
+            <!-- Pet Attributes -->
+            <div class="pet-attributes mb-3">
+              <div class="flex gap-1 flex-wrap">
+                @if (pet.isSpayedNeutered) {
+                <p-tag
+                  value="Spayed/Neutered"
+                  severity="success"
+                  [rounded]="true"
+                />
+                } @if (pet.isGoodWithKids) {
+                <p-tag
+                  value="Good with kids"
+                  severity="info"
+                  [rounded]="true"
+                />
+                } @if (pet.isGoodWithPets) {
+                <p-tag
+                  value="Good with pets"
+                  severity="warning"
+                  [rounded]="true"
+                />
+                }
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-2">
+              <p-button
+                label="Contact Shelter"
+                icon="pi pi-phone"
+                size="small"
+                styleClass="flex-1"
+                (onClick)="onContactShelter(pet, $event)"
+              />
+              <p-button
+                icon="pi pi-external-link"
+                size="small"
+                severity="secondary"
+                [outlined]="true"
+                pTooltip="View details"
+                (onClick)="onPetClick(pet)"
+              />
+            </div>
+          </div>
+        </div>
+      </p-card>
+    </div>
+    }
+  </div>
+
+  <!-- Pagination -->
+  @if (totalRecords() > pageSize()) {
+  <div class="flex justify-content-center mt-6">
+    <p-paginator
+      [rows]="pageSize()"
+      [totalRecords]="totalRecords()"
+      [first]="currentPage() * pageSize()"
+      (onPageChange)="onPageChange($event)"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} pets"
+      [rowsPerPageOptions]="[12, 24, 36]"
+    />
+  </div>
+  } }
+
+  <!-- No Results -->
+  @if (!isLoading() && filteredPets().length === 0) {
+  <div class="no-results text-center py-8">
+    <div class="mb-4">
+      <i class="pi pi-search text-6xl text-400"></i>
+    </div>
+    <h3 class="text-2xl font-semibold text-900 mb-3">No pets found</h3>
+    <p class="text-600 mb-4 max-w-md mx-auto">
+      We couldn't find any pets matching your criteria. Try adjusting your
+      filters or search in a wider area.
+    </p>
+    <p-button
+      label="Clear All Filters"
+      icon="pi pi-times"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="clearFilters()"
+    />
+  </div>
+  }
+</div>

@@ -2,7 +2,7 @@
   <ng-template pTemplate="start">
     <div
       class="flex align-items-center gap-3 cursor-pointer"
-      routerLink="/home"
+      routerLink="/"
     >
       <!-- <i class="pi pi-heart-fill text-primary text-3xl"></i> -->
       <pm-custom-icon
@@ -19,8 +19,9 @@
   <ng-template pTemplate="center">
     <div class="hidden xl:flex align-items-center gap-4">
       <a
-        routerLink="/home"
+        routerLink="/"
         routerLinkActive="text-primary font-semibold"
+        [routerLinkActiveOptions]="{ exact: true }"
         class="text-700 hover:text-primary transition-colors duration-200 no-underline"
       >
         <i class="pi pi-home mr-2"></i>Home
@@ -160,7 +161,7 @@
       </div>
       <div class="flex flex-column gap-3">
         <a
-          routerLink="/home"
+          routerLink="/"
           class="flex align-items-center gap-2 p-3 border-round hover:bg-primary-50 text-700 no-underline mobile-menu-item"
           (click)="closeMenu()"
         >
