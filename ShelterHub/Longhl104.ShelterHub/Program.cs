@@ -6,6 +6,7 @@ using Longhl104.ShelterHub.Services;
 using Longhl104.PawfectMatch.Middleware;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.HttpOverrides;
+using Longhl104.ShelterHub;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +38,9 @@ builder.Services.AddPawfectMatchDataProtection("ShelterHub", environmentName);
 
 // Configure caching
 builder.Services.AddMemoryCache();
+
+// Configure PostgreSQL database
+await builder.Services.AddPawfectMatchPostgreSqlAsync<AppDbContext>(builder.Configuration);
 
 // Register ShelterHub services
 builder.Services.AddScoped<IShelterService, ShelterService>();

@@ -302,7 +302,7 @@ export class EnvironmentStack extends cdk.Stack {
     new ssm.StringParameter(this, 'DatabaseHost', {
       parameterName: `/PawfectMatch/${BaseStack.getCapitalizedStage(
         stage
-      )}/Database/Host`,
+      )}/Common/Database/Host`,
       stringValue: this.database.instanceEndpoint.hostname,
       description: `PostgreSQL database host for ${stage} environment`,
     });
@@ -310,7 +310,7 @@ export class EnvironmentStack extends cdk.Stack {
     new ssm.StringParameter(this, 'DatabasePort', {
       parameterName: `/PawfectMatch/${BaseStack.getCapitalizedStage(
         stage
-      )}/Database/Port`,
+      )}/Common/Database/Port`,
       stringValue: this.database.instanceEndpoint.port.toString(),
       description: `PostgreSQL database port for ${stage} environment`,
     });
@@ -318,7 +318,7 @@ export class EnvironmentStack extends cdk.Stack {
     new ssm.StringParameter(this, 'DatabaseName', {
       parameterName: `/PawfectMatch/${BaseStack.getCapitalizedStage(
         stage
-      )}/Database/Name`,
+      )}/Common/Database/Name`,
       stringValue: 'pawfectmatch',
       description: `PostgreSQL database name for ${stage} environment`,
     });
@@ -326,7 +326,7 @@ export class EnvironmentStack extends cdk.Stack {
     new ssm.StringParameter(this, 'DatabaseSecretArn', {
       parameterName: `/PawfectMatch/${BaseStack.getCapitalizedStage(
         stage
-      )}/Database/SecretArn`,
+      )}/Common/Database/SecretArn`,
       stringValue: this.database.secret!.secretArn,
       description: `PostgreSQL database credentials secret ARN for ${stage} environment`,
     });
@@ -335,7 +335,7 @@ export class EnvironmentStack extends cdk.Stack {
     new ssm.StringParameter(this, 'DatabaseSecurityGroupId', {
       parameterName: `/PawfectMatch/${BaseStack.getCapitalizedStage(
         stage
-      )}/Network/DatabaseSecurityGroupId`,
+      )}/Common/DatabaseSecurityGroupId`,
       stringValue: this.databaseSecurityGroup.securityGroupId,
       description: `Database security group ID for ${stage} environment`,
     });
