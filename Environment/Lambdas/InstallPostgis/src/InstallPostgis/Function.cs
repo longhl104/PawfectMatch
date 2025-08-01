@@ -2,9 +2,9 @@ using Amazon.Lambda.Core;
 using Amazon.Lambda.Serialization.SystemTextJson;
 using Amazon.SecretsManager;
 using Amazon.SecretsManager.Model;
-using AWS.Logger.Core;
 using Npgsql;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializer(typeof(DefaultLambdaJsonSerializer))]
@@ -55,11 +55,8 @@ public class Function
                 SecretId = secretArn
             });
 
-            var secret = JsonSerializer.Deserialize<DatabaseSecret>(secretResponse.SecretString);
-            if (secret == null)
-            {
-                throw new Exception("Failed to deserialize database secret");
-            }
+
+            var secret = JsonSerializer.Deserialize<DatabaseSecret>(secretResponse.SecretString) ?? throw new Exception("Failed to deserialize database secret");
 
             // Build connection string
             var connectionString = $"Host={secret.Host};Port={secret.Port};Database={secret.DbName};Username={secret.Username};Password={secret.Password};SSL Mode=Require;Trust Server Certificate=true";
@@ -147,10 +144,21 @@ public class PostgisInstallationResponse
 
 public class DatabaseSecret
 {
+    [JsonPropertyName("engine")]
     public string Engine { get; set; } = string.Empty;
+
+    [JsonPropertyName("host")]
     public string Host { get; set; } = string.Empty;
+
+    [JsonPropertyName("username")]
     public string Username { get; set; } = string.Empty;
+
+    [JsonPropertyName("password")]
     public string Password { get; set; } = string.Empty;
+
+    [JsonPropertyName("dbname")]
     public string DbName { get; set; } = string.Empty;
+
+    [JsonPropertyName("port")]
     public int Port { get; set; }
 }
