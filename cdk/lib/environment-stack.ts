@@ -33,10 +33,14 @@ export class EnvironmentStack extends cdk.Stack {
   public database: rds.DatabaseInstance;
   public databaseSecurityGroup: ec2.SecurityGroup;
 
+  stage: StageType;
+
   constructor(scope: Construct, id: string, props: EnvironmentStackProps) {
     super(scope, id, props);
 
     const { stage } = props;
+
+    this.stage = stage;
 
     // Create VPC with cost optimization - single NAT gateway even in production
     this.vpc = new ec2.Vpc(this, 'PawfectMatchVpc', {
@@ -282,7 +286,7 @@ export class EnvironmentStack extends cdk.Stack {
       parameterGroup: rds.ParameterGroup.fromParameterGroupName(
         this,
         'DefaultPostgreSQLParameterGroup',
-        'default.postgres15'
+        'default.postgres17'
       ),
     });
 
@@ -339,7 +343,7 @@ export class EnvironmentStack extends cdk.Stack {
       description: 'Database credentials secret name',
     });
 
-    new cdk.CfnOutput(this, 'DatabaseSecurityGroupId', {
+    new cdk.CfnOutput(this, `${this.stage}DatabaseSecurityGroupId`, {
       value: this.databaseSecurityGroup.securityGroupId,
       description: 'Database security group ID',
     });
