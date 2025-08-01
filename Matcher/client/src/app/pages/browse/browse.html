@@ -57,15 +57,13 @@
           >
             Max Distance: {{ maxDistance() }}km
           </label>
-          <input
-            id="distance-range"
-            type="range"
-            min="5"
-            max="100"
-            step="5"
-            [value]="maxDistance()"
-            (input)="maxDistance.set(+$any($event).target.value); onDistanceChange()"
-            class="w-full"
+          <p-slider
+            [(ngModel)]="maxDistance"
+            [min]="5"
+            [max]="100"
+            [step]="5"
+            (onSlideEnd)="onDistanceChange()"
+            styleClass="w-full"
           />
           <div class="flex justify-content-between text-xs text-600 mt-1">
             <span>5km</span>
