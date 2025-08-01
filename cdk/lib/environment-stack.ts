@@ -4,9 +4,12 @@ import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
+import * as rds from 'aws-cdk-lib/aws-rds';
+import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 import { SharedStack } from './shared-stack';
 import { StageType } from './utils';
+import { BaseStack } from './base-stack';
 
 export interface EnvironmentStackProps extends cdk.StackProps {
   stage: StageType; // 'development' or 'production'
@@ -25,6 +28,10 @@ export class EnvironmentStack extends cdk.Stack {
   public readonly identityRepository: ecr.IRepository;
   public readonly matcherRepository: ecr.IRepository;
   public readonly shelterHubRepository: ecr.IRepository;
+
+  // Database-related properties
+  public database: rds.DatabaseInstance;
+  public databaseSecurityGroup: ec2.SecurityGroup;
 
   constructor(scope: Construct, id: string, props: EnvironmentStackProps) {
     super(scope, id, props);
@@ -58,7 +65,7 @@ export class EnvironmentStack extends cdk.Stack {
     this.ecsCluster = new ecs.Cluster(this, 'PawfectMatchCluster', {
       vpc: this.vpc,
       clusterName: `pawfectmatch-${stage}-cluster`,
-      containerInsights: false, // Disable to save $0.50 per container per month
+      containerInsightsV2: ecs.ContainerInsights.DISABLED,
     });
 
     // Create CloudWatch Log Group with cost optimization
@@ -169,6 +176,17 @@ export class EnvironmentStack extends cdk.Stack {
               actions: ['s3:GetObject', 's3:PutObject', 's3:DeleteObject'],
               resources: [`arn:aws:s3:::pawfectmatch-${stage}-*/*`],
             }),
+            // Secrets Manager access for database credentials
+            new iam.PolicyStatement({
+              effect: iam.Effect.ALLOW,
+              actions: [
+                'secretsmanager:GetSecretValue',
+                'secretsmanager:DescribeSecret',
+              ],
+              resources: [
+                `arn:aws:secretsmanager:${this.region}:${this.account}:secret:pawfectmatch-${stage}-db-credentials-*`,
+              ],
+            }),
             // KMS access for Data Protection
             new iam.PolicyStatement({
               effect: iam.Effect.ALLOW,
@@ -202,5 +220,128 @@ export class EnvironmentStack extends cdk.Stack {
     this.identityRepository = repositories['identity'];
     this.matcherRepository = repositories['matcher'];
     this.shelterHubRepository = repositories['shelterhub'];
+
+    // Set up shared PostgreSQL database
+    this.setupDatabase(stage);
+  }
+
+  private setupDatabase(stage: StageType): void {
+    // Create security group for the database
+    this.databaseSecurityGroup = new ec2.SecurityGroup(
+      this,
+      'DatabaseSecurityGroup',
+      {
+        vpc: this.vpc,
+        description: 'Security group for PostgreSQL database',
+        allowAllOutbound: false,
+      }
+    );
+
+    // Allow inbound connections on PostgreSQL port from within VPC
+    this.databaseSecurityGroup.addIngressRule(
+      ec2.Peer.ipv4(this.vpc.vpcCidrBlock),
+      ec2.Port.tcp(5432),
+      'PostgreSQL access from VPC'
+    );
+
+    // Create subnet group for the database
+    const dbSubnetGroup = new rds.SubnetGroup(this, 'DatabaseSubnetGroup', {
+      vpc: this.vpc,
+      description: 'Subnet group for PostgreSQL database',
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+      },
+    });
+
+    // Create the PostgreSQL database instance
+    this.database = new rds.DatabaseInstance(this, 'PostgreSQLDatabase', {
+      engine: rds.DatabaseInstanceEngine.postgres({
+        version: rds.PostgresEngineVersion.VER_17_5,
+      }),
+      instanceType: ec2.InstanceType.of(
+        ec2.InstanceClass.T3,
+        ec2.InstanceSize.MICRO
+      ),
+      vpc: this.vpc,
+      subnetGroup: dbSubnetGroup,
+      securityGroups: [this.databaseSecurityGroup],
+      databaseName: 'pawfectmatch',
+      credentials: rds.Credentials.fromGeneratedSecret('dbadmin', {
+        secretName: `pawfectmatch-${stage}-db-credentials`,
+      }),
+      allocatedStorage: 20,
+      storageType: rds.StorageType.GP2,
+      deleteAutomatedBackups: stage !== 'production',
+      backupRetention:
+        stage === 'production' ? cdk.Duration.days(7) : cdk.Duration.days(1),
+      deletionProtection: stage === 'production',
+      enablePerformanceInsights: false, // Save costs
+      monitoringInterval: cdk.Duration.seconds(0), // Disable enhanced monitoring to save costs
+      autoMinorVersionUpgrade: true,
+      allowMajorVersionUpgrade: false,
+      parameterGroup: rds.ParameterGroup.fromParameterGroupName(
+        this,
+        'DefaultPostgreSQLParameterGroup',
+        'default.postgres15'
+      ),
+    });
+
+    // Store database connection information in SSM Parameter Store
+    new ssm.StringParameter(this, 'DatabaseHost', {
+      parameterName: `/PawfectMatch/${BaseStack.getCapitalizedStage(
+        stage
+      )}/Database/Host`,
+      stringValue: this.database.instanceEndpoint.hostname,
+      description: `PostgreSQL database host for ${stage} environment`,
+    });
+
+    new ssm.StringParameter(this, 'DatabasePort', {
+      parameterName: `/PawfectMatch/${BaseStack.getCapitalizedStage(
+        stage
+      )}/Database/Port`,
+      stringValue: this.database.instanceEndpoint.port.toString(),
+      description: `PostgreSQL database port for ${stage} environment`,
+    });
+
+    new ssm.StringParameter(this, 'DatabaseName', {
+      parameterName: `/PawfectMatch/${BaseStack.getCapitalizedStage(
+        stage
+      )}/Database/Name`,
+      stringValue: 'pawfectmatch',
+      description: `PostgreSQL database name for ${stage} environment`,
+    });
+
+    new ssm.StringParameter(this, 'DatabaseSecretArn', {
+      parameterName: `/PawfectMatch/${BaseStack.getCapitalizedStage(
+        stage
+      )}/Database/SecretArn`,
+      stringValue: this.database.secret!.secretArn,
+      description: `PostgreSQL database credentials secret ARN for ${stage} environment`,
+    });
+
+    // Store network information for other stacks to use
+    new ssm.StringParameter(this, 'DatabaseSecurityGroupId', {
+      parameterName: `/PawfectMatch/${BaseStack.getCapitalizedStage(
+        stage
+      )}/Network/DatabaseSecurityGroupId`,
+      stringValue: this.databaseSecurityGroup.securityGroupId,
+      description: `Database security group ID for ${stage} environment`,
+    });
+
+    // Output important information
+    new cdk.CfnOutput(this, 'DatabaseEndpoint', {
+      value: this.database.instanceEndpoint.hostname,
+      description: 'PostgreSQL database endpoint',
+    });
+
+    new cdk.CfnOutput(this, 'DatabaseSecretName', {
+      value: this.database.secret!.secretName,
+      description: 'Database credentials secret name',
+    });
+
+    new cdk.CfnOutput(this, 'DatabaseSecurityGroupId', {
+      value: this.databaseSecurityGroup.securityGroupId,
+      description: 'Database security group ID',
+    });
   }
 }
