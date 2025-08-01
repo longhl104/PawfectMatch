@@ -256,12 +256,24 @@ export class EnvironmentStack extends cdk.Stack {
       'PostgreSQL access from VPC'
     );
 
+    // Allow connections from local machine in development
+    if (stage === 'development') {
+      this.databaseSecurityGroup.addIngressRule(
+        ec2.Peer.anyIpv4(),
+        ec2.Port.tcp(5432),
+        'PostgreSQL access from internet (development only)'
+      );
+    }
+
     // Create subnet group for the database
     const dbSubnetGroup = new rds.SubnetGroup(this, 'DatabaseSubnetGroup', {
       vpc: this.vpc,
       description: 'Subnet group for PostgreSQL database',
       vpcSubnets: {
-        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+        // Use public subnets in development for external access
+        subnetType: stage === 'development'
+          ? ec2.SubnetType.PUBLIC
+          : ec2.SubnetType.PRIVATE_ISOLATED,
       },
     });
 
@@ -291,6 +303,8 @@ export class EnvironmentStack extends cdk.Stack {
       monitoringInterval: cdk.Duration.seconds(0), // Disable enhanced monitoring to save costs
       autoMinorVersionUpgrade: true,
       allowMajorVersionUpgrade: false,
+      // Make database publicly accessible in development only
+      publiclyAccessible: stage === 'development',
       parameterGroup: rds.ParameterGroup.fromParameterGroupName(
         this,
         'DefaultPostgreSQLParameterGroup',
