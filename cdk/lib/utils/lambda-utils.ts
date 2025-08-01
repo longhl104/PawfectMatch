@@ -28,7 +28,7 @@ export class LambdaUtils {
   ): lambda.Function {
     const lambdaFunction = new lambda.Function(scope, id, {
       functionName: `pawfect-match-${serviceGroup}-${config.functionName}-${stage}`,
-      runtime: lambda.Runtime.DOTNET_8,
+      runtime: lambda.Runtime.DOTNET_9,
       handler: `${config.functionName}::${config.functionName}.Function::FunctionHandler`,
       code: lambda.Code.fromAsset(
         path.join(

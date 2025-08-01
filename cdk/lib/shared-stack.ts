@@ -5,7 +5,6 @@ import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import * as ses from 'aws-cdk-lib/aws-ses';
-import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 import { StageType } from './utils';
 import { BaseStack } from './base-stack';
@@ -117,31 +116,32 @@ export class SharedStack extends cdk.Stack {
     );
 
     // Create email identity for the domain
-    const domainName = stage === 'production'
-      ? 'pawfectmatchnow.com'
-      : `${stage}.pawfectmatchnow.com`;
+    const domainName =
+      stage === 'production'
+        ? 'pawfectmatchnow.com'
+        : `${stage}.pawfectmatchnow.com`;
 
-    this.emailIdentity = new ses.EmailIdentity(
-      this,
-      'EmailIdentity',
-      {
-        identity: ses.Identity.domain(domainName),
-        configurationSet: this.sesConfigurationSet,
-        mailFromDomain: `mail.${domainName}`,
-        // Enable DKIM signing for better deliverability
-        dkimSigning: true,
-      }
-    );
+    this.emailIdentity = new ses.EmailIdentity(this, 'EmailIdentity', {
+      identity: ses.Identity.domain(domainName),
+      configurationSet: this.sesConfigurationSet,
+      mailFromDomain: `mail.${domainName}`,
+      // Enable DKIM signing for better deliverability
+      dkimSigning: true,
+    });
 
     // Store SES configuration in SSM for applications to use
     new ssm.StringParameter(this, 'SESConfigurationSetName', {
-      parameterName: `/PawfectMatch/${BaseStack.getCapitalizedStage(stage)}/Common/SESConfigurationSetName`,
+      parameterName: `/PawfectMatch/${BaseStack.getCapitalizedStage(
+        stage
+      )}/Common/SESConfigurationSetName`,
       stringValue: this.sesConfigurationSet.configurationSetName,
       description: `SES Configuration Set name for ${stage} environment`,
     });
 
     new ssm.StringParameter(this, 'SESFromDomain', {
-      parameterName: `/PawfectMatch/${BaseStack.getCapitalizedStage(stage)}/Common/SESFromDomain`,
+      parameterName: `/PawfectMatch/${BaseStack.getCapitalizedStage(
+        stage
+      )}/Common/SESFromDomain`,
       stringValue: domainName,
       description: `SES verified domain for ${stage} environment`,
     });
@@ -157,11 +157,17 @@ export class SharedStack extends cdk.Stack {
 
     // Store email addresses in SSM
     Object.entries(emailAddresses).forEach(([key, email]) => {
-      new ssm.StringParameter(this, `SESEmail${key.charAt(0).toUpperCase() + key.slice(1)}`, {
-        parameterName: `/PawfectMatch/${BaseStack.getCapitalizedStage(stage)}/Common/Email${key.charAt(0).toUpperCase() + key.slice(1)}`,
-        stringValue: email,
-        description: `${key} email address for ${stage} environment`,
-      });
+      new ssm.StringParameter(
+        this,
+        `SESEmail${key.charAt(0).toUpperCase() + key.slice(1)}`,
+        {
+          parameterName: `/PawfectMatch/${BaseStack.getCapitalizedStage(
+            stage
+          )}/Common/Email${key.charAt(0).toUpperCase() + key.slice(1)}`,
+          stringValue: email,
+          description: `${key} email address for ${stage} environment`,
+        }
+      );
     });
 
     // Output the DNS records needed for domain verification
