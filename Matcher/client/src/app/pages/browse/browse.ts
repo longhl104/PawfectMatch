@@ -16,6 +16,7 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
+import { SelectModule } from 'primeng/select';
 import { SkeletonModule } from 'primeng/skeleton';
 import { SliderModule } from 'primeng/slider';
 import { TagModule } from 'primeng/tag';
@@ -138,6 +139,7 @@ declare const google: {
     CardModule,
     InputTextModule,
     PaginatorModule,
+    SelectModule,
     SkeletonModule,
     SliderModule,
     TagModule,

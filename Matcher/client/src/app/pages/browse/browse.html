@@ -79,16 +79,15 @@
           >
             <i class="pi pi-star mr-1"></i>Pet Type
           </label>
-          <select
-            id="species-select"
-            class="p-dropdown w-full"
-            [value]="selectedSpecies()"
-            (change)="selectedSpecies.set($any($event).target.value || null); onSpeciesChange()"
-          >
-            @for (option of speciesOptions(); track option.value) {
-            <option [value]="option.value || ''">{{ option.label }}</option>
-            }
-          </select>
+          <p-select
+            [(ngModel)]="selectedSpecies"
+            [options]="speciesOptions()"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Select pet type"
+            (onChange)="onSpeciesChange()"
+            styleClass="w-full"
+          />
         </div>
 
         <!-- Breed Filter -->
@@ -99,17 +98,16 @@
           >
             <i class="pi pi-heart mr-1"></i>Breed
           </label>
-          <select
-            id="breed-select"
-            class="p-dropdown w-full"
-            [value]="selectedBreed()"
-            (change)="selectedBreed.set($any($event).target.value || null); onBreedChange()"
+          <p-select
+            [(ngModel)]="selectedBreed"
+            [options]="breeds()"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Select breed"
+            (onChange)="onBreedChange()"
             [disabled]="!selectedSpecies()"
-          >
-            @for (option of breeds(); track option.value) {
-            <option [value]="option.value || ''">{{ option.label }}</option>
-            }
-          </select>
+            styleClass="w-full"
+          />
         </div>
       </div>
 
