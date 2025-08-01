@@ -6,10 +6,13 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as rds from 'aws-cdk-lib/aws-rds';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as custom from 'aws-cdk-lib/custom-resources';
 import { Construct } from 'constructs';
 import { SharedStack } from './shared-stack';
 import { StageType } from './utils';
 import { BaseStack } from './base-stack';
+import { LambdaUtils } from './utils/lambda-utils';
 
 export interface EnvironmentStackProps extends cdk.StackProps {
   stage: StageType; // 'development' or 'production'
@@ -32,6 +35,8 @@ export class EnvironmentStack extends cdk.Stack {
   // Database-related properties
   public database: rds.DatabaseInstance;
   public databaseSecurityGroup: ec2.SecurityGroup;
+  public postgisInstallerFunction: lambda.Function;
+  public postgisInstallerCustomResource: custom.AwsCustomResource;
 
   stage: StageType;
 
@@ -227,6 +232,9 @@ export class EnvironmentStack extends cdk.Stack {
 
     // Set up shared PostgreSQL database
     this.setupDatabase(stage);
+
+    // Create PostGIS installer Lambda function
+    this.setupPostgisInstaller(stage);
   }
 
   private setupDatabase(stage: StageType): void {
@@ -347,5 +355,152 @@ export class EnvironmentStack extends cdk.Stack {
       value: this.databaseSecurityGroup.securityGroupId,
       description: 'Database security group ID',
     });
+  }
+
+  private setupPostgisInstaller(stage: StageType): void {
+    // Create security group for the Lambda function first
+    const lambdaSecurityGroup = new ec2.SecurityGroup(
+      this,
+      'PostgisInstallerSecurityGroup',
+      {
+        vpc: this.vpc,
+        description: 'Security group for PostGIS installer Lambda',
+        allowAllOutbound: true,
+      }
+    );
+
+    // Allow the Lambda function to connect to the database
+    this.databaseSecurityGroup.addIngressRule(
+      lambdaSecurityGroup,
+      ec2.Port.tcp(5432),
+      'PostGIS installer Lambda access'
+    );
+
+    // Create the PostGIS installer Lambda function with VPC configuration
+    this.postgisInstallerFunction = LambdaUtils.createFunction(
+      this,
+      'PostgisInstaller',
+      'Environment',
+      stage,
+      {
+        functionName: 'InstallPostgis',
+        description: 'Installs PostGIS extension in PostgreSQL database',
+        timeout: cdk.Duration.minutes(1),
+        memorySize: 256,
+        environment: {
+          STAGE: stage,
+        },
+        vpc: this.vpc,
+        vpcSubnets: {
+          subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
+        },
+        securityGroups: [lambdaSecurityGroup],
+      }
+    );
+
+    // Grant the Lambda function permission to access the database secret
+    this.postgisInstallerFunction.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          'secretsmanager:GetSecretValue',
+          'secretsmanager:DescribeSecret',
+        ],
+        resources: [
+          `arn:aws:secretsmanager:${this.region}:${this.account}:secret:pawfectmatch-${stage}-db-credentials-*`,
+        ],
+      })
+    );
+
+    // Grant VPC permissions to the Lambda function
+    this.postgisInstallerFunction.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          'ec2:CreateNetworkInterface',
+          'ec2:DescribeNetworkInterfaces',
+          'ec2:DeleteNetworkInterface',
+          'ec2:AttachNetworkInterface',
+          'ec2:DetachNetworkInterface',
+        ],
+        resources: ['*'],
+      })
+    );
+
+    // Store the Lambda function ARN in SSM Parameter Store for easy access
+    new ssm.StringParameter(this, 'PostgisInstallerArn', {
+      parameterName: `/PawfectMatch/${BaseStack.getCapitalizedStage(
+        stage
+      )}/Lambda/PostgisInstallerArn`,
+      stringValue: this.postgisInstallerFunction.functionArn,
+      description: `PostGIS installer Lambda function ARN for ${stage} environment`,
+    });
+
+    // Output the Lambda function ARN
+    new cdk.CfnOutput(this, 'PostgisInstallerFunctionArn', {
+      value: this.postgisInstallerFunction.functionArn,
+      description: 'PostGIS installer Lambda function ARN',
+    });
+
+    // Create custom resource to automatically invoke PostGIS installer after deployment
+    this.postgisInstallerCustomResource = new custom.AwsCustomResource(
+      this,
+      'PostgisInstallerCustomResource',
+      {
+        onCreate: {
+          service: 'Lambda',
+          action: 'invoke',
+          parameters: {
+            FunctionName: this.postgisInstallerFunction.functionName,
+            Payload: JSON.stringify({ Stage: stage }),
+          },
+          physicalResourceId: custom.PhysicalResourceId.of(
+            `postgis-installer-${stage}-${Date.now()}`
+          ),
+        },
+        onUpdate: {
+          service: 'Lambda',
+          action: 'invoke',
+          parameters: {
+            FunctionName: this.postgisInstallerFunction.functionName,
+            Payload: JSON.stringify({ Stage: stage }),
+          },
+          physicalResourceId: custom.PhysicalResourceId.of(
+            `postgis-installer-${stage}-${Date.now()}`
+          ),
+        },
+        policy: custom.AwsCustomResourcePolicy.fromStatements([
+          new iam.PolicyStatement({
+            effect: iam.Effect.ALLOW,
+            actions: ['lambda:InvokeFunction'],
+            resources: [this.postgisInstallerFunction.functionArn],
+          }),
+        ]),
+        timeout: cdk.Duration.minutes(5), // Give enough time for the Lambda to complete
+        logRetention: logs.RetentionDays.ONE_WEEK,
+      }
+    );
+
+    // Ensure the custom resource runs after the database is ready
+    this.postgisInstallerCustomResource.node.addDependency(this.database);
+
+    // Store the custom resource reference for monitoring
+    new ssm.StringParameter(this, 'PostgisInstallerCustomResourceId', {
+      parameterName: `/PawfectMatch/${BaseStack.getCapitalizedStage(
+        stage
+      )}/Lambda/PostgisInstallerCustomResourceId`,
+      stringValue: this.postgisInstallerCustomResource.node.id,
+      description: `PostGIS installer custom resource ID for ${stage} environment`,
+    });
+
+    // Output the custom resource information
+    new cdk.CfnOutput(
+      this,
+      `${BaseStack.getCapitalizedStage(stage)}PostgisInstallerCustomResourceId`,
+      {
+        value: this.postgisInstallerCustomResource.node.id,
+        description: 'PostGIS installer custom resource ID',
+      }
+    );
   }
 }

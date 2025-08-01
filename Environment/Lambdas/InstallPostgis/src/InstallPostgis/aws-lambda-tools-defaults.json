@@ -1,0 +1,21 @@
+{
+  "Information": [
+    "This file provides default values for the deployment wizard inside Visual Studio and the AWS Lambda commands added to the .NET Core CLI.",
+    "The following parameters control the deployment process.",
+    "",
+    "The function handler points to the method in the code that Lambda will invoke when a Lambda event is triggered.",
+    "The function handler is of the format <assembly>::<namespace.class>::<method>",
+    "Where:",
+    "* assembly is the .NET assembly file for your Lambda function without the .dll extension",
+    "* namespace.class is the full name of the handler class",
+    "* method is the name of the handler method",
+    "",
+    "If the project directory is the same as the Lambda function name, the assembly name will be the project directory name. The .NET Lambda templates follow this pattern. Otherwise, you will need to define the assembly name to be different from the directory."
+  ],
+  "configFile": "aws-lambda-tools-defaults.json",
+  "framework": "net8.0",
+  "function-runtime": "dotnet8",
+  "function-memory-size": 256,
+  "function-timeout": 60,
+  "function-handler": "InstallPostgis::InstallPostgis.Function::FunctionHandler"
+}

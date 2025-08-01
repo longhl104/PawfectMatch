@@ -1,0 +1,25 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Transform": "AWS::Serverless-2016-10-31",
+  "Description": "An AWS Serverless Application that installs PostGIS extension in PostgreSQL database.",
+  "Resources": {
+    "InstallPostgis": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "CodeUri": "",
+        "Handler": "InstallPostgis::InstallPostgis.Function::FunctionHandler",
+        "Runtime": "dotnet8",
+        "Architectures": [
+          "x86_64"
+        ],
+        "MemorySize": 256,
+        "Timeout": 60,
+        "Description": "A Lambda function that installs PostGIS extension in PostgreSQL database",
+        "Policies": [
+          "AWSLambdaBasicExecutionRole",
+          "SecretsManagerReadWrite"
+        ]
+      }
+    }
+  }
+}

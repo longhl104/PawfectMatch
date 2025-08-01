@@ -900,9 +900,9 @@ main() {
 		build_and_push_backend_images
 	fi
 
-	# if [ "$skip_lambda_build" = false ]; then
-	# 	build_lambda_functions
-	# fi
+	if [ "$skip_lambda_build" = false ]; then
+		build_lambda_functions
+	fi
 
 	if deploy_cdk; then
 		print_success "CDK deployment completed successfully!"
