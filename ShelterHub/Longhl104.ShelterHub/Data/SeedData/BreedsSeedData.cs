@@ -60,20 +60,30 @@ public static class BreedsSeedData
         // Add "Other" for rabbits
         breeds.Add(new PetBreed { BreedId = breedId++, Name = "Other", SpeciesId = 3 });
 
-        // Bird breeds
-        var birdBreeds = new[] { "Budgerigar", "Cockatiel", "Canary", "Lovebird", "Conure" };
-        foreach (var birdBreed in birdBreeds)
+        // Load bird breeds from JSON file
+        var birdBreedsJson = File.ReadAllText("Data/SeedData/bird-breeds.json");
+        var birdBreedNames = JsonSerializer.Deserialize<string[]>(birdBreedsJson) ?? [];
+
+        // Add all bird breeds from JSON
+        foreach (var birdBreedName in birdBreedNames)
         {
-            breeds.Add(new PetBreed { BreedId = breedId++, Name = birdBreed, SpeciesId = 4 });
+            breeds.Add(new PetBreed { BreedId = breedId++, Name = birdBreedName, SpeciesId = 4 });
         }
+
+        // Add "Other" for birds
         breeds.Add(new PetBreed { BreedId = breedId++, Name = "Other", SpeciesId = 4 });
 
-        // Guinea Pig breeds
-        var guineaPigBreeds = new[] { "American Guinea Pig", "Peruvian Guinea Pig", "Abyssinian Guinea Pig" };
-        foreach (var guineaPigBreed in guineaPigBreeds)
+        // Load guinea pig breeds from JSON file
+        var guineaPigBreedsJson = File.ReadAllText("Data/SeedData/guinea-pig-breeds.json");
+        var guineaPigBreedNames = JsonSerializer.Deserialize<string[]>(guineaPigBreedsJson) ?? [];
+
+        // Add all guinea pig breeds from JSON
+        foreach (var guineaPigBreedName in guineaPigBreedNames)
         {
-            breeds.Add(new PetBreed { BreedId = breedId++, Name = guineaPigBreed, SpeciesId = 5 });
+            breeds.Add(new PetBreed { BreedId = breedId++, Name = guineaPigBreedName, SpeciesId = 5 });
         }
+
+        // Add "Other" for guinea pigs
         breeds.Add(new PetBreed { BreedId = breedId++, Name = "Other", SpeciesId = 5 });
 
         // Hamster breeds
