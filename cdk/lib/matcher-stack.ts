@@ -24,17 +24,17 @@ export class MatcherStack extends BaseStack {
     });
 
     // Create ECS service for Matcher API with minimal resources
-    this.createEcsService({
-      repository: this.environmentStack.matcherRepository,
-      containerPort: 8080,
-      cpu: 256, // Reduced from 512 to save ~50% on compute costs
-      memory: 512, // Reduced from 1024 to save ~50% on memory costs
-      healthCheckPath: '/health',
-      subdomain: 'api-matcher',
-      environment: {
-        'PawfectMatch__Environment': this.stage,
-        'PawfectMatch__ServiceName': 'Matcher',
-      },
-    });
+    // this.createEcsService({
+    //   repository: this.environmentStack.matcherRepository,
+    //   containerPort: 8080,
+    //   cpu: 256, // Reduced from 512 to save ~50% on compute costs
+    //   memory: 512, // Reduced from 1024 to save ~50% on memory costs
+    //   healthCheckPath: '/health',
+    //   subdomain: 'api-matcher',
+    //   environment: {
+    //     'PawfectMatch__Environment': this.stage,
+    //     'PawfectMatch__ServiceName': 'Matcher',
+    //   },
+    // });
   }
 }

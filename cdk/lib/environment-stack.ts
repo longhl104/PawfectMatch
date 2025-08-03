@@ -50,7 +50,7 @@ export class EnvironmentStack extends cdk.Stack {
     // Create VPC with cost optimization - single NAT gateway even in production
     this.vpc = new ec2.Vpc(this, 'PawfectMatchVpc', {
       maxAzs: 2,
-      natGateways: 1, // Single NAT Gateway to save $45/month per additional gateway
+      natGateways: 0,
       subnetConfiguration: [
         {
           cidrMask: 24,
@@ -271,9 +271,10 @@ export class EnvironmentStack extends cdk.Stack {
       description: 'Subnet group for PostgreSQL database',
       vpcSubnets: {
         // Use public subnets in development for external access
-        subnetType: stage === 'development'
-          ? ec2.SubnetType.PUBLIC
-          : ec2.SubnetType.PRIVATE_ISOLATED,
+        subnetType:
+          stage === 'development'
+            ? ec2.SubnetType.PUBLIC
+            : ec2.SubnetType.PRIVATE_ISOLATED,
       },
     });
 

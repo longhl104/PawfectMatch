@@ -116,18 +116,18 @@ export class ShelterHubStack extends BaseStack {
     );
 
     // Create ECS service for ShelterHub API with minimal resources
-    this.createEcsService({
-      repository: this.environmentStack.shelterHubRepository,
-      containerPort: 8080,
-      cpu: 256, // Reduced from 512 to save ~50% on compute costs
-      memory: 512, // Reduced from 1024 to save ~50% on memory costs
-      healthCheckPath: '/health',
-      subdomain: 'api-shelter',
-      environment: {
-        PawfectMatch__Environment: this.stage,
-        PawfectMatch__ServiceName: 'ShelterHub',
-      },
-    });
+    // this.createEcsService({
+    //   repository: this.environmentStack.shelterHubRepository,
+    //   containerPort: 8080,
+    //   cpu: 256, // Reduced from 512 to save ~50% on compute costs
+    //   memory: 512, // Reduced from 1024 to save ~50% on memory costs
+    //   healthCheckPath: '/health',
+    //   subdomain: 'api-shelter',
+    //   environment: {
+    //     PawfectMatch__Environment: this.stage,
+    //     PawfectMatch__ServiceName: 'ShelterHub',
+    //   },
+    // });
 
     this.createDynamoDbTable({
       tableName: 'pet-media-files',
