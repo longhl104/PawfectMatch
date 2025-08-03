@@ -12,6 +12,23 @@ namespace Longhl104.ShelterHub.Controllers;
 public class PetsController(IPetService petService) : ControllerBase
 {
     /// <summary>
+    /// Gets all available pet species
+    /// </summary>
+    /// <returns>List of all pet species</returns>
+    [HttpGet("species")]
+    public async Task<ActionResult<GetPetSpeciesResponse>> GetAllPetSpecies()
+    {
+        var response = await petService.GetAllPetSpecies();
+
+        if (!response.Success)
+        {
+            return BadRequest(response);
+        }
+
+        return Ok(response);
+    }
+
+    /// <summary>
     /// Gets all pets for a specific shelter
     /// </summary>
     /// <param name="shelterId">The shelter ID</param>

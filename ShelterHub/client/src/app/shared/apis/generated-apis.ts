@@ -295,6 +295,57 @@ export class PetsApi {
     /**
      * @return OK
      */
+    species(): Observable<GetPetSpeciesResponse> {
+        let url_ = this.baseUrl + "/api/Pets/species";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processSpecies(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processSpecies(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<GetPetSpeciesResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<GetPetSpeciesResponse>;
+        }));
+    }
+
+    protected processSpecies(response: HttpResponseBase): Observable<GetPetSpeciesResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = GetPetSpeciesResponse.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
     shelterGET(shelterId: string): Observable<GetPetsResponse> {
         let url_ = this.baseUrl + "/api/Pets/shelter/{shelterId}";
         if (shelterId === undefined || shelterId === null)
@@ -1479,8 +1530,8 @@ export class SheltersApi {
 
 export class CreatePetRequest implements ICreatePetRequest {
     name!: string | undefined;
-    species!: string | undefined;
-    breed!: string | undefined;
+    speciesId!: number;
+    breedId!: number;
     dateOfBirth!: string;
     gender!: string | undefined;
     description!: string | undefined;
@@ -1497,8 +1548,8 @@ export class CreatePetRequest implements ICreatePetRequest {
     init(_data?: any) {
         if (_data) {
             this.name = _data["name"];
-            this.species = _data["species"];
-            this.breed = _data["breed"];
+            this.speciesId = _data["speciesId"];
+            this.breedId = _data["breedId"];
             this.dateOfBirth = _data["dateOfBirth"];
             this.gender = _data["gender"];
             this.description = _data["description"];
@@ -1515,8 +1566,8 @@ export class CreatePetRequest implements ICreatePetRequest {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["name"] = this.name;
-        data["species"] = this.species;
-        data["breed"] = this.breed;
+        data["speciesId"] = this.speciesId;
+        data["breedId"] = this.breedId;
         data["dateOfBirth"] = this.dateOfBirth;
         data["gender"] = this.gender;
         data["description"] = this.description;
@@ -1526,8 +1577,8 @@ export class CreatePetRequest implements ICreatePetRequest {
 
 export interface ICreatePetRequest {
     name: string | undefined;
-    species: string | undefined;
-    breed: string | undefined;
+    speciesId: number;
+    breedId: number;
     dateOfBirth: string;
     gender: string | undefined;
     description: string | undefined;
@@ -1541,6 +1592,8 @@ export class CreateShelterAdminRequest implements ICreateShelterAdminRequest {
     shelterWebsiteUrl?: string | undefined;
     shelterAbn?: string | undefined;
     shelterDescription?: string | undefined;
+    shelterLatitude?: number | undefined;
+    shelterLongitude?: number | undefined;
 
     constructor(data?: ICreateShelterAdminRequest) {
         if (data) {
@@ -1560,6 +1613,8 @@ export class CreateShelterAdminRequest implements ICreateShelterAdminRequest {
             this.shelterWebsiteUrl = _data["shelterWebsiteUrl"];
             this.shelterAbn = _data["shelterAbn"];
             this.shelterDescription = _data["shelterDescription"];
+            this.shelterLatitude = _data["shelterLatitude"];
+            this.shelterLongitude = _data["shelterLongitude"];
         }
     }
 
@@ -1579,6 +1634,8 @@ export class CreateShelterAdminRequest implements ICreateShelterAdminRequest {
         data["shelterWebsiteUrl"] = this.shelterWebsiteUrl;
         data["shelterAbn"] = this.shelterAbn;
         data["shelterDescription"] = this.shelterDescription;
+        data["shelterLatitude"] = this.shelterLatitude;
+        data["shelterLongitude"] = this.shelterLongitude;
         return data;
     }
 }
@@ -1591,6 +1648,8 @@ export interface ICreateShelterAdminRequest {
     shelterWebsiteUrl?: string | undefined;
     shelterAbn?: string | undefined;
     shelterDescription?: string | undefined;
+    shelterLatitude?: number | undefined;
+    shelterLongitude?: number | undefined;
 }
 
 export class DeleteMediaFilesRequest implements IDeleteMediaFilesRequest {
@@ -1925,6 +1984,58 @@ export interface IGetPetMediaResponse {
     errorMessage?: string | undefined;
 }
 
+export class GetPetSpeciesResponse implements IGetPetSpeciesResponse {
+    success?: boolean;
+    species?: PetSpeciesDto[] | undefined;
+    errorMessage?: string | undefined;
+
+    constructor(data?: IGetPetSpeciesResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.success = _data["success"];
+            if (Array.isArray(_data["species"])) {
+                this.species = [] as any;
+                for (let item of _data["species"])
+                    this.species!.push(PetSpeciesDto.fromJS(item));
+            }
+            this.errorMessage = _data["errorMessage"];
+        }
+    }
+
+    static fromJS(data: any): GetPetSpeciesResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new GetPetSpeciesResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["success"] = this.success;
+        if (Array.isArray(this.species)) {
+            data["species"] = [];
+            for (let item of this.species)
+                data["species"].push(item ? item.toJSON() : <any>undefined);
+        }
+        data["errorMessage"] = this.errorMessage;
+        return data;
+    }
+}
+
+export interface IGetPetSpeciesResponse {
+    success?: boolean;
+    species?: PetSpeciesDto[] | undefined;
+    errorMessage?: string | undefined;
+}
+
 export class GetPetsResponse implements IGetPetsResponse {
     success?: boolean;
     pets?: Pet[] | undefined;
@@ -2136,25 +2247,23 @@ export interface IMediaFileUploadUrlResponse {
 }
 
 export class Pet implements IPet {
-    petId?: string;
-    name?: string | undefined;
-    species?: string | undefined;
-    breed?: string | undefined;
-    dateOfBirth?: string;
-    gender?: string | undefined;
-    status?: PetStatus;
-    description?: string | undefined;
-    adoptionFee?: number;
+    petId!: string;
     weight?: number | undefined;
     color?: string | undefined;
-    isSpayedNeutered?: boolean;
-    isHouseTrained?: boolean;
-    isGoodWithKids?: boolean;
-    isGoodWithPets?: boolean;
     specialNeeds?: string | undefined;
-    createdAt?: string;
-    shelterId?: string;
+    petPostgreSqlId!: number;
     mainImageFileExtension?: string | undefined;
+    description?: string | undefined;
+    status?: PetStatus;
+    createdAt?: string | undefined;
+    adoptionFee?: number | undefined;
+    gender?: string | undefined;
+    dateOfBirth?: string | undefined;
+    name?: string | undefined;
+    isSpayedNeutered?: boolean | undefined;
+    isHouseTrained?: boolean | undefined;
+    isGoodWithKids?: boolean | undefined;
+    isGoodWithPets?: boolean | undefined;
 
     constructor(data?: IPet) {
         if (data) {
@@ -2168,24 +2277,22 @@ export class Pet implements IPet {
     init(_data?: any) {
         if (_data) {
             this.petId = _data["petId"];
-            this.name = _data["name"];
-            this.species = _data["species"];
-            this.breed = _data["breed"];
-            this.dateOfBirth = _data["dateOfBirth"];
-            this.gender = _data["gender"];
-            this.status = _data["status"];
-            this.description = _data["description"];
-            this.adoptionFee = _data["adoptionFee"];
             this.weight = _data["weight"];
             this.color = _data["color"];
+            this.specialNeeds = _data["specialNeeds"];
+            this.petPostgreSqlId = _data["petPostgreSqlId"];
+            this.mainImageFileExtension = _data["mainImageFileExtension"];
+            this.description = _data["description"];
+            this.status = _data["status"];
+            this.createdAt = _data["createdAt"];
+            this.adoptionFee = _data["adoptionFee"];
+            this.gender = _data["gender"];
+            this.dateOfBirth = _data["dateOfBirth"];
+            this.name = _data["name"];
             this.isSpayedNeutered = _data["isSpayedNeutered"];
             this.isHouseTrained = _data["isHouseTrained"];
             this.isGoodWithKids = _data["isGoodWithKids"];
             this.isGoodWithPets = _data["isGoodWithPets"];
-            this.specialNeeds = _data["specialNeeds"];
-            this.createdAt = _data["createdAt"];
-            this.shelterId = _data["shelterId"];
-            this.mainImageFileExtension = _data["mainImageFileExtension"];
         }
     }
 
@@ -2199,48 +2306,44 @@ export class Pet implements IPet {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["petId"] = this.petId;
-        data["name"] = this.name;
-        data["species"] = this.species;
-        data["breed"] = this.breed;
-        data["dateOfBirth"] = this.dateOfBirth;
-        data["gender"] = this.gender;
-        data["status"] = this.status;
-        data["description"] = this.description;
-        data["adoptionFee"] = this.adoptionFee;
         data["weight"] = this.weight;
         data["color"] = this.color;
+        data["specialNeeds"] = this.specialNeeds;
+        data["petPostgreSqlId"] = this.petPostgreSqlId;
+        data["mainImageFileExtension"] = this.mainImageFileExtension;
+        data["description"] = this.description;
+        data["status"] = this.status;
+        data["createdAt"] = this.createdAt;
+        data["adoptionFee"] = this.adoptionFee;
+        data["gender"] = this.gender;
+        data["dateOfBirth"] = this.dateOfBirth;
+        data["name"] = this.name;
         data["isSpayedNeutered"] = this.isSpayedNeutered;
         data["isHouseTrained"] = this.isHouseTrained;
         data["isGoodWithKids"] = this.isGoodWithKids;
         data["isGoodWithPets"] = this.isGoodWithPets;
-        data["specialNeeds"] = this.specialNeeds;
-        data["createdAt"] = this.createdAt;
-        data["shelterId"] = this.shelterId;
-        data["mainImageFileExtension"] = this.mainImageFileExtension;
         return data;
     }
 }
 
 export interface IPet {
-    petId?: string;
-    name?: string | undefined;
-    species?: string | undefined;
-    breed?: string | undefined;
-    dateOfBirth?: string;
-    gender?: string | undefined;
-    status?: PetStatus;
-    description?: string | undefined;
-    adoptionFee?: number;
+    petId: string;
     weight?: number | undefined;
     color?: string | undefined;
-    isSpayedNeutered?: boolean;
-    isHouseTrained?: boolean;
-    isGoodWithKids?: boolean;
-    isGoodWithPets?: boolean;
     specialNeeds?: string | undefined;
-    createdAt?: string;
-    shelterId?: string;
+    petPostgreSqlId: number;
     mainImageFileExtension?: string | undefined;
+    description?: string | undefined;
+    status?: PetStatus;
+    createdAt?: string | undefined;
+    adoptionFee?: number | undefined;
+    gender?: string | undefined;
+    dateOfBirth?: string | undefined;
+    name?: string | undefined;
+    isSpayedNeutered?: boolean | undefined;
+    isHouseTrained?: boolean | undefined;
+    isGoodWithKids?: boolean | undefined;
+    isGoodWithPets?: boolean | undefined;
 }
 
 export class PetImageDownloadUrlRequest implements IPetImageDownloadUrlRequest {
@@ -2451,6 +2554,46 @@ export interface IPetResponse {
     errorMessage?: string | undefined;
 }
 
+export class PetSpeciesDto implements IPetSpeciesDto {
+    speciesId?: number;
+    name?: string | undefined;
+
+    constructor(data?: IPetSpeciesDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.speciesId = _data["speciesId"];
+            this.name = _data["name"];
+        }
+    }
+
+    static fromJS(data: any): PetSpeciesDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new PetSpeciesDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["speciesId"] = this.speciesId;
+        data["name"] = this.name;
+        return data;
+    }
+}
+
+export interface IPetSpeciesDto {
+    speciesId?: number;
+    name?: string | undefined;
+}
+
 export enum PetStatus {
     Available = "Available",
     Pending = "Pending",
@@ -2556,13 +2699,15 @@ export interface IQueryShelterRequest {
 
 export class Shelter implements IShelter {
     shelterId!: string;
+    shelterPostgreSqlId!: number;
     shelterName?: string | undefined;
     shelterContactNumber?: string | undefined;
     shelterAddress?: string | undefined;
+    shelterLatitude?: number | undefined;
+    shelterLongitude?: number | undefined;
     shelterWebsiteUrl?: string | undefined;
     shelterAbn?: string | undefined;
     shelterDescription?: string | undefined;
-    isActive?: boolean;
     createdAt?: string;
     updatedAt?: string;
 
@@ -2578,13 +2723,15 @@ export class Shelter implements IShelter {
     init(_data?: any) {
         if (_data) {
             this.shelterId = _data["shelterId"];
+            this.shelterPostgreSqlId = _data["shelterPostgreSqlId"];
             this.shelterName = _data["shelterName"];
             this.shelterContactNumber = _data["shelterContactNumber"];
             this.shelterAddress = _data["shelterAddress"];
+            this.shelterLatitude = _data["shelterLatitude"];
+            this.shelterLongitude = _data["shelterLongitude"];
             this.shelterWebsiteUrl = _data["shelterWebsiteUrl"];
             this.shelterAbn = _data["shelterAbn"];
             this.shelterDescription = _data["shelterDescription"];
-            this.isActive = _data["isActive"];
             this.createdAt = _data["createdAt"];
             this.updatedAt = _data["updatedAt"];
         }
@@ -2600,13 +2747,15 @@ export class Shelter implements IShelter {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["shelterId"] = this.shelterId;
+        data["shelterPostgreSqlId"] = this.shelterPostgreSqlId;
         data["shelterName"] = this.shelterName;
         data["shelterContactNumber"] = this.shelterContactNumber;
         data["shelterAddress"] = this.shelterAddress;
+        data["shelterLatitude"] = this.shelterLatitude;
+        data["shelterLongitude"] = this.shelterLongitude;
         data["shelterWebsiteUrl"] = this.shelterWebsiteUrl;
         data["shelterAbn"] = this.shelterAbn;
         data["shelterDescription"] = this.shelterDescription;
-        data["isActive"] = this.isActive;
         data["createdAt"] = this.createdAt;
         data["updatedAt"] = this.updatedAt;
         return data;
@@ -2615,13 +2764,15 @@ export class Shelter implements IShelter {
 
 export interface IShelter {
     shelterId: string;
+    shelterPostgreSqlId: number;
     shelterName?: string | undefined;
     shelterContactNumber?: string | undefined;
     shelterAddress?: string | undefined;
+    shelterLatitude?: number | undefined;
+    shelterLongitude?: number | undefined;
     shelterWebsiteUrl?: string | undefined;
     shelterAbn?: string | undefined;
     shelterDescription?: string | undefined;
-    isActive?: boolean;
     createdAt?: string;
     updatedAt?: string;
 }

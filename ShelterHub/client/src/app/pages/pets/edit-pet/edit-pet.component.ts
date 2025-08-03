@@ -31,6 +31,7 @@ import {
   PetsApi,
   PetMediaFileResponse,
   MediaFileType,
+  PetSpeciesDto,
 } from '../../../shared/apis/generated-apis';
 import {
   PetMediaUploadComponent,
@@ -89,13 +90,7 @@ export class EditPetComponent implements OnInit {
   existingMediaDocuments = signal<MediaFile[]>([]);
   currentMediaData = signal<MediaUploadData | null>(null);
 
-  speciesOptions = [
-    { label: 'Dog', value: 'Dog' },
-    { label: 'Cat', value: 'Cat' },
-    { label: 'Rabbit', value: 'Rabbit' },
-    { label: 'Bird', value: 'Bird' },
-    { label: 'Other', value: 'Other' },
-  ];
+  speciesOptions: { label: string; value: string }[] = [];
 
   genderOptions = [
     { label: 'Male', value: 'Male' },
@@ -130,6 +125,7 @@ export class EditPetComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.loadSpeciesOptions();
     const petId = this.route.snapshot.paramMap.get('id');
     if (petId) {
       this.loadPet(petId);
@@ -167,6 +163,28 @@ export class EditPetComponent implements OnInit {
     }
   }
 
+  private async loadSpeciesOptions() {
+    try {
+      const response = await firstValueFrom(this.petsApi.species());
+      if (response.success && response.species) {
+        this.speciesOptions = response.species.map((species: PetSpeciesDto) => ({
+          label: species.name || 'Unknown',
+          value: species.name || 'Unknown'
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to load species options:', error);
+      // Fallback to hardcoded options if API fails
+      this.speciesOptions = [
+        { label: 'Dog', value: 'Dog' },
+        { label: 'Cat', value: 'Cat' },
+        { label: 'Rabbit', value: 'Rabbit' },
+        { label: 'Bird', value: 'Bird' },
+        { label: 'Other', value: 'Other' },
+      ];
+    }
+  }
+
   private populateForm(pet: Pet) {
     // Handle date conversion safely
     let dateOfBirth = null;
@@ -180,8 +198,8 @@ export class EditPetComponent implements OnInit {
 
     this.petForm.patchValue({
       name: pet.name,
-      species: pet.species,
-      breed: pet.breed,
+      // species: pet.species,
+      // breed: pet.breed,
       dateOfBirth: dateOfBirth,
       gender: pet.gender,
       description: pet.description,

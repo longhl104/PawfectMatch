@@ -1,9 +1,8 @@
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
-using Amazon.S3;
-using Amazon.S3.Model;
 using Longhl104.ShelterHub.Models;
 using Longhl104.PawfectMatch.Extensions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using PostgreSqlPet = Longhl104.ShelterHub.Models.PostgreSql.Pet;
 
@@ -135,6 +134,12 @@ public interface IPetService
     /// <param name="mediaFileOrders">Dictionary of media file ID to display order</param>
     /// <returns>Updated pet media response</returns>
     Task<GetPetMediaResponse> ReorderMediaFiles(Guid petId, Dictionary<Guid, int> mediaFileOrders);
+
+    /// <summary>
+    /// Gets all available pet species
+    /// </summary>
+    /// <returns>List of all pet species</returns>
+    Task<GetPetSpeciesResponse> GetAllPetSpecies();
 }
 
 /// <summary>
@@ -444,7 +449,7 @@ public class PetService : IPetService
                 BreedId = request.BreedId,
                 ShelterId = shelter.ShelterPostgreSqlId,
                 Gender = request.Gender,
-                DateOfBirth = request.DateOfBirth.ToDateTime(TimeOnly.MinValue),
+                DateOfBirth = request.DateOfBirth,
                 Description = request.Description,
                 AdoptionFee = 0,
                 IsSpayedNeutered = false,
@@ -453,7 +458,7 @@ public class PetService : IPetService
                 IsGoodWithPets = false,
                 IsHouseTrained = false,
                 Status = PetStatus.Available,
-                DateAdded = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow
             };
 
             _dbContext.Pets.Add(postgresPet);
@@ -1902,6 +1907,44 @@ public class PetService : IPetService
         {
             _logger.LogError(ex, "Failed to cleanup pending media files");
             return 0;
+        }
+    }
+
+    /// <summary>
+    /// Gets all available pet species
+    /// </summary>
+    /// <returns>List of all pet species</returns>
+    public async Task<GetPetSpeciesResponse> GetAllPetSpecies()
+    {
+        try
+        {
+            _logger.LogInformation("Getting all pet species");
+
+            var species = await _dbContext.PetSpecies
+                .OrderBy(s => s.SpeciesId)
+                .Select(s => new PetSpeciesDto
+                {
+                    SpeciesId = s.SpeciesId,
+                    Name = s.Name
+                })
+                .ToListAsync();
+
+            _logger.LogInformation("Successfully retrieved {SpeciesCount} pet species", species.Count);
+
+            return new GetPetSpeciesResponse
+            {
+                Success = true,
+                Species = species
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get pet species");
+            return new GetPetSpeciesResponse
+            {
+                Success = false,
+                ErrorMessage = $"Failed to retrieve pet species: {ex.Message}"
+            };
         }
     }
 }

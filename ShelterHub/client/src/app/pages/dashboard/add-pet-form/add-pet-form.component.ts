@@ -1,4 +1,5 @@
-import { Component, inject, output } from '@angular/core';
+import { Component, inject, output, OnInit } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 
 import {
   FormBuilder,
@@ -16,7 +17,11 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
 import { PetService } from 'shared/services/pet.service';
 import { ToastService } from '@longhl104/pawfect-match-ng';
-import { CreatePetRequest } from 'shared/apis/generated-apis';
+import {
+  CreatePetRequest,
+  PetsApi,
+  PetSpeciesDto,
+} from 'shared/apis/generated-apis';
 import { formatDateToLocalString } from 'shared/utils';
 
 @Component({
@@ -30,12 +35,12 @@ import { formatDateToLocalString } from 'shared/utils';
     EditorModule,
     ButtonModule,
     FileUploadModule,
-    DatePickerModule
-],
+    DatePickerModule,
+  ],
   templateUrl: './add-pet-form.component.html',
   styleUrl: './add-pet-form.component.scss',
 })
-export class AddPetFormComponent {
+export class AddPetFormComponent implements OnInit {
   readonly petAdded = output<void>();
   readonly cancelled = output<void>();
 
@@ -44,6 +49,7 @@ export class AddPetFormComponent {
   private toastService = inject(ToastService);
   private dialogRef = inject(DynamicDialogRef);
   private config = inject(DynamicDialogConfig);
+  private petsApi = inject(PetsApi);
 
   petForm: FormGroup;
   isSubmitting = false;
@@ -52,13 +58,7 @@ export class AddPetFormComponent {
   selectedImageFile: File | null = null;
   maxDate = new Date(); // For date picker max date
 
-  speciesOptions = [
-    { label: 'Dog', value: 'Dog' },
-    { label: 'Cat', value: 'Cat' },
-    { label: 'Rabbit', value: 'Rabbit' },
-    { label: 'Bird', value: 'Bird' },
-    { label: 'Other', value: 'Other' },
-  ];
+  speciesOptions: { label: string; value: number }[] = [];
   genderOptions = [
     { label: 'Male', value: 'Male' },
     { label: 'Female', value: 'Female' },
@@ -73,6 +73,20 @@ export class AddPetFormComponent {
       gender: ['', Validators.required],
       description: [null, [Validators.required]],
     });
+  }
+
+  async ngOnInit() {
+    await this.loadSpeciesOptions();
+  }
+
+  private async loadSpeciesOptions() {
+    const response = await firstValueFrom(this.petsApi.species());
+    if (response.success && response.species) {
+      this.speciesOptions = response.species.map((species: PetSpeciesDto) => ({
+        label: species.name!,
+        value: species.speciesId!,
+      }));
+    }
   }
 
   async onSubmit() {
@@ -93,9 +107,7 @@ export class AddPetFormComponent {
 
       const petData: CreatePetRequest = {
         ...this.petForm.value,
-        dateOfBirth: formatDateToLocalString(
-          this.petForm.value.dateOfBirth,
-        ), // Convert Date to local date string
+        dateOfBirth: formatDateToLocalString(this.petForm.value.dateOfBirth), // Convert Date to local date string
       };
 
       // Use the new upload method that handles S3 upload

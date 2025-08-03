@@ -44,6 +44,38 @@ public class Pet
     public string SpecialNeeds { get; set; } = string.Empty;
 
     public required int PetPostgreSqlId { get; set; }
+
+    public string? MainImageFileExtension { get; set; }
+
+    public string? Description { get; set; }
+
+    public PetStatus? Status { get; set; }
+
+    public DateTime? CreatedAt { get; set; }
+
+    public decimal? AdoptionFee { get; set; }
+
+    public string? Gender { get; set; }
+
+    public DateOnly? DateOfBirth { get; set; }
+
+    public string? Name { get; set; }
+
+    public bool? IsSpayedNeutered { get; set; }
+
+    public bool? IsHouseTrained { get; set; }
+
+    public bool? IsGoodWithKids { get; set; }
+
+    public bool? IsGoodWithPets { get; set; }
+
+    public bool? IsVaccinated { get; set; }
+
+    public int? SpeciesId { get; set; }
+
+    public int? BreedId { get; set; }
+
+    public int? ShelterId { get; set; }
 }
 
 /// <summary>
@@ -663,4 +695,41 @@ public class DeleteMediaFilesResponse
     /// Error message (if unsuccessful)
     /// </summary>
     public string? ErrorMessage { get; set; }
+}
+
+/// <summary>
+/// Response model for getting all pet species
+/// </summary>
+public class GetPetSpeciesResponse
+{
+    /// <summary>
+    /// Whether the operation was successful
+    /// </summary>
+    public bool Success { get; set; }
+
+    /// <summary>
+    /// List of pet species
+    /// </summary>
+    public List<PetSpeciesDto> Species { get; set; } = [];
+
+    /// <summary>
+    /// Error message (if unsuccessful)
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+}
+
+/// <summary>
+/// Data transfer object for pet species
+/// </summary>
+public class PetSpeciesDto
+{
+    /// <summary>
+    /// Species ID
+    /// </summary>
+    public int SpeciesId { get; set; }
+
+    /// <summary>
+    /// Species name
+    /// </summary>
+    public string Name { get; set; } = string.Empty;
 }

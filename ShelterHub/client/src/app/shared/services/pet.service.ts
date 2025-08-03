@@ -8,6 +8,7 @@ import {
   Pet,
   PetsApi,
   PresignedUrlResponse,
+  PetStatus,
 } from 'shared/apis/generated-apis';
 
 export interface PetImageDownloadUrlRequest {
@@ -49,7 +50,6 @@ export interface GetPetsResponse {
 })
 export class PetService {
   private readonly apiUrl = `${environment.apiUrl}/api/pets`;
-  private readonly mediaApiUrl = `${environment.apiUrl}/api/media`;
   private readonly http = inject(HttpClient);
   private readonly petsApi = inject(PetsApi);
 
@@ -94,7 +94,7 @@ export class PetService {
     }
   }
 
-  async updatePetStatus(petId: string, status: Pet['status']): Promise<Pet> {
+  async updatePetStatus(petId: string, status: PetStatus): Promise<Pet> {
     try {
       const response = await this.http
         .put<PetResponse>(`${this.apiUrl}/${petId}/status`, status)
@@ -120,9 +120,7 @@ export class PetService {
         .toPromise();
 
       if (!response?.success || !response.pet) {
-        throw new Error(
-          response?.errorMessage || 'Failed to update pet',
-        );
+        throw new Error(response?.errorMessage || 'Failed to update pet');
       }
 
       return response.pet;

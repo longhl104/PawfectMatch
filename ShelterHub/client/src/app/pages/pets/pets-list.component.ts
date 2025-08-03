@@ -32,6 +32,7 @@ import {
   PetStatus,
   GetPaginatedPetsResponse,
   Shelter,
+  PetSpeciesDto,
 } from 'shared/apis/generated-apis';
 import { AddPetFormComponent } from '../dashboard/add-pet-form/add-pet-form.component';
 import { PetCardComponent, PetCardAction } from 'shared/components';
@@ -105,14 +106,10 @@ export class PetsListComponent implements OnInit, OnDestroy {
 
   speciesOptions: FilterOption[] = [
     { label: 'All Species', value: null },
-    { label: 'Dog', value: 'Dog' },
-    { label: 'Cat', value: 'Cat' },
-    { label: 'Rabbit', value: 'Rabbit' },
-    { label: 'Bird', value: 'Bird' },
-    { label: 'Other', value: 'Other' },
   ];
 
   ngOnInit() {
+    this.loadSpeciesOptions();
     this.shelterService.shelter$
       .pipe(filter((shelter) => !!shelter))
       .subscribe((shelter) => {
@@ -124,6 +121,33 @@ export class PetsListComponent implements OnInit, OnDestroy {
     // Clean up the debounce timer
     if (this.searchDebounceTimer) {
       clearTimeout(this.searchDebounceTimer);
+    }
+  }
+
+  private async loadSpeciesOptions() {
+    try {
+      const response = await firstValueFrom(this.petsApi.species());
+      if (response.success && response.species) {
+        const speciesFromApi = response.species.map((species: PetSpeciesDto) => ({
+          label: species.name || 'Unknown',
+          value: species.name || 'Unknown'
+        }));
+        this.speciesOptions = [
+          { label: 'All Species', value: null },
+          ...speciesFromApi
+        ];
+      }
+    } catch (error) {
+      console.error('Failed to load species options:', error);
+      // Fallback to hardcoded options if API fails
+      this.speciesOptions = [
+        { label: 'All Species', value: null },
+        { label: 'Dog', value: 'Dog' },
+        { label: 'Cat', value: 'Cat' },
+        { label: 'Rabbit', value: 'Rabbit' },
+        { label: 'Bird', value: 'Bird' },
+        { label: 'Other', value: 'Other' },
+      ];
     }
   }
 
@@ -235,7 +259,7 @@ export class PetsListComponent implements OnInit, OnDestroy {
     // With server-side pagination, we keep the static species options
     // or we could load species from a separate API endpoint
     const uniqueSpecies = [
-      ...new Set(this.allPets().map((pet) => pet.species)),
+      // ...new Set(this.allPets().map((pet) => pet.species)),
     ].filter(Boolean);
 
     // Add any new species found in current page to existing options

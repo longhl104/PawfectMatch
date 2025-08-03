@@ -22,7 +22,7 @@ namespace Longhl104.ShelterHub.Models.PostgreSql
         [MaxLength(20)]
         public string? Gender { get; set; }
 
-        public DateTime? DateOfBirth { get; set; }
+        public DateOnly? DateOfBirth { get; set; }
 
         [MaxLength(500)]
         public string? Description { get; set; }
@@ -42,7 +42,7 @@ namespace Longhl104.ShelterHub.Models.PostgreSql
 
         public PetStatus Status { get; set; } = PetStatus.Available;
 
-        public DateTime DateAdded { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public string? MainImageFileExtension { get; set; }
 
