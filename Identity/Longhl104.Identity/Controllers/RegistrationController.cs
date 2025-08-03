@@ -277,7 +277,9 @@ public partial class RegistrationController(
             request.ShelterAddress,
             request.ShelterWebsiteUrl,
             request.ShelterAbn,
-            request.ShelterDescription
+            request.ShelterDescription,
+            request.ShelterLatitude,
+            request.ShelterLongitude
         });
 
         if (!response.IsSuccessStatusCode)

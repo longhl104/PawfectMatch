@@ -21,15 +21,16 @@ import {
   ToastService,
   ErrorHandlingService,
 } from '@longhl104/pawfect-match-ng';
-import {
-  ShelterAdminRegistrationRequest,
-  ShelterAdminService,
-  ShelterAdminRegistrationResponse,
-} from 'shared/services/shelter-admin.service';
+import { ShelterAdminService } from 'shared/services/shelter-admin.service';
 import {
   AddressInputComponent,
   AddressDetails,
 } from 'shared/components/address-input/address-input.component';
+import {
+  RegistrationApi,
+  ShelterAdminRegistrationRequest as ApiShelterAdminRegistrationRequest,
+  ShelterAdminRegistrationResponse as ApiShelterAdminRegistrationResponse,
+} from 'shared/apis/generated-apis';
 
 @Component({
   selector: 'app-shelter-admin-registration',
@@ -44,7 +45,7 @@ import {
     ButtonModule,
     CardModule,
     FloatLabelModule,
-    CheckboxModule
+    CheckboxModule,
   ],
   templateUrl: './registration.html',
   styleUrl: './registration.scss',
@@ -55,6 +56,7 @@ export class ShelterAdminRegistration {
   private shelterAdminService = inject(ShelterAdminService);
   private toastService = inject(ToastService);
   private errorHandlingService = inject(ErrorHandlingService);
+  private registrationApi = inject(RegistrationApi);
 
   registrationForm: FormGroup;
   isSubmitting = false;
@@ -205,18 +207,24 @@ export class ShelterAdminRegistration {
       const { confirmPassword, agreeToTerms, ...registrationData } = formData;
       // confirmPassword and agreeToTerms are excluded from registration data
 
-      const finalData: ShelterAdminRegistrationRequest = {
-        ...registrationData,
-        shelterAddress: this.selectedAddress.formattedAddress,
-        shelterAddressDetails: this.selectedAddress,
-      };
-
       try {
-        console.log('Shelter admin registration data:', finalData);
+        // Convert to API type
+        const apiRequest = new ApiShelterAdminRegistrationRequest({
+          email: registrationData.email,
+          password: registrationData.password,
+          shelterName: registrationData.shelterName,
+          shelterContactNumber: registrationData.shelterContactNumber,
+          shelterAddress: registrationData.shelterAddress,
+          shelterWebsiteUrl: registrationData.shelterWebsiteUrl,
+          shelterAbn: registrationData.shelterAbn,
+          shelterDescription: registrationData.shelterDescription,
+          shelterLatitude: this.selectedAddress?.latitude,
+          shelterLongitude: this.selectedAddress?.longitude,
+        });
 
         const response = (await firstValueFrom(
-          this.shelterAdminService.register(finalData),
-        )) as ShelterAdminRegistrationResponse;
+          this.registrationApi.shelterAdmin(apiRequest),
+        )) as ApiShelterAdminRegistrationResponse;
 
         console.log('Registration successful');
         this.toastService.success(

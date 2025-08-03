@@ -745,6 +745,8 @@ export class ShelterAdminRegistrationRequest implements IShelterAdminRegistratio
     shelterWebsiteUrl?: string | undefined;
     shelterAbn?: string | undefined;
     shelterDescription?: string | undefined;
+    shelterLatitude?: number | undefined;
+    shelterLongitude?: number | undefined;
 
     constructor(data?: IShelterAdminRegistrationRequest) {
         if (data) {
@@ -765,6 +767,8 @@ export class ShelterAdminRegistrationRequest implements IShelterAdminRegistratio
             this.shelterWebsiteUrl = _data["shelterWebsiteUrl"];
             this.shelterAbn = _data["shelterAbn"];
             this.shelterDescription = _data["shelterDescription"];
+            this.shelterLatitude = _data["shelterLatitude"];
+            this.shelterLongitude = _data["shelterLongitude"];
         }
     }
 
@@ -785,6 +789,8 @@ export class ShelterAdminRegistrationRequest implements IShelterAdminRegistratio
         data["shelterWebsiteUrl"] = this.shelterWebsiteUrl;
         data["shelterAbn"] = this.shelterAbn;
         data["shelterDescription"] = this.shelterDescription;
+        data["shelterLatitude"] = this.shelterLatitude;
+        data["shelterLongitude"] = this.shelterLongitude;
         return data;
     }
 }
@@ -798,6 +804,8 @@ export interface IShelterAdminRegistrationRequest {
     shelterWebsiteUrl?: string | undefined;
     shelterAbn?: string | undefined;
     shelterDescription?: string | undefined;
+    shelterLatitude?: number | undefined;
+    shelterLongitude?: number | undefined;
 }
 
 export class ShelterAdminRegistrationResponse implements IShelterAdminRegistrationResponse {

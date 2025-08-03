@@ -39,6 +39,9 @@ public class CreateShelterAdminRequest
     /// Optional description of the shelter
     /// </summary>
     public string? ShelterDescription { get; set; }
+
+    public decimal? ShelterLatitude { get; set; }
+    public decimal? ShelterLongitude { get; set; }
 }
 
 /// <summary>

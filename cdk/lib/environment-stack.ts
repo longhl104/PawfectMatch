@@ -235,6 +235,48 @@ export class EnvironmentStack extends cdk.Stack {
 
     // Create PostGIS installer Lambda function
     this.setupPostgisInstaller(stage);
+
+    this.exportValue('/aws/ecs/pawfectmatch-development', {
+      name: 'pawfectmatch-development-environment:ExportsOutputRefPawfectMatchLogGroupFCC022CCE56CEA69',
+    });
+
+    this.exportValue('vpc-0ca027405acd4ef52', {
+      name: 'pawfectmatch-development-environment:ExportsOutputRefPawfectMatchVpc932FBB0DCDE72905',
+    });
+
+    this.exportValue('subnet-061415908f98ef3c8', {
+      name: 'pawfectmatch-development-environment:ExportsOutputRefPawfectMatchVpcPrivateSubnet2Subnet36EEFAD35FB50037',
+    });
+
+    this.exportValue(
+      'arn:aws:iam::141714874243:role/pawfectmatch-development--TaskExecutionRole250D2532-HGKLXZ7oBjDx',
+      {
+        name: 'pawfectmatch-development-environment:ExportsOutputFnGetAttTaskExecutionRole250D2532Arn61CC7A98',
+      }
+    );
+
+    this.exportValue('subnet-0944e46ff855281b2', {
+      name: 'pawfectmatch-development-environment:ExportsOutputRefPawfectMatchVpcPrivateSubnet1SubnetE0FDD2EAD79A05B4',
+    });
+
+    this.exportValue(
+      'arn:aws:iam::141714874243:role/pawfectmatch-development-environme-TaskRole30FC0FBB-swlMBpdC3CdE',
+      {
+        name: 'pawfectmatch-development-environment:ExportsOutputFnGetAttTaskRole30FC0FBBArn85EA3C60',
+      }
+    );
+
+    this.exportValue('pawfectmatch-development-cluster', {
+      name: 'pawfectmatch-development-environment:ExportsOutputRefPawfectMatchCluster6284EA67D6D569EB',
+    });
+
+    this.exportValue('subnet-0b1aaa74f5871051c', {
+      name: 'pawfectmatch-development-environment:ExportsOutputRefPawfectMatchVpcPublicSubnet2Subnet29074702A2FD5BE4',
+    });
+
+    this.exportValue('subnet-08d441b4cd727f437', {
+      name: 'pawfectmatch-development-environment:ExportsOutputRefPawfectMatchVpcPublicSubnet1SubnetC94E5E5725BD0C66',
+    });
   }
 
   private setupDatabase(stage: StageType): void {

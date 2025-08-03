@@ -2,6 +2,7 @@ using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using Longhl104.ShelterHub.Models;
 using Microsoft.EntityFrameworkCore;
+using NetTopologySuite.Geometries;
 
 namespace Longhl104.ShelterHub.Services;
 
@@ -113,8 +114,20 @@ public class ShelterService : IShelterService
             {
                 ShelterName = request.ShelterName,
                 ShelterContactNumber = request.ShelterContactNumber,
-                ShelterAddress = request.ShelterAddress
+                ShelterAddress = request.ShelterAddress,
+                Latitude = request.ShelterLatitude.HasValue ? (double)request.ShelterLatitude.Value : null,
+                Longitude = request.ShelterLongitude.HasValue ? (double)request.ShelterLongitude.Value : null
             };
+
+            // Create PostGIS Point if coordinates are available
+            if (request.ShelterLatitude.HasValue && request.ShelterLongitude.HasValue)
+            {
+                var geometryFactory = new GeometryFactory(new PrecisionModel(), 4326); // WGS84 SRID
+                postgresqlShelter.Location = geometryFactory.CreatePoint(new Coordinate(
+                    (double)request.ShelterLongitude.Value, // X = Longitude
+                    (double)request.ShelterLatitude.Value   // Y = Latitude
+                ));
+            }
 
             try
             {

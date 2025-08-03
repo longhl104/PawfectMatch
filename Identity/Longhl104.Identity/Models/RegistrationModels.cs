@@ -29,6 +29,8 @@ public class ShelterAdminRegistrationRequest
     public string? ShelterWebsiteUrl { get; set; }
     public string? ShelterAbn { get; set; }
     public string? ShelterDescription { get; set; }
+    public decimal? ShelterLatitude { get; set; }
+    public decimal? ShelterLongitude { get; set; }
 }
 
 public class ShelterAdminRegistrationResponse
