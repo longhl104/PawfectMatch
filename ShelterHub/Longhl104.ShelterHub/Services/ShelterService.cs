@@ -144,7 +144,7 @@ public class ShelterService : IShelterService
                 var shelter = new Shelter
                 {
                     ShelterId = shelterId,
-                    ShelterPostgresId = postgresqlShelter.ShelterId,
+                    ShelterPostgreSqlId = postgresqlShelter.ShelterId,
                     ShelterWebsiteUrl = request.ShelterWebsiteUrl,
                     ShelterAbn = request.ShelterAbn,
                     ShelterDescription = request.ShelterDescription,
@@ -165,7 +165,7 @@ public class ShelterService : IShelterService
                 await SaveShelterAsync(shelter);
                 await SaveShelterAdminAsync(shelterAdmin);
 
-                _logger.LogInformation("Successfully created shelter admin profile for UserId: {UserId}, ShelterId: {ShelterId}, ShelterPostgresId: {ShelterPostgresId}",
+                _logger.LogInformation("Successfully created shelter admin profile for UserId: {UserId}, ShelterId: {ShelterId}, ShelterPostgreSqlId: {ShelterPostgreSqlId}",
                     request.UserId, shelterId, postgresqlShelter.ShelterId);
 
                 return new ShelterAdminResponse
@@ -243,7 +243,7 @@ public class ShelterService : IShelterService
     public async Task<Shelter?> GetShelterAsync(Guid shelterId, List<string>? attributesToGet = null)
     {
         attributesToGet ??= [];
-        attributesToGet.AddRange("ShelterId", "ShelterPostgresId");
+        attributesToGet.AddRange("ShelterId", "ShelterPostgreSqlId");
 
         try
         {
@@ -269,10 +269,10 @@ public class ShelterService : IShelterService
             var shelter = MapToShelter(response.Item);
 
             // Get additional shelter details from PostgreSQL if we have the PostgreSQL ID
-            if (shelter.ShelterPostgresId > 0)
+            if (shelter.ShelterPostgreSqlId > 0)
             {
                 var postgresqlShelter = await _dbContext.Shelters
-                    .FirstOrDefaultAsync(s => s.ShelterId == shelter.ShelterPostgresId);
+                    .FirstOrDefaultAsync(s => s.ShelterId == shelter.ShelterPostgreSqlId);
 
                 if (postgresqlShelter != null)
                 {
@@ -326,7 +326,7 @@ public class ShelterService : IShelterService
         var item = new Dictionary<string, AttributeValue>
         {
             ["ShelterId"] = new AttributeValue { S = shelter.ShelterId.ToString() },
-            ["ShelterPostgresId"] = new AttributeValue { N = shelter.ShelterPostgresId.ToString() },
+            ["ShelterPostgreSqlId"] = new AttributeValue { N = shelter.ShelterPostgreSqlId.ToString() },
             ["CreatedAt"] = new AttributeValue { S = shelter.CreatedAt.ToString("O") },
             ["UpdatedAt"] = new AttributeValue { S = shelter.UpdatedAt.ToString("O") }
         };
@@ -385,7 +385,7 @@ public class ShelterService : IShelterService
         return new Shelter
         {
             ShelterId = Guid.Parse(item["ShelterId"].S),
-            ShelterPostgresId = item.TryGetValue("ShelterPostgresId", out var postgresIdAttr) ? int.Parse(postgresIdAttr.N) : 0,
+            ShelterPostgreSqlId = item.TryGetValue("ShelterPostgreSqlId", out var postgresIdAttr) ? int.Parse(postgresIdAttr.N) : 0,
             ShelterWebsiteUrl = item.GetValueOrDefault("ShelterWebsiteUrl")?.S,
             ShelterAbn = item.GetValueOrDefault("ShelterAbn")?.S,
             ShelterDescription = item.GetValueOrDefault("ShelterDescription")?.S,

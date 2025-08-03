@@ -1,5 +1,7 @@
 using System.ComponentModel;
 using System.Text.Json.Serialization;
+using Longhl104.ShelterHub.Models.PostgreSql;
+using Longhl104.PawfectMatch.Extensions;
 
 namespace Longhl104.ShelterHub.Models;
 
@@ -24,50 +26,7 @@ public enum PetStatus
 /// </summary>
 public class Pet
 {
-    /// <summary>
-    /// Unique identifier for the pet
-    /// </summary>
-    public Guid PetId { get; set; } = Guid.NewGuid();
-
-    /// <summary>
-    /// Name of the pet
-    /// </summary>
-    public string Name { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Species of the pet (Dog, Cat, etc.)
-    /// </summary>
-    public string Species { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Breed of the pet
-    /// </summary>
-    public string Breed { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Date of birth of the pet
-    /// </summary>
-    public DateOnly DateOfBirth { get; set; }
-
-    /// <summary>
-    /// Gender of the pet (Male, Female)
-    /// </summary>
-    public string Gender { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Current status of the pet
-    /// </summary>
-    public PetStatus Status { get; set; } = PetStatus.Available;
-
-    /// <summary>
-    /// Description of the pet
-    /// </summary>
-    public string Description { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Adoption fee for the pet
-    /// </summary>
-    public decimal AdoptionFee { get; set; } = 0;
+    public required Guid PetId { get; set; }
 
     /// <summary>
     /// Weight of the pet in pounds
@@ -80,41 +39,11 @@ public class Pet
     public string Color { get; set; } = string.Empty;
 
     /// <summary>
-    /// Whether the pet is spayed/neutered
-    /// </summary>
-    public bool IsSpayedNeutered { get; set; } = false;
-
-    /// <summary>
-    /// Whether the pet is house trained
-    /// </summary>
-    public bool IsHouseTrained { get; set; } = false;
-
-    /// <summary>
-    /// Whether the pet is good with kids
-    /// </summary>
-    public bool IsGoodWithKids { get; set; } = false;
-
-    /// <summary>
-    /// Whether the pet is good with other pets
-    /// </summary>
-    public bool IsGoodWithPets { get; set; } = false;
-
-    /// <summary>
     /// Special needs or medical conditions
     /// </summary>
     public string SpecialNeeds { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Date when the pet was added to the shelter
-    /// </summary>
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-    /// <summary>
-    /// ID of the shelter that owns this pet
-    /// </summary>
-    public Guid ShelterId { get; set; } = Guid.NewGuid();
-
-    public string? MainImageFileExtension { get; set; }
+    public required int PetPostgreSqlId { get; set; }
 }
 
 /// <summary>
@@ -130,12 +59,12 @@ public class CreatePetRequest
     /// <summary>
     /// Species of the pet (Dog, Cat, etc.)
     /// </summary>
-    public required string Species { get; set; }
+    public required int SpeciesId { get; set; }
 
     /// <summary>
     /// Breed of the pet
     /// </summary>
-    public required string Breed { get; set; }
+    public required int BreedId { get; set; }
 
     /// <summary>
     /// Date of birth of the pet

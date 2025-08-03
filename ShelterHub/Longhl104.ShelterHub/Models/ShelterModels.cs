@@ -13,7 +13,7 @@ public class Shelter
     /// <summary>
     /// Reference to the PostgreSQL shelter ID
     /// </summary>
-    public required int ShelterPostgresId { get; set; }
+    public required int ShelterPostgreSqlId { get; set; }
 
     /// <summary>
     /// Name of the shelter (populated from PostgreSQL)

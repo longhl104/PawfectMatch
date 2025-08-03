@@ -5,6 +5,7 @@ using Amazon.S3.Model;
 using Longhl104.ShelterHub.Models;
 using Longhl104.PawfectMatch.Extensions;
 using Microsoft.Extensions.Caching.Memory;
+using PostgreSqlPet = Longhl104.ShelterHub.Models.PostgreSql.Pet;
 
 namespace Longhl104.ShelterHub.Services;
 
@@ -141,29 +142,35 @@ public interface IPetService
 /// </summary>
 public class PetService : IPetService
 {
+    private readonly AppDbContext _dbContext;
     private readonly IAmazonDynamoDB _dynamoDbClient;
     private readonly IHostEnvironment _environment;
     private readonly ILogger<PetService> _logger;
     private readonly IMediaService _mediaUploadService;
     private readonly IMemoryCache _memoryCache;
+    private readonly IShelterService _shelterService;
     private readonly string _tableName;
     private readonly string _bucketName;
     private readonly string _shelterIdCreatedAtIndex = "ShelterIdCreatedAtIndex";
     private readonly string _petMediaFilesTableName;
 
     public PetService(
+        AppDbContext dbContext,
         IAmazonDynamoDB dynamoDbClient,
         IHostEnvironment environment,
         ILogger<PetService> logger,
         IMediaService mediaUploadService,
-        IMemoryCache memoryCache
+        IMemoryCache memoryCache,
+        IShelterService shelterService
         )
     {
+        _dbContext = dbContext;
         _dynamoDbClient = dynamoDbClient;
         _environment = environment;
         _logger = logger;
         _mediaUploadService = mediaUploadService;
         _memoryCache = memoryCache;
+        _shelterService = shelterService;
         _tableName = $"pawfectmatch-{_environment.EnvironmentName.ToLowerInvariant()}-shelter-hub-pets";
         _bucketName = $"pawfectmatch-{_environment.EnvironmentName.ToLowerInvariant()}-shelter-hub-pet-media";
         _petMediaFilesTableName = $"pawfectmatch-{_environment.EnvironmentName.ToLowerInvariant()}-shelter-hub-pet-media-files";
@@ -417,24 +424,57 @@ public class PetService : IPetService
         {
             _logger.LogInformation("Creating new pet for shelter {ShelterId}", shelterId);
 
-            var pet = new Pet
+            // Get the shelter information to access the PostgreSQL shelter ID
+            var shelter = await _shelterService.GetShelterAsync(shelterId);
+            if (shelter == null)
+            {
+                _logger.LogWarning("Shelter not found: {ShelterId}", shelterId);
+                return new PetResponse
+                {
+                    Success = false,
+                    ErrorMessage = "Shelter not found"
+                };
+            }
+
+            // First, create the pet in PostgreSQL
+            var postgresPet = new PostgreSqlPet
+            {
+                Name = request.Name,
+                SpeciesId = request.SpeciesId,
+                BreedId = request.BreedId,
+                ShelterId = shelter.ShelterPostgreSqlId,
+                Gender = request.Gender,
+                DateOfBirth = request.DateOfBirth.ToDateTime(TimeOnly.MinValue),
+                Description = request.Description,
+                AdoptionFee = 0,
+                IsSpayedNeutered = false,
+                IsVaccinated = false,
+                IsGoodWithKids = false,
+                IsGoodWithPets = false,
+                IsHouseTrained = false,
+                Status = PetStatus.Available,
+                DateAdded = DateTime.UtcNow
+            };
+
+            _dbContext.Pets.Add(postgresPet);
+            await _dbContext.SaveChangesAsync();
+
+            _logger.LogInformation("Created PostgreSQL pet with ID: {PostgresPetId}", postgresPet.PetId);
+
+            // Now create the API Pet model for DynamoDB
+            var apiPet = new Pet
             {
                 PetId = Guid.NewGuid(),
-                Name = request.Name.ToLowerInvariant(),
-                Species = request.Species,
-                Breed = request.Breed.ToLowerInvariant(),
-                DateOfBirth = request.DateOfBirth,
-                Gender = request.Gender,
-                Description = request.Description,
-                ShelterId = shelterId,
-                Status = PetStatus.Available,
-                CreatedAt = DateTime.UtcNow,
+                PetPostgreSqlId = postgresPet.PetId,
+                Weight = null,
+                Color = string.Empty,
+                SpecialNeeds = string.Empty
             };
 
             var putRequest = new PutItemRequest
             {
                 TableName = _tableName,
-                Item = ConvertPetToDynamoDbItem(pet)
+                Item = ConvertPetToDynamoDbItem(apiPet)
             };
 
             await _dynamoDbClient.PutItemAsync(putRequest);
@@ -443,12 +483,12 @@ public class PetService : IPetService
             InvalidatePetCountCache(shelterId);
             InvalidatePetStatisticsCache(shelterId);
 
-            _logger.LogInformation("Successfully created pet with ID: {PetId}", pet.PetId);
+            _logger.LogInformation("Successfully created pet with API ID: {PetId} and PostgreSQL ID: {PostgresPetId}", apiPet.PetId, postgresPet.PetId);
 
             return new PetResponse
             {
                 Success = true,
-                Pet = pet
+                Pet = apiPet
             };
         }
         catch (Exception ex)
@@ -542,8 +582,12 @@ public class PetService : IPetService
             var updatedPet = ConvertDynamoDbItemToPet(response.Attributes);
 
             // Invalidate cache for this shelter since pet data changed
-            InvalidatePetCountCache(updatedPet.ShelterId);
-            InvalidatePetStatisticsCache(updatedPet.ShelterId);
+            var shelterId = await GetShelterIdForPet(updatedPet);
+            if (shelterId.HasValue)
+            {
+                InvalidatePetCountCache(shelterId.Value);
+                InvalidatePetStatisticsCache(shelterId.Value);
+            }
 
             _logger.LogInformation("Successfully updated pet with ID: {PetId}", petId);
 
@@ -619,8 +663,12 @@ public class PetService : IPetService
             var updatedPet = ConvertDynamoDbItemToPet(response.Attributes);
 
             // Invalidate cache for this shelter since pet status changed
-            InvalidatePetCountCache(updatedPet.ShelterId);
-            InvalidatePetStatisticsCache(updatedPet.ShelterId);
+            var shelterId = await GetShelterIdForPet(updatedPet);
+            if (shelterId.HasValue)
+            {
+                InvalidatePetCountCache(shelterId.Value);
+                InvalidatePetStatisticsCache(shelterId.Value);
+            }
 
             _logger.LogInformation("Successfully updated pet status for ID: {PetId}", petId);
 
@@ -677,8 +725,12 @@ public class PetService : IPetService
             var deletedPet = ConvertDynamoDbItemToPet(response.Attributes);
 
             // Invalidate cache for this shelter since pet was deleted
-            InvalidatePetCountCache(deletedPet.ShelterId);
-            InvalidatePetStatisticsCache(deletedPet.ShelterId);
+            var shelterId = await GetShelterIdForPet(deletedPet);
+            if (shelterId.HasValue)
+            {
+                InvalidatePetCountCache(shelterId.Value);
+                InvalidatePetStatisticsCache(shelterId.Value);
+            }
 
             _logger.LogInformation("Successfully deleted pet with ID: {PetId}", petId);
 
@@ -700,51 +752,83 @@ public class PetService : IPetService
     }
 
     /// <summary>
+    /// Gets the shelter ID for a pet by looking up the PostgreSQL pet record
+    /// </summary>
+    /// <param name="pet">The API pet object</param>
+    /// <returns>The shelter ID as a Guid, or null if not found</returns>
+    private async Task<Guid?> GetShelterIdForPet(Pet pet)
+    {
+        try
+        {
+            var postgresPet = await _dbContext.Pets.FindAsync(pet.PetPostgreSqlId);
+            if (postgresPet != null)
+            {
+                // Look up the shelter by PostgreSQL ID to get the DynamoDB Guid
+                return await GetShelterIdByPostgreSqlId(postgresPet.ShelterId);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to get shelter ID for pet {PetId}", pet.PetId);
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Gets the DynamoDB shelter ID (Guid) by PostgreSQL shelter ID
+    /// </summary>
+    /// <param name="postgresqlShelterId">The PostgreSQL shelter ID</param>
+    /// <returns>The DynamoDB shelter ID as a Guid, or null if not found</returns>
+    private async Task<Guid?> GetShelterIdByPostgreSqlId(int postgresqlShelterId)
+    {
+        try
+        {
+            var scanRequest = new ScanRequest
+            {
+                TableName = $"pawfectmatch-{_environment.EnvironmentName.ToLowerInvariant()}-shelter-hub-shelters",
+                FilterExpression = "ShelterPostgreSqlId = :postgresqlId",
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                {
+                    [":postgresqlId"] = new AttributeValue { N = postgresqlShelterId.ToString() }
+                },
+                ProjectionExpression = "ShelterId"
+            };
+
+            var response = await _dynamoDbClient.ScanAsync(scanRequest);
+
+            var matchingItem = response.Items.FirstOrDefault();
+            if (matchingItem != null && matchingItem.TryGetValue("ShelterId", out var shelterIdAttr))
+            {
+                return Guid.Parse(shelterIdAttr.S);
+            }
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to get DynamoDB shelter ID for PostgreSQL shelter ID {PostgreSqlShelterId}", postgresqlShelterId);
+            return null;
+        }
+    }
+
+    /// <summary>
     /// Converts a DynamoDB item to a Pet object
     /// </summary>
     private static Pet ConvertDynamoDbItemToPet(Dictionary<string, AttributeValue> item)
     {
         var petId = Guid.Parse(item["PetId"].S);
-        var name = item["Name"].S;
-        var species = item["Species"].S;
-        var breed = item["Breed"].S;
-        var dateOfBirth = item.TryGetValue("DateOfBirth", out var dobValue) ? DateOnly.Parse(dobValue.S) : DateOnly.MinValue;
-        var gender = item["Gender"].S;
-        var description = item.TryGetValue("Description", out var descValue) ? descValue.S : string.Empty;
-        var adoptionFee = item.TryGetValue("AdoptionFee", out var feeValue) ? decimal.Parse(feeValue.N) : 0;
+        var petPostgreSqlId = int.Parse(item["PetPostgreSqlId"].N);
         var weight = item.TryGetValue("Weight", out var weightValue) ? (decimal?)decimal.Parse(weightValue.N) : null;
         var color = item.TryGetValue("Color", out var colorValue) ? colorValue.S : string.Empty;
-        var isSpayedNeutered = item.TryGetValue("IsSpayedNeutered", out var spayedValue) && spayedValue.BOOL == true;
-        var isHouseTrained = item.TryGetValue("IsHouseTrained", out var houseTrainedValue) && houseTrainedValue.BOOL == true;
-        var isGoodWithKids = item.TryGetValue("IsGoodWithKids", out var goodWithKidsValue) && goodWithKidsValue.BOOL == true;
-        var isGoodWithPets = item.TryGetValue("IsGoodWithPets", out var goodWithPetsValue) && goodWithPetsValue.BOOL == true;
         var specialNeeds = item.TryGetValue("SpecialNeeds", out var specialNeedsValue) ? specialNeedsValue.S : string.Empty;
-        var shelterId = Guid.Parse(item["ShelterId"].S);
-        var status = Enum.Parse<PetStatus>(item["Status"].S);
-        var createdAt = DateTime.Parse(item["CreatedAt"].S);
-        var mainImageFileExtension = item.TryGetValue("MainImageFileExtension", out var extValue) ? extValue.S : null;
 
         return new Pet
         {
             PetId = petId,
-            Name = name,
-            Species = species,
-            Breed = breed,
-            DateOfBirth = dateOfBirth,
-            Gender = gender,
-            Description = description,
-            AdoptionFee = adoptionFee,
+            PetPostgreSqlId = petPostgreSqlId,
             Weight = weight,
             Color = color,
-            IsSpayedNeutered = isSpayedNeutered,
-            IsHouseTrained = isHouseTrained,
-            IsGoodWithKids = isGoodWithKids,
-            IsGoodWithPets = isGoodWithPets,
-            SpecialNeeds = specialNeeds,
-            ShelterId = shelterId,
-            Status = status,
-            CreatedAt = createdAt,
-            MainImageFileExtension = mainImageFileExtension
+            SpecialNeeds = specialNeeds
         };
     }
 
@@ -756,34 +840,15 @@ public class PetService : IPetService
         var item = new Dictionary<string, AttributeValue>
         {
             { "PetId", new AttributeValue { S = pet.PetId.ToString() } },
-            { "Name", new AttributeValue { S = pet.Name } },
-            { "Species", new AttributeValue { S = pet.Species } },
-            { "Breed", new AttributeValue { S = pet.Breed } },
-            { "DateOfBirth", new AttributeValue { S = pet.DateOfBirth.ToString("O") } },
-            { "Gender", new AttributeValue { S = pet.Gender } },
-            { "Description", new AttributeValue { S = pet.Description } },
-            { "AdoptionFee", new AttributeValue { N = pet.AdoptionFee.ToString() } },
+            { "PetPostgreSqlId", new AttributeValue { N = pet.PetPostgreSqlId.ToString() } },
             { "Color", new AttributeValue { S = pet.Color } },
-            { "IsSpayedNeutered", new AttributeValue { S = pet.IsSpayedNeutered.ToString() } },
-            { "IsHouseTrained", new AttributeValue { S = pet.IsHouseTrained.ToString() } },
-            { "IsGoodWithKids", new AttributeValue { S = pet.IsGoodWithKids.ToString() } },
-            { "IsGoodWithPets", new AttributeValue { S = pet.IsGoodWithPets.ToString() } },
-            { "SpecialNeeds", new AttributeValue { S = pet.SpecialNeeds } },
-            { "ShelterId", new AttributeValue { S = pet.ShelterId.ToString() } },
-            { "Status", new AttributeValue { S = pet.Status.GetAmbientValue<string>() } },
-            { "CreatedAt", new AttributeValue { S = pet.CreatedAt.ToString("O") } }
+            { "SpecialNeeds", new AttributeValue { S = pet.SpecialNeeds } }
         };
 
         // Add Weight if it has a value
         if (pet.Weight.HasValue)
         {
             item["Weight"] = new AttributeValue { N = pet.Weight.Value.ToString() };
-        }
-
-        // Add MainImageFileExtension if it exists
-        if (!string.IsNullOrWhiteSpace(pet.MainImageFileExtension))
-        {
-            item["MainImageFileExtension"] = new AttributeValue { S = pet.MainImageFileExtension };
         }
 
         return item;
@@ -830,8 +895,13 @@ public class PetService : IPetService
             var petResponse = await GetPetById(petId);
             if (petResponse.Success && petResponse.Pet != null)
             {
-                InvalidatePetCountCache(petResponse.Pet.ShelterId);
-                InvalidatePetStatisticsCache(petResponse.Pet.ShelterId);
+                // Get shelter ID using the proper lookup method
+                var shelterId = await GetShelterIdForPet(petResponse.Pet);
+                if (shelterId.HasValue)
+                {
+                    InvalidatePetCountCache(shelterId.Value);
+                    InvalidatePetStatisticsCache(shelterId.Value);
+                }
             }
 
             // Generate a presigned URL for uploading pet images

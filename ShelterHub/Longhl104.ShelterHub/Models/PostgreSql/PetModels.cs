@@ -1,22 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
-using System.ComponentModel;
 
 namespace Longhl104.ShelterHub.Models.PostgreSql
 {
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum PetStatus
-    {
-        [Description("Available")]
-        Available,
-        [Description("Pending")]
-        Pending,
-        [Description("Adopted")]
-        Adopted,
-        [Description("MedicalHold")]
-        MedicalHold
-    }
-
     public class Pet
     {
         [Key]
@@ -45,7 +30,7 @@ namespace Longhl104.ShelterHub.Models.PostgreSql
         [Range(0, 10000)]
         public decimal AdoptionFee { get; set; } = 0;
 
-        public bool IsNeutered { get; set; }
+        public bool IsSpayedNeutered { get; set; }
 
         public bool IsVaccinated { get; set; }
 
@@ -53,9 +38,13 @@ namespace Longhl104.ShelterHub.Models.PostgreSql
 
         public bool IsGoodWithPets { get; set; }
 
+        public bool IsHouseTrained { get; set; }
+
         public PetStatus Status { get; set; } = PetStatus.Available;
 
         public DateTime DateAdded { get; set; } = DateTime.UtcNow;
+
+        public string? MainImageFileExtension { get; set; }
 
         // Navigation properties
         public virtual PetSpecies Species { get; set; } = null!;
