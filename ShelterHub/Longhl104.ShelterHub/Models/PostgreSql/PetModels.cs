@@ -1,7 +1,22 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using System.ComponentModel;
 
 namespace Longhl104.ShelterHub.Models.PostgreSql
 {
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum PetStatus
+    {
+        [Description("Available")]
+        Available,
+        [Description("Pending")]
+        Pending,
+        [Description("Adopted")]
+        Adopted,
+        [Description("MedicalHold")]
+        MedicalHold
+    }
+
     public class Pet
     {
         [Key]
@@ -22,26 +37,22 @@ namespace Longhl104.ShelterHub.Models.PostgreSql
         [MaxLength(20)]
         public string? Gender { get; set; }
 
-        public int? AgeInMonths { get; set; }
-
-        [MaxLength(20)]
-        public string? Size { get; set; }
+        public DateTime? DateOfBirth { get; set; }
 
         [MaxLength(500)]
         public string? Description { get; set; }
-
-        [MaxLength(50)]
-        public string? Color { get; set; }
 
         public bool IsNeutered { get; set; }
 
         public bool IsVaccinated { get; set; }
 
-        public bool IsAvailable { get; set; } = true;
+        public bool IsGoodWithKids { get; set; }
+
+        public bool IsGoodWithPets { get; set; }
+
+        public PetStatus Status { get; set; } = PetStatus.Available;
 
         public DateTime DateAdded { get; set; } = DateTime.UtcNow;
-
-        public DateTime? DateAdopted { get; set; }
 
         // Navigation properties
         public virtual PetSpecies Species { get; set; } = null!;
@@ -58,12 +69,9 @@ namespace Longhl104.ShelterHub.Models.PostgreSql
         [MaxLength(50)]
         public string Name { get; set; } = string.Empty;
 
-        [MaxLength(200)]
-        public string? Description { get; set; }
-
         // Navigation properties
-        public virtual ICollection<Pet> Pets { get; set; } = new List<Pet>();
-        public virtual ICollection<PetBreed> Breeds { get; set; } = new List<PetBreed>();
+        public virtual ICollection<Pet> Pets { get; set; } = [];
+        public virtual ICollection<PetBreed> Breeds { get; set; } = [];
     }
 
     public class PetBreed
@@ -78,11 +86,8 @@ namespace Longhl104.ShelterHub.Models.PostgreSql
         [Required]
         public int SpeciesId { get; set; }
 
-        [MaxLength(200)]
-        public string? Description { get; set; }
-
         // Navigation properties
         public virtual PetSpecies Species { get; set; } = null!;
-        public virtual ICollection<Pet> Pets { get; set; } = new List<Pet>();
+        public virtual ICollection<Pet> Pets { get; set; } = [];
     }
 }

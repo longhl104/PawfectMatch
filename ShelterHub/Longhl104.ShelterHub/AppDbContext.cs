@@ -1,27 +1,48 @@
 using Longhl104.ShelterHub.Models.PostgreSql;
+using Longhl104.ShelterHub.Data.SeedData;
 using Microsoft.EntityFrameworkCore;
 
 namespace Longhl104.ShelterHub;
 
-public class AppDbContext : DbContext
+public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
-    {
-    }
-
     public DbSet<Shelter> Shelters { get; set; }
     public DbSet<Pet> Pets { get; set; }
     public DbSet<PetSpecies> PetSpecies { get; set; }
     public DbSet<PetBreed> PetBreeds { get; set; }
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        // Enable NetTopologySuite for PostGIS support
+        if (!optionsBuilder.IsConfigured)
+        {
+            // This will only be used during design-time operations
+            optionsBuilder.UseNpgsql(connectionString =>
+                connectionString.UseNetTopologySuite());
+        }
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("shelter_hub");
+
+        // Enable PostGIS extension
+        modelBuilder.HasPostgresExtension("postgis");
 
         // Configure Shelter entity
         modelBuilder.Entity<Shelter>()
             .ToTable("shelters")
             .HasKey(s => s.ShelterId);
+
+        // Configure PostGIS spatial data for Shelter
+        modelBuilder.Entity<Shelter>()
+            .Property(s => s.Location)
+            .HasColumnType("geometry (point, 4326)"); // WGS84 coordinate system
+
+        // Create spatial index for location-based queries
+        modelBuilder.Entity<Shelter>()
+            .HasIndex(s => s.Location)
+            .HasMethod("gist"); // GiST index for spatial queries
 
         // Configure PetSpecies entity
         modelBuilder.Entity<PetSpecies>()
@@ -74,9 +95,15 @@ public class AppDbContext : DbContext
             .HasIndex(p => p.ShelterId);
 
         modelBuilder.Entity<Pet>()
-            .HasIndex(p => p.IsAvailable);
+            .HasIndex(p => p.Status);
 
         modelBuilder.Entity<PetBreed>()
             .HasIndex(b => b.SpeciesId);
+
+        modelBuilder.Entity<Pet>()
+            .HasIndex(p => new { p.Status, p.SpeciesId, p.BreedId });
+
+        // Seed data for species and breeds
+        DatabaseSeeder.SeedData(modelBuilder);
     }
 }

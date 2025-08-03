@@ -35,7 +35,8 @@ public static class DatabaseExtensions
         var connectionString = await GetConnectionStringFromSecret(secretsManager, secretArn);
 
         services.AddDbContext<TContext>(options =>
-            options.UseNpgsql(connectionString));
+            options.UseNpgsql(connectionString, npgsqlOptions =>
+                npgsqlOptions.UseNetTopologySuite()));
 
         // Register the secrets manager client for DI
         services.AddSingleton<IAmazonSecretsManager, AmazonSecretsManagerClient>();
