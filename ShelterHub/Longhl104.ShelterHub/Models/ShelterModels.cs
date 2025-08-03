@@ -11,19 +11,9 @@ public class Shelter
     public required Guid ShelterId { get; set; }
 
     /// <summary>
-    /// Name of the shelter
+    /// Reference to the PostgreSQL shelter ID
     /// </summary>
-    public string ShelterName { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Contact phone number for the shelter
-    /// </summary>
-    public string ShelterContactNumber { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Physical address of the shelter
-    /// </summary>
-    public string ShelterAddress { get; set; } = string.Empty;
+    public required int ShelterPostgresId { get; set; }
 
     /// <summary>
     /// Optional website URL for the shelter
@@ -39,11 +29,6 @@ public class Shelter
     /// Optional description of the shelter
     /// </summary>
     public string? ShelterDescription { get; set; }
-
-    /// <summary>
-    /// Whether the shelter is currently active
-    /// </summary>
-    public bool IsActive { get; set; } = true;
 
     /// <summary>
     /// When the shelter was created

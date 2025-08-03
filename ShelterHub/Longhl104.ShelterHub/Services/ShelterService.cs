@@ -1,6 +1,7 @@
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using Longhl104.ShelterHub.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Longhl104.ShelterHub.Services;
 
@@ -49,6 +50,7 @@ public interface IShelterService
 public class ShelterService : IShelterService
 {
     private readonly IAmazonDynamoDB _dynamoDbClient;
+    private readonly AppDbContext _dbContext;
     private readonly IHostEnvironment _environment;
     private readonly ILogger<ShelterService> _logger;
     private readonly string _shelterAdminsTableName;
@@ -56,11 +58,13 @@ public class ShelterService : IShelterService
 
     public ShelterService(
         IAmazonDynamoDB dynamoDbClient,
+        AppDbContext dbContext,
         IHostEnvironment environment,
         ILogger<ShelterService> logger
         )
     {
         _dynamoDbClient = dynamoDbClient;
+        _dbContext = dbContext;
         _environment = environment;
         _logger = logger;
 
@@ -104,44 +108,72 @@ public class ShelterService : IShelterService
             // Generate unique shelter ID
             var shelterId = Guid.NewGuid();
 
-            // Create shelter record
-            var shelter = new Shelter
+            // Create PostgreSQL shelter first
+            var postgresqlShelter = new Models.PostgreSql.Shelter
             {
-                ShelterId = shelterId,
                 ShelterName = request.ShelterName,
                 ShelterContactNumber = request.ShelterContactNumber,
-                ShelterAddress = request.ShelterAddress,
-                ShelterWebsiteUrl = request.ShelterWebsiteUrl,
-                ShelterAbn = request.ShelterAbn,
-                ShelterDescription = request.ShelterDescription,
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                ShelterAddress = request.ShelterAddress
             };
 
-            // Create shelter admin record
-            var shelterAdmin = new ShelterAdmin
+            try
             {
-                UserId = request.UserId,
-                ShelterId = shelterId,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
+                // Save PostgreSQL shelter and get the generated ID
+                _dbContext.Shelters.Add(postgresqlShelter);
+                await _dbContext.SaveChangesAsync();
 
-            // Save both records to DynamoDB
-            await SaveShelterAsync(shelter);
-            await SaveShelterAdminAsync(shelterAdmin);
+                // Create DynamoDB shelter record with reference to PostgreSQL shelter
+                var shelter = new Shelter
+                {
+                    ShelterId = shelterId,
+                    ShelterPostgresId = postgresqlShelter.ShelterId,
+                    ShelterWebsiteUrl = request.ShelterWebsiteUrl,
+                    ShelterAbn = request.ShelterAbn,
+                    ShelterDescription = request.ShelterDescription,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
 
-            _logger.LogInformation("Successfully created shelter admin profile for UserId: {UserId}, ShelterId: {ShelterId}",
-                request.UserId, shelterId);
+                // Create shelter admin record
+                var shelterAdmin = new ShelterAdmin
+                {
+                    UserId = request.UserId,
+                    ShelterId = shelterId,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
 
-            return new ShelterAdminResponse
+                // Save both records to DynamoDB
+                await SaveShelterAsync(shelter);
+                await SaveShelterAdminAsync(shelterAdmin);
+
+                _logger.LogInformation("Successfully created shelter admin profile for UserId: {UserId}, ShelterId: {ShelterId}, PostgresShelterId: {PostgresShelterId}",
+                    request.UserId, shelterId, postgresqlShelter.ShelterId);
+
+                return new ShelterAdminResponse
+                {
+                    Success = true,
+                    Message = "Shelter admin profile created successfully",
+                    UserId = request.UserId,
+                    ShelterId = shelterId
+                };
+            }
+            catch (Exception ex) when (ex is not ArgumentException && ex is not InvalidOperationException)
             {
-                Success = true,
-                Message = "Shelter admin profile created successfully",
-                UserId = request.UserId,
-                ShelterId = shelterId
-            };
+                // If DynamoDB operations fail, attempt to remove the PostgreSQL shelter
+                try
+                {
+                    _dbContext.Shelters.Remove(postgresqlShelter);
+                    await _dbContext.SaveChangesAsync();
+                    _logger.LogWarning("Rolled back PostgreSQL shelter creation due to DynamoDB error for UserId: {UserId}", request.UserId);
+                }
+                catch (Exception rollbackEx)
+                {
+                    _logger.LogError(rollbackEx, "Failed to rollback PostgreSQL shelter creation for UserId: {UserId}", request.UserId);
+                }
+
+                throw; // Re-throw the original exception
+            }
         }
         catch (Exception ex)
         {
@@ -257,10 +289,7 @@ public class ShelterService : IShelterService
         var item = new Dictionary<string, AttributeValue>
         {
             ["ShelterId"] = new AttributeValue { S = shelter.ShelterId.ToString() },
-            ["ShelterName"] = new AttributeValue { S = shelter.ShelterName },
-            ["ShelterContactNumber"] = new AttributeValue { S = shelter.ShelterContactNumber },
-            ["ShelterAddress"] = new AttributeValue { S = shelter.ShelterAddress },
-            ["IsActive"] = new AttributeValue { BOOL = shelter.IsActive },
+            ["PostgresShelterId"] = new AttributeValue { N = shelter.ShelterPostgresId.ToString() },
             ["CreatedAt"] = new AttributeValue { S = shelter.CreatedAt.ToString("O") },
             ["UpdatedAt"] = new AttributeValue { S = shelter.UpdatedAt.ToString("O") }
         };
@@ -319,13 +348,10 @@ public class ShelterService : IShelterService
         return new Shelter
         {
             ShelterId = Guid.Parse(item["ShelterId"].S),
-            ShelterName = item.TryGetValue("ShelterName", out var shelterNameAttr) ? shelterNameAttr.S : string.Empty,
-            ShelterContactNumber = item.TryGetValue("ShelterContactNumber", out var shelterContactNumberAttr) ? shelterContactNumberAttr.S : string.Empty,
-            ShelterAddress = item.TryGetValue("ShelterAddress", out var shelterAddressAttr) ? shelterAddressAttr.S : string.Empty,
+            ShelterPostgresId = item.TryGetValue("PostgresShelterId", out var postgresIdAttr) ? int.Parse(postgresIdAttr.N) : 0,
             ShelterWebsiteUrl = item.GetValueOrDefault("ShelterWebsiteUrl")?.S,
             ShelterAbn = item.GetValueOrDefault("ShelterAbn")?.S,
             ShelterDescription = item.GetValueOrDefault("ShelterDescription")?.S,
-            IsActive = !item.TryGetValue("IsActive", out var isActiveAttr) || !bool.TryParse(isActiveAttr.BOOL.ToString(), out var isActive) || isActive,
             CreatedAt = item.TryGetValue("CreatedAt", out var createdAtAttr) ? DateTime.Parse(createdAtAttr.S) : DateTime.UtcNow,
             UpdatedAt = item.TryGetValue("UpdatedAt", out var updatedAtAttr) ? DateTime.Parse(updatedAtAttr.S) : DateTime.UtcNow
         };

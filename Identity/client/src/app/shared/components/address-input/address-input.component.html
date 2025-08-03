@@ -2,14 +2,15 @@
   <div class="form-group">
     <p-floatlabel>
       <input
-        pInputText
-        [id]="id()"
         #addressInput
+        pInputText
         type="text"
+        autocomplete="off"
+        class="w-full"
+        [id]="id()"
         [formControl]="addressControl"
         [class.ng-invalid]="addressControl.invalid && addressControl.touched"
         [readonly]="readonly()"
-        autocomplete="off"
       />
       <label [for]="id()">
         {{ label() }}
