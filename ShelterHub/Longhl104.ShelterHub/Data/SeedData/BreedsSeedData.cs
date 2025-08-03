@@ -27,26 +27,37 @@ public static class BreedsSeedData
         // Add "Other" for dogs
         breeds.Add(new PetBreed { BreedId = breedId++, Name = "Other", SpeciesId = 1 });
 
-        // Cat breeds
-        var catBreeds = new[]
-        {
-            "Domestic Shorthair", "Domestic Longhair", "Persian", "Maine Coon", "Ragdoll",
-            "British Shorthair", "Siamese", "American Shorthair", "Russian Blue", "Bengal"
-        };
+        // Load cat breeds from JSON file
+        var catBreedsJson = File.ReadAllText("Data/SeedData/cat-breeds.json");
+        var catBreedNames = JsonSerializer.Deserialize<string[]>(catBreedsJson) ?? [];
 
-        foreach (var catBreed in catBreeds)
+        // Add common cat breeds first
+        breeds.Add(new PetBreed { BreedId = breedId++, Name = "Domestic Shorthair", SpeciesId = 2 });
+        breeds.Add(new PetBreed { BreedId = breedId++, Name = "Domestic Longhair", SpeciesId = 2 });
+
+        // Add all cat breeds from JSON
+        foreach (var catBreedName in catBreedNames)
         {
-            breeds.Add(new PetBreed { BreedId = breedId++, Name = catBreed, SpeciesId = 2 });
+            breeds.Add(new PetBreed { BreedId = breedId++, Name = catBreedName, SpeciesId = 2 });
         }
+
+        // Add "Other" for cats
         breeds.Add(new PetBreed { BreedId = breedId++, Name = "Other", SpeciesId = 2 });
 
-        // Rabbit breeds
+        // Load rabbit breeds from JSON file
+        var rabbitBreedsJson = File.ReadAllText("Data/SeedData/rabbit-breeds.json");
+        var rabbitBreedNames = JsonSerializer.Deserialize<string[]>(rabbitBreedsJson) ?? [];
+
+        // Add Mixed Breed first for rabbits
         breeds.Add(new PetBreed { BreedId = breedId++, Name = "Mixed Breed", SpeciesId = 3 });
-        var rabbitBreeds = new[] { "Holland Lop", "Netherland Dwarf", "Mini Rex", "Lionhead" };
-        foreach (var rabbitBreed in rabbitBreeds)
+
+        // Add all rabbit breeds from JSON
+        foreach (var rabbitBreedName in rabbitBreedNames)
         {
-            breeds.Add(new PetBreed { BreedId = breedId++, Name = rabbitBreed, SpeciesId = 3 });
+            breeds.Add(new PetBreed { BreedId = breedId++, Name = rabbitBreedName, SpeciesId = 3 });
         }
+
+        // Add "Other" for rabbits
         breeds.Add(new PetBreed { BreedId = breedId++, Name = "Other", SpeciesId = 3 });
 
         // Bird breeds
