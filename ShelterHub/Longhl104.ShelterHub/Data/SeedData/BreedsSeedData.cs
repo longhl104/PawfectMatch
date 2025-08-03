@@ -1,5 +1,6 @@
 using Longhl104.ShelterHub.Models.PostgreSql;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace Longhl104.ShelterHub.Data.SeedData;
 
@@ -7,61 +8,79 @@ public static class BreedsSeedData
 {
     public static void SeedBreeds(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<PetBreed>().HasData(
-            // Dog breeds
-            new PetBreed { BreedId = 1, Name = "Mixed Breed", SpeciesId = 1 },
-            new PetBreed { BreedId = 2, Name = "Labrador Retriever", SpeciesId = 1 },
-            new PetBreed { BreedId = 3, Name = "Golden Retriever", SpeciesId = 1 },
-            new PetBreed { BreedId = 4, Name = "German Shepherd", SpeciesId = 1 },
-            new PetBreed { BreedId = 5, Name = "French Bulldog", SpeciesId = 1 },
-            new PetBreed { BreedId = 6, Name = "Bulldog", SpeciesId = 1 },
-            new PetBreed { BreedId = 7, Name = "Poodle", SpeciesId = 1 },
-            new PetBreed { BreedId = 8, Name = "Beagle", SpeciesId = 1 },
-            new PetBreed { BreedId = 9, Name = "Rottweiler", SpeciesId = 1 },
-            new PetBreed { BreedId = 10, Name = "Yorkshire Terrier", SpeciesId = 1 },
-            new PetBreed { BreedId = 11, Name = "Chihuahua", SpeciesId = 1 },
-            new PetBreed { BreedId = 12, Name = "Border Collie", SpeciesId = 1 },
-            new PetBreed { BreedId = 13, Name = "Australian Shepherd", SpeciesId = 1 },
-            new PetBreed { BreedId = 14, Name = "Siberian Husky", SpeciesId = 1 },
-            new PetBreed { BreedId = 15, Name = "Boxer", SpeciesId = 1 },
+        var breeds = new List<PetBreed>();
+        var breedId = 1;
 
-            // Cat breeds
-            new PetBreed { BreedId = 16, Name = "Domestic Shorthair", SpeciesId = 2 },
-            new PetBreed { BreedId = 17, Name = "Domestic Longhair", SpeciesId = 2 },
-            new PetBreed { BreedId = 18, Name = "Persian", SpeciesId = 2 },
-            new PetBreed { BreedId = 19, Name = "Maine Coon", SpeciesId = 2 },
-            new PetBreed { BreedId = 20, Name = "Ragdoll", SpeciesId = 2 },
-            new PetBreed { BreedId = 21, Name = "British Shorthair", SpeciesId = 2 },
-            new PetBreed { BreedId = 22, Name = "Siamese", SpeciesId = 2 },
-            new PetBreed { BreedId = 23, Name = "American Shorthair", SpeciesId = 2 },
-            new PetBreed { BreedId = 24, Name = "Russian Blue", SpeciesId = 2 },
-            new PetBreed { BreedId = 25, Name = "Bengal", SpeciesId = 2 },
+        // Load dog breeds from JSON file
+        var dogBreedsJson = File.ReadAllText("Data/SeedData/dog-breeds.json");
+        var dogBreedNames = JsonSerializer.Deserialize<string[]>(dogBreedsJson) ?? [];
 
-            // Rabbit breeds
-            new PetBreed { BreedId = 26, Name = "Mixed Breed", SpeciesId = 3 },
-            new PetBreed { BreedId = 27, Name = "Holland Lop", SpeciesId = 3 },
-            new PetBreed { BreedId = 28, Name = "Netherland Dwarf", SpeciesId = 3 },
-            new PetBreed { BreedId = 29, Name = "Mini Rex", SpeciesId = 3 },
-            new PetBreed { BreedId = 30, Name = "Lionhead", SpeciesId = 3 },
+        // Add Mixed Breed first
+        breeds.Add(new PetBreed { BreedId = breedId++, Name = "Mixed Breed", SpeciesId = 1 });
 
-            // Bird breeds
-            new PetBreed { BreedId = 31, Name = "Budgerigar", SpeciesId = 4 },
-            new PetBreed { BreedId = 32, Name = "Cockatiel", SpeciesId = 4 },
-            new PetBreed { BreedId = 33, Name = "Canary", SpeciesId = 4 },
-            new PetBreed { BreedId = 34, Name = "Lovebird", SpeciesId = 4 },
-            new PetBreed { BreedId = 35, Name = "Conure", SpeciesId = 4 },
+        // Add all dog breeds from JSON
+        foreach (var dogBreedName in dogBreedNames)
+        {
+            breeds.Add(new PetBreed { BreedId = breedId++, Name = dogBreedName, SpeciesId = 1 });
+        }
 
-            // Guinea Pig breeds
-            new PetBreed { BreedId = 36, Name = "American Guinea Pig", SpeciesId = 5 },
-            new PetBreed { BreedId = 37, Name = "Peruvian Guinea Pig", SpeciesId = 5 },
-            new PetBreed { BreedId = 38, Name = "Abyssinian Guinea Pig", SpeciesId = 5 },
+        // Add "Other" for dogs
+        breeds.Add(new PetBreed { BreedId = breedId++, Name = "Other", SpeciesId = 1 });
 
-            // Hamster breeds
-            new PetBreed { BreedId = 39, Name = "Syrian Hamster", SpeciesId = 6 },
-            new PetBreed { BreedId = 40, Name = "Dwarf Hamster", SpeciesId = 6 },
+        // Cat breeds
+        var catBreeds = new[]
+        {
+            "Domestic Shorthair", "Domestic Longhair", "Persian", "Maine Coon", "Ragdoll",
+            "British Shorthair", "Siamese", "American Shorthair", "Russian Blue", "Bengal"
+        };
 
-            // Ferret breeds
-            new PetBreed { BreedId = 41, Name = "Domestic Ferret", SpeciesId = 7 }
-        );
+        foreach (var catBreed in catBreeds)
+        {
+            breeds.Add(new PetBreed { BreedId = breedId++, Name = catBreed, SpeciesId = 2 });
+        }
+        breeds.Add(new PetBreed { BreedId = breedId++, Name = "Other", SpeciesId = 2 });
+
+        // Rabbit breeds
+        breeds.Add(new PetBreed { BreedId = breedId++, Name = "Mixed Breed", SpeciesId = 3 });
+        var rabbitBreeds = new[] { "Holland Lop", "Netherland Dwarf", "Mini Rex", "Lionhead" };
+        foreach (var rabbitBreed in rabbitBreeds)
+        {
+            breeds.Add(new PetBreed { BreedId = breedId++, Name = rabbitBreed, SpeciesId = 3 });
+        }
+        breeds.Add(new PetBreed { BreedId = breedId++, Name = "Other", SpeciesId = 3 });
+
+        // Bird breeds
+        var birdBreeds = new[] { "Budgerigar", "Cockatiel", "Canary", "Lovebird", "Conure" };
+        foreach (var birdBreed in birdBreeds)
+        {
+            breeds.Add(new PetBreed { BreedId = breedId++, Name = birdBreed, SpeciesId = 4 });
+        }
+        breeds.Add(new PetBreed { BreedId = breedId++, Name = "Other", SpeciesId = 4 });
+
+        // Guinea Pig breeds
+        var guineaPigBreeds = new[] { "American Guinea Pig", "Peruvian Guinea Pig", "Abyssinian Guinea Pig" };
+        foreach (var guineaPigBreed in guineaPigBreeds)
+        {
+            breeds.Add(new PetBreed { BreedId = breedId++, Name = guineaPigBreed, SpeciesId = 5 });
+        }
+        breeds.Add(new PetBreed { BreedId = breedId++, Name = "Other", SpeciesId = 5 });
+
+        // Hamster breeds
+        var hamsterBreeds = new[] { "Syrian Hamster", "Dwarf Hamster" };
+        foreach (var hamsterBreed in hamsterBreeds)
+        {
+            breeds.Add(new PetBreed { BreedId = breedId++, Name = hamsterBreed, SpeciesId = 6 });
+        }
+        breeds.Add(new PetBreed { BreedId = breedId++, Name = "Other", SpeciesId = 6 });
+
+        // Ferret breeds
+        breeds.Add(new PetBreed { BreedId = breedId++, Name = "Domestic Ferret", SpeciesId = 7 });
+        breeds.Add(new PetBreed { BreedId = breedId++, Name = "Other", SpeciesId = 7 });
+
+        // Other species breeds
+        breeds.Add(new PetBreed { BreedId = breedId++, Name = "Mixed Breed", SpeciesId = 8 });
+        breeds.Add(new PetBreed { BreedId = breedId++, Name = "Other", SpeciesId = 8 });
+
+        modelBuilder.Entity<PetBreed>().HasData(breeds.ToArray());
     }
 }
