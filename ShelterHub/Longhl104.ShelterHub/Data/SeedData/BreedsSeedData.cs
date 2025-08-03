@@ -86,12 +86,17 @@ public static class BreedsSeedData
         // Add "Other" for guinea pigs
         breeds.Add(new PetBreed { BreedId = breedId++, Name = "Other", SpeciesId = 5 });
 
-        // Hamster breeds
-        var hamsterBreeds = new[] { "Syrian Hamster", "Dwarf Hamster" };
-        foreach (var hamsterBreed in hamsterBreeds)
+        // Load hamster breeds from JSON file
+        var hamsterBreedsJson = File.ReadAllText("Data/SeedData/hamster-breeds.json");
+        var hamsterBreedNames = JsonSerializer.Deserialize<string[]>(hamsterBreedsJson) ?? [];
+
+        // Add all hamster breeds from JSON
+        foreach (var hamsterBreedName in hamsterBreedNames)
         {
-            breeds.Add(new PetBreed { BreedId = breedId++, Name = hamsterBreed, SpeciesId = 6 });
+            breeds.Add(new PetBreed { BreedId = breedId++, Name = hamsterBreedName, SpeciesId = 6 });
         }
+
+        // Add "Other" for hamsters
         breeds.Add(new PetBreed { BreedId = breedId++, Name = "Other", SpeciesId = 6 });
 
         // Ferret breeds
@@ -102,6 +107,6 @@ public static class BreedsSeedData
         breeds.Add(new PetBreed { BreedId = breedId++, Name = "Mixed Breed", SpeciesId = 8 });
         breeds.Add(new PetBreed { BreedId = breedId++, Name = "Other", SpeciesId = 8 });
 
-        modelBuilder.Entity<PetBreed>().HasData(breeds.ToArray());
+        modelBuilder.Entity<PetBreed>().HasData([.. breeds]);
     }
 }
