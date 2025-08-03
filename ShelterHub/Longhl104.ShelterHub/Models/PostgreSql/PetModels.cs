@@ -42,6 +42,9 @@ namespace Longhl104.ShelterHub.Models.PostgreSql
         [MaxLength(500)]
         public string? Description { get; set; }
 
+        [Range(0, 10000)]
+        public decimal AdoptionFee { get; set; } = 0;
+
         public bool IsNeutered { get; set; }
 
         public bool IsVaccinated { get; set; }
