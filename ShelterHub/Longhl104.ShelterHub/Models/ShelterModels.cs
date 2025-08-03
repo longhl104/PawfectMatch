@@ -16,6 +16,31 @@ public class Shelter
     public required int ShelterPostgresId { get; set; }
 
     /// <summary>
+    /// Name of the shelter (populated from PostgreSQL)
+    /// </summary>
+    public string? ShelterName { get; set; }
+
+    /// <summary>
+    /// Contact phone number for the shelter (populated from PostgreSQL)
+    /// </summary>
+    public string? ShelterContactNumber { get; set; }
+
+    /// <summary>
+    /// Physical address of the shelter (populated from PostgreSQL)
+    /// </summary>
+    public string? ShelterAddress { get; set; }
+
+    /// <summary>
+    /// Latitude coordinate (populated from PostgreSQL)
+    /// </summary>
+    public decimal? ShelterLatitude { get; set; }
+
+    /// <summary>
+    /// Longitude coordinate (populated from PostgreSQL)
+    /// </summary>
+    public decimal? ShelterLongitude { get; set; }
+
+    /// <summary>
     /// Optional website URL for the shelter
     /// </summary>
     public string? ShelterWebsiteUrl { get; set; }
