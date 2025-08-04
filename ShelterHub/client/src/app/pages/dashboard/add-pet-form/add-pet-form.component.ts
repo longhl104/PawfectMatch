@@ -21,6 +21,7 @@ import {
   CreatePetRequest,
   PetsApi,
   PetSpeciesDto,
+  PetBreedDto,
 } from 'shared/apis/generated-apis';
 import { formatDateToLocalString } from 'shared/utils';
 
@@ -59,6 +60,8 @@ export class AddPetFormComponent implements OnInit {
   maxDate = new Date(); // For date picker max date
 
   speciesOptions: { label: string; value: number }[] = [];
+  breedOptions: { label: string; value: number }[] = [];
+  isLoadingBreeds = false;
   genderOptions = [
     { label: 'Male', value: 'Male' },
     { label: 'Female', value: 'Female' },
@@ -67,11 +70,22 @@ export class AddPetFormComponent implements OnInit {
   constructor() {
     this.petForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
-      species: ['', Validators.required],
-      breed: ['', [Validators.required, Validators.minLength(2)]],
+      speciesId: ['', Validators.required],
+      breedId: ['', Validators.required],
       dateOfBirth: [null, [Validators.required]],
       gender: ['', Validators.required],
       description: [null, [Validators.required]],
+    });
+
+    // Watch for species changes to load breeds
+    this.petForm.get('speciesId')?.valueChanges.subscribe(speciesId => {
+      if (speciesId) {
+        this.loadBreedsForSpecies(speciesId);
+      } else {
+        this.breedOptions = [];
+      }
+      // Reset breed selection when species changes
+      this.petForm.get('breedId')?.setValue('');
     });
   }
 
@@ -86,6 +100,28 @@ export class AddPetFormComponent implements OnInit {
         label: species.name!,
         value: species.speciesId!,
       }));
+    }
+  }
+
+  private async loadBreedsForSpecies(speciesId: number) {
+    try {
+      this.isLoadingBreeds = true;
+      const response = await firstValueFrom(this.petsApi.breeds(speciesId));
+      if (response.success && response.breeds) {
+        this.breedOptions = response.breeds.map((breed: PetBreedDto) => ({
+          label: breed.name || 'Unknown',
+          value: breed.breedId || 0
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to load breed options:', error);
+      // Fallback to generic options if API fails
+      this.breedOptions = [
+        { label: 'Mixed Breed', value: 0 },
+        { label: 'Other', value: 0 },
+      ];
+    } finally {
+      this.isLoadingBreeds = false;
     }
   }
 
@@ -164,8 +200,8 @@ export class AddPetFormComponent implements OnInit {
   private getFieldLabel(fieldName: string): string {
     const labels: Record<string, string> = {
       name: 'Name',
-      species: 'Species',
-      breed: 'Breed',
+      speciesId: 'Species',
+      breedId: 'Breed',
       dateOfBirth: 'Date of Birth',
       gender: 'Gender',
       description: 'Description',

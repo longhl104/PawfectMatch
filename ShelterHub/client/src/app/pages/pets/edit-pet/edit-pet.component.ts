@@ -32,6 +32,7 @@ import {
   PetMediaFileResponse,
   MediaFileType,
   PetSpeciesDto,
+  PetBreedDto,
 } from '../../../shared/apis/generated-apis';
 import {
   PetMediaUploadComponent,
@@ -90,7 +91,9 @@ export class EditPetComponent implements OnInit {
   existingMediaDocuments = signal<MediaFile[]>([]);
   currentMediaData = signal<MediaUploadData | null>(null);
 
-  speciesOptions: { label: string; value: string }[] = [];
+  speciesOptions: { label: string; value: number }[] = [];
+  breedOptions: { label: string; value: number }[] = [];
+  isLoadingBreeds = false;
 
   genderOptions = [
     { label: 'Male', value: 'Male' },
@@ -169,19 +172,41 @@ export class EditPetComponent implements OnInit {
       if (response.success && response.species) {
         this.speciesOptions = response.species.map((species: PetSpeciesDto) => ({
           label: species.name || 'Unknown',
-          value: species.name || 'Unknown'
+          value: species.speciesId || 0
         }));
       }
     } catch (error) {
       console.error('Failed to load species options:', error);
       // Fallback to hardcoded options if API fails
       this.speciesOptions = [
-        { label: 'Dog', value: 'Dog' },
-        { label: 'Cat', value: 'Cat' },
-        { label: 'Rabbit', value: 'Rabbit' },
-        { label: 'Bird', value: 'Bird' },
-        { label: 'Other', value: 'Other' },
+        { label: 'Dog', value: 1 },
+        { label: 'Cat', value: 2 },
+        { label: 'Rabbit', value: 3 },
+        { label: 'Bird', value: 4 },
+        { label: 'Other', value: 8 },
       ];
+    }
+  }
+
+  private async loadBreedsForSpecies(speciesId: number) {
+    try {
+      this.isLoadingBreeds = true;
+      const response = await firstValueFrom(this.petsApi.breeds(speciesId));
+      if (response.success && response.breeds) {
+        this.breedOptions = response.breeds.map((breed: PetBreedDto) => ({
+          label: breed.name || 'Unknown',
+          value: breed.breedId || 0
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to load breed options:', error);
+      // Fallback to generic options if API fails
+      this.breedOptions = [
+        { label: 'Mixed Breed', value: 0 },
+        { label: 'Other', value: 0 },
+      ];
+    } finally {
+      this.isLoadingBreeds = false;
     }
   }
 

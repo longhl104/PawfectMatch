@@ -140,6 +140,13 @@ public interface IPetService
     /// </summary>
     /// <returns>List of all pet species</returns>
     Task<GetPetSpeciesResponse> GetAllPetSpecies();
+
+    /// <summary>
+    /// Gets all breeds for a specific species
+    /// </summary>
+    /// <param name="speciesId">The species ID</param>
+    /// <returns>List of breeds for the species</returns>
+    Task<GetPetBreedsResponse> GetBreedsBySpeciesId(int speciesId);
 }
 
 /// <summary>
@@ -1944,6 +1951,61 @@ public class PetService : IPetService
             {
                 Success = false,
                 ErrorMessage = $"Failed to retrieve pet species: {ex.Message}"
+            };
+        }
+    }
+
+    /// <summary>
+    /// Gets all breeds for a specific species
+    /// </summary>
+    /// <param name="speciesId">The species ID</param>
+    /// <returns>List of breeds for the species</returns>
+    public async Task<GetPetBreedsResponse> GetBreedsBySpeciesId(int speciesId)
+    {
+        try
+        {
+            _logger.LogInformation("Getting breeds for species ID: {SpeciesId}", speciesId);
+
+            // First check if the species exists
+            var speciesExists = await _dbContext.PetSpecies
+                .AnyAsync(s => s.SpeciesId == speciesId);
+
+            if (!speciesExists)
+            {
+                _logger.LogWarning("Species with ID {SpeciesId} not found", speciesId);
+                return new GetPetBreedsResponse
+                {
+                    Success = false,
+                    ErrorMessage = $"Species with ID {speciesId} not found"
+                };
+            }
+
+            var breeds = await _dbContext.PetBreeds
+                .Where(b => b.SpeciesId == speciesId)
+                .OrderBy(b => b.Name)
+                .Select(b => new PetBreedDto
+                {
+                    BreedId = b.BreedId,
+                    Name = b.Name,
+                    SpeciesId = b.SpeciesId
+                })
+                .ToListAsync();
+
+            _logger.LogInformation("Successfully retrieved {BreedCount} breeds for species ID {SpeciesId}", breeds.Count, speciesId);
+
+            return new GetPetBreedsResponse
+            {
+                Success = true,
+                Breeds = breeds
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get breeds for species ID: {SpeciesId}", speciesId);
+            return new GetPetBreedsResponse
+            {
+                Success = false,
+                ErrorMessage = $"Failed to retrieve breeds for species: {ex.Message}"
             };
         }
     }

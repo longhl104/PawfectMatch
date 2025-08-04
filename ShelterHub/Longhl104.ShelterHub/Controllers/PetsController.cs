@@ -29,6 +29,24 @@ public class PetsController(IPetService petService) : ControllerBase
     }
 
     /// <summary>
+    /// Gets all breeds for a specific species
+    /// </summary>
+    /// <param name="speciesId">The species ID</param>
+    /// <returns>List of breeds for the species</returns>
+    [HttpGet("species/{speciesId:int}/breeds")]
+    public async Task<ActionResult<GetPetBreedsResponse>> GetBreedsBySpeciesId(int speciesId)
+    {
+        var response = await petService.GetBreedsBySpeciesId(speciesId);
+
+        if (!response.Success)
+        {
+            return BadRequest(response);
+        }
+
+        return Ok(response);
+    }
+
+    /// <summary>
     /// Gets all pets for a specific shelter
     /// </summary>
     /// <param name="shelterId">The shelter ID</param>

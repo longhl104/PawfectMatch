@@ -346,6 +346,60 @@ export class PetsApi {
     /**
      * @return OK
      */
+    breeds(speciesId: number): Observable<GetPetBreedsResponse> {
+        let url_ = this.baseUrl + "/api/Pets/species/{speciesId}/breeds";
+        if (speciesId === undefined || speciesId === null)
+            throw new Error("The parameter 'speciesId' must be defined.");
+        url_ = url_.replace("{speciesId}", encodeURIComponent("" + speciesId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processBreeds(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processBreeds(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<GetPetBreedsResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<GetPetBreedsResponse>;
+        }));
+    }
+
+    protected processBreeds(response: HttpResponseBase): Observable<GetPetBreedsResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = GetPetBreedsResponse.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
     shelterGET(shelterId: string): Observable<GetPetsResponse> {
         let url_ = this.baseUrl + "/api/Pets/shelter/{shelterId}";
         if (shelterId === undefined || shelterId === null)
@@ -1864,6 +1918,58 @@ export interface IGetPaginatedPetsResponse {
     errorMessage?: string | undefined;
 }
 
+export class GetPetBreedsResponse implements IGetPetBreedsResponse {
+    success?: boolean;
+    breeds?: PetBreedDto[] | undefined;
+    errorMessage?: string | undefined;
+
+    constructor(data?: IGetPetBreedsResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.success = _data["success"];
+            if (Array.isArray(_data["breeds"])) {
+                this.breeds = [] as any;
+                for (let item of _data["breeds"])
+                    this.breeds!.push(PetBreedDto.fromJS(item));
+            }
+            this.errorMessage = _data["errorMessage"];
+        }
+    }
+
+    static fromJS(data: any): GetPetBreedsResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new GetPetBreedsResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["success"] = this.success;
+        if (Array.isArray(this.breeds)) {
+            data["breeds"] = [];
+            for (let item of this.breeds)
+                data["breeds"].push(item ? item.toJSON() : <any>undefined);
+        }
+        data["errorMessage"] = this.errorMessage;
+        return data;
+    }
+}
+
+export interface IGetPetBreedsResponse {
+    success?: boolean;
+    breeds?: PetBreedDto[] | undefined;
+    errorMessage?: string | undefined;
+}
+
 export class GetPetImageDownloadUrlsRequest implements IGetPetImageDownloadUrlsRequest {
     petRequests?: PetImageDownloadUrlRequest[] | undefined;
 
@@ -2264,6 +2370,10 @@ export class Pet implements IPet {
     isHouseTrained?: boolean | undefined;
     isGoodWithKids?: boolean | undefined;
     isGoodWithPets?: boolean | undefined;
+    isVaccinated?: boolean | undefined;
+    speciesId?: number | undefined;
+    breedId?: number | undefined;
+    shelterId?: number | undefined;
 
     constructor(data?: IPet) {
         if (data) {
@@ -2293,6 +2403,10 @@ export class Pet implements IPet {
             this.isHouseTrained = _data["isHouseTrained"];
             this.isGoodWithKids = _data["isGoodWithKids"];
             this.isGoodWithPets = _data["isGoodWithPets"];
+            this.isVaccinated = _data["isVaccinated"];
+            this.speciesId = _data["speciesId"];
+            this.breedId = _data["breedId"];
+            this.shelterId = _data["shelterId"];
         }
     }
 
@@ -2322,6 +2436,10 @@ export class Pet implements IPet {
         data["isHouseTrained"] = this.isHouseTrained;
         data["isGoodWithKids"] = this.isGoodWithKids;
         data["isGoodWithPets"] = this.isGoodWithPets;
+        data["isVaccinated"] = this.isVaccinated;
+        data["speciesId"] = this.speciesId;
+        data["breedId"] = this.breedId;
+        data["shelterId"] = this.shelterId;
         return data;
     }
 }
@@ -2344,6 +2462,54 @@ export interface IPet {
     isHouseTrained?: boolean | undefined;
     isGoodWithKids?: boolean | undefined;
     isGoodWithPets?: boolean | undefined;
+    isVaccinated?: boolean | undefined;
+    speciesId?: number | undefined;
+    breedId?: number | undefined;
+    shelterId?: number | undefined;
+}
+
+export class PetBreedDto implements IPetBreedDto {
+    breedId?: number;
+    name?: string | undefined;
+    speciesId?: number;
+
+    constructor(data?: IPetBreedDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.breedId = _data["breedId"];
+            this.name = _data["name"];
+            this.speciesId = _data["speciesId"];
+        }
+    }
+
+    static fromJS(data: any): PetBreedDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new PetBreedDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["breedId"] = this.breedId;
+        data["name"] = this.name;
+        data["speciesId"] = this.speciesId;
+        return data;
+    }
+}
+
+export interface IPetBreedDto {
+    breedId?: number;
+    name?: string | undefined;
+    speciesId?: number;
 }
 
 export class PetImageDownloadUrlRequest implements IPetImageDownloadUrlRequest {
