@@ -57,6 +57,7 @@
                   placeholder="Select breed"
                   [options]="breedOptions"
                   [loading]="isLoadingBreeds"
+                  [editable]="true"
                   [disabled]="breedOptions.length === 0"
                   [class.ng-invalid]="isFieldInvalid('breedId')"
                 ></p-select>
@@ -70,6 +71,11 @@
                     Please select a species first
                   </small>
                 }
+
+                <small class="text-600 block mt-1">
+                  If you select Mixed Breed or Other, please specify details in
+                  the Description
+                </small>
               </div>
               <div class="form-field">
                 <label for="gender">Gender *</label>
@@ -318,9 +324,7 @@
       ></p-button>
     </div>
     <p-button
-      [label]="
-        isUploadingImage() ? 'Uploading Image...' : 'Save Changes'
-      "
+      [label]="isUploadingImage() ? 'Uploading Image...' : 'Save Changes'"
       type="submit"
       [loading]="saving()"
       [disabled]="petForm.invalid"
