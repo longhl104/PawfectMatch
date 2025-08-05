@@ -115,8 +115,8 @@ export class EditPetComponent implements OnInit {
   constructor() {
     this.petForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
-      species: ['', Validators.required],
-      breed: ['', Validators.required],
+      speciesId: ['', Validators.required],
+      breedId: ['', Validators.required],
       dateOfBirth: ['', Validators.required],
       gender: ['', Validators.required],
       description: ['', [Validators.required, Validators.minLength(10)]],
@@ -132,11 +132,11 @@ export class EditPetComponent implements OnInit {
     });
 
     // Subscribe to species changes to load breeds
-    this.petForm.get('species')?.valueChanges.subscribe((speciesId: number) => {
+    this.petForm.get('speciesId')?.valueChanges.subscribe((speciesId: number) => {
       if (speciesId) {
         this.loadBreedsForSpecies(speciesId);
         // Reset breed selection when species changes
-        this.petForm.get('breed')?.setValue('');
+        this.petForm.get('breedId')?.setValue('');
       } else {
         this.breedOptions = [];
       }
@@ -302,7 +302,7 @@ export class EditPetComponent implements OnInit {
     // Set the species directly by ID
     const speciesOption = this.speciesOptions.find(s => s.value === speciesId);
     if (speciesOption) {
-      this.petForm.get('species')?.setValue(speciesOption.value);
+      this.petForm.get('speciesId')?.setValue(speciesOption.value);
 
       // Load breeds for this species
       await this.loadBreedsForSpecies(speciesOption.value);
@@ -310,12 +310,10 @@ export class EditPetComponent implements OnInit {
       // Set breed by ID after breeds are loaded
       const breedOption = this.breedOptions.find(b => b.value === breedId);
       if (breedOption) {
-        this.petForm.get('breed')?.setValue(breedOption.value);
+        this.petForm.get('breedId')?.setValue(breedOption.value);
       }
     }
-  }
-
-  async onSubmit() {
+  }  async onSubmit() {
     if (this.petForm.valid) {
       // For add mode, we don't need a pet to exist yet
       if (!this.isAddMode() && !this.pet()) {
@@ -336,8 +334,8 @@ export class EditPetComponent implements OnInit {
           // Create new pet
           const createRequest = new CreatePetRequest({
             name: formValue.name,
-            speciesId: formValue.species,
-            breedId: formValue.breed,
+            speciesId: formValue.speciesId,
+            breedId: formValue.breedId,
             dateOfBirth: formattedDate,
             gender: formValue.gender,
             description: formValue.description,
@@ -364,11 +362,14 @@ export class EditPetComponent implements OnInit {
             });
           }
         } else {
-          // Update existing pet
+          // Update existing pet - need to convert IDs back to names for UpdatePetRequest
+          const speciesName = this.speciesOptions.find(s => s.value === formValue.speciesId)?.label || '';
+          const breedName = this.breedOptions.find(b => b.value === formValue.breedId)?.label || '';
+
           const updateRequest = new UpdatePetRequest({
             name: formValue.name,
-            species: formValue.species,
-            breed: formValue.breed,
+            species: speciesName,
+            breed: breedName,
             dateOfBirth: formattedDate,
             gender: formValue.gender,
             description: formValue.description,

@@ -31,16 +31,17 @@
               <div class="form-field">
                 <label for="species">Species *</label>
                 <p-select
-                  formControlName="species"
+                  id="species"
+                  formControlName="speciesId"
                   optionLabel="label"
                   optionValue="value"
                   placeholder="Select species"
                   [options]="speciesOptions"
-                  [class.ng-invalid]="isFieldInvalid('species')"
+                  [class.ng-invalid]="isFieldInvalid('speciesId')"
                 ></p-select>
-                @if (isFieldInvalid("species")) {
+                @if (isFieldInvalid("speciesId")) {
                   <small class="error-message">
-                    {{ getFieldError("species") }}
+                    {{ getFieldError("speciesId") }}
                   </small>
                 }
               </div>
@@ -48,17 +49,25 @@
             <div class="form-row">
               <div class="form-field">
                 <label for="breed">Breed *</label>
-                <input
-                  pInputText
+                <p-select
                   id="breed"
-                  formControlName="breed"
-                  placeholder="Enter breed"
-                  class="capitalize"
-                  [class.ng-invalid]="isFieldInvalid('breed')"
-                />
-                @if (isFieldInvalid("breed")) {
+                  formControlName="breedId"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select breed"
+                  [options]="breedOptions"
+                  [loading]="isLoadingBreeds"
+                  [disabled]="breedOptions.length === 0"
+                  [class.ng-invalid]="isFieldInvalid('breedId')"
+                ></p-select>
+                @if (isFieldInvalid("breedId")) {
                   <small class="error-message">
-                    {{ getFieldError("breed") }}
+                    {{ getFieldError("breedId") }}
+                  </small>
+                }
+                @if (breedOptions.length === 0 && !isLoadingBreeds) {
+                  <small class="info-message">
+                    Please select a species first
                   </small>
                 }
               </div>
