@@ -75,7 +75,7 @@ public class Pet
 
     public int? BreedId { get; set; }
 
-    public int? ShelterId { get; set; }
+    public Guid? ShelterId { get; set; }
 }
 
 /// <summary>

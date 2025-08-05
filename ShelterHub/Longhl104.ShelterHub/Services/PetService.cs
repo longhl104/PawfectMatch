@@ -480,7 +480,9 @@ public class PetService : IPetService
                 PetPostgreSqlId = postgresPet.PetId,
                 Weight = null,
                 Color = string.Empty,
-                SpecialNeeds = string.Empty
+                SpecialNeeds = string.Empty,
+                CreatedAt = DateTime.UtcNow,
+                ShelterId = shelterId,
             };
 
             var putRequest = new PutItemRequest
@@ -854,7 +856,9 @@ public class PetService : IPetService
             { "PetId", new AttributeValue { S = pet.PetId.ToString() } },
             { "PetPostgreSqlId", new AttributeValue { N = pet.PetPostgreSqlId.ToString() } },
             { "Color", new AttributeValue { S = pet.Color } },
-            { "SpecialNeeds", new AttributeValue { S = pet.SpecialNeeds } }
+            { "SpecialNeeds", new AttributeValue { S = pet.SpecialNeeds } },
+            { "CreatedAt", new AttributeValue { S = pet.CreatedAt?.ToString("o") } },
+            { "ShelterId", new AttributeValue { S = pet.ShelterId.ToString() } }
         };
 
         // Add Weight if it has a value

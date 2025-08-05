@@ -63,6 +63,7 @@ export class ShelterHubStack extends BaseStack {
             'Status',
             'MainImageFileExtension',
             'AdoptionFee',
+            'PetPostgreSqlId',
           ],
         },
       ],
