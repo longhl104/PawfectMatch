@@ -57,6 +57,7 @@
           formControlName="breedId"
           placeholder="Select breed"
           class="w-full"
+          [editable]="true"
           [options]="breedOptions"
           [loading]="isLoadingBreeds"
           [disabled]="breedOptions.length === 0"
@@ -73,6 +74,9 @@
             Please select a species first
           </small>
         }
+        <small class="text-600 block mt-1">
+          If you select Mixed Breed, please specify details in the Description
+        </small>
       </div>
     </div>
 

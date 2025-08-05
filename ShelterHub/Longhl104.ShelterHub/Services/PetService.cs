@@ -1982,7 +1982,7 @@ public class PetService : IPetService
 
             var breeds = await _dbContext.PetBreeds
                 .Where(b => b.SpeciesId == speciesId)
-                .OrderBy(b => b.Name)
+                .OrderBy(b => b.SpeciesId)
                 .Select(b => new PetBreedDto
                 {
                     BreedId = b.BreedId,
