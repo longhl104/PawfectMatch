@@ -116,7 +116,7 @@ export class EditPetComponent implements OnInit {
     this.petForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
       speciesId: ['', Validators.required],
-      breedId: ['', Validators.required],
+      breedId: [{ value: '', disabled: true }, Validators.required],
       dateOfBirth: ['', Validators.required],
       gender: ['', Validators.required],
       description: ['', [Validators.required, Validators.minLength(10)]],
@@ -141,8 +141,12 @@ export class EditPetComponent implements OnInit {
           this.loadBreedsForSpecies(speciesId);
           // Reset breed selection when species changes
           this.petForm.get('breedId')?.setValue('');
+          // Enable breed field when species is selected
+          this.petForm.get('breedId')?.enable();
         } else {
           this.breedOptions = [];
+          // Disable breed field when no species is selected
+          this.petForm.get('breedId')?.disable();
         }
       });
   }
@@ -317,7 +321,8 @@ export class EditPetComponent implements OnInit {
       // Load breeds for this species
       await this.loadBreedsForSpecies(speciesOption.value);
 
-      // Set breed by ID after breeds are loaded
+      // Enable breed field and set breed by ID after breeds are loaded
+      this.petForm.get('breedId')?.enable();
       const breedOption = this.breedOptions.find((b) => b.value === breedId);
       if (breedOption) {
         this.petForm.get('breedId')?.setValue(breedOption.value);

@@ -58,7 +58,6 @@
                   [options]="breedOptions"
                   [loading]="isLoadingBreeds"
                   [editable]="true"
-                  [disabled]="breedOptions.length === 0"
                   [class.ng-invalid]="isFieldInvalid('breedId')"
                 ></p-select>
                 @if (isFieldInvalid("breedId")) {
