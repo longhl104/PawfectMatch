@@ -78,7 +78,7 @@ export class AddPetFormComponent implements OnInit {
     });
 
     // Watch for species changes to load breeds
-    this.petForm.get('speciesId')?.valueChanges.subscribe(speciesId => {
+    this.petForm.get('speciesId')?.valueChanges.subscribe((speciesId) => {
       if (speciesId) {
         this.loadBreedsForSpecies(speciesId);
       } else {
@@ -110,8 +110,13 @@ export class AddPetFormComponent implements OnInit {
       if (response.success && response.breeds) {
         this.breedOptions = response.breeds.map((breed: PetBreedDto) => ({
           label: breed.name || 'Unknown',
-          value: breed.breedId || 0
+          value: breed.breedId || 0,
         }));
+
+        // Automatically select the first breed
+        if (this.breedOptions.length > 0) {
+          this.petForm.get('breedId')?.setValue(this.breedOptions[0].value);
+        }
       }
     } catch (error) {
       console.error('Failed to load breed options:', error);
@@ -120,6 +125,11 @@ export class AddPetFormComponent implements OnInit {
         { label: 'Mixed Breed', value: 0 },
         { label: 'Other', value: 0 },
       ];
+
+      // Automatically select the first fallback breed
+      if (this.breedOptions.length > 0) {
+        this.petForm.get('breedId')?.setValue(this.breedOptions[0].value);
+      }
     } finally {
       this.isLoadingBreeds = false;
     }
