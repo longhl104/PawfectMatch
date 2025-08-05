@@ -298,10 +298,7 @@
             ></app-pet-media-upload>
           </div>
 
-          <!-- Action Buttons -->
-          <div class="form-actions">
-            <ng-container *ngTemplateOutlet="actionButtons"></ng-container>
-          </div>
+          <!-- Action Buttons - Remove from form to avoid duplication -->
         </form>
       </div>
     } @else {
@@ -310,6 +307,11 @@
         <p>Loading pet information...</p>
       </div>
     }
+  </div>
+
+  <!-- Floating Action Bar -->
+  <div class="floating-action-bar">
+    <ng-container *ngTemplateOutlet="actionButtons"></ng-container>
   </div>
 </div>
 
@@ -340,7 +342,7 @@
     </div>
     <p-button
       [label]="isUploadingImage() ? 'Saving...' : 'Save Changes'"
-      type="submit"
+      (onClick)="onSubmit()"
       [loading]="saving()"
       [disabled]="petForm.invalid"
     ></p-button>
