@@ -314,14 +314,17 @@
         (onClick)="onCancel()"
         [disabled]="saving()"
       ></p-button>
-      <p-button
-        label="Delete Pet"
-        severity="danger"
-        icon="pi pi-trash"
-        (onClick)="onDelete()"
-        [disabled]="saving()"
-        [outlined]="true"
-      ></p-button>
+
+      @if (!isAddMode()) {
+        <p-button
+          label="Delete Pet"
+          severity="danger"
+          icon="pi pi-trash"
+          (onClick)="onDelete()"
+          [disabled]="saving()"
+          [outlined]="true"
+        ></p-button>
+      }
     </div>
     <p-button
       [label]="isUploadingImage() ? 'Uploading Image...' : 'Save Changes'"
