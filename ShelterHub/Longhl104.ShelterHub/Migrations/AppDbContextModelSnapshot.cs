@@ -1512,1956 +1512,2106 @@ namespace Longhl104.ShelterHub.Migrations
                         new
                         {
                             BreedId = 232,
-                            Name = "Domestic Shorthair",
+                            Name = "Mixed Breed",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 233,
-                            Name = "Domestic Longhair",
+                            Name = "Domestic Shorthair",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 234,
-                            Name = "American Bobtail",
+                            Name = "Domestic Longhair",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 235,
-                            Name = "Australian Mist",
+                            Name = "American Bobtail",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 236,
-                            Name = "Balinese-Javanese Cat",
+                            Name = "Australian Mist",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 237,
-                            Name = "Bengal",
+                            Name = "Balinese-Javanese Cat",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 238,
-                            Name = "Birman",
+                            Name = "Bengal",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 239,
-                            Name = "Bombay",
+                            Name = "Birman",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 240,
-                            Name = "British Shorthair",
+                            Name = "Bombay",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 241,
-                            Name = "Burmese",
+                            Name = "British Shorthair",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 242,
-                            Name = "Burmilla",
+                            Name = "Burmese",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 243,
-                            Name = "Cornish Rex",
+                            Name = "Burmilla",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 244,
-                            Name = "Devon Rex",
+                            Name = "Cornish Rex",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 245,
-                            Name = "Egyptian Mau",
+                            Name = "Devon Rex",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 246,
-                            Name = "Exotic Shorthair",
+                            Name = "Egyptian Mau",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 247,
-                            Name = "Himalayan Cat",
+                            Name = "Exotic Shorthair",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 248,
-                            Name = "Japanese Bobtail",
+                            Name = "Himalayan Cat",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 249,
-                            Name = "Korat",
+                            Name = "Japanese Bobtail",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 250,
-                            Name = "LaPerm",
+                            Name = "Korat",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 251,
-                            Name = "Maine Coon",
+                            Name = "LaPerm",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 252,
-                            Name = "Manx Cat",
+                            Name = "Maine Coon",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 253,
-                            Name = "Norwegian Forest Cat",
+                            Name = "Manx Cat",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 254,
-                            Name = "Ocicat",
+                            Name = "Norwegian Forest Cat",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 255,
-                            Name = "Oriental",
+                            Name = "Ocicat",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 256,
-                            Name = "Persian",
+                            Name = "Oriental",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 257,
-                            Name = "Ragdoll",
+                            Name = "Persian",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 258,
-                            Name = "Russian Blue",
+                            Name = "Ragdoll",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 259,
-                            Name = "Scottish Fold",
+                            Name = "Russian Blue",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 260,
-                            Name = "Selkirk Rex",
+                            Name = "Scottish Fold",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 261,
-                            Name = "Siamese",
+                            Name = "Selkirk Rex",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 262,
-                            Name = "Siberian Forest Cat",
+                            Name = "Siamese",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 263,
-                            Name = "Singapura",
+                            Name = "Siberian Forest Cat",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 264,
-                            Name = "Snowshoe",
+                            Name = "Singapura",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 265,
-                            Name = "Somali",
+                            Name = "Snowshoe",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 266,
-                            Name = "Sphynx Cat",
+                            Name = "Somali",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 267,
-                            Name = "Tiffanie",
+                            Name = "Sphynx Cat",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 268,
-                            Name = "Tonkinese",
+                            Name = "Tiffanie",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 269,
-                            Name = "Turkish Angora",
+                            Name = "Tonkinese",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 270,
-                            Name = "Turkish Van",
+                            Name = "Turkish Angora",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 271,
-                            Name = "Other",
+                            Name = "Turkish Van",
                             SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 272,
-                            Name = "Mixed Breed",
-                            SpeciesId = 3
+                            Name = "Other",
+                            SpeciesId = 2
                         },
                         new
                         {
                             BreedId = 273,
-                            Name = "Alaskan",
+                            Name = "Mixed Breed",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 274,
-                            Name = "Altex",
+                            Name = "Alaskan",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 275,
-                            Name = "American",
+                            Name = "Altex",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 276,
-                            Name = "American Chinchilla [US]",
+                            Name = "American",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 277,
-                            Name = "American Fuzzy Lop",
+                            Name = "American Chinchilla [US]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 278,
-                            Name = "American Sable",
+                            Name = "American Fuzzy Lop",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 279,
-                            Name = "Angora",
+                            Name = "American Sable",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 280,
-                            Name = "Argente Bleu",
+                            Name = "Angora",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 281,
-                            Name = "Argente Brun [UK]",
+                            Name = "Argente Bleu",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 282,
-                            Name = "Argente Brun [US]",
+                            Name = "Argente Brun [UK]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 283,
-                            Name = "Argente Clair",
+                            Name = "Argente Brun [US]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 284,
-                            Name = "Argente Crème [UK]",
+                            Name = "Argente Clair",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 285,
-                            Name = "Argente de Champagne [UK]",
+                            Name = "Argente Crème [UK]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 286,
-                            Name = "Argente Noir",
+                            Name = "Argente de Champagne [UK]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 287,
-                            Name = "Argente St Hubert",
+                            Name = "Argente Noir",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 288,
-                            Name = "Armenian Marder",
+                            Name = "Argente St Hubert",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 289,
-                            Name = "Astrex",
+                            Name = "Armenian Marder",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 290,
-                            Name = "Aurora Negro",
+                            Name = "Astrex",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 291,
-                            Name = "Baladi Black",
+                            Name = "Aurora Negro",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 292,
-                            Name = "Baladi Red",
+                            Name = "Baladi Black",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 293,
-                            Name = "Baladi White",
+                            Name = "Baladi Red",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 294,
-                            Name = "Bauscat",
+                            Name = "Baladi White",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 295,
-                            Name = "Beige [UK]",
+                            Name = "Bauscat",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 296,
-                            Name = "Belgian Hare [UK]",
+                            Name = "Beige [UK]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 297,
-                            Name = "Belgian Hare [US]",
+                            Name = "Belgian Hare [UK]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 298,
-                            Name = "Beveren [UK]",
+                            Name = "Belgian Hare [US]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 299,
-                            Name = "Beveren [US]",
+                            Name = "Beveren [UK]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 300,
-                            Name = "Blanc de Bouscat",
+                            Name = "Beveren [US]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 301,
-                            Name = "Blanc de Hotot",
+                            Name = "Blanc de Bouscat",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 302,
-                            Name = "Blanc de Popielno",
+                            Name = "Blanc de Hotot",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 303,
-                            Name = "Blanc de Termonde",
+                            Name = "Blanc de Popielno",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 304,
-                            Name = "Blue of Ham",
+                            Name = "Blanc de Termonde",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 305,
-                            Name = "Blue of Sint-Niklaas",
+                            Name = "Blue of Ham",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 306,
-                            Name = "Bourbonnais Grey",
+                            Name = "Blue of Sint-Niklaas",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 307,
-                            Name = "Brazilian",
+                            Name = "Bourbonnais Grey",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 308,
-                            Name = "Britannia Petite [US]",
+                            Name = "Brazilian",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 309,
-                            Name = "British Giant",
+                            Name = "Britannia Petite [US]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 310,
-                            Name = "Brown Chestnut of Lorraine",
+                            Name = "British Giant",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 311,
-                            Name = "Caldes",
+                            Name = "Brown Chestnut of Lorraine",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 312,
-                            Name = "Californian [UK]",
+                            Name = "Caldes",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 313,
-                            Name = "Californian [US]",
+                            Name = "Californian [UK]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 314,
-                            Name = "Canadian Plush Lop",
+                            Name = "Californian [US]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 315,
-                            Name = "Carmagnola Grey",
+                            Name = "Canadian Plush Lop",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 316,
-                            Name = "Cashmere Lop",
+                            Name = "Carmagnola Grey",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 317,
-                            Name = "Champagne d'Argent [US]",
+                            Name = "Cashmere Lop",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 318,
-                            Name = "Chaudry",
+                            Name = "Champagne d'Argent [US]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 319,
-                            Name = "Checkered Giant [US]",
+                            Name = "Chaudry",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 320,
-                            Name = "Chinchilla [UK]",
+                            Name = "Checkered Giant [US]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 321,
-                            Name = "Chinchilla Giganta [UK]",
+                            Name = "Chinchilla [UK]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 322,
-                            Name = "Cinnamon",
+                            Name = "Chinchilla Giganta [UK]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 323,
-                            Name = "Continental Giant Coloured",
+                            Name = "Cinnamon",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 324,
-                            Name = "Continental Giant White",
+                            Name = "Continental Giant Coloured",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 325,
-                            Name = "Creme d'Argent [US]",
+                            Name = "Continental Giant White",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 326,
-                            Name = "Cuban Brown",
+                            Name = "Creme d'Argent [US]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 327,
-                            Name = "Czech Red",
+                            Name = "Cuban Brown",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 328,
-                            Name = "Czech Solver [CZ]",
+                            Name = "Czech Red",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 329,
-                            Name = "Czech Spot",
+                            Name = "Czech Solver [CZ]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 330,
-                            Name = "Czech White",
+                            Name = "Czech Spot",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 331,
-                            Name = "Dalmatian",
+                            Name = "Czech White",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 332,
-                            Name = "Deilenaar",
+                            Name = "Dalmatian",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 333,
-                            Name = "Dutch [UK]",
+                            Name = "Deilenaar",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 334,
-                            Name = "Dutch [US]",
+                            Name = "Dutch [UK]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 335,
-                            Name = "Dwarf Hotot",
+                            Name = "Dutch [US]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 336,
-                            Name = "Dwarf Lop [UK]",
+                            Name = "Dwarf Hotot",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 337,
-                            Name = "Enderby Island",
+                            Name = "Dwarf Lop [UK]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 338,
-                            Name = "English Angora",
+                            Name = "Enderby Island",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 339,
-                            Name = "English Lop",
+                            Name = "English Angora",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 340,
-                            Name = "English Spot",
+                            Name = "English Lop",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 341,
-                            Name = "Fauve de Bourgogne",
+                            Name = "English Spot",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 342,
-                            Name = "Flemish Giant [UK]",
+                            Name = "Fauve de Bourgogne",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 343,
-                            Name = "Flemish Giant [US]",
+                            Name = "Flemish Giant [UK]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 344,
-                            Name = "Florida White",
+                            Name = "Flemish Giant [US]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 345,
-                            Name = "Fox",
+                            Name = "Florida White",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 346,
-                            Name = "Fox–Silver [UK]",
+                            Name = "Fox",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 347,
-                            Name = "French Angora",
+                            Name = "Fox–Silver [UK]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 348,
-                            Name = "French Lop",
+                            Name = "French Angora",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 349,
-                            Name = "Gabali",
+                            Name = "French Lop",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 350,
-                            Name = "German Angora",
+                            Name = "Gabali",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 351,
-                            Name = "German Lop",
+                            Name = "German Angora",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 352,
-                            Name = "Giant Angora",
+                            Name = "German Lop",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 353,
-                            Name = "Giant Chinchilla [US]",
+                            Name = "Giant Angora",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 354,
-                            Name = "Giant Havana",
+                            Name = "Giant Chinchilla [US]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 355,
-                            Name = "Giant Marburger",
+                            Name = "Giant Havana",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 356,
-                            Name = "Giant Papillon [UK]",
+                            Name = "Giant Marburger",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 357,
-                            Name = "Giant Silver",
+                            Name = "Giant Papillon [UK]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 358,
-                            Name = "Giant Smoke Pearl",
+                            Name = "Giant Silver",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 359,
-                            Name = "Giza White",
+                            Name = "Giant Smoke Pearl",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 360,
-                            Name = "Golden Glavcot",
+                            Name = "Giza White",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 361,
-                            Name = "Gotland",
+                            Name = "Golden Glavcot",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 362,
-                            Name = "Gouwenaar",
+                            Name = "Gotland",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 363,
-                            Name = "Grey Pearl of Halle",
+                            Name = "Gouwenaar",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 364,
-                            Name = "Güzelçamlı",
+                            Name = "Grey Pearl of Halle",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 365,
-                            Name = "Harlequin [UK]",
+                            Name = "Güzelçamlı",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 366,
-                            Name = "Harlequin [US]",
+                            Name = "Harlequin [UK]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 367,
-                            Name = "Harlequin Rex",
+                            Name = "Harlequin [US]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 368,
-                            Name = "Havana [UK]",
+                            Name = "Harlequin Rex",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 369,
-                            Name = "Havana [US]",
+                            Name = "Havana [UK]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 370,
-                            Name = "Himalayan",
+                            Name = "Havana [US]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 371,
-                            Name = "Holland Lop [US]",
+                            Name = "Himalayan",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 372,
-                            Name = "Hulstlander",
+                            Name = "Holland Lop [US]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 373,
-                            Name = "Hungarian Giant",
+                            Name = "Hulstlander",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 374,
-                            Name = "Isabella",
+                            Name = "Hungarian Giant",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 375,
-                            Name = "Jamora",
+                            Name = "Isabella",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 376,
-                            Name = "Jersey Wooly",
+                            Name = "Jamora",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 377,
-                            Name = "Kabyle",
+                            Name = "Jersey Wooly",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 378,
-                            Name = "Lilac [UK]",
+                            Name = "Kabyle",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 379,
-                            Name = "Lilac [US]",
+                            Name = "Lilac [UK]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 380,
-                            Name = "Lionhead [UK]",
+                            Name = "Lilac [US]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 381,
-                            Name = "Lionhead [US]",
+                            Name = "Lionhead [UK]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 382,
-                            Name = "Liptov Baldspotted Rabbit",
+                            Name = "Lionhead [US]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 383,
-                            Name = "Lynx",
+                            Name = "Liptov Baldspotted Rabbit",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 384,
-                            Name = "Marburger Feh [UK]",
+                            Name = "Lynx",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 385,
-                            Name = "Mecklenburger Piebald",
+                            Name = "Marburger Feh [UK]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 386,
-                            Name = "Meissner Lop",
+                            Name = "Mecklenburger Piebald",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 387,
-                            Name = "Mellerud rabbit",
+                            Name = "Meissner Lop",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 388,
-                            Name = "Mini Lop [US]",
+                            Name = "Mellerud rabbit",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 389,
-                            Name = "Mini Rex",
+                            Name = "Mini Lop [US]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 390,
-                            Name = "Mini Satin [US]",
+                            Name = "Mini Rex",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 391,
-                            Name = "Miniature Cashmere Lop",
+                            Name = "Mini Satin [US]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 392,
-                            Name = "Miniature Lion Lop",
+                            Name = "Miniature Cashmere Lop",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 393,
-                            Name = "Miniature Lop [UK/NL]",
+                            Name = "Miniature Lion Lop",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 394,
-                            Name = "Miniature Papillon",
+                            Name = "Miniature Lop [UK/NL]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 395,
-                            Name = "Miniature Satin [UK]",
+                            Name = "Miniature Papillon",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 396,
-                            Name = "Moshtohor",
+                            Name = "Miniature Satin [UK]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 397,
-                            Name = "Netherland Dwarf",
+                            Name = "Moshtohor",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 398,
-                            Name = "New Zealand [US]",
+                            Name = "Netherland Dwarf",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 399,
-                            Name = "New Zealand red [UK]",
+                            Name = "New Zealand [US]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 400,
-                            Name = "New Zealand white [UK]",
+                            Name = "New Zealand red [UK]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 401,
-                            Name = "Nitransky",
+                            Name = "New Zealand white [UK]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 402,
-                            Name = "Opossum",
+                            Name = "Nitransky",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 403,
-                            Name = "Orange",
+                            Name = "Opossum",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 404,
-                            Name = "Orylag",
+                            Name = "Orange",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 405,
-                            Name = "Ørestad",
+                            Name = "Orylag",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 406,
-                            Name = "Palomino",
+                            Name = "Ørestad",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 407,
-                            Name = "Pannon White",
+                            Name = "Palomino",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 408,
-                            Name = "Perlfee",
+                            Name = "Pannon White",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 409,
-                            Name = "Plush Lop (Miniature)",
+                            Name = "Perlfee",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 410,
-                            Name = "Plush Lop (Standard)",
+                            Name = "Plush Lop (Miniature)",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 411,
-                            Name = "Pointed Beveren",
+                            Name = "Plush Lop (Standard)",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 412,
-                            Name = "Polish [UK]",
+                            Name = "Pointed Beveren",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 413,
-                            Name = "Polish [US]",
+                            Name = "Polish [UK]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 414,
-                            Name = "Rex [US]",
+                            Name = "Polish [US]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 415,
-                            Name = "Rhinelander",
+                            Name = "Rex [US]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 416,
-                            Name = "Rhone",
+                            Name = "Rhinelander",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 417,
-                            Name = "SA Phendula",
+                            Name = "Rhone",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 418,
-                            Name = "Sachsengold",
+                            Name = "SA Phendula",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 419,
-                            Name = "Sallander",
+                            Name = "Sachsengold",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 420,
-                            Name = "San Juan",
+                            Name = "Sallander",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 421,
-                            Name = "Satin [UK]",
+                            Name = "San Juan",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 422,
-                            Name = "Satin [US]",
+                            Name = "Satin [UK]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 423,
-                            Name = "Satin Angora",
+                            Name = "Satin [US]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 424,
-                            Name = "Schwarzgrannen [UK]",
+                            Name = "Satin Angora",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 425,
-                            Name = "Separator [DE]",
+                            Name = "Schwarzgrannen [UK]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 426,
-                            Name = "Siamese Sable",
+                            Name = "Separator [DE]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 427,
-                            Name = "Siberian",
+                            Name = "Siamese Sable",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 428,
-                            Name = "Silver [UK]",
+                            Name = "Siberian",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 429,
-                            Name = "Silver [US]",
+                            Name = "Silver [UK]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 430,
-                            Name = "Silver Fox [US]",
+                            Name = "Silver [US]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 431,
-                            Name = "Silver Marten",
+                            Name = "Silver Fox [US]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 432,
-                            Name = "Simenwar",
+                            Name = "Silver Marten",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 433,
-                            Name = "Slovenian Rabbit",
+                            Name = "Simenwar",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 434,
-                            Name = "Smoke Pearl",
+                            Name = "Slovenian Rabbit",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 435,
-                            Name = "Spanish Giant",
+                            Name = "Smoke Pearl",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 436,
-                            Name = "Squirrel",
+                            Name = "Spanish Giant",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 437,
-                            Name = "Standard Chinchilla [US]",
+                            Name = "Squirrel",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 438,
-                            Name = "Stone rabbit",
+                            Name = "Standard Chinchilla [US]",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 439,
-                            Name = "Sussex",
+                            Name = "Stone rabbit",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 440,
-                            Name = "Swedish Fur",
+                            Name = "Sussex",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 441,
-                            Name = "Swiss Fox",
+                            Name = "Swedish Fur",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 442,
-                            Name = "Tadla",
+                            Name = "Swiss Fox",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 443,
-                            Name = "Tan",
+                            Name = "Tadla",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 444,
-                            Name = "Tax-Xiber",
+                            Name = "Tan",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 445,
-                            Name = "Teddy Dwarf",
+                            Name = "Tax-Xiber",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 446,
-                            Name = "Teddy Lop",
+                            Name = "Teddy Dwarf",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 447,
-                            Name = "Thrianta",
+                            Name = "Teddy Lop",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 448,
-                            Name = "Thuringer",
+                            Name = "Thrianta",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 449,
-                            Name = "Tri-Colour Dutch",
+                            Name = "Thuringer",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 450,
-                            Name = "Tri-Colour English",
+                            Name = "Tri-Colour Dutch",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 451,
-                            Name = "Trønder",
+                            Name = "Tri-Colour English",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 452,
-                            Name = "V-line",
+                            Name = "Trønder",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 453,
-                            Name = "Velveteen Lop",
+                            Name = "V-line",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 454,
-                            Name = "Vienna Coloured",
+                            Name = "Velveteen Lop",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 455,
-                            Name = "Vienna White",
+                            Name = "Vienna Coloured",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 456,
-                            Name = "Wheaten",
+                            Name = "Vienna White",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 457,
-                            Name = "Wheaten Lynx",
+                            Name = "Wheaten",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 458,
-                            Name = "White Country",
+                            Name = "Wheaten Lynx",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 459,
-                            Name = "Zemmouri",
+                            Name = "White Country",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 460,
-                            Name = "Zika",
+                            Name = "Zemmouri",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 461,
-                            Name = "Other",
+                            Name = "Zika",
                             SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 462,
-                            Name = "African Grey Parrot",
-                            SpeciesId = 4
+                            Name = "Other",
+                            SpeciesId = 3
                         },
                         new
                         {
                             BreedId = 463,
-                            Name = "Alexandrine Parakeet",
+                            Name = "Mixed Breed",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 464,
-                            Name = "Amazon Parrot",
+                            Name = "African Grey Parrot",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 465,
-                            Name = "Blue-and-Gold Macaw",
+                            Name = "Alexandrine Parakeet",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 466,
-                            Name = "Blue-Crowned Conure",
+                            Name = "Amazon Parrot",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 467,
-                            Name = "Blue-Fronted Amazon",
+                            Name = "Blue-and-Gold Macaw",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 468,
-                            Name = "Blue-Headed Pionus",
+                            Name = "Blue-Crowned Conure",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 469,
-                            Name = "Bourke’s Parrot",
+                            Name = "Blue-Fronted Amazon",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 470,
-                            Name = "Budgie (Parakeet)",
+                            Name = "Blue-Headed Pionus",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 471,
-                            Name = "Caique",
+                            Name = "Bourke’s Parrot",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 472,
-                            Name = "Canary",
+                            Name = "Budgie (Parakeet)",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 473,
-                            Name = "Canary-Winged Parakeet",
+                            Name = "Caique",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 474,
-                            Name = "Cockatiel",
+                            Name = "Canary",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 475,
-                            Name = "Cockatoo",
+                            Name = "Canary-Winged Parakeet",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 476,
-                            Name = "Conure",
+                            Name = "Cockatiel",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 477,
-                            Name = "Crimson Rosella",
+                            Name = "Cockatoo",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 478,
-                            Name = "Derbyan Parakeet",
+                            Name = "Conure",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 479,
-                            Name = "Diamond Dove",
+                            Name = "Crimson Rosella",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 480,
-                            Name = "Double Yellow-Headed Amazon Parrot",
+                            Name = "Derbyan Parakeet",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 481,
-                            Name = "Dove",
+                            Name = "Diamond Dove",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 482,
-                            Name = "Eclectus",
+                            Name = "Double Yellow-Headed Amazon Parrot",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 483,
-                            Name = "Finch",
+                            Name = "Dove",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 484,
-                            Name = "Fischer’s Lovebird",
+                            Name = "Eclectus",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 485,
-                            Name = "Goffin’s Cockatoo",
+                            Name = "Finch",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 486,
-                            Name = "Golden-Mantled Rosella",
+                            Name = "Fischer’s Lovebird",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 487,
-                            Name = "Gouldian Finch",
+                            Name = "Goffin’s Cockatoo",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 488,
-                            Name = "Green-Cheeked Conure",
+                            Name = "Golden-Mantled Rosella",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 489,
-                            Name = "Green-Winged Macaw",
+                            Name = "Gouldian Finch",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 490,
-                            Name = "Hahn’s Macaw",
+                            Name = "Green-Cheeked Conure",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 491,
-                            Name = "Hawk-Headed Parrot",
+                            Name = "Green-Winged Macaw",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 492,
-                            Name = "Hyacinth Macaw",
+                            Name = "Hahn’s Macaw",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 493,
-                            Name = "Indian Ring-Necked Parakeet",
+                            Name = "Hawk-Headed Parrot",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 494,
-                            Name = "Jenday Conure",
+                            Name = "Hyacinth Macaw",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 495,
-                            Name = "Lilac-Crowned Amazon",
+                            Name = "Indian Ring-Necked Parakeet",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 496,
-                            Name = "Lineolated Parakeet",
+                            Name = "Jenday Conure",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 497,
-                            Name = "Lory",
+                            Name = "Lilac-Crowned Amazon",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 498,
-                            Name = "Lovebird",
+                            Name = "Lineolated Parakeet",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 499,
-                            Name = "Macaw",
+                            Name = "Lory",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 500,
-                            Name = "Meyer’s Parrot",
+                            Name = "Lovebird",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 501,
-                            Name = "Moluccan Cockatoo",
+                            Name = "Macaw",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 502,
-                            Name = "Orange-Winged Amazon Parrot",
+                            Name = "Meyer’s Parrot",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 503,
-                            Name = "Owl Finch",
+                            Name = "Moluccan Cockatoo",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 504,
-                            Name = "Pacific Parrotlet",
+                            Name = "Orange-Winged Amazon Parrot",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 505,
-                            Name = "Parrot",
+                            Name = "Owl Finch",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 506,
-                            Name = "Parrotlet",
+                            Name = "Pacific Parrotlet",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 507,
-                            Name = "Peach-Faced Lovebird",
+                            Name = "Parrot",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 508,
-                            Name = "Pionus Parrot",
+                            Name = "Parrotlet",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 509,
-                            Name = "Poicephalus",
+                            Name = "Peach-Faced Lovebird",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 510,
-                            Name = "Psittacula",
+                            Name = "Pionus Parrot",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 511,
-                            Name = "Quaker Parakeet",
+                            Name = "Poicephalus",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 512,
-                            Name = "Rainbow Lory",
+                            Name = "Psittacula",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 513,
-                            Name = "Red Lory",
+                            Name = "Quaker Parakeet",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 514,
-                            Name = "Red-Factor Canary",
+                            Name = "Rainbow Lory",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 515,
-                            Name = "Ring-Necked Dove",
+                            Name = "Red Lory",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 516,
-                            Name = "Rosella",
+                            Name = "Red-Factor Canary",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 517,
-                            Name = "Scarlet Macaw",
+                            Name = "Ring-Necked Dove",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 518,
-                            Name = "Scarlet-Chested Parakeet",
+                            Name = "Rosella",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 519,
-                            Name = "Senegal Parrot",
+                            Name = "Scarlet Macaw",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 520,
-                            Name = "Severe Macaw",
+                            Name = "Scarlet-Chested Parakeet",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 521,
-                            Name = "Society Finch",
+                            Name = "Senegal Parrot",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 522,
-                            Name = "Song Canary",
+                            Name = "Severe Macaw",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 523,
-                            Name = "Sun Conure",
+                            Name = "Society Finch",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 524,
-                            Name = "Umbrella Cockatoo",
+                            Name = "Song Canary",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 525,
-                            Name = "Vasa Parrot",
+                            Name = "Sun Conure",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 526,
-                            Name = "White-Capped Pionus",
+                            Name = "Umbrella Cockatoo",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 527,
-                            Name = "Yellow-Collared Macaw",
+                            Name = "Vasa Parrot",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 528,
-                            Name = "Yellow-Naped Amazon Parrot",
+                            Name = "White-Capped Pionus",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 529,
-                            Name = "Zebra Finch",
+                            Name = "Yellow-Collared Macaw",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 530,
-                            Name = "Other",
+                            Name = "Yellow-Naped Amazon Parrot",
                             SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 531,
-                            Name = "American Guinea Pig",
-                            SpeciesId = 5
+                            Name = "Zebra Finch",
+                            SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 532,
-                            Name = "Crested Guinea Pig",
-                            SpeciesId = 5
+                            Name = "Other",
+                            SpeciesId = 4
                         },
                         new
                         {
                             BreedId = 533,
-                            Name = "Teddy Guinea Pig",
+                            Name = "Mixed Breed",
                             SpeciesId = 5
                         },
                         new
                         {
                             BreedId = 534,
-                            Name = "Rex Guinea Pig",
+                            Name = "American Guinea Pig",
                             SpeciesId = 5
                         },
                         new
                         {
                             BreedId = 535,
-                            Name = "Abyssinian Guinea Pig",
+                            Name = "Crested Guinea Pig",
                             SpeciesId = 5
                         },
                         new
                         {
                             BreedId = 536,
-                            Name = "Cuy",
+                            Name = "Teddy Guinea Pig",
                             SpeciesId = 5
                         },
                         new
                         {
                             BreedId = 537,
-                            Name = "Peruvian Guinea Pig",
+                            Name = "Rex Guinea Pig",
                             SpeciesId = 5
                         },
                         new
                         {
                             BreedId = 538,
-                            Name = "Coronet Guinea Pig",
+                            Name = "Abyssinian Guinea Pig",
                             SpeciesId = 5
                         },
                         new
                         {
                             BreedId = 539,
-                            Name = "Silkie Guinea Pig",
+                            Name = "Cuy",
                             SpeciesId = 5
                         },
                         new
                         {
                             BreedId = 540,
-                            Name = "Merino Guinea Pig",
+                            Name = "Peruvian Guinea Pig",
                             SpeciesId = 5
                         },
                         new
                         {
                             BreedId = 541,
-                            Name = "Texel Guinea Pig",
+                            Name = "Coronet Guinea Pig",
                             SpeciesId = 5
                         },
                         new
                         {
                             BreedId = 542,
-                            Name = "Lunkarya Guinea Pig",
+                            Name = "Silkie Guinea Pig",
                             SpeciesId = 5
                         },
                         new
                         {
                             BreedId = 543,
-                            Name = "Skinny Guinea Pig",
+                            Name = "Merino Guinea Pig",
                             SpeciesId = 5
                         },
                         new
                         {
                             BreedId = 544,
-                            Name = "Baldwin Guinea Pig",
+                            Name = "Texel Guinea Pig",
                             SpeciesId = 5
                         },
                         new
                         {
                             BreedId = 545,
-                            Name = "Other",
+                            Name = "Lunkarya Guinea Pig",
                             SpeciesId = 5
                         },
                         new
                         {
                             BreedId = 546,
-                            Name = "Syrian Hamster ",
-                            SpeciesId = 6
+                            Name = "Skinny Guinea Pig",
+                            SpeciesId = 5
                         },
                         new
                         {
                             BreedId = 547,
-                            Name = "European Hamster",
-                            SpeciesId = 6
+                            Name = "Baldwin Guinea Pig",
+                            SpeciesId = 5
                         },
                         new
                         {
                             BreedId = 548,
-                            Name = "Roborovski (aka Robo) Dwarf Hamster",
-                            SpeciesId = 6
+                            Name = "Other",
+                            SpeciesId = 5
                         },
                         new
                         {
                             BreedId = 549,
-                            Name = "Chinese Hamster",
+                            Name = "Mixed Breed",
                             SpeciesId = 6
                         },
                         new
                         {
                             BreedId = 550,
-                            Name = "Winter White Dwarf (Djungarian) Hamster",
+                            Name = "Syrian Hamster ",
                             SpeciesId = 6
                         },
                         new
                         {
                             BreedId = 551,
-                            Name = "Campbell’s Dwarf Hamster",
+                            Name = "European Hamster",
                             SpeciesId = 6
                         },
                         new
                         {
                             BreedId = 552,
-                            Name = "Turkish Hamster",
+                            Name = "Roborovski (aka Robo) Dwarf Hamster",
                             SpeciesId = 6
                         },
                         new
                         {
                             BreedId = 553,
-                            Name = "Other",
+                            Name = "Chinese Hamster",
                             SpeciesId = 6
                         },
                         new
                         {
                             BreedId = 554,
+                            Name = "Winter White Dwarf (Djungarian) Hamster",
+                            SpeciesId = 6
+                        },
+                        new
+                        {
+                            BreedId = 555,
+                            Name = "Campbell’s Dwarf Hamster",
+                            SpeciesId = 6
+                        },
+                        new
+                        {
+                            BreedId = 556,
+                            Name = "Turkish Hamster",
+                            SpeciesId = 6
+                        },
+                        new
+                        {
+                            BreedId = 557,
+                            Name = "Other",
+                            SpeciesId = 6
+                        },
+                        new
+                        {
+                            BreedId = 558,
+                            Name = "Mixed Breed",
+                            SpeciesId = 7
+                        },
+                        new
+                        {
+                            BreedId = 559,
                             Name = "Domestic Ferret",
                             SpeciesId = 7
                         },
                         new
                         {
-                            BreedId = 555,
+                            BreedId = 560,
+                            Name = "Albino",
+                            SpeciesId = 7
+                        },
+                        new
+                        {
+                            BreedId = 561,
+                            Name = "Black Sable",
+                            SpeciesId = 7
+                        },
+                        new
+                        {
+                            BreedId = 562,
+                            Name = "Black Sable Mitt",
+                            SpeciesId = 7
+                        },
+                        new
+                        {
+                            BreedId = 563,
+                            Name = "Blaze",
+                            SpeciesId = 7
+                        },
+                        new
+                        {
+                            BreedId = 564,
+                            Name = "Champagne",
+                            SpeciesId = 7
+                        },
+                        new
+                        {
+                            BreedId = 565,
+                            Name = "Chocolate",
+                            SpeciesId = 7
+                        },
+                        new
+                        {
+                            BreedId = 566,
+                            Name = "Chocolate Mitt",
+                            SpeciesId = 7
+                        },
+                        new
+                        {
+                            BreedId = 567,
+                            Name = "Cinnamon",
+                            SpeciesId = 7
+                        },
+                        new
+                        {
+                            BreedId = 568,
+                            Name = "Cinnamon Mitts",
+                            SpeciesId = 7
+                        },
+                        new
+                        {
+                            BreedId = 569,
+                            Name = "Dalmatian",
+                            SpeciesId = 7
+                        },
+                        new
+                        {
+                            BreedId = 570,
+                            Name = "Heavy Silver or Pewter",
+                            SpeciesId = 7
+                        },
+                        new
+                        {
+                            BreedId = 571,
+                            Name = "Panda",
+                            SpeciesId = 7
+                        },
+                        new
+                        {
+                            BreedId = 572,
+                            Name = "Light Pattern",
+                            SpeciesId = 7
+                        },
+                        new
+                        {
+                            BreedId = 573,
+                            Name = "Medium Pattern",
+                            SpeciesId = 7
+                        },
+                        new
+                        {
+                            BreedId = 574,
+                            Name = "Sable",
+                            SpeciesId = 7
+                        },
+                        new
+                        {
+                            BreedId = 575,
+                            Name = "Sable Mitt",
+                            SpeciesId = 7
+                        },
+                        new
+                        {
+                            BreedId = 576,
+                            Name = "Siamese",
+                            SpeciesId = 7
+                        },
+                        new
+                        {
+                            BreedId = 577,
+                            Name = "Siamese Mitt",
+                            SpeciesId = 7
+                        },
+                        new
+                        {
+                            BreedId = 578,
+                            Name = "Striped White",
+                            SpeciesId = 7
+                        },
+                        new
+                        {
+                            BreedId = 579,
+                            Name = "White with Dark Eyes",
+                            SpeciesId = 7
+                        },
+                        new
+                        {
+                            BreedId = 580,
                             Name = "Other",
                             SpeciesId = 7
                         },
                         new
                         {
-                            BreedId = 556,
+                            BreedId = 581,
                             Name = "Mixed Breed",
                             SpeciesId = 8
                         },
                         new
                         {
-                            BreedId = 557,
+                            BreedId = 582,
                             Name = "Other",
                             SpeciesId = 8
                         });
