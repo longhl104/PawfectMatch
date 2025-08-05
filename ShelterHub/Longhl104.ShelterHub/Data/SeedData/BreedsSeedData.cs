@@ -41,7 +41,7 @@ public static class BreedsSeedData
         var breedId = startingBreedId;
 
         // Load breeds from JSON file
-        var breedsJson = File.ReadAllText($"Data/SeedData/{jsonFileName}");
+        var breedsJson = File.ReadAllText($"Data/SeedData/Breeds/{jsonFileName}");
         var breedNames = JsonSerializer.Deserialize<string[]>(breedsJson) ?? [];
 
         // Add Mixed Breed first
