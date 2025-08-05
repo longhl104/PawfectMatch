@@ -479,13 +479,14 @@ public class PetService : IPetService
                 Gender = request.Gender,
                 DateOfBirth = request.DateOfBirth,
                 Description = request.Description,
-                AdoptionFee = 0,
-                IsSpayedNeutered = false,
-                IsVaccinated = false,
-                IsGoodWithKids = false,
-                IsGoodWithPets = false,
-                IsHouseTrained = false,
-                Status = PetStatus.Available,
+                AdoptionFee = request.AdoptionFee,
+                IsSpayedNeutered = request.IsSpayedNeutered,
+                IsVaccinated = request.IsVaccinated,
+                IsMicrochipped = request.IsMicrochipped,
+                IsGoodWithKids = request.IsGoodWithKids,
+                IsGoodWithPets = request.IsGoodWithPets,
+                IsHouseTrained = request.IsHouseTrained,
+                Status = request.Status,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -499,9 +500,9 @@ public class PetService : IPetService
             {
                 PetId = Guid.NewGuid(),
                 PetPostgreSqlId = postgresPet.PetId,
-                Weight = null,
-                Color = string.Empty,
-                SpecialNeeds = string.Empty,
+                Weight = request.Weight,
+                Color = request.Color,
+                SpecialNeeds = request.SpecialNeeds,
                 CreatedAt = DateTime.UtcNow,
                 ShelterId = shelterId,
             };
@@ -549,6 +550,30 @@ public class PetService : IPetService
         {
             _logger.LogInformation("Updating pet with ID: {PetId}", petId);
 
+            // Look up species and breed names from their IDs
+            var species = await _dbContext.PetSpecies.FindAsync(request.SpeciesId);
+            var breed = await _dbContext.PetBreeds.FindAsync(request.BreedId);
+
+            if (species == null)
+            {
+                _logger.LogWarning("Species not found with ID: {SpeciesId}", request.SpeciesId);
+                return new PetResponse
+                {
+                    Success = false,
+                    ErrorMessage = "Species not found"
+                };
+            }
+
+            if (breed == null)
+            {
+                _logger.LogWarning("Breed not found with ID: {BreedId}", request.BreedId);
+                return new PetResponse
+                {
+                    Success = false,
+                    ErrorMessage = "Breed not found"
+                };
+            }
+
             var updateRequest = new UpdateItemRequest
             {
                 TableName = _tableName,
@@ -556,7 +581,7 @@ public class PetService : IPetService
                 {
                     { "PetId", new AttributeValue { S = petId.ToString() } }
                 },
-                UpdateExpression = "SET #name = :name, #species = :species, #breed = :breed, #dateOfBirth = :dateOfBirth, #gender = :gender, #description = :description, #adoptionFee = :adoptionFee, #color = :color, #isSpayedNeutered = :isSpayedNeutered, #isHouseTrained = :isHouseTrained, #isGoodWithKids = :isGoodWithKids, #isGoodWithPets = :isGoodWithPets, #specialNeeds = :specialNeeds, #status = :status" + (request.Weight.HasValue ? ", #weight = :weight" : ""),
+                UpdateExpression = "SET #name = :name, #species = :species, #breed = :breed, #dateOfBirth = :dateOfBirth, #gender = :gender, #description = :description, #adoptionFee = :adoptionFee, #color = :color, #isSpayedNeutered = :isSpayedNeutered, #isVaccinated = :isVaccinated, #isMicrochipped = :isMicrochipped, #isHouseTrained = :isHouseTrained, #isGoodWithKids = :isGoodWithKids, #isGoodWithPets = :isGoodWithPets, #specialNeeds = :specialNeeds, #status = :status" + (request.Weight.HasValue ? ", #weight = :weight" : ""),
                 ExpressionAttributeNames = new Dictionary<string, string>
                 {
                     { "#name", "Name" },
@@ -568,6 +593,8 @@ public class PetService : IPetService
                     { "#adoptionFee", "AdoptionFee" },
                     { "#color", "Color" },
                     { "#isSpayedNeutered", "IsSpayedNeutered" },
+                    { "#isVaccinated", "IsVaccinated" },
+                    { "#isMicrochipped", "IsMicrochipped" },
                     { "#isHouseTrained", "IsHouseTrained" },
                     { "#isGoodWithKids", "IsGoodWithKids" },
                     { "#isGoodWithPets", "IsGoodWithPets" },
@@ -577,14 +604,16 @@ public class PetService : IPetService
                 ExpressionAttributeValues = new Dictionary<string, AttributeValue>
                 {
                     { ":name", new AttributeValue { S = request.Name.ToLowerInvariant() } },
-                    { ":species", new AttributeValue { S = request.Species } },
-                    { ":breed", new AttributeValue { S = request.Breed.ToLowerInvariant() } },
+                    { ":species", new AttributeValue { S = species.Name } },
+                    { ":breed", new AttributeValue { S = breed.Name.ToLowerInvariant() } },
                     { ":dateOfBirth", new AttributeValue { S = request.DateOfBirth.ToString("yyyy-MM-dd") } },
                     { ":gender", new AttributeValue { S = request.Gender } },
                     { ":description", new AttributeValue { S = request.Description } },
                     { ":adoptionFee", new AttributeValue { N = request.AdoptionFee.ToString("F2") } },
                     { ":color", new AttributeValue { S = request.Color } },
                     { ":isSpayedNeutered", new AttributeValue { BOOL = request.IsSpayedNeutered } },
+                    { ":isVaccinated", new AttributeValue { BOOL = request.IsVaccinated } },
+                    { ":isMicrochipped", new AttributeValue { BOOL = request.IsMicrochipped } },
                     { ":isHouseTrained", new AttributeValue { BOOL = request.IsHouseTrained } },
                     { ":isGoodWithKids", new AttributeValue { BOOL = request.IsGoodWithKids } },
                     { ":isGoodWithPets", new AttributeValue { BOOL = request.IsGoodWithPets } },

@@ -324,6 +324,40 @@ export class EditPetComponent implements OnInit {
       }
     }
   }
+
+  private buildPetRequest(
+    formValue: Record<string, unknown>,
+  ): CreatePetRequest | UpdatePetRequest {
+    // Convert date to proper format
+    const dateOfBirth = formValue['dateOfBirth'] as Date;
+    const formattedDate = `${dateOfBirth.getFullYear()}-${String(dateOfBirth.getMonth() + 1).padStart(2, '0')}-${String(dateOfBirth.getDate()).padStart(2, '0')}`;
+
+    // Build unified request object (both CreatePetRequest and UpdatePetRequest are now identical)
+    const requestData = {
+      name: formValue['name'] as string,
+      speciesId: formValue['speciesId'] as number,
+      breedId: formValue['breedId'] as number,
+      dateOfBirth: formattedDate,
+      gender: formValue['gender'] as string,
+      description: formValue['description'] as string,
+      adoptionFee: (formValue['adoptionFee'] as number) || 0,
+      weight: formValue['weight'] as number | undefined,
+      color: (formValue['color'] as string) || '',
+      isSpayedNeutered: (formValue['isSpayedNeutered'] as boolean) || false,
+      isVaccinated: (formValue['isVaccinated'] as boolean) || false,
+      isMicrochipped: (formValue['isMicrochipped'] as boolean) || false,
+      isHouseTrained: (formValue['isHouseTrained'] as boolean) || false,
+      isGoodWithKids: (formValue['isGoodWithKids'] as boolean) || false,
+      isGoodWithPets: (formValue['isGoodWithPets'] as boolean) || false,
+      specialNeeds: (formValue['specialNeeds'] as string) || '',
+      status: (formValue['status'] as PetStatus) || PetStatus.Available,
+    };
+
+    return this.isAddMode()
+      ? new CreatePetRequest(requestData)
+      : new UpdatePetRequest(requestData);
+  }
+
   async onSubmit() {
     if (this.petForm.valid) {
       // For add mode, we don't need a pet to exist yet
@@ -336,25 +370,12 @@ export class EditPetComponent implements OnInit {
 
       try {
         const formValue = this.petForm.value;
-
-        // Convert date to proper format
-        const dateOfBirth = formValue.dateOfBirth;
-        const formattedDate = `${dateOfBirth.getFullYear()}-${String(dateOfBirth.getMonth() + 1).padStart(2, '0')}-${String(dateOfBirth.getDate()).padStart(2, '0')}`;
+        const request = this.buildPetRequest(formValue);
 
         if (this.isAddMode()) {
-          // Create new pet
-          const createRequest = new CreatePetRequest({
-            name: formValue.name,
-            speciesId: formValue.speciesId,
-            breedId: formValue.breedId,
-            dateOfBirth: formattedDate,
-            gender: formValue.gender,
-            description: formValue.description,
-          });
-
           const createdPet = await this.petService.createPetAndUploadImage(
             this.shelterId()!,
-            createRequest,
+            request as CreatePetRequest,
             this.selectedImageFile() || undefined,
           );
 
@@ -373,35 +394,9 @@ export class EditPetComponent implements OnInit {
             });
           }
         } else {
-          // Update existing pet - need to convert IDs back to names for UpdatePetRequest
-          const speciesName =
-            this.speciesOptions.find((s) => s.value === formValue.speciesId)
-              ?.label || '';
-          const breedName =
-            this.breedOptions.find((b) => b.value === formValue.breedId)
-              ?.label || '';
-
-          const updateRequest = new UpdatePetRequest({
-            name: formValue.name,
-            species: speciesName,
-            breed: breedName,
-            dateOfBirth: formattedDate,
-            gender: formValue.gender,
-            description: formValue.description,
-            adoptionFee: formValue.adoptionFee,
-            weight: formValue.weight,
-            color: formValue.color || '',
-            isSpayedNeutered: formValue.isSpayedNeutered,
-            isHouseTrained: formValue.isHouseTrained,
-            isGoodWithKids: formValue.isGoodWithKids,
-            isGoodWithPets: formValue.isGoodWithPets,
-            specialNeeds: formValue.specialNeeds || '',
-            status: formValue.status,
-          });
-
           const updatedPet = await this.petService.updatePetAndUploadImage(
             this.pet()!.petId!,
-            updateRequest,
+            request as UpdatePetRequest,
             this.selectedImageFile() || undefined,
           );
 

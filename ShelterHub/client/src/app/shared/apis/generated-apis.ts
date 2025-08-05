@@ -1589,6 +1589,17 @@ export class CreatePetRequest implements ICreatePetRequest {
     dateOfBirth!: string;
     gender!: string | undefined;
     description!: string | undefined;
+    adoptionFee?: number;
+    weight?: number | undefined;
+    color?: string | undefined;
+    isSpayedNeutered?: boolean;
+    isVaccinated?: boolean;
+    isMicrochipped?: boolean;
+    isHouseTrained?: boolean;
+    isGoodWithKids?: boolean;
+    isGoodWithPets?: boolean;
+    specialNeeds?: string | undefined;
+    status?: PetStatus;
 
     constructor(data?: ICreatePetRequest) {
         if (data) {
@@ -1607,6 +1618,17 @@ export class CreatePetRequest implements ICreatePetRequest {
             this.dateOfBirth = _data["dateOfBirth"];
             this.gender = _data["gender"];
             this.description = _data["description"];
+            this.adoptionFee = _data["adoptionFee"];
+            this.weight = _data["weight"];
+            this.color = _data["color"];
+            this.isSpayedNeutered = _data["isSpayedNeutered"];
+            this.isVaccinated = _data["isVaccinated"];
+            this.isMicrochipped = _data["isMicrochipped"];
+            this.isHouseTrained = _data["isHouseTrained"];
+            this.isGoodWithKids = _data["isGoodWithKids"];
+            this.isGoodWithPets = _data["isGoodWithPets"];
+            this.specialNeeds = _data["specialNeeds"];
+            this.status = _data["status"];
         }
     }
 
@@ -1625,6 +1647,17 @@ export class CreatePetRequest implements ICreatePetRequest {
         data["dateOfBirth"] = this.dateOfBirth;
         data["gender"] = this.gender;
         data["description"] = this.description;
+        data["adoptionFee"] = this.adoptionFee;
+        data["weight"] = this.weight;
+        data["color"] = this.color;
+        data["isSpayedNeutered"] = this.isSpayedNeutered;
+        data["isVaccinated"] = this.isVaccinated;
+        data["isMicrochipped"] = this.isMicrochipped;
+        data["isHouseTrained"] = this.isHouseTrained;
+        data["isGoodWithKids"] = this.isGoodWithKids;
+        data["isGoodWithPets"] = this.isGoodWithPets;
+        data["specialNeeds"] = this.specialNeeds;
+        data["status"] = this.status;
         return data;
     }
 }
@@ -1636,6 +1669,17 @@ export interface ICreatePetRequest {
     dateOfBirth: string;
     gender: string | undefined;
     description: string | undefined;
+    adoptionFee?: number;
+    weight?: number | undefined;
+    color?: string | undefined;
+    isSpayedNeutered?: boolean;
+    isVaccinated?: boolean;
+    isMicrochipped?: boolean;
+    isHouseTrained?: boolean;
+    isGoodWithKids?: boolean;
+    isGoodWithPets?: boolean;
+    specialNeeds?: string | undefined;
+    status?: PetStatus;
 }
 
 export class CreateShelterAdminRequest implements ICreateShelterAdminRequest {
@@ -3101,8 +3145,8 @@ export interface IShelterPetStatisticsResponse {
 
 export class UpdatePetRequest implements IUpdatePetRequest {
     name!: string | undefined;
-    species!: string | undefined;
-    breed!: string | undefined;
+    speciesId!: number;
+    breedId!: number;
     dateOfBirth!: string;
     gender!: string | undefined;
     description!: string | undefined;
@@ -3110,6 +3154,8 @@ export class UpdatePetRequest implements IUpdatePetRequest {
     weight?: number | undefined;
     color?: string | undefined;
     isSpayedNeutered?: boolean;
+    isVaccinated?: boolean;
+    isMicrochipped?: boolean;
     isHouseTrained?: boolean;
     isGoodWithKids?: boolean;
     isGoodWithPets?: boolean;
@@ -3128,8 +3174,8 @@ export class UpdatePetRequest implements IUpdatePetRequest {
     init(_data?: any) {
         if (_data) {
             this.name = _data["name"];
-            this.species = _data["species"];
-            this.breed = _data["breed"];
+            this.speciesId = _data["speciesId"];
+            this.breedId = _data["breedId"];
             this.dateOfBirth = _data["dateOfBirth"];
             this.gender = _data["gender"];
             this.description = _data["description"];
@@ -3137,6 +3183,8 @@ export class UpdatePetRequest implements IUpdatePetRequest {
             this.weight = _data["weight"];
             this.color = _data["color"];
             this.isSpayedNeutered = _data["isSpayedNeutered"];
+            this.isVaccinated = _data["isVaccinated"];
+            this.isMicrochipped = _data["isMicrochipped"];
             this.isHouseTrained = _data["isHouseTrained"];
             this.isGoodWithKids = _data["isGoodWithKids"];
             this.isGoodWithPets = _data["isGoodWithPets"];
@@ -3155,8 +3203,8 @@ export class UpdatePetRequest implements IUpdatePetRequest {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["name"] = this.name;
-        data["species"] = this.species;
-        data["breed"] = this.breed;
+        data["speciesId"] = this.speciesId;
+        data["breedId"] = this.breedId;
         data["dateOfBirth"] = this.dateOfBirth;
         data["gender"] = this.gender;
         data["description"] = this.description;
@@ -3164,6 +3212,8 @@ export class UpdatePetRequest implements IUpdatePetRequest {
         data["weight"] = this.weight;
         data["color"] = this.color;
         data["isSpayedNeutered"] = this.isSpayedNeutered;
+        data["isVaccinated"] = this.isVaccinated;
+        data["isMicrochipped"] = this.isMicrochipped;
         data["isHouseTrained"] = this.isHouseTrained;
         data["isGoodWithKids"] = this.isGoodWithKids;
         data["isGoodWithPets"] = this.isGoodWithPets;
@@ -3175,8 +3225,8 @@ export class UpdatePetRequest implements IUpdatePetRequest {
 
 export interface IUpdatePetRequest {
     name: string | undefined;
-    species: string | undefined;
-    breed: string | undefined;
+    speciesId: number;
+    breedId: number;
     dateOfBirth: string;
     gender: string | undefined;
     description: string | undefined;
@@ -3184,6 +3234,8 @@ export interface IUpdatePetRequest {
     weight?: number | undefined;
     color?: string | undefined;
     isSpayedNeutered?: boolean;
+    isVaccinated?: boolean;
+    isMicrochipped?: boolean;
     isHouseTrained?: boolean;
     isGoodWithKids?: boolean;
     isGoodWithPets?: boolean;

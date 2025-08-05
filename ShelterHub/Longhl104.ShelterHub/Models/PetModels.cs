@@ -114,6 +114,61 @@ public class CreatePetRequest
     /// Description of the pet
     /// </summary>
     public required string Description { get; set; }
+
+    /// <summary>
+    /// Adoption fee for the pet
+    /// </summary>
+    public decimal AdoptionFee { get; set; } = 0;
+
+    /// <summary>
+    /// Weight of the pet in pounds
+    /// </summary>
+    public decimal? Weight { get; set; }
+
+    /// <summary>
+    /// Color/markings of the pet
+    /// </summary>
+    public string Color { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Whether the pet is spayed/neutered
+    /// </summary>
+    public bool IsSpayedNeutered { get; set; } = false;
+
+    /// <summary>
+    /// Whether the pet is vaccinated
+    /// </summary>
+    public bool IsVaccinated { get; set; } = false;
+
+    /// <summary>
+    /// Whether the pet is microchipped
+    /// </summary>
+    public bool IsMicrochipped { get; set; } = false;
+
+    /// <summary>
+    /// Whether the pet is house trained
+    /// </summary>
+    public bool IsHouseTrained { get; set; } = false;
+
+    /// <summary>
+    /// Whether the pet is good with kids
+    /// </summary>
+    public bool IsGoodWithKids { get; set; } = false;
+
+    /// <summary>
+    /// Whether the pet is good with other pets
+    /// </summary>
+    public bool IsGoodWithPets { get; set; } = false;
+
+    /// <summary>
+    /// Special needs or medical conditions
+    /// </summary>
+    public string SpecialNeeds { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Current status of the pet
+    /// </summary>
+    public PetStatus Status { get; set; } = PetStatus.Available;
 }
 
 /// <summary>
@@ -129,12 +184,12 @@ public class UpdatePetRequest
     /// <summary>
     /// Species of the pet (Dog, Cat, etc.)
     /// </summary>
-    public required string Species { get; set; }
+    public required int SpeciesId { get; set; }
 
     /// <summary>
     /// Breed of the pet
     /// </summary>
-    public required string Breed { get; set; }
+    public required int BreedId { get; set; }
 
     /// <summary>
     /// Date of birth of the pet
@@ -170,6 +225,16 @@ public class UpdatePetRequest
     /// Whether the pet is spayed/neutered
     /// </summary>
     public bool IsSpayedNeutered { get; set; } = false;
+
+    /// <summary>
+    /// Whether the pet is vaccinated
+    /// </summary>
+    public bool IsVaccinated { get; set; } = false;
+
+    /// <summary>
+    /// Whether the pet is microchipped
+    /// </summary>
+    public bool IsMicrochipped { get; set; } = false;
 
     /// <summary>
     /// Whether the pet is house trained
