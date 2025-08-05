@@ -40,6 +40,8 @@ namespace Longhl104.ShelterHub.Models.PostgreSql
 
         public bool IsHouseTrained { get; set; }
 
+        public bool IsMicrochipped { get; set; }
+
         public PetStatus Status { get; set; } = PetStatus.Available;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

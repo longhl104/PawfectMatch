@@ -9,11 +9,11 @@
 
     <!-- Package Metadata -->
     <PackageId>Longhl104.PawfectMatch</PackageId>
-    <Version>1.6.0</Version>
+    <Version>1.7.0</Version>
     <Authors>Longhl104</Authors>
     <Description>Shared services and models for PawfectMatch application with internal service
-      authorization, HTTP client factory, email services using AWS SES, and PostgreSQL database configuration with AWS Secrets Manager</Description>
-    <PackageTags>PawfectMatch;AWS;Cognito;JWT;DynamoDB;Authorization;Internal;HttpClient;SES;Email;PostgreSQL;SecretsManager;EntityFramework</PackageTags>
+      authorization, HTTP client factory, email services using AWS SES, PostgreSQL database configuration with AWS Secrets Manager, and design-time DbContext factories</Description>
+    <PackageTags>PawfectMatch;AWS;Cognito;JWT;DynamoDB;Authorization;Internal;HttpClient;SES;Email;PostgreSQL;SecretsManager;EntityFramework;DbContextFactory</PackageTags>
     <RepositoryUrl>https://github.com/longhl104/PawfectMatch</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
@@ -32,6 +32,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.6" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.6" />
     <PackageReference Include="Amazon.Extensions.Configuration.SystemsManager" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.6" />
