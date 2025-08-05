@@ -71,6 +71,8 @@ public class Pet
 
     public bool? IsVaccinated { get; set; }
 
+    public bool? IsMicrochipped { get; set; }
+
     public int? SpeciesId { get; set; }
 
     public int? BreedId { get; set; }

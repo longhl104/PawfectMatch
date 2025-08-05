@@ -124,6 +124,8 @@ export class EditPetComponent implements OnInit {
       weight: [null, [Validators.min(0.1)]],
       color: [''],
       isSpayedNeutered: [false],
+      isVaccinated: [false],
+      isMicrochipped: [false],
       isHouseTrained: [false],
       isGoodWithKids: [false],
       isGoodWithPets: [false],
@@ -132,15 +134,17 @@ export class EditPetComponent implements OnInit {
     });
 
     // Subscribe to species changes to load breeds
-    this.petForm.get('speciesId')?.valueChanges.subscribe((speciesId: number) => {
-      if (speciesId) {
-        this.loadBreedsForSpecies(speciesId);
-        // Reset breed selection when species changes
-        this.petForm.get('breedId')?.setValue('');
-      } else {
-        this.breedOptions = [];
-      }
-    });
+    this.petForm
+      .get('speciesId')
+      ?.valueChanges.subscribe((speciesId: number) => {
+        if (speciesId) {
+          this.loadBreedsForSpecies(speciesId);
+          // Reset breed selection when species changes
+          this.petForm.get('breedId')?.setValue('');
+        } else {
+          this.breedOptions = [];
+        }
+      });
   }
 
   ngOnInit() {
@@ -220,10 +224,12 @@ export class EditPetComponent implements OnInit {
     try {
       const response = await firstValueFrom(this.petsApi.species());
       if (response.success && response.species) {
-        this.speciesOptions = response.species.map((species: PetSpeciesDto) => ({
-          label: species.name || 'Unknown',
-          value: species.speciesId || 0
-        }));
+        this.speciesOptions = response.species.map(
+          (species: PetSpeciesDto) => ({
+            label: species.name || 'Unknown',
+            value: species.speciesId || 0,
+          }),
+        );
       }
     } catch (error) {
       console.error('Failed to load species options:', error);
@@ -245,7 +251,7 @@ export class EditPetComponent implements OnInit {
       if (response.success && response.breeds) {
         this.breedOptions = response.breeds.map((breed: PetBreedDto) => ({
           label: breed.name || 'Unknown',
-          value: breed.breedId || 0
+          value: breed.breedId || 0,
         }));
       }
     } catch (error) {
@@ -282,6 +288,8 @@ export class EditPetComponent implements OnInit {
       weight: pet.weight,
       color: pet.color || '',
       isSpayedNeutered: pet.isSpayedNeutered || false,
+      isVaccinated: pet.isVaccinated || false,
+      isMicrochipped: pet.isMicrochipped || false,
       isHouseTrained: pet.isHouseTrained || false,
       isGoodWithKids: pet.isGoodWithKids || false,
       isGoodWithPets: pet.isGoodWithPets || false,
@@ -300,7 +308,9 @@ export class EditPetComponent implements OnInit {
 
   private async setSpeciesAndBreed(speciesId: number, breedId: number) {
     // Set the species directly by ID
-    const speciesOption = this.speciesOptions.find(s => s.value === speciesId);
+    const speciesOption = this.speciesOptions.find(
+      (s) => s.value === speciesId,
+    );
     if (speciesOption) {
       this.petForm.get('speciesId')?.setValue(speciesOption.value);
 
@@ -308,12 +318,13 @@ export class EditPetComponent implements OnInit {
       await this.loadBreedsForSpecies(speciesOption.value);
 
       // Set breed by ID after breeds are loaded
-      const breedOption = this.breedOptions.find(b => b.value === breedId);
+      const breedOption = this.breedOptions.find((b) => b.value === breedId);
       if (breedOption) {
         this.petForm.get('breedId')?.setValue(breedOption.value);
       }
     }
-  }  async onSubmit() {
+  }
+  async onSubmit() {
     if (this.petForm.valid) {
       // For add mode, we don't need a pet to exist yet
       if (!this.isAddMode() && !this.pet()) {
@@ -363,8 +374,12 @@ export class EditPetComponent implements OnInit {
           }
         } else {
           // Update existing pet - need to convert IDs back to names for UpdatePetRequest
-          const speciesName = this.speciesOptions.find(s => s.value === formValue.speciesId)?.label || '';
-          const breedName = this.breedOptions.find(b => b.value === formValue.breedId)?.label || '';
+          const speciesName =
+            this.speciesOptions.find((s) => s.value === formValue.speciesId)
+              ?.label || '';
+          const breedName =
+            this.breedOptions.find((b) => b.value === formValue.breedId)
+              ?.label || '';
 
           const updateRequest = new UpdatePetRequest({
             name: formValue.name,

@@ -168,6 +168,22 @@
               </div>
               <div class="checkbox-item">
                 <p-checkbox
+                  formControlName="isVaccinated"
+                  [binary]="true"
+                  inputId="isVaccinated"
+                ></p-checkbox>
+                <label for="isVaccinated">Vaccinated</label>
+              </div>
+              <div class="checkbox-item">
+                <p-checkbox
+                  formControlName="isMicrochipped"
+                  [binary]="true"
+                  inputId="isMicrochipped"
+                ></p-checkbox>
+                <label for="isMicrochipped">Microchipped</label>
+              </div>
+              <div class="checkbox-item">
+                <p-checkbox
                   formControlName="isHouseTrained"
                   [binary]="true"
                   inputId="isHouseTrained"

@@ -2371,9 +2371,10 @@ export class Pet implements IPet {
     isGoodWithKids?: boolean | undefined;
     isGoodWithPets?: boolean | undefined;
     isVaccinated?: boolean | undefined;
+    isMicrochipped?: boolean | undefined;
     speciesId?: number | undefined;
     breedId?: number | undefined;
-    shelterId?: number | undefined;
+    shelterId?: string | undefined;
 
     constructor(data?: IPet) {
         if (data) {
@@ -2404,6 +2405,7 @@ export class Pet implements IPet {
             this.isGoodWithKids = _data["isGoodWithKids"];
             this.isGoodWithPets = _data["isGoodWithPets"];
             this.isVaccinated = _data["isVaccinated"];
+            this.isMicrochipped = _data["isMicrochipped"];
             this.speciesId = _data["speciesId"];
             this.breedId = _data["breedId"];
             this.shelterId = _data["shelterId"];
@@ -2437,6 +2439,7 @@ export class Pet implements IPet {
         data["isGoodWithKids"] = this.isGoodWithKids;
         data["isGoodWithPets"] = this.isGoodWithPets;
         data["isVaccinated"] = this.isVaccinated;
+        data["isMicrochipped"] = this.isMicrochipped;
         data["speciesId"] = this.speciesId;
         data["breedId"] = this.breedId;
         data["shelterId"] = this.shelterId;
@@ -2463,9 +2466,10 @@ export interface IPet {
     isGoodWithKids?: boolean | undefined;
     isGoodWithPets?: boolean | undefined;
     isVaccinated?: boolean | undefined;
+    isMicrochipped?: boolean | undefined;
     speciesId?: number | undefined;
     breedId?: number | undefined;
-    shelterId?: number | undefined;
+    shelterId?: string | undefined;
 }
 
 export class PetBreedDto implements IPetBreedDto {
