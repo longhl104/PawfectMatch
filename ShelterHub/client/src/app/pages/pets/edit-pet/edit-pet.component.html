@@ -3,9 +3,6 @@
     @if (!loading()) {
       <div class="card-content">
         <!-- Top Action Buttons -->
-        <div class="top-actions mb-4">
-          <ng-container *ngTemplateOutlet="actionButtons"></ng-container>
-        </div>
 
         <form [formGroup]="petForm" (ngSubmit)="onSubmit()" class="pet-form">
           <!-- Basic Information Section -->
@@ -251,7 +248,7 @@
           </div>
           <!-- Image Upload Section -->
           <div class="form-section">
-            <h3>Pet Main Image</h3>
+            <h3>Pet Main Image (Optional)</h3>
             <p-fileUpload
               #fileUpload
               mode="basic"
