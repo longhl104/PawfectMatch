@@ -15,11 +15,6 @@ import { PaginatorModule } from 'primeng/paginator';
 import { DialogModule } from 'primeng/dialog';
 import { ConfirmationService } from 'primeng/api';
 import type { PaginatorState } from 'primeng/paginator';
-import {
-  DynamicDialogModule,
-  DialogService,
-  DynamicDialogRef,
-} from 'primeng/dynamicdialog';
 
 import { PetService } from 'shared/services/pet.service';
 import { ToastService } from '@longhl104/pawfect-match-ng';
@@ -34,7 +29,6 @@ import {
   Shelter,
   PetSpeciesDto,
 } from 'shared/apis/generated-apis';
-import { AddPetFormComponent } from '../dashboard/add-pet-form/add-pet-form.component';
 import { PetCardComponent, PetCardAction } from 'shared/components';
 
 interface FilterOption {
@@ -58,7 +52,6 @@ interface FilterOption {
     ConfirmDialogModule,
     PaginatorModule,
     DialogModule,
-    DynamicDialogModule,
     PetCardComponent,
   ],
   providers: [ConfirmationService],
@@ -71,7 +64,6 @@ export class PetsListComponent implements OnInit, OnDestroy {
   private petsApi = inject(PetsApi);
   private toastService = inject(ToastService);
   private router = inject(Router);
-  private dialogService = inject(DialogService);
   private confirmationService = inject(ConfirmationService);
 
   shelterInfo: Shelter | null = null;
@@ -90,7 +82,6 @@ export class PetsListComponent implements OnInit, OnDestroy {
   nextToken: string | null = null;
   pageTokens = new Map<number, string>(); // Store tokens for each page
 
-  private dialogRef?: DynamicDialogRef;
   private searchDebounceTimer?: NodeJS.Timeout;
 
   // Dialog properties
@@ -104,9 +95,7 @@ export class PetsListComponent implements OnInit, OnDestroy {
     { label: 'Medical Hold', value: PetStatus.MedicalHold },
   ];
 
-  speciesOptions: FilterOption[] = [
-    { label: 'All Species', value: null },
-  ];
+  speciesOptions: FilterOption[] = [{ label: 'All Species', value: null }];
 
   ngOnInit() {
     this.loadSpeciesOptions();
@@ -128,13 +117,15 @@ export class PetsListComponent implements OnInit, OnDestroy {
     try {
       const response = await firstValueFrom(this.petsApi.species());
       if (response.success && response.species) {
-        const speciesFromApi = response.species.map((species: PetSpeciesDto) => ({
-          label: species.name || 'Unknown',
-          value: species.name || 'Unknown'
-        }));
+        const speciesFromApi = response.species.map(
+          (species: PetSpeciesDto) => ({
+            label: species.name || 'Unknown',
+            value: species.name || 'Unknown',
+          }),
+        );
         this.speciesOptions = [
           { label: 'All Species', value: null },
-          ...speciesFromApi
+          ...speciesFromApi,
         ];
       }
     } catch (error) {
@@ -328,12 +319,12 @@ export class PetsListComponent implements OnInit, OnDestroy {
   }
 
   getStatusLabel(status: string): string {
-    const option = this.statusOptions.find(opt => opt.value === status);
+    const option = this.statusOptions.find((opt) => opt.value === status);
     return option?.label || status;
   }
 
   getSpeciesLabel(species: string): string {
-    const option = this.speciesOptions.find(opt => opt.value === species);
+    const option = this.speciesOptions.find((opt) => opt.value === species);
     return option?.label || species;
   }
 
@@ -362,25 +353,9 @@ export class PetsListComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.dialogRef = this.dialogService.open(AddPetFormComponent, {
-      header: 'Add New Pet',
-      width: '50vw',
-      breakpoints: {
-        '1199px': '75vw',
-        '575px': '90vw',
-      },
-      modal: true,
-      dismissableMask: true,
-      data: {
-        shelterId: this.shelterInfo.shelterId,
-      },
-    });
-
-    this.dialogRef.onClose.subscribe((result) => {
-      if (result) {
-        this.resetPagination();
-        this.loadPetsData(0); // Refresh the data
-      }
+    // Navigate to edit-pet page in add mode
+    this.router.navigate(['/pets/edit'], {
+      queryParams: { mode: 'add', shelterId: this.shelterInfo.shelterId },
     });
   }
 

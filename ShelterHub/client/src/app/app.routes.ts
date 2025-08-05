@@ -28,6 +28,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'pets/edit',
+    loadComponent: () =>
+      import('./pages/pets/edit-pet/edit-pet.component').then(
+        (m) => m.EditPetComponent,
+      ),
+  },
+  {
     path: '**',
     redirectTo: '/dashboard',
     pathMatch: 'full',

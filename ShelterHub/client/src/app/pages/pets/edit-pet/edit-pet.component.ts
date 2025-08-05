@@ -27,6 +27,7 @@ import { PetService } from '../../../shared/services/pet.service';
 import {
   Pet,
   UpdatePetRequest,
+  CreatePetRequest,
   PetStatus,
   PetsApi,
   PetMediaFileResponse,
@@ -79,6 +80,10 @@ export class EditPetComponent implements OnInit {
   loading = signal(false);
   saving = signal(false);
 
+  // Mode tracking
+  isAddMode = signal(false);
+  shelterId = signal<string | null>(null);
+
   // Image upload properties
   imagePreview = signal<string | null>(null);
   selectedImageFile = signal<File | null>(null);
@@ -111,7 +116,7 @@ export class EditPetComponent implements OnInit {
     this.petForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
       species: ['', Validators.required],
-      breed: ['', [Validators.required, Validators.minLength(2)]],
+      breed: ['', Validators.required],
       dateOfBirth: ['', Validators.required],
       gender: ['', Validators.required],
       description: ['', [Validators.required, Validators.minLength(10)]],
@@ -125,16 +130,61 @@ export class EditPetComponent implements OnInit {
       specialNeeds: [''],
       status: [PetStatus.Available, Validators.required],
     });
+
+    // Subscribe to species changes to load breeds
+    this.petForm.get('species')?.valueChanges.subscribe((speciesId: number) => {
+      if (speciesId) {
+        this.loadBreedsForSpecies(speciesId);
+        // Reset breed selection when species changes
+        this.petForm.get('breed')?.setValue('');
+      } else {
+        this.breedOptions = [];
+      }
+    });
   }
 
   ngOnInit() {
     this.loadSpeciesOptions();
-    const petId = this.route.snapshot.paramMap.get('id');
-    if (petId) {
-      this.loadPet(petId);
+
+    // Check query parameters for add mode
+    const queryParams = this.route.snapshot.queryParams;
+    const mode = queryParams['mode'];
+    const shelterIdParam = queryParams['shelterId'];
+
+    if (mode === 'add' && shelterIdParam) {
+      // Add mode
+      this.isAddMode.set(true);
+      this.shelterId.set(shelterIdParam);
+      // Initialize form with default values for add mode
+      this.initializeAddMode();
     } else {
-      this.router.navigate(['/pets']);
+      // Edit mode
+      const petId = this.route.snapshot.paramMap.get('id');
+      if (petId) {
+        this.isAddMode.set(false);
+        this.loadPet(petId);
+      } else {
+        // No pet ID and not add mode, redirect to pets list
+        this.router.navigate(['/pets']);
+      }
     }
+  }
+
+  private initializeAddMode() {
+    // Set default values for add mode
+    this.petForm.patchValue({
+      status: PetStatus.Available,
+      adoptionFee: 0,
+      isSpayedNeutered: false,
+      isHouseTrained: false,
+      isGoodWithKids: false,
+      isGoodWithPets: false,
+    });
+
+    // Initialize empty media arrays
+    this.existingMediaImages.set([]);
+    this.existingMediaVideos.set([]);
+    this.existingMediaDocuments.set([]);
   }
 
   private async loadPet(petId: string) {
@@ -223,8 +273,8 @@ export class EditPetComponent implements OnInit {
 
     this.petForm.patchValue({
       name: pet.name,
-      // species: pet.species,
-      // breed: pet.breed,
+      // Note: For edit mode, we'll need to map species/breed names to IDs
+      // This will be handled by the form when species options are loaded
       dateOfBirth: dateOfBirth,
       gender: pet.gender,
       description: pet.description,
@@ -239,12 +289,39 @@ export class EditPetComponent implements OnInit {
       status: pet.status || PetStatus.Available,
     });
 
+    // Set species and breed after options are loaded
+    if (pet.speciesId && pet.breedId) {
+      this.setSpeciesAndBreed(pet.speciesId, pet.breedId);
+    }
+
     // Load existing image
     this.loadExistingImage();
   }
 
+  private async setSpeciesAndBreed(speciesId: number, breedId: number) {
+    // Set the species directly by ID
+    const speciesOption = this.speciesOptions.find(s => s.value === speciesId);
+    if (speciesOption) {
+      this.petForm.get('species')?.setValue(speciesOption.value);
+
+      // Load breeds for this species
+      await this.loadBreedsForSpecies(speciesOption.value);
+
+      // Set breed by ID after breeds are loaded
+      const breedOption = this.breedOptions.find(b => b.value === breedId);
+      if (breedOption) {
+        this.petForm.get('breed')?.setValue(breedOption.value);
+      }
+    }
+  }
+
   async onSubmit() {
-    if (this.petForm.valid && this.pet()) {
+    if (this.petForm.valid) {
+      // For add mode, we don't need a pet to exist yet
+      if (!this.isAddMode() && !this.pet()) {
+        return;
+      }
+
       this.saving.set(true);
       this.isUploadingImage.set(!!this.selectedImageFile());
 
@@ -255,51 +332,84 @@ export class EditPetComponent implements OnInit {
         const dateOfBirth = formValue.dateOfBirth;
         const formattedDate = `${dateOfBirth.getFullYear()}-${String(dateOfBirth.getMonth() + 1).padStart(2, '0')}-${String(dateOfBirth.getDate()).padStart(2, '0')}`;
 
-        const updateRequest = new UpdatePetRequest({
-          name: formValue.name,
-          species: formValue.species,
-          breed: formValue.breed,
-          dateOfBirth: formattedDate,
-          gender: formValue.gender,
-          description: formValue.description,
-          adoptionFee: formValue.adoptionFee,
-          weight: formValue.weight,
-          color: formValue.color || '',
-          isSpayedNeutered: formValue.isSpayedNeutered,
-          isHouseTrained: formValue.isHouseTrained,
-          isGoodWithKids: formValue.isGoodWithKids,
-          isGoodWithPets: formValue.isGoodWithPets,
-          specialNeeds: formValue.specialNeeds || '',
-          status: formValue.status,
-        });
-
-        // Use the new upload method that handles S3 upload
-        const updatedPet = await this.petService.updatePetAndUploadImage(
-          this.pet()!.petId!,
-          updateRequest,
-          this.selectedImageFile() || undefined,
-        );
-
-        if (updatedPet) {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Pet updated successfully',
+        if (this.isAddMode()) {
+          // Create new pet
+          const createRequest = new CreatePetRequest({
+            name: formValue.name,
+            speciesId: formValue.species,
+            breedId: formValue.breed,
+            dateOfBirth: formattedDate,
+            gender: formValue.gender,
+            description: formValue.description,
           });
-          this.router.navigate(['/pets']);
+
+          const createdPet = await this.petService.createPetAndUploadImage(
+            this.shelterId()!,
+            createRequest,
+            this.selectedImageFile() || undefined,
+          );
+
+          if (createdPet) {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'Pet created successfully',
+            });
+            this.router.navigate(['/pets']);
+          } else {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Failed to create pet',
+            });
+          }
         } else {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to update pet',
+          // Update existing pet
+          const updateRequest = new UpdatePetRequest({
+            name: formValue.name,
+            species: formValue.species,
+            breed: formValue.breed,
+            dateOfBirth: formattedDate,
+            gender: formValue.gender,
+            description: formValue.description,
+            adoptionFee: formValue.adoptionFee,
+            weight: formValue.weight,
+            color: formValue.color || '',
+            isSpayedNeutered: formValue.isSpayedNeutered,
+            isHouseTrained: formValue.isHouseTrained,
+            isGoodWithKids: formValue.isGoodWithKids,
+            isGoodWithPets: formValue.isGoodWithPets,
+            specialNeeds: formValue.specialNeeds || '',
+            status: formValue.status,
           });
+
+          const updatedPet = await this.petService.updatePetAndUploadImage(
+            this.pet()!.petId!,
+            updateRequest,
+            this.selectedImageFile() || undefined,
+          );
+
+          if (updatedPet) {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'Pet updated successfully',
+            });
+            this.router.navigate(['/pets']);
+          } else {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Failed to update pet',
+            });
+          }
         }
       } catch (error) {
-        console.error('Error updating pet:', error);
+        console.error('Error saving pet:', error);
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Failed to update pet',
+          detail: `Failed to ${this.isAddMode() ? 'create' : 'update'} pet`,
         });
       } finally {
         this.saving.set(false);

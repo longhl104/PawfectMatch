@@ -8,17 +8,11 @@ import { TagModule } from 'primeng/tag';
 import { DataViewModule } from 'primeng/dataview';
 import { PanelModule } from 'primeng/panel';
 import { TableModule } from 'primeng/table';
-import {
-  DynamicDialogModule,
-  DialogService,
-  DynamicDialogRef,
-} from 'primeng/dynamicdialog';
 import { ShelterService } from 'shared/services/shelter.service';
 import {
   ApplicationService,
   type Application,
 } from 'shared/services/application.service';
-import { AddPetFormComponent } from './add-pet-form/add-pet-form.component';
 import { ToastService } from '@longhl104/pawfect-match-ng';
 import { AuthService } from 'shared/services/auth.service';
 import { PetService } from 'shared/services/pet.service';
@@ -43,7 +37,6 @@ import { PetCardComponent } from 'shared/components';
     DataViewModule,
     PanelModule,
     TableModule,
-    DynamicDialogModule,
     PetCardComponent,
   ],
   templateUrl: './dashboard.component.html',
@@ -54,7 +47,6 @@ export class DashboardComponent implements OnInit {
   private petService = inject(PetService);
   private applicationService = inject(ApplicationService);
   private toastService = inject(ToastService);
-  private dialogService = inject(DialogService);
   private petsApi = inject(PetsApi);
   private router = inject(Router);
   public authService = inject(AuthService);
@@ -66,7 +58,6 @@ export class DashboardComponent implements OnInit {
   isLoading = true;
   isRunningMatcher = false;
   petMainImageUrls = new Map<string, string>();
-  private dialogRef?: DynamicDialogRef;
 
   ngOnInit() {
     this.shelterService.shelter$
@@ -158,27 +149,13 @@ export class DashboardComponent implements OnInit {
 
   onAddPet() {
     if (!this.shelterInfo) {
-      throw new Error('Shelter information is not available');
+      this.toastService.error('Shelter information is not available');
+      return;
     }
 
-    this.dialogRef = this.dialogService.open(AddPetFormComponent, {
-      header: 'Add New Pet',
-      width: '50vw',
-      breakpoints: {
-        '1199px': '75vw',
-        '575px': '90vw',
-      },
-      modal: true,
-      dismissableMask: true,
-      data: {
-        shelterId: this.shelterInfo.shelterId,
-      },
-    });
-
-    this.dialogRef.onClose.subscribe((result) => {
-      if (result) {
-        this.onPetAdded();
-      }
+    // Navigate to edit-pet page in add mode
+    this.router.navigate(['/pets/edit'], {
+      queryParams: { mode: 'add', shelterId: this.shelterInfo.shelterId }
     });
   }
 
