@@ -937,37 +937,41 @@ public class PetService : IPetService
 
             _logger.LogInformation("Generating upload URL for pet {PetId} with extension {Extension}", petId, extension);
 
-            // Update the pet's MainImageFileExtension in DynamoDB
-            var updateRequest = new UpdateItemRequest
+            // Get the pet from DynamoDB to get PetPostgreSqlId
+            var dynamoDbPetResponse = await GetPetById(petId);
+            if (!dynamoDbPetResponse.Success || dynamoDbPetResponse.Pet == null)
             {
-                TableName = _tableName,
-                Key = new Dictionary<string, AttributeValue>
+                _logger.LogWarning("Pet not found when generating upload URL: {PetId}", petId);
+                return new PresignedUrlResponse
                 {
-                    { "PetId", new AttributeValue { S = petId.ToString() } }
-                },
-                UpdateExpression = "SET MainImageFileExtension = :extension",
-                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
-                {
-                    { ":extension", new AttributeValue { S = extension } }
-                },
-                ConditionExpression = "attribute_exists(PetId)", // Ensure the pet exists
-            };
+                    Success = false,
+                    ErrorMessage = "Pet not found"
+                };
+            }
 
-            await _dynamoDbClient.UpdateItemAsync(updateRequest);
-
-            _logger.LogInformation("Updated pet {PetId} with main image file extension {Extension}", petId, extension);
-
-            // Get the pet to find its shelter ID for cache invalidation
-            var petResponse = await GetPetById(petId);
-            if (petResponse.Success && petResponse.Pet != null)
+            // Update the pet's MainImageFileExtension in PostgreSQL
+            var postgresPet = await _dbContext.Pets.FindAsync(dynamoDbPetResponse.Pet.PetPostgreSqlId);
+            if (postgresPet == null)
             {
-                // Get shelter ID using the proper lookup method
-                var shelterId = await GetShelterIdForPet(petResponse.Pet);
-                if (shelterId.HasValue)
+                _logger.LogWarning("PostgreSQL pet not found when generating upload URL: {PostgresPetId}", dynamoDbPetResponse.Pet.PetPostgreSqlId);
+                return new PresignedUrlResponse
                 {
-                    InvalidatePetCountCache(shelterId.Value);
-                    InvalidatePetStatisticsCache(shelterId.Value);
-                }
+                    Success = false,
+                    ErrorMessage = "Pet not found in database"
+                };
+            }
+
+            postgresPet.MainImageFileExtension = extension;
+            await _dbContext.SaveChangesAsync();
+
+            _logger.LogInformation("Updated PostgreSQL pet {PostgresPetId} with main image file extension {Extension}", dynamoDbPetResponse.Pet.PetPostgreSqlId, extension);
+
+            // Get shelter ID using the proper lookup method for cache invalidation
+            var shelterId = await GetShelterIdForPet(dynamoDbPetResponse.Pet);
+            if (shelterId.HasValue)
+            {
+                InvalidatePetCountCache(shelterId.Value);
+                InvalidatePetStatisticsCache(shelterId.Value);
             }
 
             // Generate a presigned URL for uploading pet images
@@ -982,15 +986,6 @@ public class PetService : IPetService
             _logger.LogInformation("Successfully generated upload URL for pet {PetId}", petId);
 
             return presignedUrlResponse;
-        }
-        catch (ConditionalCheckFailedException)
-        {
-            _logger.LogWarning("Pet not found when generating upload URL: {PetId}", petId);
-            return new PresignedUrlResponse
-            {
-                Success = false,
-                ErrorMessage = "Pet not found"
-            };
         }
         catch (Exception ex)
         {
