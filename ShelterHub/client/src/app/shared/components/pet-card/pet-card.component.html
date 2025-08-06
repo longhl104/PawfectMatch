@@ -68,9 +68,10 @@
       </div>
 
       @if (showDescription() && pet().description) {
-        <p class="text-sm text-gray-600 mb-2">
-          {{ getDisplayDescription() }}
-        </p>
+        <div
+          class="text-sm text-gray-600 mb-2"
+          [innerHTML]="getDisplayDescription()"
+        ></div>
       }
     </div>
 

@@ -359,6 +359,31 @@ public class PetService : IPetService
             var response = await _dynamoDbClient.QueryAsync(query);
             var pets = response.Items.Select(ConvertDynamoDbItemToPet).ToList();
 
+            // Enrich pets with PostgreSQL data
+            if (pets.Count > 0)
+            {
+                var petPostgreSqlIds = pets.Select(p => p.PetPostgreSqlId);
+                var postgresPets = await _dbContext.Pets
+                    .Where(p => petPostgreSqlIds.Contains(p.PetId))
+                    .ToListAsync();
+
+                foreach (var pet in pets)
+                {
+                    var postgresPet = postgresPets.FirstOrDefault(p => p.PetId == pet.PetPostgreSqlId);
+                    if (postgresPet != null)
+                    {
+                        pet.Name = postgresPet.Name;
+                        pet.DateOfBirth = postgresPet.DateOfBirth;
+                        pet.Gender = postgresPet.Gender;
+                        pet.AdoptionFee = postgresPet.AdoptionFee;
+                        pet.Description = postgresPet.Description;
+                        pet.Status = postgresPet.Status;
+                        pet.CreatedAt = postgresPet.CreatedAt;
+                        pet.MainImageFileExtension = postgresPet.MainImageFileExtension;
+                    }
+                }
+            }
+
             // Get total count with caching (including filters)
             var totalCount = await GetTotalPetCountWithCache(shelterId, request);
 
@@ -425,6 +450,20 @@ public class PetService : IPetService
             }
 
             var pet = ConvertDynamoDbItemToPet(response.Item);
+
+            // Enrich pet with PostgreSQL data
+            var postgresPet = await _dbContext.Pets.FindAsync(pet.PetPostgreSqlId);
+            if (postgresPet != null)
+            {
+                pet.Name = postgresPet.Name;
+                pet.DateOfBirth = postgresPet.DateOfBirth;
+                pet.Gender = postgresPet.Gender;
+                pet.AdoptionFee = postgresPet.AdoptionFee;
+                pet.Description = postgresPet.Description;
+                pet.Status = postgresPet.Status;
+                pet.CreatedAt = postgresPet.CreatedAt;
+                pet.MainImageFileExtension = postgresPet.MainImageFileExtension;
+            }
 
             _logger.LogInformation("Successfully retrieved pet: {PetId}", petId);
 
