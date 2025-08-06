@@ -8,7 +8,7 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { EditorModule } from 'primeng/editor';
@@ -68,7 +68,6 @@ import {
 })
 export class EditPetComponent implements OnInit {
   private fb = inject(FormBuilder);
-  private router = inject(Router);
   private route = inject(ActivatedRoute);
   private petService = inject(PetService);
   private messageService = inject(MessageService);
@@ -392,7 +391,27 @@ export class EditPetComponent implements OnInit {
               detail: 'Pet created successfully',
             });
 
-            window.location.href = '/pets';
+            // Ask user if they want to create another pet
+            this.confirmationService.confirm({
+              message:
+                'Pet created successfully! Would you like to create another pet?',
+              header: 'Create Another Pet?',
+              icon: 'pi pi-question-circle',
+              acceptLabel: 'Yes, create another',
+              rejectLabel: 'No, go to pets list',
+              accept: () => {
+                // Reset form for creating another pet
+                this.petForm.reset();
+                this.selectedImageFile.set(null);
+                this.imagePreview.set(null);
+                this.currentPetImageUrl.set(null);
+                this.initializeAddMode();
+                window.scrollTo(0, 0); // Scroll to top
+              },
+              reject: () => {
+                window.location.href = '/pets';
+              },
+            });
           } else {
             this.messageService.add({
               severity: 'error',
@@ -414,7 +433,25 @@ export class EditPetComponent implements OnInit {
               detail: 'Pet updated successfully',
             });
 
-            window.location.href = '/pets';
+            // Ask user if they want to stay on the page
+            this.confirmationService.confirm({
+              message:
+                'Pet updated successfully! Would you like to stay on this page to make more changes?',
+              header: 'Stay on Page?',
+              icon: 'pi pi-question-circle',
+              acceptLabel: 'Yes, stay here',
+              rejectLabel: 'No, go to pets list',
+              accept: () => {
+                // Stay on the page - reload the pet data to reflect changes
+                this.loadPet(this.pet()!.petId!);
+                // Clear selected image file since it was uploaded
+                this.selectedImageFile.set(null);
+                window.scrollTo(0, 0); // Scroll to top
+              },
+              reject: () => {
+                window.location.href = '/pets';
+              },
+            });
           } else {
             this.messageService.add({
               severity: 'error',
