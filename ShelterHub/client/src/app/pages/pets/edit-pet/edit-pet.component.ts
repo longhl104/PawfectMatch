@@ -8,7 +8,7 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { EditorModule } from 'primeng/editor';
@@ -68,6 +68,7 @@ import {
 })
 export class EditPetComponent implements OnInit {
   private fb = inject(FormBuilder);
+  private router = inject(Router);
   private route = inject(ActivatedRoute);
   private petService = inject(PetService);
   private messageService = inject(MessageService);
@@ -172,7 +173,7 @@ export class EditPetComponent implements OnInit {
         this.loadPet(petId);
       } else {
         // No pet ID and not add mode, redirect to pets list
-        window.location.href = '/pets';
+        this.router.navigate(['/pets']);
       }
     }
   }
@@ -209,7 +210,7 @@ export class EditPetComponent implements OnInit {
           detail: 'Pet not found',
         });
 
-        window.location.href = '/pets';
+        this.router.navigate(['/pets']);
       }
     } catch (error) {
       console.error('Error loading pet:', error);
@@ -218,7 +219,7 @@ export class EditPetComponent implements OnInit {
         summary: 'Error',
         detail: 'Failed to load pet information',
       });
-      window.location.href = '/pets';
+      this.router.navigate(['/pets']);
     } finally {
       this.loading.set(false);
     }
@@ -409,7 +410,7 @@ export class EditPetComponent implements OnInit {
                 window.scrollTo(0, 0); // Scroll to top
               },
               reject: () => {
-                window.location.href = '/pets';
+                this.router.navigate(['/pets']);
               },
             });
           } else {
@@ -477,7 +478,7 @@ export class EditPetComponent implements OnInit {
   }
 
   onCancel() {
-    window.location.href = '/pets';
+    this.router.navigate(['/pets']);
   }
 
   onImageUpload(event: FileSelectEvent) {
@@ -646,7 +647,7 @@ export class EditPetComponent implements OnInit {
           });
 
           // Navigate back to pets list
-          window.location.href = '/pets';
+          this.router.navigate(['/pets']);
         } catch (error) {
           console.error('Error deleting pet:', error);
           this.messageService.add({
