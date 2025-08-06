@@ -483,6 +483,12 @@ public class PetService : IPetService
                 pet.BreedId = postgresPet.BreedId;
                 pet.Species = postgresPet.Species?.Name;
                 pet.Breed = postgresPet.Breed?.Name;
+                pet.IsGoodWithKids = postgresPet.IsGoodWithKids;
+                pet.IsGoodWithPets = postgresPet.IsGoodWithPets;
+                pet.IsHouseTrained = postgresPet.IsHouseTrained;
+                pet.IsSpayedNeutered = postgresPet.IsSpayedNeutered;
+                pet.IsVaccinated = postgresPet.IsVaccinated;
+                pet.IsMicrochipped = postgresPet.IsMicrochipped;
             }
 
             _logger.LogInformation("Successfully retrieved pet: {PetId}", petId);
@@ -743,6 +749,12 @@ public class PetService : IPetService
                 updatedPet.BreedId = enrichedPostgresPet.BreedId;
                 updatedPet.Species = enrichedPostgresPet.Species?.Name;
                 updatedPet.Breed = enrichedPostgresPet.Breed?.Name;
+                updatedPet.IsGoodWithKids = enrichedPostgresPet.IsGoodWithKids;
+                updatedPet.IsGoodWithPets = enrichedPostgresPet.IsGoodWithPets;
+                updatedPet.IsHouseTrained = enrichedPostgresPet.IsHouseTrained;
+                updatedPet.IsSpayedNeutered = enrichedPostgresPet.IsSpayedNeutered;
+                updatedPet.IsVaccinated = enrichedPostgresPet.IsVaccinated;
+                updatedPet.IsMicrochipped = enrichedPostgresPet.IsMicrochipped;
             }
 
             // Invalidate cache for this shelter since pet data changed
