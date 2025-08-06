@@ -820,6 +820,34 @@ public class PetService : IPetService
         {
             _logger.LogInformation("Deleting pet with ID: {PetId}", petId);
 
+            // First, get the pet to ensure it exists and get the PostgreSQL ID
+            var existingPetResponse = await GetPetById(petId);
+            if (!existingPetResponse.Success || existingPetResponse.Pet == null)
+            {
+                _logger.LogWarning("Pet not found for deletion: {PetId}", petId);
+                return new PetResponse
+                {
+                    Success = false,
+                    ErrorMessage = "Pet not found"
+                };
+            }
+
+            var pet = existingPetResponse.Pet;
+            var shelterId = await GetShelterIdForPet(pet);
+
+            // Step 1: Delete all media files associated with the pet
+            try
+            {
+                await DeleteAllPetMediaFiles(petId);
+                _logger.LogInformation("Deleted all media files for pet {PetId}", petId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to delete some media files for pet {PetId}, continuing with pet deletion", petId);
+                // Continue with pet deletion even if media deletion fails partially
+            }
+
+            // Step 2: Delete pet from DynamoDB
             var deleteRequest = new DeleteItemRequest
             {
                 TableName = _tableName,
@@ -834,18 +862,53 @@ public class PetService : IPetService
 
             if (response.Attributes.Count == 0)
             {
-                _logger.LogWarning("Pet not found for deletion: {PetId}", petId);
+                _logger.LogWarning("Pet not found in DynamoDB for deletion: {PetId}", petId);
                 return new PetResponse
                 {
                     Success = false,
-                    ErrorMessage = "Pet not found"
+                    ErrorMessage = "Pet not found in DynamoDB"
                 };
             }
 
-            var deletedPet = ConvertDynamoDbItemToPet(response.Attributes);
+            // Step 3: Delete pet from PostgreSQL
+            try
+            {
+                var postgresPet = await _dbContext.Pets.FindAsync(pet.PetPostgreSqlId);
+                if (postgresPet != null)
+                {
+                    _dbContext.Pets.Remove(postgresPet);
+                    await _dbContext.SaveChangesAsync();
+                    _logger.LogInformation("Deleted PostgreSQL pet with ID: {PostgresPetId}", pet.PetPostgreSqlId);
+                }
+                else
+                {
+                    _logger.LogWarning("PostgreSQL pet not found for deletion: {PostgresPetId}", pet.PetPostgreSqlId);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to delete PostgreSQL pet {PostgresPetId}", pet.PetPostgreSqlId);
+                // We've already deleted from DynamoDB, so we need to decide whether to continue or rollback
+                // For now, we'll log the error and continue, as the main pet record is deleted
+            }
+
+            // Step 4: Delete main image from S3 if it exists
+            try
+            {
+                if (!string.IsNullOrEmpty(pet.MainImageFileExtension))
+                {
+                    var mainImageKey = $"pets/{petId}/main-image{pet.MainImageFileExtension}";
+                    await _mediaUploadService.DeleteFileAsync(_bucketName, mainImageKey);
+                    _logger.LogInformation("Deleted main image for pet {PetId}", petId);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to delete main image for pet {PetId}", petId);
+                // Continue even if main image deletion fails
+            }
 
             // Invalidate cache for this shelter since pet was deleted
-            var shelterId = await GetShelterIdForPet(deletedPet);
             if (shelterId.HasValue)
             {
                 InvalidatePetCountCache(shelterId.Value);
@@ -857,7 +920,7 @@ public class PetService : IPetService
             return new PetResponse
             {
                 Success = true,
-                Pet = deletedPet
+                Pet = ConvertDynamoDbItemToPet(response.Attributes)
             };
         }
         catch (Exception ex)
@@ -1980,6 +2043,96 @@ public class PetService : IPetService
             return MediaFileType.Video;
 
         return MediaFileType.Document;
+    }
+
+    /// <summary>
+    /// Deletes all media files associated with a pet
+    /// </summary>
+    /// <param name="petId">The pet ID</param>
+    /// <returns>Task</returns>
+    private async Task DeleteAllPetMediaFiles(Guid petId)
+    {
+        try
+        {
+            _logger.LogInformation("Deleting all media files for pet {PetId}", petId);
+
+            // First, get all media files for the pet
+            var queryRequest = new QueryRequest
+            {
+                TableName = _petMediaFilesTableName,
+                KeyConditionExpression = "PetId = :petId",
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                {
+                    { ":petId", new AttributeValue { S = petId.ToString() } }
+                }
+            };
+
+            var queryResponse = await _dynamoDbClient.QueryAsync(queryRequest);
+
+            if (queryResponse.Items.Count == 0)
+            {
+                _logger.LogInformation("No media files found for pet {PetId}", petId);
+                return;
+            }
+
+            _logger.LogInformation("Found {MediaFileCount} media files to delete for pet {PetId}", queryResponse.Items.Count, petId);
+
+            // Delete files from S3 and prepare batch delete for DynamoDB
+            var batchDeleteRequests = new List<WriteRequest>();
+
+            foreach (var item in queryResponse.Items)
+            {
+                try
+                {
+                    // Delete from S3 if S3Key exists
+                    if (item.TryGetValue("S3Key", out var s3KeyValue) && !string.IsNullOrEmpty(s3KeyValue.S))
+                    {
+                        await _mediaUploadService.DeleteFileAsync(_bucketName, s3KeyValue.S);
+                        _logger.LogDebug("Deleted S3 file: {S3Key}", s3KeyValue.S);
+                    }
+
+                    // Add to batch delete for DynamoDB
+                    batchDeleteRequests.Add(new WriteRequest
+                    {
+                        DeleteRequest = new DeleteRequest
+                        {
+                            Key = new Dictionary<string, AttributeValue>
+                            {
+                                { "PetId", item["PetId"] },
+                                { "MediaFileId", item["MediaFileId"] }
+                            }
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to delete individual media file for pet {PetId}", petId);
+                    // Continue with other files
+                }
+            }
+
+            // Batch delete from DynamoDB (process in chunks of 25 - DynamoDB limit)
+            for (int i = 0; i < batchDeleteRequests.Count; i += 25)
+            {
+                var chunk = batchDeleteRequests.Skip(i).Take(25).ToList();
+                var batchDeleteRequest = new BatchWriteItemRequest
+                {
+                    RequestItems = new Dictionary<string, List<WriteRequest>>
+                    {
+                        { _petMediaFilesTableName, chunk }
+                    }
+                };
+
+                await _dynamoDbClient.BatchWriteItemAsync(batchDeleteRequest);
+            }
+
+            _logger.LogInformation("Successfully deleted {MediaFileCount} media files for pet {PetId}", queryResponse.Items.Count, petId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to delete all media files for pet {PetId}", petId);
+            throw; // Re-throw to let the calling method handle it
+        }
     }
 
     /// <summary>
