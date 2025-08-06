@@ -77,6 +77,16 @@ public class Pet
 
     public int? BreedId { get; set; }
 
+    /// <summary>
+    /// Species name (e.g., Dog, Cat, etc.) - populated from PostgreSQL
+    /// </summary>
+    public string? Species { get; set; }
+
+    /// <summary>
+    /// Breed name - populated from PostgreSQL
+    /// </summary>
+    public string? Breed { get; set; }
+
     public Guid? ShelterId { get; set; }
 }
 

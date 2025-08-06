@@ -2418,6 +2418,8 @@ export class Pet implements IPet {
     isMicrochipped?: boolean | undefined;
     speciesId?: number | undefined;
     breedId?: number | undefined;
+    species?: string | undefined;
+    breed?: string | undefined;
     shelterId?: string | undefined;
 
     constructor(data?: IPet) {
@@ -2452,6 +2454,8 @@ export class Pet implements IPet {
             this.isMicrochipped = _data["isMicrochipped"];
             this.speciesId = _data["speciesId"];
             this.breedId = _data["breedId"];
+            this.species = _data["species"];
+            this.breed = _data["breed"];
             this.shelterId = _data["shelterId"];
         }
     }
@@ -2486,6 +2490,8 @@ export class Pet implements IPet {
         data["isMicrochipped"] = this.isMicrochipped;
         data["speciesId"] = this.speciesId;
         data["breedId"] = this.breedId;
+        data["species"] = this.species;
+        data["breed"] = this.breed;
         data["shelterId"] = this.shelterId;
         return data;
     }
@@ -2513,6 +2519,8 @@ export interface IPet {
     isMicrochipped?: boolean | undefined;
     speciesId?: number | undefined;
     breedId?: number | undefined;
+    species?: string | undefined;
+    breed?: string | undefined;
     shelterId?: string | undefined;
 }
 

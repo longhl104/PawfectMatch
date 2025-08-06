@@ -215,6 +215,8 @@ public class PetService : IPetService
             var pets = response.Items.Select(ConvertDynamoDbItemToPet).ToList();
             var petPostgreSqlIds = pets.Select(p => p.PetPostgreSqlId);
             var postgresPets = await _dbContext.Pets
+                .Include(p => p.Species)
+                .Include(p => p.Breed)
                 .Where(p => petPostgreSqlIds.Contains(p.PetId))
                 .ToListAsync();
 
@@ -232,6 +234,10 @@ public class PetService : IPetService
                     pet.Status = postgresPet.Status;
                     pet.CreatedAt = postgresPet.CreatedAt;
                     pet.MainImageFileExtension = postgresPet.MainImageFileExtension;
+                    pet.SpeciesId = postgresPet.SpeciesId;
+                    pet.BreedId = postgresPet.BreedId;
+                    pet.Species = postgresPet.Species?.Name;
+                    pet.Breed = postgresPet.Breed?.Name;
                 }
             }
 
@@ -364,6 +370,8 @@ public class PetService : IPetService
             {
                 var petPostgreSqlIds = pets.Select(p => p.PetPostgreSqlId);
                 var postgresPets = await _dbContext.Pets
+                    .Include(p => p.Species)
+                    .Include(p => p.Breed)
                     .Where(p => petPostgreSqlIds.Contains(p.PetId))
                     .ToListAsync();
 
@@ -380,6 +388,10 @@ public class PetService : IPetService
                         pet.Status = postgresPet.Status;
                         pet.CreatedAt = postgresPet.CreatedAt;
                         pet.MainImageFileExtension = postgresPet.MainImageFileExtension;
+                        pet.SpeciesId = postgresPet.SpeciesId;
+                        pet.BreedId = postgresPet.BreedId;
+                        pet.Species = postgresPet.Species?.Name;
+                        pet.Breed = postgresPet.Breed?.Name;
                     }
                 }
             }
@@ -452,7 +464,10 @@ public class PetService : IPetService
             var pet = ConvertDynamoDbItemToPet(response.Item);
 
             // Enrich pet with PostgreSQL data
-            var postgresPet = await _dbContext.Pets.FindAsync(pet.PetPostgreSqlId);
+            var postgresPet = await _dbContext.Pets
+                .Include(p => p.Species)
+                .Include(p => p.Breed)
+                .FirstOrDefaultAsync(p => p.PetId == pet.PetPostgreSqlId);
             if (postgresPet != null)
             {
                 pet.Name = postgresPet.Name;
@@ -463,6 +478,10 @@ public class PetService : IPetService
                 pet.Status = postgresPet.Status;
                 pet.CreatedAt = postgresPet.CreatedAt;
                 pet.MainImageFileExtension = postgresPet.MainImageFileExtension;
+                pet.SpeciesId = postgresPet.SpeciesId;
+                pet.BreedId = postgresPet.BreedId;
+                pet.Species = postgresPet.Species?.Name;
+                pet.Breed = postgresPet.Breed?.Name;
             }
 
             _logger.LogInformation("Successfully retrieved pet: {PetId}", petId);
