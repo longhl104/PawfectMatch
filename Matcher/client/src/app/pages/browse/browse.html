@@ -80,14 +80,20 @@
             <i class="pi pi-star mr-1"></i>Pet Type
           </label>
           <p-select
-            [(ngModel)]="selectedSpecies"
-            [options]="speciesOptions()"
             optionLabel="label"
             optionValue="value"
             placeholder="Select pet type"
-            (onChange)="onSpeciesChange()"
             styleClass="w-full"
+            [options]="speciesOptions()"
+            [loading]="isLoadingSpecies()"
+            [(ngModel)]="selectedSpecies"
+            (onChange)="onSpeciesChange()"
           />
+          @if (isLoadingSpecies()) {
+          <small class="text-primary">
+            <i class="pi pi-spin pi-spinner mr-1"></i>Loading pet types...
+          </small>
+          }
         </div>
 
         <!-- Breed Filter -->
@@ -98,16 +104,24 @@
           >
             <i class="pi pi-heart mr-1"></i>Breed
           </label>
-          <p-select
-            [(ngModel)]="selectedBreed"
-            [options]="breeds()"
+          <p-autocomplete
+            [(ngModel)]="selectedBreedObject"
+            [suggestions]="filteredBreeds()"
+            (completeMethod)="searchBreeds($event)"
+            (onSelect)="onBreedChange()"
+            (onClear)="onBreedChange()"
             optionLabel="label"
-            optionValue="value"
-            placeholder="Select breed"
-            (onChange)="onBreedChange()"
-            [disabled]="!selectedSpecies()"
+            [dropdown]="true"
+            placeholder="Select or search breed"
             styleClass="w-full"
+            [disabled]="!selectedSpecies() || isLoadingBreeds()"
+            [showClear]="true"
           />
+          @if (isLoadingBreeds()) {
+          <small class="text-primary">
+            <i class="pi pi-spin pi-spinner mr-1"></i>Loading breeds...
+          </small>
+          }
         </div>
       </div>
 
@@ -134,7 +148,7 @@
           </p-tag>
           } @if (selectedSpecies()) {
           <p-tag
-            value="Type: {{ selectedSpecies() }}"
+            [value]="'Type: ' + getSelectedSpeciesName()"
             severity="info"
             [rounded]="true"
           >
@@ -148,13 +162,13 @@
           </p-tag>
           } @if (selectedBreed()) {
           <p-tag
-            value="Breed: {{ selectedBreed() }}"
+            [value]="'Breed: ' + getSelectedBreedName()"
             severity="info"
             [rounded]="true"
           >
             <button
               class="ml-1 cursor-pointer bg-transparent border-none text-inherit p-0"
-              (click)="selectedBreed.set(null); onBreedChange()"
+              (click)="clearBreedSelection()"
               aria-label="Remove breed filter"
             >
               ×

@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
+import { AutoCompleteModule } from 'primeng/autocomplete';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
@@ -22,8 +22,14 @@ import { SliderModule } from 'primeng/slider';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { DividerModule } from 'primeng/divider';
+import {
+  SpeciesApi,
+  PetSpeciesDto,
+  PetBreedDto,
+} from 'shared/apis/generated-apis';
 import { GoogleMapsService } from '@longhl104/pawfect-match-ng';
-import { environment } from '../../../environments/environment';
+import { environment } from 'environments/environment';
+import { firstValueFrom } from 'rxjs';
 
 // Types
 interface Pet {
@@ -135,6 +141,7 @@ declare const google: {
   imports: [
     CommonModule,
     FormsModule,
+    AutoCompleteModule,
     ButtonModule,
     CardModule,
     InputTextModule,
@@ -153,6 +160,7 @@ declare const google: {
 export class BrowseComponent implements OnInit, OnDestroy {
   private ngZone = inject(NgZone);
   private googleMapsService = inject(GoogleMapsService);
+  private speciesApi = inject(SpeciesApi);
 
   protected readonly Math = Math;
 
@@ -172,6 +180,37 @@ export class BrowseComponent implements OnInit, OnDestroy {
   breeds = signal<DropdownOption[]>([]);
   isLoading = signal(false);
   isLoadingLocation = signal(false);
+  isLoadingSpecies = signal(false);
+  isLoadingBreeds = signal(false);
+
+  // API Data
+  apiSpecies = signal<PetSpeciesDto[]>([]);
+  apiBreeds = signal<PetBreedDto[]>([]);
+
+  // Helper methods to get display names
+  getSelectedSpeciesName(): string {
+    const speciesId = this.selectedSpecies();
+    if (!speciesId || speciesId === 'null') return 'All Species';
+
+    const species = this.apiSpecies().find(
+      (s) => s.speciesId?.toString() === speciesId,
+    );
+    return species?.name || 'Unknown Species';
+  }
+
+  getSelectedBreedName(): string {
+    const breedId = this.selectedBreed();
+    if (!breedId || breedId === 'null') return 'All Breeds';
+
+    const breed = this.apiBreeds().find(
+      (b) => b.breedId?.toString() === breedId,
+    );
+    return breed?.name || 'Unknown Breed';
+  }
+
+  // Autocomplete properties
+  filteredBreeds = signal<DropdownOption[]>([]);
+  selectedBreedObject: DropdownOption | string | null = null;
 
   // Google Places Autocomplete
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -183,14 +222,9 @@ export class BrowseComponent implements OnInit, OnDestroy {
   pageSize = signal(12);
   totalRecords = signal(0);
 
-  // Dropdown options
+  // Dropdown options - these will be populated from API
   speciesOptions = signal<DropdownOption[]>([
     { label: 'All Species', value: null },
-    { label: 'Dog', value: 'Dog' },
-    { label: 'Cat', value: 'Cat' },
-    { label: 'Bird', value: 'Bird' },
-    { label: 'Rabbit', value: 'Rabbit' },
-    { label: 'Other', value: 'Other' },
   ]);
 
   // Mock data for demonstration
@@ -270,6 +304,7 @@ export class BrowseComponent implements OnInit, OnDestroy {
   ];
 
   ngOnInit() {
+    this.loadSpecies();
     this.initializeMockData();
     this.getCurrentLocation();
     this.initializeGoogleMapsAndAutocomplete();
@@ -282,6 +317,63 @@ export class BrowseComponent implements OnInit, OnDestroy {
       setTimeout(() => this.initializeLocationAutocomplete(), 100);
     } catch (error) {
       console.error('Failed to load Google Maps:', error);
+    }
+  }
+
+  private async loadSpecies() {
+    try {
+      this.isLoadingSpecies.set(true);
+      const response = await firstValueFrom(this.speciesApi.species());
+
+      if (response?.success && response.species) {
+        this.apiSpecies.set(response.species);
+
+        // Convert API species to dropdown options
+        const speciesOptions: DropdownOption[] = [
+          { label: 'All Species', value: null },
+          ...response.species.map((species) => ({
+            label: species.name || '',
+            value: species.speciesId?.toString() || '',
+          })),
+        ];
+
+        this.speciesOptions.set(speciesOptions);
+      }
+    } catch (error) {
+      console.error('Failed to load species:', error);
+    } finally {
+      this.isLoadingSpecies.set(false);
+    }
+  }
+
+  private async loadBreeds(speciesId: number) {
+    try {
+      this.isLoadingBreeds.set(true);
+      const response = await firstValueFrom(this.speciesApi.breeds(speciesId));
+
+      if (response?.success && response.breeds) {
+        this.apiBreeds.set(response.breeds);
+
+        // Convert API breeds to dropdown options
+        const breedOptions: DropdownOption[] = [
+          { label: 'All Breeds', value: null },
+          ...response.breeds.map((breed) => ({
+            label: breed.name || '',
+            value: breed.breedId?.toString() || '',
+          })),
+        ];
+
+        this.breeds.set(breedOptions);
+        this.filteredBreeds.set(breedOptions);
+      }
+    } catch (error) {
+      console.error('Failed to load breeds:', error);
+      // Set default breeds on error
+      const defaultBreeds = [{ label: 'All Breeds', value: null }];
+      this.breeds.set(defaultBreeds);
+      this.filteredBreeds.set(defaultBreeds);
+    } finally {
+      this.isLoadingBreeds.set(false);
     }
   }
 
@@ -414,7 +506,10 @@ export class BrowseComponent implements OnInit, OnDestroy {
     this.pets.set(this.mockPets);
     this.filteredPets.set(this.mockPets);
     this.totalRecords.set(this.mockPets.length);
-    this.updateBreedOptions();
+    // Initialize breeds with default "All Breeds" option
+    const defaultBreeds = [{ label: 'All Breeds', value: null }];
+    this.breeds.set(defaultBreeds);
+    this.filteredBreeds.set(defaultBreeds);
   }
 
   getCurrentLocation() {
@@ -515,12 +610,81 @@ export class BrowseComponent implements OnInit, OnDestroy {
   }
 
   onSpeciesChange() {
-    this.updateBreedOptions();
+    const selectedSpecies = this.selectedSpecies();
+
+    // Reset breed selection when species changes
+    this.selectedBreed.set(null);
+    this.selectedBreedObject = null;
+
+    if (selectedSpecies && selectedSpecies !== 'null') {
+      // Load breeds for the selected species from API
+      const speciesId = parseInt(selectedSpecies, 10);
+      if (!isNaN(speciesId)) {
+        this.loadBreeds(speciesId);
+      }
+    } else {
+      // If no species selected, clear breeds
+      const defaultBreeds = [{ label: 'All Breeds', value: null }];
+      this.breeds.set(defaultBreeds);
+      this.filteredBreeds.set(defaultBreeds);
+    }
+
     this.applyFilters();
   }
 
   onBreedChange() {
+    // Debug logging to see what we're receiving
+    console.log('onBreedChange called with selectedBreedObject:', this.selectedBreedObject, typeof this.selectedBreedObject);
+
+    // Handle both object and string cases
+    if (this.selectedBreedObject) {
+      if (typeof this.selectedBreedObject === 'string') {
+        // If it's a string, it's likely the breed ID, so find the actual object
+        const breedId = this.selectedBreedObject;
+        const breedObject = this.breeds().find(breed => breed.value === breedId);
+        if (breedObject) {
+          this.selectedBreedObject = breedObject;
+          this.selectedBreed.set(breedObject.value);
+        } else {
+          // Fallback: treat the string as the breed ID
+          this.selectedBreed.set(breedId);
+        }
+      } else if (typeof this.selectedBreedObject === 'object' && this.selectedBreedObject.value !== undefined) {
+        // If it's an object with a value property (correct case)
+        this.selectedBreed.set(this.selectedBreedObject.value);
+      } else {
+        console.warn('Unexpected selectedBreedObject format:', this.selectedBreedObject);
+        this.selectedBreed.set(null);
+      }
+    } else {
+      this.selectedBreed.set(null);
+    }
     this.applyFilters();
+  }
+
+  clearBreedSelection() {
+    console.log('clearBreedSelection called');
+    this.selectedBreed.set(null);
+    this.selectedBreedObject = null;
+    this.applyFilters();
+  }
+
+  searchBreeds(event: { query: string }) {
+    console.log('searchBreeds called with query:', event.query);
+    const query = event.query.toLowerCase();
+    const availableBreeds = this.breeds();
+    console.log('Available breeds:', availableBreeds);
+
+    if (query === null || query === undefined) {
+      this.filteredBreeds.set(availableBreeds);
+    } else {
+      const filtered = availableBreeds.filter((breed) =>
+        breed.label.toLowerCase().includes(query),
+      );
+
+      this.filteredBreeds.set(filtered);
+    }
+    console.log('Filtered breeds set to:', this.filteredBreeds());
   }
 
   onDistanceChange() {
@@ -531,87 +695,35 @@ export class BrowseComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
-  private updateBreedOptions() {
-    const selectedSpecies = this.selectedSpecies();
-    let availableBreeds: DropdownOption[] = [
-      { label: 'All Breeds', value: null },
-    ];
-
-    if (selectedSpecies === 'Dog') {
-      availableBreeds = [
-        { label: 'All Breeds', value: null },
-        { label: 'Golden Retriever', value: 'Golden Retriever' },
-        { label: 'Labrador', value: 'Labrador' },
-        { label: 'German Shepherd', value: 'German Shepherd' },
-        { label: 'French Bulldog', value: 'French Bulldog' },
-        { label: 'Poodle', value: 'Poodle' },
-        { label: 'Bulldog', value: 'Bulldog' },
-        { label: 'Beagle', value: 'Beagle' },
-        { label: 'Rottweiler', value: 'Rottweiler' },
-        { label: 'Yorkshire Terrier', value: 'Yorkshire Terrier' },
-        { label: 'Mixed Breed', value: 'Mixed Breed' },
-      ];
-    } else if (selectedSpecies === 'Cat') {
-      availableBreeds = [
-        { label: 'All Breeds', value: null },
-        { label: 'Siamese', value: 'Siamese' },
-        { label: 'Persian', value: 'Persian' },
-        { label: 'Maine Coon', value: 'Maine Coon' },
-        { label: 'British Shorthair', value: 'British Shorthair' },
-        { label: 'American Shorthair', value: 'American Shorthair' },
-        { label: 'Ragdoll', value: 'Ragdoll' },
-        { label: 'Bengal', value: 'Bengal' },
-        { label: 'Russian Blue', value: 'Russian Blue' },
-        { label: 'Domestic Shorthair', value: 'Domestic Shorthair' },
-        { label: 'Mixed Breed', value: 'Mixed Breed' },
-      ];
-    } else if (selectedSpecies === 'Bird') {
-      availableBreeds = [
-        { label: 'All Breeds', value: null },
-        { label: 'Cockatiel', value: 'Cockatiel' },
-        { label: 'Budgerigar', value: 'Budgerigar' },
-        { label: 'Canary', value: 'Canary' },
-        { label: 'Lovebird', value: 'Lovebird' },
-        { label: 'Cockatoo', value: 'Cockatoo' },
-        { label: 'Parakeet', value: 'Parakeet' },
-      ];
-    } else if (selectedSpecies === 'Rabbit') {
-      availableBreeds = [
-        { label: 'All Breeds', value: null },
-        { label: 'Holland Lop', value: 'Holland Lop' },
-        { label: 'Netherland Dwarf', value: 'Netherland Dwarf' },
-        { label: 'Mini Rex', value: 'Mini Rex' },
-        { label: 'Lionhead', value: 'Lionhead' },
-        { label: 'Flemish Giant', value: 'Flemish Giant' },
-        { label: 'Mixed Breed', value: 'Mixed Breed' },
-      ];
-    }
-
-    this.breeds.set(availableBreeds);
-
-    // Reset breed selection if current breed is not available for new species
-    const currentBreed = this.selectedBreed();
-    if (
-      currentBreed &&
-      !availableBreeds.find((breed) => breed.value === currentBreed)
-    ) {
-      this.selectedBreed.set(null);
-    }
-  }
-
   private applyFilters() {
     let filtered = [...this.pets()];
 
     // Species filter
-    const species = this.selectedSpecies();
-    if (species) {
-      filtered = filtered.filter((pet) => pet.species === species);
+    const speciesId = this.selectedSpecies();
+    if (speciesId && speciesId !== 'null') {
+      // Find the species name from the API data for filtering against mock data
+      const selectedSpeciesObj = this.apiSpecies().find(
+        (s) => s.speciesId?.toString() === speciesId,
+      );
+      if (selectedSpeciesObj?.name) {
+        filtered = filtered.filter(
+          (pet) => pet.species === selectedSpeciesObj.name,
+        );
+      }
     }
 
     // Breed filter
-    const breed = this.selectedBreed();
-    if (breed) {
-      filtered = filtered.filter((pet) => pet.breed === breed);
+    const breedId = this.selectedBreed();
+    if (breedId && breedId !== 'null') {
+      // Find the breed name from the API data for filtering against mock data
+      const selectedBreedObj = this.apiBreeds().find(
+        (b) => b.breedId?.toString() === breedId,
+      );
+      if (selectedBreedObj?.name) {
+        filtered = filtered.filter(
+          (pet) => pet.breed === selectedBreedObj.name,
+        );
+      }
     }
 
     // Age range filter
@@ -632,6 +744,7 @@ export class BrowseComponent implements OnInit, OnDestroy {
   clearFilters() {
     this.selectedSpecies.set(null);
     this.selectedBreed.set(null);
+    this.selectedBreedObject = null;
     this.maxDistance.set(50);
     this.ageRange.set([0, 15]);
     this.searchLocation.set('');
@@ -644,7 +757,11 @@ export class BrowseComponent implements OnInit, OnDestroy {
     this.filteredPets.set(this.pets());
     this.totalRecords.set(this.pets().length);
     this.currentPage.set(0);
-    this.updateBreedOptions();
+
+    // Reset breeds to default when clearing all filters
+    const defaultBreeds = [{ label: 'All Breeds', value: null }];
+    this.breeds.set(defaultBreeds);
+    this.filteredBreeds.set(defaultBreeds);
   }
 
   getActiveFiltersCount(): number {

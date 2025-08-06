@@ -232,6 +232,123 @@ export class AuthCheckApi {
     }
 }
 
+@Injectable()
+export class SpeciesApi {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    /**
+     * @return OK
+     */
+    species(): Observable<GetPetSpeciesResponse> {
+        let url_ = this.baseUrl + "/api/Species";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processSpecies(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processSpecies(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<GetPetSpeciesResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<GetPetSpeciesResponse>;
+        }));
+    }
+
+    protected processSpecies(response: HttpResponseBase): Observable<GetPetSpeciesResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = GetPetSpeciesResponse.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    breeds(speciesId: number): Observable<GetPetBreedsResponse> {
+        let url_ = this.baseUrl + "/api/Species/{speciesId}/breeds";
+        if (speciesId === undefined || speciesId === null)
+            throw new Error("The parameter 'speciesId' must be defined.");
+        url_ = url_.replace("{speciesId}", encodeURIComponent("" + speciesId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processBreeds(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processBreeds(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<GetPetBreedsResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<GetPetBreedsResponse>;
+        }));
+    }
+
+    protected processBreeds(response: HttpResponseBase): Observable<GetPetBreedsResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = GetPetBreedsResponse.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+}
+
 export class CreateAdopterRequest implements ICreateAdopterRequest {
     userId!: string | undefined;
     fullName!: string | undefined;
@@ -270,6 +387,194 @@ export class CreateAdopterRequest implements ICreateAdopterRequest {
 export interface ICreateAdopterRequest {
     userId: string | undefined;
     fullName: string | undefined;
+}
+
+export class GetPetBreedsResponse implements IGetPetBreedsResponse {
+    success?: boolean;
+    breeds?: PetBreedDto[] | undefined;
+    errorMessage?: string | undefined;
+
+    constructor(data?: IGetPetBreedsResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.success = _data["success"];
+            if (Array.isArray(_data["breeds"])) {
+                this.breeds = [] as any;
+                for (let item of _data["breeds"])
+                    this.breeds!.push(PetBreedDto.fromJS(item));
+            }
+            this.errorMessage = _data["errorMessage"];
+        }
+    }
+
+    static fromJS(data: any): GetPetBreedsResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new GetPetBreedsResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["success"] = this.success;
+        if (Array.isArray(this.breeds)) {
+            data["breeds"] = [];
+            for (let item of this.breeds)
+                data["breeds"].push(item ? item.toJSON() : <any>undefined);
+        }
+        data["errorMessage"] = this.errorMessage;
+        return data;
+    }
+}
+
+export interface IGetPetBreedsResponse {
+    success?: boolean;
+    breeds?: PetBreedDto[] | undefined;
+    errorMessage?: string | undefined;
+}
+
+export class GetPetSpeciesResponse implements IGetPetSpeciesResponse {
+    success?: boolean;
+    species?: PetSpeciesDto[] | undefined;
+    errorMessage?: string | undefined;
+
+    constructor(data?: IGetPetSpeciesResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.success = _data["success"];
+            if (Array.isArray(_data["species"])) {
+                this.species = [] as any;
+                for (let item of _data["species"])
+                    this.species!.push(PetSpeciesDto.fromJS(item));
+            }
+            this.errorMessage = _data["errorMessage"];
+        }
+    }
+
+    static fromJS(data: any): GetPetSpeciesResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new GetPetSpeciesResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["success"] = this.success;
+        if (Array.isArray(this.species)) {
+            data["species"] = [];
+            for (let item of this.species)
+                data["species"].push(item ? item.toJSON() : <any>undefined);
+        }
+        data["errorMessage"] = this.errorMessage;
+        return data;
+    }
+}
+
+export interface IGetPetSpeciesResponse {
+    success?: boolean;
+    species?: PetSpeciesDto[] | undefined;
+    errorMessage?: string | undefined;
+}
+
+export class PetBreedDto implements IPetBreedDto {
+    breedId?: number;
+    name?: string | undefined;
+    speciesId?: number;
+
+    constructor(data?: IPetBreedDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.breedId = _data["breedId"];
+            this.name = _data["name"];
+            this.speciesId = _data["speciesId"];
+        }
+    }
+
+    static fromJS(data: any): PetBreedDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new PetBreedDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["breedId"] = this.breedId;
+        data["name"] = this.name;
+        data["speciesId"] = this.speciesId;
+        return data;
+    }
+}
+
+export interface IPetBreedDto {
+    breedId?: number;
+    name?: string | undefined;
+    speciesId?: number;
+}
+
+export class PetSpeciesDto implements IPetSpeciesDto {
+    speciesId?: number;
+    name?: string | undefined;
+
+    constructor(data?: IPetSpeciesDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.speciesId = _data["speciesId"];
+            this.name = _data["name"];
+        }
+    }
+
+    static fromJS(data: any): PetSpeciesDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new PetSpeciesDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["speciesId"] = this.speciesId;
+        data["name"] = this.name;
+        return data;
+    }
+}
+
+export interface IPetSpeciesDto {
+    speciesId?: number;
+    name?: string | undefined;
 }
 
 export class ApiException extends Error {
