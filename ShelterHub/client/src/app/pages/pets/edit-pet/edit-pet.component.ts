@@ -173,7 +173,7 @@ export class EditPetComponent implements OnInit {
         this.loadPet(petId);
       } else {
         // No pet ID and not add mode, redirect to pets list
-        this.router.navigate(['/pets']);
+        window.location.href = '/pets';
       }
     }
   }
@@ -209,7 +209,8 @@ export class EditPetComponent implements OnInit {
           summary: 'Error',
           detail: 'Pet not found',
         });
-        this.router.navigate(['/pets']);
+
+        window.location.href = '/pets';
       }
     } catch (error) {
       console.error('Error loading pet:', error);
@@ -218,7 +219,7 @@ export class EditPetComponent implements OnInit {
         summary: 'Error',
         detail: 'Failed to load pet information',
       });
-      this.router.navigate(['/pets']);
+      window.location.href = '/pets';
     } finally {
       this.loading.set(false);
     }
@@ -390,7 +391,8 @@ export class EditPetComponent implements OnInit {
               summary: 'Success',
               detail: 'Pet created successfully',
             });
-            this.router.navigate(['/pets']);
+
+            window.location.href = '/pets';
           } else {
             this.messageService.add({
               severity: 'error',
@@ -411,7 +413,8 @@ export class EditPetComponent implements OnInit {
               summary: 'Success',
               detail: 'Pet updated successfully',
             });
-            this.router.navigate(['/pets']);
+
+            window.location.href = '/pets';
           } else {
             this.messageService.add({
               severity: 'error',
@@ -437,7 +440,7 @@ export class EditPetComponent implements OnInit {
   }
 
   onCancel() {
-    this.router.navigate(['/pets']);
+    window.location.href = '/pets';
   }
 
   onImageUpload(event: FileSelectEvent) {
@@ -606,7 +609,7 @@ export class EditPetComponent implements OnInit {
           });
 
           // Navigate back to pets list
-          this.router.navigate(['/pets']);
+          window.location.href = '/pets';
         } catch (error) {
           console.error('Error deleting pet:', error);
           this.messageService.add({
