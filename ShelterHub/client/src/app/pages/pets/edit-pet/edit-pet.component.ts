@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 
@@ -74,6 +74,9 @@ export class EditPetComponent implements OnInit {
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
   private petsApi = inject(PetsApi);
+
+  @ViewChild(PetMediaUploadComponent)
+  mediaUploadComponent!: PetMediaUploadComponent;
 
   petForm: FormGroup;
   pet = signal<Pet | null>(null);
@@ -386,6 +389,26 @@ export class EditPetComponent implements OnInit {
           );
 
           if (createdPet) {
+            // Upload media files if there are any
+            if (
+              this.mediaUploadComponent &&
+              this.currentMediaData() &&
+              (this.currentMediaData()!.newImages.length > 0 ||
+                this.currentMediaData()!.newVideos.length > 0 ||
+                this.currentMediaData()!.newDocuments.length > 0)
+            ) {
+              try {
+                await this.mediaUploadComponent.uploadAllFiles();
+              } catch (error) {
+                console.error('Error uploading media files:', error);
+                this.messageService.add({
+                  severity: 'warn',
+                  summary: 'Warning',
+                  detail: 'Pet created but some media files failed to upload',
+                });
+              }
+            }
+
             this.messageService.add({
               severity: 'success',
               summary: 'Success',
@@ -428,6 +451,26 @@ export class EditPetComponent implements OnInit {
           );
 
           if (updatedPet) {
+            // Upload media files if there are any
+            if (
+              this.mediaUploadComponent &&
+              this.currentMediaData() &&
+              (this.currentMediaData()!.newImages.length > 0 ||
+                this.currentMediaData()!.newVideos.length > 0 ||
+                this.currentMediaData()!.newDocuments.length > 0)
+            ) {
+              try {
+                await this.mediaUploadComponent.uploadAllFiles();
+              } catch (error) {
+                console.error('Error uploading media files:', error);
+                this.messageService.add({
+                  severity: 'warn',
+                  summary: 'Warning',
+                  detail: 'Pet updated but some media files failed to upload',
+                });
+              }
+            }
+
             this.messageService.add({
               severity: 'success',
               summary: 'Success',
@@ -447,7 +490,6 @@ export class EditPetComponent implements OnInit {
                 this.loadPet(this.pet()!.petId!);
                 // Clear selected image file since it was uploaded
                 this.selectedImageFile.set(null);
-                window.scrollTo(0, 0); // Scroll to top
               },
               reject: () => {
                 window.location.href = '/pets';
