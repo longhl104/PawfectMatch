@@ -226,18 +226,7 @@ public class PetService : IPetService
                 var postgresPet = postgresPets.FirstOrDefault(p => p.PetId == pet.PetPostgreSqlId);
                 if (postgresPet != null)
                 {
-                    pet.Name = postgresPet.Name;
-                    pet.DateOfBirth = postgresPet.DateOfBirth;
-                    pet.Gender = postgresPet.Gender;
-                    pet.AdoptionFee = postgresPet.AdoptionFee;
-                    pet.Description = postgresPet.Description;
-                    pet.Status = postgresPet.Status;
-                    pet.CreatedAt = postgresPet.CreatedAt;
-                    pet.MainImageFileExtension = postgresPet.MainImageFileExtension;
-                    pet.SpeciesId = postgresPet.SpeciesId;
-                    pet.BreedId = postgresPet.BreedId;
-                    pet.Species = postgresPet.Species?.Name;
-                    pet.Breed = postgresPet.Breed?.Name;
+                    EnrichPetWithPostgreSqlData(pet, postgresPet);
                 }
             }
 
@@ -380,18 +369,7 @@ public class PetService : IPetService
                     var postgresPet = postgresPets.FirstOrDefault(p => p.PetId == pet.PetPostgreSqlId);
                     if (postgresPet != null)
                     {
-                        pet.Name = postgresPet.Name;
-                        pet.DateOfBirth = postgresPet.DateOfBirth;
-                        pet.Gender = postgresPet.Gender;
-                        pet.AdoptionFee = postgresPet.AdoptionFee;
-                        pet.Description = postgresPet.Description;
-                        pet.Status = postgresPet.Status;
-                        pet.CreatedAt = postgresPet.CreatedAt;
-                        pet.MainImageFileExtension = postgresPet.MainImageFileExtension;
-                        pet.SpeciesId = postgresPet.SpeciesId;
-                        pet.BreedId = postgresPet.BreedId;
-                        pet.Species = postgresPet.Species?.Name;
-                        pet.Breed = postgresPet.Breed?.Name;
+                        EnrichPetWithPostgreSqlData(pet, postgresPet);
                     }
                 }
             }
@@ -471,24 +449,7 @@ public class PetService : IPetService
 
             if (postgresPet != null)
             {
-                pet.Name = postgresPet.Name;
-                pet.DateOfBirth = postgresPet.DateOfBirth;
-                pet.Gender = postgresPet.Gender;
-                pet.AdoptionFee = postgresPet.AdoptionFee;
-                pet.Description = postgresPet.Description;
-                pet.Status = postgresPet.Status;
-                pet.CreatedAt = postgresPet.CreatedAt;
-                pet.MainImageFileExtension = postgresPet.MainImageFileExtension;
-                pet.SpeciesId = postgresPet.SpeciesId;
-                pet.BreedId = postgresPet.BreedId;
-                pet.Species = postgresPet.Species?.Name;
-                pet.Breed = postgresPet.Breed?.Name;
-                pet.IsGoodWithKids = postgresPet.IsGoodWithKids;
-                pet.IsGoodWithPets = postgresPet.IsGoodWithPets;
-                pet.IsHouseTrained = postgresPet.IsHouseTrained;
-                pet.IsSpayedNeutered = postgresPet.IsSpayedNeutered;
-                pet.IsVaccinated = postgresPet.IsVaccinated;
-                pet.IsMicrochipped = postgresPet.IsMicrochipped;
+                EnrichPetWithPostgreSqlData(pet, postgresPet);
             }
 
             _logger.LogInformation("Successfully retrieved pet: {PetId}", petId);
@@ -737,24 +698,7 @@ public class PetService : IPetService
 
             if (enrichedPostgresPet != null)
             {
-                updatedPet.Name = enrichedPostgresPet.Name;
-                updatedPet.DateOfBirth = enrichedPostgresPet.DateOfBirth;
-                updatedPet.Gender = enrichedPostgresPet.Gender;
-                updatedPet.AdoptionFee = enrichedPostgresPet.AdoptionFee;
-                updatedPet.Description = enrichedPostgresPet.Description;
-                updatedPet.Status = enrichedPostgresPet.Status;
-                updatedPet.CreatedAt = enrichedPostgresPet.CreatedAt;
-                updatedPet.MainImageFileExtension = enrichedPostgresPet.MainImageFileExtension;
-                updatedPet.SpeciesId = enrichedPostgresPet.SpeciesId;
-                updatedPet.BreedId = enrichedPostgresPet.BreedId;
-                updatedPet.Species = enrichedPostgresPet.Species?.Name;
-                updatedPet.Breed = enrichedPostgresPet.Breed?.Name;
-                updatedPet.IsGoodWithKids = enrichedPostgresPet.IsGoodWithKids;
-                updatedPet.IsGoodWithPets = enrichedPostgresPet.IsGoodWithPets;
-                updatedPet.IsHouseTrained = enrichedPostgresPet.IsHouseTrained;
-                updatedPet.IsSpayedNeutered = enrichedPostgresPet.IsSpayedNeutered;
-                updatedPet.IsVaccinated = enrichedPostgresPet.IsVaccinated;
-                updatedPet.IsMicrochipped = enrichedPostgresPet.IsMicrochipped;
+                EnrichPetWithPostgreSqlData(updatedPet, enrichedPostgresPet);
             }
 
             // Invalidate cache for this shelter since pet data changed
@@ -985,6 +929,33 @@ public class PetService : IPetService
             _logger.LogWarning(ex, "Failed to get DynamoDB shelter ID for PostgreSQL shelter ID {PostgreSqlShelterId}", postgresqlShelterId);
             return null;
         }
+    }
+
+    /// <summary>
+    /// Enriches a Pet object with PostgreSQL data
+    /// </summary>
+    /// <param name="pet">The pet to enrich</param>
+    /// <param name="postgresPet">The PostgreSQL pet data</param>
+    private static void EnrichPetWithPostgreSqlData(Pet pet, PostgreSqlPet postgresPet)
+    {
+        pet.Name = postgresPet.Name;
+        pet.DateOfBirth = postgresPet.DateOfBirth;
+        pet.Gender = postgresPet.Gender;
+        pet.AdoptionFee = postgresPet.AdoptionFee;
+        pet.Description = postgresPet.Description;
+        pet.Status = postgresPet.Status;
+        pet.CreatedAt = postgresPet.CreatedAt;
+        pet.MainImageFileExtension = postgresPet.MainImageFileExtension;
+        pet.SpeciesId = postgresPet.SpeciesId;
+        pet.BreedId = postgresPet.BreedId;
+        pet.Species = postgresPet.Species?.Name;
+        pet.Breed = postgresPet.Breed?.Name;
+        pet.IsGoodWithKids = postgresPet.IsGoodWithKids;
+        pet.IsGoodWithPets = postgresPet.IsGoodWithPets;
+        pet.IsHouseTrained = postgresPet.IsHouseTrained;
+        pet.IsSpayedNeutered = postgresPet.IsSpayedNeutered;
+        pet.IsVaccinated = postgresPet.IsVaccinated;
+        pet.IsMicrochipped = postgresPet.IsMicrochipped;
     }
 
     /// <summary>
