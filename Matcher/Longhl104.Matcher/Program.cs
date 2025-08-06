@@ -1,7 +1,8 @@
 using Longhl104.PawfectMatch.Extensions;
+using Longhl104.PawfectMatch.Models;
 using Amazon.DynamoDBv2;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.OpenApi.Models;
+using Longhl104.Matcher.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,7 +25,13 @@ builder.Services.AddSwaggerGen(c =>
         Description = "PawfectMatch Matcher Service API"
     });
 });
-builder.Services.AddPawfectMatchInternalHttpClients();
+builder.Services.AddPawfectMatchInternalHttpClients(
+    [
+        PawfectMatchServices.ShelterHub,
+    ]);
+
+// Register application services
+builder.Services.AddScoped<ISpeciesService, SpeciesService>();
 
 // Add authentication and authorization services
 // Configure custom authentication scheme to work with the AuthenticationMiddleware

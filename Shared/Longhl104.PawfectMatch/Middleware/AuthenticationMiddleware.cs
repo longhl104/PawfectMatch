@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using Longhl104.PawfectMatch.Models.Identity;
 using Longhl104.PawfectMatch.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -25,6 +26,14 @@ public class AuthenticationMiddleware(
     {
         // Skip authentication check for certain paths
         if (ShouldSkipAuthCheck(context.Request.Path))
+        {
+            await _next(context);
+            return;
+        }
+
+        // Check for [AllowAnonymous] attribute on the endpoint
+        var endpoint = context.GetEndpoint();
+        if (endpoint?.Metadata.GetMetadata<IAllowAnonymous>() != null)
         {
             await _next(context);
             return;

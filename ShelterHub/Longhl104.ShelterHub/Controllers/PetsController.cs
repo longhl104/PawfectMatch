@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Longhl104.ShelterHub.Models;
 using Longhl104.ShelterHub.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Longhl104.ShelterHub.Controllers;
 
@@ -16,10 +17,25 @@ public class PetsController(IPetService petService) : ControllerBase
     /// </summary>
     /// <returns>List of all pet species</returns>
     [HttpGet("species")]
+    [AllowAnonymous]
     public async Task<ActionResult<GetPetSpeciesResponse>> GetAllPetSpecies()
     {
         var response = await petService.GetAllPetSpecies();
 
+        if (!response.Success)
+        {
+            return BadRequest(response);
+        }
+
+        return Ok(response);
+    }
+
+    [HttpGet]
+    [Route("~/api/internal/[controller]/species")]
+    [Authorize(Policy = "InternalOnly")] // Only allow internal service calls
+    public async Task<ActionResult<GetPetSpeciesResponse>> GetAllPetSpeciesInternal()
+    {
+        var response = await petService.GetAllPetSpecies();
         if (!response.Success)
         {
             return BadRequest(response);
@@ -34,10 +50,25 @@ public class PetsController(IPetService petService) : ControllerBase
     /// <param name="speciesId">The species ID</param>
     /// <returns>List of breeds for the species</returns>
     [HttpGet("species/{speciesId:int}/breeds")]
+    [AllowAnonymous]
     public async Task<ActionResult<GetPetBreedsResponse>> GetBreedsBySpeciesId(int speciesId)
     {
         var response = await petService.GetBreedsBySpeciesId(speciesId);
 
+        if (!response.Success)
+        {
+            return BadRequest(response);
+        }
+
+        return Ok(response);
+    }
+
+    [HttpGet]
+    [Route("~/api/internal/[controller]/species/{speciesId:int}/breeds")]
+    [Authorize(Policy = "InternalOnly")] // Only allow internal service calls
+    public async Task<ActionResult<GetPetBreedsResponse>> GetBreedsBySpeciesIdInternal(int speciesId)
+    {
+        var response = await petService.GetBreedsBySpeciesId(speciesId);
         if (!response.Success)
         {
             return BadRequest(response);
