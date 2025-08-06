@@ -468,6 +468,7 @@ public class PetService : IPetService
                 .Include(p => p.Species)
                 .Include(p => p.Breed)
                 .FirstOrDefaultAsync(p => p.PetId == pet.PetPostgreSqlId);
+
             if (postgresPet != null)
             {
                 pet.Name = postgresPet.Name;
@@ -608,6 +609,20 @@ public class PetService : IPetService
         {
             _logger.LogInformation("Updating pet with ID: {PetId}", petId);
 
+            // First, get the existing pet from DynamoDB to get the PostgreSQL ID
+            var existingPetResponse = await GetPetById(petId);
+            if (!existingPetResponse.Success || existingPetResponse.Pet == null)
+            {
+                _logger.LogWarning("Pet not found when updating: {PetId}", petId);
+                return new PetResponse
+                {
+                    Success = false,
+                    ErrorMessage = "Pet not found"
+                };
+            }
+
+            var petPostgreSqlId = existingPetResponse.Pet.PetPostgreSqlId;
+
             // Look up species and breed names from their IDs
             var species = await _dbContext.PetSpecies.FindAsync(request.SpeciesId);
             var breed = await _dbContext.PetBreeds.FindAsync(request.BreedId);
@@ -632,6 +647,39 @@ public class PetService : IPetService
                 };
             }
 
+            // Update the PostgreSQL pet record
+            var postgresPet = await _dbContext.Pets.FindAsync(petPostgreSqlId);
+            if (postgresPet == null)
+            {
+                _logger.LogWarning("PostgreSQL pet not found when updating: {PostgresPetId}", petPostgreSqlId);
+                return new PetResponse
+                {
+                    Success = false,
+                    ErrorMessage = "Pet data not found in database"
+                };
+            }
+
+            // Update PostgreSQL pet fields
+            postgresPet.Name = request.Name;
+            postgresPet.SpeciesId = request.SpeciesId;
+            postgresPet.BreedId = request.BreedId;
+            postgresPet.DateOfBirth = request.DateOfBirth;
+            postgresPet.Gender = request.Gender;
+            postgresPet.Description = request.Description;
+            postgresPet.AdoptionFee = request.AdoptionFee;
+            postgresPet.IsSpayedNeutered = request.IsSpayedNeutered;
+            postgresPet.IsVaccinated = request.IsVaccinated;
+            postgresPet.IsMicrochipped = request.IsMicrochipped;
+            postgresPet.IsHouseTrained = request.IsHouseTrained;
+            postgresPet.IsGoodWithKids = request.IsGoodWithKids;
+            postgresPet.IsGoodWithPets = request.IsGoodWithPets;
+            postgresPet.Status = request.Status;
+
+            await _dbContext.SaveChangesAsync();
+
+            _logger.LogInformation("Updated PostgreSQL pet with ID: {PostgresPetId}", petPostgreSqlId);
+
+            // Now update DynamoDB with the fields that are stored there
             var updateRequest = new UpdateItemRequest
             {
                 TableName = _tableName,
@@ -639,44 +687,16 @@ public class PetService : IPetService
                 {
                     { "PetId", new AttributeValue { S = petId.ToString() } }
                 },
-                UpdateExpression = "SET #name = :name, #species = :species, #breed = :breed, #dateOfBirth = :dateOfBirth, #gender = :gender, #description = :description, #adoptionFee = :adoptionFee, #color = :color, #isSpayedNeutered = :isSpayedNeutered, #isVaccinated = :isVaccinated, #isMicrochipped = :isMicrochipped, #isHouseTrained = :isHouseTrained, #isGoodWithKids = :isGoodWithKids, #isGoodWithPets = :isGoodWithPets, #specialNeeds = :specialNeeds, #status = :status" + (request.Weight.HasValue ? ", #weight = :weight" : ""),
+                UpdateExpression = "SET #color = :color, #specialNeeds = :specialNeeds" + (request.Weight.HasValue ? ", #weight = :weight" : ""),
                 ExpressionAttributeNames = new Dictionary<string, string>
                 {
-                    { "#name", "Name" },
-                    { "#species", "Species" },
-                    { "#breed", "Breed" },
-                    { "#dateOfBirth", "DateOfBirth" },
-                    { "#gender", "Gender" },
-                    { "#description", "Description" },
-                    { "#adoptionFee", "AdoptionFee" },
                     { "#color", "Color" },
-                    { "#isSpayedNeutered", "IsSpayedNeutered" },
-                    { "#isVaccinated", "IsVaccinated" },
-                    { "#isMicrochipped", "IsMicrochipped" },
-                    { "#isHouseTrained", "IsHouseTrained" },
-                    { "#isGoodWithKids", "IsGoodWithKids" },
-                    { "#isGoodWithPets", "IsGoodWithPets" },
-                    { "#specialNeeds", "SpecialNeeds" },
-                    { "#status", "Status" }
+                    { "#specialNeeds", "SpecialNeeds" }
                 },
                 ExpressionAttributeValues = new Dictionary<string, AttributeValue>
                 {
-                    { ":name", new AttributeValue { S = request.Name.ToLowerInvariant() } },
-                    { ":species", new AttributeValue { S = species.Name } },
-                    { ":breed", new AttributeValue { S = breed.Name.ToLowerInvariant() } },
-                    { ":dateOfBirth", new AttributeValue { S = request.DateOfBirth.ToString("yyyy-MM-dd") } },
-                    { ":gender", new AttributeValue { S = request.Gender } },
-                    { ":description", new AttributeValue { S = request.Description } },
-                    { ":adoptionFee", new AttributeValue { N = request.AdoptionFee.ToString("F2") } },
                     { ":color", new AttributeValue { S = request.Color } },
-                    { ":isSpayedNeutered", new AttributeValue { BOOL = request.IsSpayedNeutered } },
-                    { ":isVaccinated", new AttributeValue { BOOL = request.IsVaccinated } },
-                    { ":isMicrochipped", new AttributeValue { BOOL = request.IsMicrochipped } },
-                    { ":isHouseTrained", new AttributeValue { BOOL = request.IsHouseTrained } },
-                    { ":isGoodWithKids", new AttributeValue { BOOL = request.IsGoodWithKids } },
-                    { ":isGoodWithPets", new AttributeValue { BOOL = request.IsGoodWithPets } },
-                    { ":specialNeeds", new AttributeValue { S = request.SpecialNeeds } },
-                    { ":status", new AttributeValue { S = request.Status.ToString() } }
+                    { ":specialNeeds", new AttributeValue { S = request.SpecialNeeds } }
                 },
                 ConditionExpression = "attribute_exists(PetId)", // Ensure the pet exists
                 ReturnValues = ReturnValue.ALL_NEW
@@ -693,7 +713,7 @@ public class PetService : IPetService
 
             if (response.Attributes.Count == 0)
             {
-                _logger.LogWarning("Pet not found for update: {PetId}", petId);
+                _logger.LogWarning("Pet not found for DynamoDB update: {PetId}", petId);
                 return new PetResponse
                 {
                     Success = false,
@@ -702,6 +722,28 @@ public class PetService : IPetService
             }
 
             var updatedPet = ConvertDynamoDbItemToPet(response.Attributes);
+
+            // Enrich the updated pet with fresh PostgreSQL data including Species and Breed names
+            var enrichedPostgresPet = await _dbContext.Pets
+                .Include(p => p.Species)
+                .Include(p => p.Breed)
+                .FirstOrDefaultAsync(p => p.PetId == petPostgreSqlId);
+
+            if (enrichedPostgresPet != null)
+            {
+                updatedPet.Name = enrichedPostgresPet.Name;
+                updatedPet.DateOfBirth = enrichedPostgresPet.DateOfBirth;
+                updatedPet.Gender = enrichedPostgresPet.Gender;
+                updatedPet.AdoptionFee = enrichedPostgresPet.AdoptionFee;
+                updatedPet.Description = enrichedPostgresPet.Description;
+                updatedPet.Status = enrichedPostgresPet.Status;
+                updatedPet.CreatedAt = enrichedPostgresPet.CreatedAt;
+                updatedPet.MainImageFileExtension = enrichedPostgresPet.MainImageFileExtension;
+                updatedPet.SpeciesId = enrichedPostgresPet.SpeciesId;
+                updatedPet.BreedId = enrichedPostgresPet.BreedId;
+                updatedPet.Species = enrichedPostgresPet.Species?.Name;
+                updatedPet.Breed = enrichedPostgresPet.Breed?.Name;
+            }
 
             // Invalidate cache for this shelter since pet data changed
             var shelterId = await GetShelterIdForPet(updatedPet);
