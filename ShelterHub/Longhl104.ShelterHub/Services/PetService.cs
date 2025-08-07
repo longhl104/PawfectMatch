@@ -147,6 +147,13 @@ public interface IPetService
     /// <param name="speciesId">The species ID</param>
     /// <returns>List of breeds for the species</returns>
     Task<GetPetBreedsResponse> GetBreedsBySpeciesId(int speciesId);
+
+    /// <summary>
+    /// Searches for pets by location distance, species, and optionally breed
+    /// </summary>
+    /// <param name="request">The search criteria</param>
+    /// <returns>Response containing matching pets sorted by distance</returns>
+    Task<PetSearchResponse> SearchPetsByLocationAsync(PetSearchRequest request);
 }
 
 /// <summary>
@@ -2293,6 +2300,311 @@ public class PetService : IPetService
                 ErrorMessage = $"Failed to retrieve breeds for species: {ex.Message}"
             };
         }
+    }
+
+    /// <summary>
+    /// Searches for pets by location distance, species, and optionally breed
+    /// </summary>
+    /// <param name="request">The search criteria</param>
+    /// <returns>Response containing matching pets sorted by distance</returns>
+    public async Task<PetSearchResponse> SearchPetsByLocationAsync(PetSearchRequest request)
+    {
+        try
+        {
+            _logger.LogInformation("Searching pets with criteria: Lat={Latitude}, Lng={Longitude}, MaxDistance={MaxDistance}km, Species={SpeciesId}, Breed={BreedId}",
+                request.Latitude, request.Longitude, request.MaxDistanceKm, request.SpeciesId, request.BreedId);
+
+            // Validate request
+            var validationError = ValidateSearchRequest(request);
+            if (!string.IsNullOrEmpty(validationError))
+            {
+                return new PetSearchResponse
+                {
+                    Success = false,
+                    ErrorMessage = validationError
+                };
+            }
+
+            // Validate page size
+            var pageSize = Math.Min(Math.Max(request.PageSize, 1), 100);
+
+            // First, get all shelters within the distance radius using PostGIS
+            var userLocation = new NetTopologySuite.Geometries.Point((double)request.Longitude, (double)request.Latitude) { SRID = 4326 };
+            var maxDistanceMeters = (double)request.MaxDistanceKm * 1000;
+
+            var nearbyShelters = await _dbContext.Shelters
+                .Where(s => s.Location != null && s.Location.IsWithinDistance(userLocation, maxDistanceMeters))
+                .Select(s => new
+                {
+                    s.ShelterId,
+                    s.ShelterName,
+                    s.ShelterAddress,
+                    s.ShelterContactNumber,
+                    s.Latitude,
+                    s.Longitude,
+                    Distance = s.Location!.Distance(userLocation)
+                })
+                .ToListAsync();
+
+            if (!nearbyShelters.Any())
+            {
+                _logger.LogInformation("No shelters found within {MaxDistance}km of location ({Latitude}, {Longitude})",
+                    request.MaxDistanceKm, request.Latitude, request.Longitude);
+
+                return new PetSearchResponse
+                {
+                    Success = true,
+                    Pets = [],
+                    TotalCount = 0
+                };
+            }
+
+            _logger.LogInformation("Found {ShelterCount} shelters within {MaxDistance}km",
+                nearbyShelters.Count, request.MaxDistanceKm);
+
+            // Get shelter IDs to look up DynamoDB pets
+            var shelterPostgreSqlIds = nearbyShelters.Select(s => s.ShelterId).ToList();
+
+            // Get DynamoDB shelter IDs for the PostgreSQL shelter IDs
+            var shelterMappings = new Dictionary<int, (Guid ShelterId, decimal DistanceKm, string? ShelterName, string? ShelterAddress, string? ShelterContactNumber, decimal? Latitude, decimal? Longitude)>();
+
+            foreach (var shelter in nearbyShelters)
+            {
+                var dynamoShelter = await GetShelterIdByPostgreSqlId(shelter.ShelterId);
+                if (dynamoShelter.HasValue)
+                {
+                    var distanceKm = (decimal)(shelter.Distance / 1000); // Convert meters to kilometers
+                    shelterMappings[shelter.ShelterId] = (
+                        dynamoShelter.Value,
+                        distanceKm,
+                        shelter.ShelterName,
+                        shelter.ShelterAddress,
+                        shelter.ShelterContactNumber,
+                        shelter.Latitude.HasValue ? (decimal)shelter.Latitude.Value : null,
+                        shelter.Longitude.HasValue ? (decimal)shelter.Longitude.Value : null
+                    );
+                }
+            }
+
+            if (!shelterMappings.Any())
+            {
+                _logger.LogWarning("No DynamoDB shelter mappings found for nearby PostgreSQL shelters");
+                return new PetSearchResponse
+                {
+                    Success = true,
+                    Pets = [],
+                    TotalCount = 0
+                };
+            }
+
+            // Search for pets in DynamoDB for these shelters
+            var allMatchingPets = new List<PetSearchResultDto>();
+            var shelterIds = shelterMappings.Values.Select(v => v.ShelterId).ToList();
+
+            foreach (var shelterId in shelterIds)
+            {
+                // Query pets for this shelter
+                var query = new QueryRequest
+                {
+                    TableName = _tableName,
+                    IndexName = _shelterIdCreatedAtIndex,
+                    KeyConditionExpression = "ShelterId = :shelterId",
+                    ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                    {
+                        { ":shelterId", new AttributeValue { S = shelterId.ToString() } }
+                    },
+                    FilterExpression = "#status = :status",
+                    ExpressionAttributeNames = new Dictionary<string, string>
+                    {
+                        { "#status", "Status" }
+                    }
+                };
+
+                query.ExpressionAttributeValues[":status"] = new AttributeValue { S = PetStatus.Available.GetAmbientValue<string>() };
+
+                var response = await _dynamoDbClient.QueryAsync(query);
+                var pets = response.Items.Select(ConvertDynamoDbItemToPet).ToList();
+
+                if (pets.Any())
+                {
+                    // Enrich with PostgreSQL data
+                    var petPostgreSqlIds = pets.Select(p => p.PetPostgreSqlId);
+                    var postgresPets = await _dbContext.Pets
+                        .Include(p => p.Species)
+                        .Include(p => p.Breed)
+                        .Where(p => petPostgreSqlIds.Contains(p.PetId))
+                        .Where(p => !request.SpeciesId.HasValue || p.SpeciesId == request.SpeciesId.Value)
+                        .Where(p => !request.BreedId.HasValue || p.BreedId == request.BreedId.Value)
+                        .ToListAsync();
+
+                    foreach (var pet in pets)
+                    {
+                        var postgresPet = postgresPets.FirstOrDefault(p => p.PetId == pet.PetPostgreSqlId);
+                        if (postgresPet != null)
+                        {
+                            // Find the shelter info and distance
+                            var shelterInfo = shelterMappings.Values.FirstOrDefault(s => s.ShelterId == shelterId);
+
+                            var ageInMonths = CalculateAgeInMonths(postgresPet.DateOfBirth);
+
+                            var searchResult = new PetSearchResultDto
+                            {
+                                PetId = pet.PetId,
+                                Name = postgresPet.Name,
+                                Species = postgresPet.Species?.Name,
+                                Breed = postgresPet.Breed?.Name,
+                                AgeInMonths = ageInMonths,
+                                Gender = postgresPet.Gender,
+                                Description = postgresPet.Description,
+                                AdoptionFee = postgresPet.AdoptionFee,
+                                MainImageFileExtension = pet.MainImageFileExtension,
+                                DistanceKm = shelterInfo.DistanceKm,
+                                Shelter = new PetSearchShelterDto
+                                {
+                                    ShelterId = shelterId,
+                                    ShelterName = shelterInfo.ShelterName,
+                                    ShelterAddress = shelterInfo.ShelterAddress,
+                                    ShelterContactNumber = shelterInfo.ShelterContactNumber,
+                                    ShelterLatitude = shelterInfo.Latitude,
+                                    ShelterLongitude = shelterInfo.Longitude
+                                }
+                            };
+
+                            allMatchingPets.Add(searchResult);
+                        }
+                    }
+                }
+            }
+
+            // Sort by distance and apply pagination
+            var sortedPets = allMatchingPets.OrderBy(p => p.DistanceKm).ToList();
+            var totalCount = sortedPets.Count;
+
+            // Handle pagination
+            var startIndex = 0;
+            if (!string.IsNullOrEmpty(request.NextToken))
+            {
+                try
+                {
+                    var tokenBytes = Convert.FromBase64String(request.NextToken);
+                    var tokenJson = System.Text.Encoding.UTF8.GetString(tokenBytes);
+                    var tokenData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(tokenJson);
+                    if (tokenData != null && tokenData.TryGetValue("offset", out var offsetObj))
+                    {
+                        startIndex = Convert.ToInt32(offsetObj);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Invalid pagination token provided");
+                    return new PetSearchResponse
+                    {
+                        Success = false,
+                        ErrorMessage = "Invalid pagination token"
+                    };
+                }
+            }
+
+            var paginatedPets = sortedPets.Skip(startIndex).Take(pageSize).ToList();
+
+            // Generate next token if there are more items
+            string? nextToken = null;
+            if (startIndex + pageSize < totalCount)
+            {
+                var nextTokenData = new Dictionary<string, object> { ["offset"] = startIndex + pageSize };
+                var nextTokenJson = System.Text.Json.JsonSerializer.Serialize(nextTokenData);
+                var nextTokenBytes = System.Text.Encoding.UTF8.GetBytes(nextTokenJson);
+                nextToken = Convert.ToBase64String(nextTokenBytes);
+            }
+
+            _logger.LogInformation("Found {PetCount} pets within {MaxDistance}km (Total: {TotalCount})",
+                paginatedPets.Count, request.MaxDistanceKm, totalCount);
+
+            return new PetSearchResponse
+            {
+                Success = true,
+                Pets = paginatedPets,
+                TotalCount = totalCount,
+                NextToken = nextToken
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to search pets by location");
+            return new PetSearchResponse
+            {
+                Success = false,
+                ErrorMessage = $"Failed to search pets: {ex.Message}"
+            };
+        }
+    }
+
+    /// <summary>
+    /// Validates the pet search request
+    /// </summary>
+    /// <param name="request">The search request to validate</param>
+    /// <returns>Error message if validation fails, empty string if valid</returns>
+    private static string ValidateSearchRequest(PetSearchRequest request)
+    {
+        // Validate latitude (-90 to 90)
+        if (request.Latitude < -90 || request.Latitude > 90)
+        {
+            return "Latitude must be between -90 and 90 degrees";
+        }
+
+        // Validate longitude (-180 to 180)
+        if (request.Longitude < -180 || request.Longitude > 180)
+        {
+            return "Longitude must be between -180 and 180 degrees";
+        }
+
+        // Validate max distance (1 to 1000 km)
+        if (request.MaxDistanceKm < 1 || request.MaxDistanceKm > 1000)
+        {
+            return "Maximum distance must be between 1 and 1000 kilometers";
+        }
+
+        // Validate species ID if provided (must be positive)
+        if (request.SpeciesId.HasValue && request.SpeciesId.Value <= 0)
+        {
+            return "Species ID must be a positive integer";
+        }
+
+        // Validate breed ID if provided (must be positive)
+        if (request.BreedId.HasValue && request.BreedId.Value <= 0)
+        {
+            return "Breed ID must be a positive integer";
+        }
+
+        // Validate page size (1 to 100)
+        if (request.PageSize < 1 || request.PageSize > 100)
+        {
+            return "Page size must be between 1 and 100";
+        }
+
+        return string.Empty;
+    }
+
+    /// <summary>
+    /// Calculates age in months from date of birth
+    /// </summary>
+    /// <param name="dateOfBirth">The pet's date of birth</param>
+    /// <returns>Age in months, or null if date of birth is not available</returns>
+    private static int? CalculateAgeInMonths(DateOnly? dateOfBirth)
+    {
+        if (!dateOfBirth.HasValue)
+            return null;
+
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var age = today.Year - dateOfBirth.Value.Year;
+
+        if (today.Month < dateOfBirth.Value.Month ||
+            (today.Month == dateOfBirth.Value.Month && today.Day < dateOfBirth.Value.Day))
+        {
+            age--;
+        }
+
+        return Math.Max(0, age * 12 + (today.Month - dateOfBirth.Value.Month));
     }
 }
 

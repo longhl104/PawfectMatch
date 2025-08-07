@@ -233,6 +233,74 @@ export class AuthCheckApi {
 }
 
 @Injectable()
+export class PetSearchApi {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    search(body?: PetSearchRequest | undefined): Observable<PetSearchResponse> {
+        let url_ = this.baseUrl + "/api/PetSearch/search";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processSearch(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processSearch(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<PetSearchResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<PetSearchResponse>;
+        }));
+    }
+
+    protected processSearch(response: HttpResponseBase): Observable<PetSearchResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = PetSearchResponse.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+}
+
+@Injectable()
 export class SpeciesApi {
     private http: HttpClient;
     private baseUrl: string;
@@ -535,6 +603,258 @@ export interface IPetBreedDto {
     breedId?: number;
     name?: string | undefined;
     speciesId?: number;
+}
+
+export class PetSearchRequest implements IPetSearchRequest {
+    latitude?: number;
+    longitude?: number;
+    maxDistanceKm?: number;
+    speciesId?: number | undefined;
+    breedId?: number | undefined;
+    pageSize?: number;
+    nextToken?: string | undefined;
+
+    constructor(data?: IPetSearchRequest) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.latitude = _data["latitude"];
+            this.longitude = _data["longitude"];
+            this.maxDistanceKm = _data["maxDistanceKm"];
+            this.speciesId = _data["speciesId"];
+            this.breedId = _data["breedId"];
+            this.pageSize = _data["pageSize"];
+            this.nextToken = _data["nextToken"];
+        }
+    }
+
+    static fromJS(data: any): PetSearchRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new PetSearchRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["latitude"] = this.latitude;
+        data["longitude"] = this.longitude;
+        data["maxDistanceKm"] = this.maxDistanceKm;
+        data["speciesId"] = this.speciesId;
+        data["breedId"] = this.breedId;
+        data["pageSize"] = this.pageSize;
+        data["nextToken"] = this.nextToken;
+        return data;
+    }
+}
+
+export interface IPetSearchRequest {
+    latitude?: number;
+    longitude?: number;
+    maxDistanceKm?: number;
+    speciesId?: number | undefined;
+    breedId?: number | undefined;
+    pageSize?: number;
+    nextToken?: string | undefined;
+}
+
+export class PetSearchResponse implements IPetSearchResponse {
+    success?: boolean;
+    pets?: PetSearchResultDto[] | undefined;
+    totalCount?: number;
+    nextToken?: string | undefined;
+    errorMessage?: string | undefined;
+
+    constructor(data?: IPetSearchResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.success = _data["success"];
+            if (Array.isArray(_data["pets"])) {
+                this.pets = [] as any;
+                for (let item of _data["pets"])
+                    this.pets!.push(PetSearchResultDto.fromJS(item));
+            }
+            this.totalCount = _data["totalCount"];
+            this.nextToken = _data["nextToken"];
+            this.errorMessage = _data["errorMessage"];
+        }
+    }
+
+    static fromJS(data: any): PetSearchResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new PetSearchResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["success"] = this.success;
+        if (Array.isArray(this.pets)) {
+            data["pets"] = [];
+            for (let item of this.pets)
+                data["pets"].push(item ? item.toJSON() : <any>undefined);
+        }
+        data["totalCount"] = this.totalCount;
+        data["nextToken"] = this.nextToken;
+        data["errorMessage"] = this.errorMessage;
+        return data;
+    }
+}
+
+export interface IPetSearchResponse {
+    success?: boolean;
+    pets?: PetSearchResultDto[] | undefined;
+    totalCount?: number;
+    nextToken?: string | undefined;
+    errorMessage?: string | undefined;
+}
+
+export class PetSearchResultDto implements IPetSearchResultDto {
+    petId?: string;
+    name?: string | undefined;
+    species?: string | undefined;
+    breed?: string | undefined;
+    ageInMonths?: number | undefined;
+    gender?: string | undefined;
+    description?: string | undefined;
+    adoptionFee?: number | undefined;
+    mainImageFileExtension?: string | undefined;
+    shelter?: PetSearchShelterDto;
+    distanceKm?: number;
+
+    constructor(data?: IPetSearchResultDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.petId = _data["petId"];
+            this.name = _data["name"];
+            this.species = _data["species"];
+            this.breed = _data["breed"];
+            this.ageInMonths = _data["ageInMonths"];
+            this.gender = _data["gender"];
+            this.description = _data["description"];
+            this.adoptionFee = _data["adoptionFee"];
+            this.mainImageFileExtension = _data["mainImageFileExtension"];
+            this.shelter = _data["shelter"] ? PetSearchShelterDto.fromJS(_data["shelter"]) : <any>undefined;
+            this.distanceKm = _data["distanceKm"];
+        }
+    }
+
+    static fromJS(data: any): PetSearchResultDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new PetSearchResultDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["petId"] = this.petId;
+        data["name"] = this.name;
+        data["species"] = this.species;
+        data["breed"] = this.breed;
+        data["ageInMonths"] = this.ageInMonths;
+        data["gender"] = this.gender;
+        data["description"] = this.description;
+        data["adoptionFee"] = this.adoptionFee;
+        data["mainImageFileExtension"] = this.mainImageFileExtension;
+        data["shelter"] = this.shelter ? this.shelter.toJSON() : <any>undefined;
+        data["distanceKm"] = this.distanceKm;
+        return data;
+    }
+}
+
+export interface IPetSearchResultDto {
+    petId?: string;
+    name?: string | undefined;
+    species?: string | undefined;
+    breed?: string | undefined;
+    ageInMonths?: number | undefined;
+    gender?: string | undefined;
+    description?: string | undefined;
+    adoptionFee?: number | undefined;
+    mainImageFileExtension?: string | undefined;
+    shelter?: PetSearchShelterDto;
+    distanceKm?: number;
+}
+
+export class PetSearchShelterDto implements IPetSearchShelterDto {
+    shelterId?: string;
+    shelterName?: string | undefined;
+    shelterAddress?: string | undefined;
+    shelterContactNumber?: string | undefined;
+    shelterLatitude?: number | undefined;
+    shelterLongitude?: number | undefined;
+
+    constructor(data?: IPetSearchShelterDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.shelterId = _data["shelterId"];
+            this.shelterName = _data["shelterName"];
+            this.shelterAddress = _data["shelterAddress"];
+            this.shelterContactNumber = _data["shelterContactNumber"];
+            this.shelterLatitude = _data["shelterLatitude"];
+            this.shelterLongitude = _data["shelterLongitude"];
+        }
+    }
+
+    static fromJS(data: any): PetSearchShelterDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new PetSearchShelterDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["shelterId"] = this.shelterId;
+        data["shelterName"] = this.shelterName;
+        data["shelterAddress"] = this.shelterAddress;
+        data["shelterContactNumber"] = this.shelterContactNumber;
+        data["shelterLatitude"] = this.shelterLatitude;
+        data["shelterLongitude"] = this.shelterLongitude;
+        return data;
+    }
+}
+
+export interface IPetSearchShelterDto {
+    shelterId?: string;
+    shelterName?: string | undefined;
+    shelterAddress?: string | undefined;
+    shelterContactNumber?: string | undefined;
+    shelterLatitude?: number | undefined;
+    shelterLongitude?: number | undefined;
 }
 
 export class PetSpeciesDto implements IPetSpeciesDto {

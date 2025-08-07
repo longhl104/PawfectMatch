@@ -27,7 +27,7 @@ import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeuix/themes/aura';
 import { environment } from 'environments/environment';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { API_BASE_URL, SpeciesApi } from 'shared/apis/generated-apis';
+import { API_BASE_URL, SpeciesApi, PetSearchApi } from 'shared/apis/generated-apis';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -59,5 +59,6 @@ export const appConfig: ApplicationConfig = {
     },
     IconService,
     SpeciesApi,
+    PetSearchApi,
   ],
 };

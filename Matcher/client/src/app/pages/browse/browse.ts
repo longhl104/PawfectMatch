@@ -26,6 +26,9 @@ import {
   SpeciesApi,
   PetSpeciesDto,
   PetBreedDto,
+  PetSearchApi,
+  PetSearchRequest,
+  PetSearchResultDto,
 } from 'shared/apis/generated-apis';
 import { GoogleMapsService } from '@longhl104/pawfect-match-ng';
 import { environment } from 'environments/environment';
@@ -161,6 +164,7 @@ export class BrowseComponent implements OnInit, OnDestroy {
   private ngZone = inject(NgZone);
   private googleMapsService = inject(GoogleMapsService);
   private speciesApi = inject(SpeciesApi);
+  private petSearchApi = inject(PetSearchApi);
 
   protected readonly Math = Math;
 
@@ -172,7 +176,6 @@ export class BrowseComponent implements OnInit, OnDestroy {
   selectedSpecies = signal<string | null>(null);
   selectedBreed = signal<string | null>(null);
   maxDistance = signal(50); // km
-  ageRange = signal([0, 15]); // years
 
   // Data
   pets = signal<Pet[]>([]);
@@ -182,6 +185,8 @@ export class BrowseComponent implements OnInit, OnDestroy {
   isLoadingLocation = signal(false);
   isLoadingSpecies = signal(false);
   isLoadingBreeds = signal(false);
+  nextToken = signal<string | undefined>(undefined);
+  hasMoreResults = signal(false);
 
   // API Data
   apiSpecies = signal<PetSpeciesDto[]>([]);
@@ -227,85 +232,9 @@ export class BrowseComponent implements OnInit, OnDestroy {
     { label: 'All Species', value: null },
   ]);
 
-  // Mock data for demonstration
-  mockPets = [
-    {
-      id: '1',
-      name: 'Buddy',
-      species: 'Dog',
-      breed: 'Golden Retriever',
-      age: 3,
-      gender: 'Male',
-      description: 'Friendly and energetic dog looking for an active family.',
-      adoptionFee: 250,
-      location: 'Melbourne, VIC',
-      distance: 5.2,
-      imageUrl:
-        'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400',
-      shelter: 'Melbourne Animal Rescue',
-      isSpayedNeutered: true,
-      isGoodWithKids: true,
-      isGoodWithPets: true,
-    },
-    {
-      id: '2',
-      name: 'Luna',
-      species: 'Cat',
-      breed: 'Siamese',
-      age: 2,
-      gender: 'Female',
-      description: 'Sweet and calm cat perfect for apartment living.',
-      adoptionFee: 180,
-      location: 'Sydney, NSW',
-      distance: 12.8,
-      imageUrl:
-        'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400',
-      shelter: 'Sydney Cat Rescue',
-      isSpayedNeutered: true,
-      isGoodWithKids: true,
-      isGoodWithPets: false,
-    },
-    {
-      id: '3',
-      name: 'Charlie',
-      species: 'Dog',
-      breed: 'Labrador',
-      age: 1,
-      gender: 'Male',
-      description: 'Playful puppy who loves to fetch and swim.',
-      adoptionFee: 300,
-      location: 'Brisbane, QLD',
-      distance: 8.5,
-      imageUrl:
-        'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400',
-      shelter: 'Brisbane Pet Haven',
-      isSpayedNeutered: false,
-      isGoodWithKids: true,
-      isGoodWithPets: true,
-    },
-    {
-      id: '4',
-      name: 'Mittens',
-      species: 'Cat',
-      breed: 'Persian',
-      age: 5,
-      gender: 'Female',
-      description: 'Gentle senior cat looking for a quiet home.',
-      adoptionFee: 150,
-      location: 'Perth, WA',
-      distance: 15.3,
-      imageUrl:
-        'https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=400',
-      shelter: 'Perth Animal Welfare',
-      isSpayedNeutered: true,
-      isGoodWithKids: false,
-      isGoodWithPets: false,
-    },
-  ];
-
   ngOnInit() {
     this.loadSpecies();
-    this.initializeMockData();
+    this.initializeData();
     this.getCurrentLocation();
     this.initializeGoogleMapsAndAutocomplete();
   }
@@ -485,7 +414,6 @@ export class BrowseComponent implements OnInit, OnDestroy {
               });
             }
 
-            this.updatePetDistances();
             this.applyFilters();
           });
         },
@@ -502,10 +430,10 @@ export class BrowseComponent implements OnInit, OnDestroy {
     }
   }
 
-  private initializeMockData() {
-    this.pets.set(this.mockPets);
-    this.filteredPets.set(this.mockPets);
-    this.totalRecords.set(this.mockPets.length);
+  private initializeData() {
+    this.pets.set([]);
+    this.filteredPets.set([]);
+    this.totalRecords.set(0);
     // Initialize breeds with default "All Breeds" option
     const defaultBreeds = [{ label: 'All Breeds', value: null }];
     this.breeds.set(defaultBreeds);
@@ -593,22 +521,6 @@ export class BrowseComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
-  private updatePetDistances() {
-    const currentCoords = this.currentLocationCoords();
-    if (!currentCoords) return;
-
-    // Update distances for mock pets (in a real app, this would be an API call)
-    const updatedPets = this.pets().map((pet) => {
-      // For mock data, generate random distances based on location
-      // In a real app, you'd calculate actual distances or get them from API
-      const mockDistance = Math.round(Math.random() * 50 + 5); // 5-55km
-      return { ...pet, distance: mockDistance };
-    });
-
-    this.pets.set(updatedPets);
-    this.applyFilters();
-  }
-
   onSpeciesChange() {
     const selectedSpecies = this.selectedSpecies();
 
@@ -634,14 +546,20 @@ export class BrowseComponent implements OnInit, OnDestroy {
 
   onBreedChange() {
     // Debug logging to see what we're receiving
-    console.log('onBreedChange called with selectedBreedObject:', this.selectedBreedObject, typeof this.selectedBreedObject);
+    console.log(
+      'onBreedChange called with selectedBreedObject:',
+      this.selectedBreedObject,
+      typeof this.selectedBreedObject,
+    );
 
     // Handle both object and string cases
     if (this.selectedBreedObject) {
       if (typeof this.selectedBreedObject === 'string') {
         // If it's a string, it's likely the breed ID, so find the actual object
         const breedId = this.selectedBreedObject;
-        const breedObject = this.breeds().find(breed => breed.value === breedId);
+        const breedObject = this.breeds().find(
+          (breed) => breed.value === breedId,
+        );
         if (breedObject) {
           this.selectedBreedObject = breedObject;
           this.selectedBreed.set(breedObject.value);
@@ -649,11 +567,17 @@ export class BrowseComponent implements OnInit, OnDestroy {
           // Fallback: treat the string as the breed ID
           this.selectedBreed.set(breedId);
         }
-      } else if (typeof this.selectedBreedObject === 'object' && this.selectedBreedObject.value !== undefined) {
+      } else if (
+        typeof this.selectedBreedObject === 'object' &&
+        this.selectedBreedObject.value !== undefined
+      ) {
         // If it's an object with a value property (correct case)
         this.selectedBreed.set(this.selectedBreedObject.value);
       } else {
-        console.warn('Unexpected selectedBreedObject format:', this.selectedBreedObject);
+        console.warn(
+          'Unexpected selectedBreedObject format:',
+          this.selectedBreedObject,
+        );
         this.selectedBreed.set(null);
       }
     } else {
@@ -691,54 +615,106 @@ export class BrowseComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
-  onAgeRangeChange() {
-    this.applyFilters();
+  private applyFilters() {
+    // Always use the real API if we have location coordinates
+    const coords = this.currentLocationCoords();
+    if (coords) {
+      this.searchPetsWithApi();
+    } else {
+      // No location provided - clear results and show message to user
+      this.filteredPets.set([]);
+      this.pets.set([]);
+      this.totalRecords.set(0);
+    }
   }
 
-  private applyFilters() {
-    let filtered = [...this.pets()];
+  private async searchPetsWithApi() {
+    const coords = this.currentLocationCoords();
+    if (!coords) return;
 
-    // Species filter
-    const speciesId = this.selectedSpecies();
-    if (speciesId && speciesId !== 'null') {
-      // Find the species name from the API data for filtering against mock data
-      const selectedSpeciesObj = this.apiSpecies().find(
-        (s) => s.speciesId?.toString() === speciesId,
-      );
-      if (selectedSpeciesObj?.name) {
-        filtered = filtered.filter(
-          (pet) => pet.species === selectedSpeciesObj.name,
-        );
+    this.isLoading.set(true);
+    try {
+      const request = new PetSearchRequest({
+        latitude: coords.lat,
+        longitude: coords.lng,
+        maxDistanceKm: this.maxDistance(),
+        pageSize: this.pageSize(),
+        nextToken: this.currentPage() === 0 ? undefined : this.nextToken(),
+      });
+
+      // Add species filter if selected
+      const speciesId = this.selectedSpecies();
+      if (speciesId && speciesId !== 'null') {
+        request.speciesId = parseInt(speciesId);
       }
-    }
 
-    // Breed filter
-    const breedId = this.selectedBreed();
-    if (breedId && breedId !== 'null') {
-      // Find the breed name from the API data for filtering against mock data
-      const selectedBreedObj = this.apiBreeds().find(
-        (b) => b.breedId?.toString() === breedId,
-      );
-      if (selectedBreedObj?.name) {
-        filtered = filtered.filter(
-          (pet) => pet.breed === selectedBreedObj.name,
-        );
+      // Add breed filter if selected
+      const breedId = this.selectedBreed();
+      if (breedId && breedId !== 'null') {
+        request.breedId = parseInt(breedId);
       }
+
+      const response = await firstValueFrom(this.petSearchApi.search(request));
+
+      if (response.success && response.pets) {
+        const pets = this.convertApiPetsToPetInterface(response.pets);
+
+        if (this.currentPage() === 0) {
+          // First page - replace all pets
+          this.pets.set(pets);
+          this.filteredPets.set(pets);
+        } else {
+          // Additional pages - append to existing pets
+          const existingPets = this.pets();
+          const allPets = [...existingPets, ...pets];
+          this.pets.set(allPets);
+          this.filteredPets.set(allPets);
+        }
+
+        this.nextToken.set(response.nextToken);
+        this.hasMoreResults.set(!!response.nextToken);
+        this.totalRecords.set(response.totalCount || pets.length);
+      } else {
+        // No pets found in search
+        this.pets.set([]);
+        this.filteredPets.set([]);
+        this.totalRecords.set(0);
+        this.nextToken.set(undefined);
+        this.hasMoreResults.set(false);
+      }
+    } catch (error) {
+      console.error('Error searching pets:', error);
+      // Clear results on error
+      this.pets.set([]);
+      this.filteredPets.set([]);
+      this.totalRecords.set(0);
+      this.nextToken.set(undefined);
+      this.hasMoreResults.set(false);
+    } finally {
+      this.isLoading.set(false);
     }
+  }
 
-    // Age range filter
-    const ageRange = this.ageRange();
-    filtered = filtered.filter(
-      (pet) => pet.age >= ageRange[0] && pet.age <= ageRange[1],
-    );
-
-    // Distance filter (mock implementation)
-    const maxDist = this.maxDistance();
-    filtered = filtered.filter((pet) => pet.distance <= maxDist);
-
-    this.filteredPets.set(filtered);
-    this.totalRecords.set(filtered.length);
-    this.currentPage.set(0); // Reset to first page
+  private convertApiPetsToPetInterface(apiPets: PetSearchResultDto[]): Pet[] {
+    return apiPets.map((apiPet) => ({
+      id: apiPet.petId || '',
+      name: apiPet.name || '',
+      species: apiPet.species || '',
+      breed: apiPet.breed || 'Mixed',
+      age: Math.floor((apiPet.ageInMonths || 0) / 12), // Convert months to years
+      gender: apiPet.gender || '',
+      description: apiPet.description || '',
+      adoptionFee: apiPet.adoptionFee || 0,
+      location: apiPet.shelter?.shelterAddress || '',
+      distance: Math.round((apiPet.distanceKm || 0) * 10) / 10, // Round to 1 decimal place
+      imageUrl: apiPet.mainImageFileExtension
+        ? `https://your-s3-bucket.s3.amazonaws.com/pets/${apiPet.petId}/main.${apiPet.mainImageFileExtension}`
+        : 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400',
+      shelter: apiPet.shelter?.shelterName || '',
+      isSpayedNeutered: false, // Not available in current API response
+      isGoodWithKids: false, // Not available in current API response
+      isGoodWithPets: false, // Not available in current API response
+    }));
   }
 
   clearFilters() {
@@ -746,17 +722,23 @@ export class BrowseComponent implements OnInit, OnDestroy {
     this.selectedBreed.set(null);
     this.selectedBreedObject = null;
     this.maxDistance.set(50);
-    this.ageRange.set([0, 15]);
     this.searchLocation.set('');
+    this.currentLocationCoords.set(null);
 
     // Clear the autocomplete element value if it exists
     if (this.autocomplete && 'value' in this.autocomplete) {
       (this.autocomplete as HTMLInputElement).value = '';
     }
 
-    this.filteredPets.set(this.pets());
-    this.totalRecords.set(this.pets().length);
+    // Reset pagination
     this.currentPage.set(0);
+    this.nextToken.set(undefined);
+    this.hasMoreResults.set(false);
+
+    // Reset to empty data - user needs to provide location for search
+    this.filteredPets.set([]);
+    this.pets.set([]);
+    this.totalRecords.set(0);
 
     // Reset breeds to default when clearing all filters
     const defaultBreeds = [{ label: 'All Breeds', value: null }];
@@ -770,12 +752,25 @@ export class BrowseComponent implements OnInit, OnDestroy {
     if (this.selectedBreed()) count++;
     if (this.searchLocation()) count++;
     if (this.maxDistance() !== 50) count++;
-    if (this.ageRange()[0] !== 0 || this.ageRange()[1] !== 15) count++;
     return count;
   }
 
   onPageChange(event: PaginatorState) {
     this.currentPage.set(event.page ?? 0);
+
+    // If we have location coordinates and this is a new page, search with API
+    const coords = this.currentLocationCoords();
+    if (coords && (event.page ?? 0) > 0) {
+      this.searchPetsWithApi();
+    }
+  }
+
+  async loadMoreResults() {
+    if (this.hasMoreResults() && !this.isLoading()) {
+      const newPage = this.currentPage() + 1;
+      this.currentPage.set(newPage);
+      await this.searchPetsWithApi();
+    }
   }
 
   getPaginatedPets() {

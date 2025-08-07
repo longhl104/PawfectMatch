@@ -78,6 +78,50 @@ public class PetsController(IPetService petService) : ControllerBase
     }
 
     /// <summary>
+    /// Searches for pets by location distance, species, and optionally breed (Internal API)
+    /// </summary>
+    /// <param name="latitude">User's latitude for location-based search</param>
+    /// <param name="longitude">User's longitude for location-based search</param>
+    /// <param name="maxDistanceKm">Maximum distance in kilometers from user's location</param>
+    /// <param name="speciesId">Optional species ID to filter by (null for all species)</param>
+    /// <param name="breedId">Optional breed ID to filter by</param>
+    /// <param name="pageSize">Number of items per page (default: 10, max: 100)</param>
+    /// <param name="nextToken">Token for pagination</param>
+    /// <returns>List of pets matching the criteria, sorted by distance</returns>
+    [HttpGet]
+    [Route("~/api/internal/[controller]/search")]
+    [Authorize(Policy = "InternalOnly")] // Only allow internal service calls
+    public async Task<ActionResult<PetSearchResponse>> SearchPetsInternal(
+        [FromQuery] decimal latitude,
+        [FromQuery] decimal longitude,
+        [FromQuery] decimal maxDistanceKm = 50,
+        [FromQuery] int? speciesId = null,
+        [FromQuery] int? breedId = null,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? nextToken = null)
+    {
+        var request = new PetSearchRequest
+        {
+            Latitude = latitude,
+            Longitude = longitude,
+            MaxDistanceKm = maxDistanceKm,
+            SpeciesId = speciesId,
+            BreedId = breedId,
+            PageSize = pageSize,
+            NextToken = nextToken
+        };
+
+        var response = await petService.SearchPetsByLocationAsync(request);
+
+        if (!response.Success)
+        {
+            return BadRequest(response);
+        }
+
+        return Ok(response);
+    }
+
+    /// <summary>
     /// Gets all pets for a specific shelter
     /// </summary>
     /// <param name="shelterId">The shelter ID</param>

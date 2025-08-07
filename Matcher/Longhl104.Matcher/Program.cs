@@ -32,6 +32,7 @@ builder.Services.AddPawfectMatchInternalHttpClients(
 
 // Register application services
 builder.Services.AddScoped<ISpeciesService, SpeciesService>();
+builder.Services.AddScoped<IPetSearchService, PetSearchService>();
 
 // Add authentication and authorization services
 // Configure custom authentication scheme to work with the AuthenticationMiddleware
