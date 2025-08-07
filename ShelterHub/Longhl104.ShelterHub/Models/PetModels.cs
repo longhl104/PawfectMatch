@@ -900,9 +900,9 @@ public class PetSearchRequest
 public class PetSearchResultDto
 {
     /// <summary>
-    /// Pet ID
+    /// Pet ID from PostgreSQL
     /// </summary>
-    public Guid PetId { get; set; }
+    public int PetPostgreSqlId { get; set; }
 
     /// <summary>
     /// Pet name

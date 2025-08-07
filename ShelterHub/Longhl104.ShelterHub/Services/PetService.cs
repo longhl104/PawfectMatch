@@ -2397,83 +2397,82 @@ public class PetService : IPetService
                 };
             }
 
-            // Search for pets in DynamoDB for these shelters
+            // Search for pets in PostgreSQL first with filters, then get DynamoDB data
             var allMatchingPets = new List<PetSearchResultDto>();
-            var shelterIds = shelterMappings.Values.Select(v => v.ShelterId).ToList();
+            var shelterPostgreSqlToGuidMapping = shelterMappings.ToDictionary(
+                kvp => kvp.Key, // PostgreSQL ID
+                kvp => kvp.Value // Tuple with Guid and other info
+            );
 
-            foreach (var shelterId in shelterIds)
+            // Query PostgreSQL for filtered pets across all nearby shelters
+            var postgresQuery = _dbContext.Pets
+                .Include(p => p.Species)
+                .Include(p => p.Breed)
+                .Where(p => shelterPostgreSqlIds.Contains(p.ShelterId))
+                .Where(p => p.Status == PetStatus.Available);
+
+            // Apply species filter if specified
+            if (request.SpeciesId.HasValue)
             {
-                // Query pets for this shelter
-                var query = new QueryRequest
+                postgresQuery = postgresQuery.Where(p => p.SpeciesId == request.SpeciesId.Value);
+            }
+
+            // Apply breed filter if specified
+            if (request.BreedId.HasValue)
+            {
+                postgresQuery = postgresQuery.Where(p => p.BreedId == request.BreedId.Value);
+            }
+
+            var filteredPostgresPets = await postgresQuery.ToListAsync();
+
+            if (!filteredPostgresPets.Any())
+            {
+                _logger.LogInformation("No pets found matching species/breed criteria in nearby shelters");
+                return new PetSearchResponse
                 {
-                    TableName = _tableName,
-                    IndexName = _shelterIdCreatedAtIndex,
-                    KeyConditionExpression = "ShelterId = :shelterId",
-                    ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                    Success = true,
+                    Pets = [],
+                    TotalCount = 0
+                };
+            }
+
+            _logger.LogInformation("Found {PetCount} pets matching criteria in PostgreSQL", filteredPostgresPets.Count);
+
+            // Now process all filtered pets directly from PostgreSQL data
+            foreach (var postgresPet in filteredPostgresPets)
+            {
+                var shelterPostgreSqlId = postgresPet.ShelterId;
+                if (!shelterPostgreSqlToGuidMapping.TryGetValue(shelterPostgreSqlId, out var shelterInfo))
+                {
+                    continue; // Skip if shelter mapping not found
+                }
+
+                var ageInMonths = CalculateAgeInMonths(postgresPet.DateOfBirth);
+
+                var searchResult = new PetSearchResultDto
+                {
+                    PetPostgreSqlId = postgresPet.PetId,
+                    Name = postgresPet.Name,
+                    Species = postgresPet.Species?.Name,
+                    Breed = postgresPet.Breed?.Name,
+                    AgeInMonths = ageInMonths,
+                    Gender = postgresPet.Gender,
+                    Description = postgresPet.Description,
+                    AdoptionFee = postgresPet.AdoptionFee,
+                    MainImageFileExtension = postgresPet.MainImageFileExtension,
+                    DistanceKm = shelterInfo.DistanceKm,
+                    Shelter = new PetSearchShelterDto
                     {
-                        { ":shelterId", new AttributeValue { S = shelterId.ToString() } }
-                    },
-                    FilterExpression = "#status = :status",
-                    ExpressionAttributeNames = new Dictionary<string, string>
-                    {
-                        { "#status", "Status" }
+                        ShelterId = shelterInfo.ShelterId,
+                        ShelterName = shelterInfo.ShelterName,
+                        ShelterAddress = shelterInfo.ShelterAddress,
+                        ShelterContactNumber = shelterInfo.ShelterContactNumber,
+                        ShelterLatitude = shelterInfo.Latitude,
+                        ShelterLongitude = shelterInfo.Longitude
                     }
                 };
 
-                query.ExpressionAttributeValues[":status"] = new AttributeValue { S = PetStatus.Available.GetAmbientValue<string>() };
-
-                var response = await _dynamoDbClient.QueryAsync(query);
-                var pets = response.Items.Select(ConvertDynamoDbItemToPet).ToList();
-
-                if (pets.Any())
-                {
-                    // Enrich with PostgreSQL data
-                    var petPostgreSqlIds = pets.Select(p => p.PetPostgreSqlId);
-                    var postgresPets = await _dbContext.Pets
-                        .Include(p => p.Species)
-                        .Include(p => p.Breed)
-                        .Where(p => petPostgreSqlIds.Contains(p.PetId))
-                        .Where(p => !request.SpeciesId.HasValue || p.SpeciesId == request.SpeciesId.Value)
-                        .Where(p => !request.BreedId.HasValue || p.BreedId == request.BreedId.Value)
-                        .ToListAsync();
-
-                    foreach (var pet in pets)
-                    {
-                        var postgresPet = postgresPets.FirstOrDefault(p => p.PetId == pet.PetPostgreSqlId);
-                        if (postgresPet != null)
-                        {
-                            // Find the shelter info and distance
-                            var shelterInfo = shelterMappings.Values.FirstOrDefault(s => s.ShelterId == shelterId);
-
-                            var ageInMonths = CalculateAgeInMonths(postgresPet.DateOfBirth);
-
-                            var searchResult = new PetSearchResultDto
-                            {
-                                PetId = pet.PetId,
-                                Name = postgresPet.Name,
-                                Species = postgresPet.Species?.Name,
-                                Breed = postgresPet.Breed?.Name,
-                                AgeInMonths = ageInMonths,
-                                Gender = postgresPet.Gender,
-                                Description = postgresPet.Description,
-                                AdoptionFee = postgresPet.AdoptionFee,
-                                MainImageFileExtension = pet.MainImageFileExtension,
-                                DistanceKm = shelterInfo.DistanceKm,
-                                Shelter = new PetSearchShelterDto
-                                {
-                                    ShelterId = shelterId,
-                                    ShelterName = shelterInfo.ShelterName,
-                                    ShelterAddress = shelterInfo.ShelterAddress,
-                                    ShelterContactNumber = shelterInfo.ShelterContactNumber,
-                                    ShelterLatitude = shelterInfo.Latitude,
-                                    ShelterLongitude = shelterInfo.Longitude
-                                }
-                            };
-
-                            allMatchingPets.Add(searchResult);
-                        }
-                    }
-                }
+                allMatchingPets.Add(searchResult);
             }
 
             // Sort by distance and apply pagination
@@ -2606,5 +2605,6 @@ public class PetService : IPetService
 
         return Math.Max(0, age * 12 + (today.Month - dateOfBirth.Value.Month));
     }
+
 }
 

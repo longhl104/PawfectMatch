@@ -726,7 +726,7 @@ export interface IPetSearchResponse {
 }
 
 export class PetSearchResultDto implements IPetSearchResultDto {
-    petId?: string;
+    petPostgreSqlId?: number;
     name?: string | undefined;
     species?: string | undefined;
     breed?: string | undefined;
@@ -749,7 +749,7 @@ export class PetSearchResultDto implements IPetSearchResultDto {
 
     init(_data?: any) {
         if (_data) {
-            this.petId = _data["petId"];
+            this.petPostgreSqlId = _data["petPostgreSqlId"];
             this.name = _data["name"];
             this.species = _data["species"];
             this.breed = _data["breed"];
@@ -772,7 +772,7 @@ export class PetSearchResultDto implements IPetSearchResultDto {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["petId"] = this.petId;
+        data["petPostgreSqlId"] = this.petPostgreSqlId;
         data["name"] = this.name;
         data["species"] = this.species;
         data["breed"] = this.breed;
@@ -788,7 +788,7 @@ export class PetSearchResultDto implements IPetSearchResultDto {
 }
 
 export interface IPetSearchResultDto {
-    petId?: string;
+    petPostgreSqlId?: number;
     name?: string | undefined;
     species?: string | undefined;
     breed?: string | undefined;

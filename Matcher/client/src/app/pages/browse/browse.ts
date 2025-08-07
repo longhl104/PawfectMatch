@@ -36,7 +36,7 @@ import { firstValueFrom } from 'rxjs';
 
 // Types
 interface Pet {
-  id: string;
+  petPostgreSqlId: number;
   name: string;
   species: string;
   breed: string;
@@ -697,7 +697,7 @@ export class BrowseComponent implements OnInit, OnDestroy {
 
   private convertApiPetsToPetInterface(apiPets: PetSearchResultDto[]): Pet[] {
     return apiPets.map((apiPet) => ({
-      id: apiPet.petId || '',
+      petPostgreSqlId: apiPet.petPostgreSqlId || 0,
       name: apiPet.name || '',
       species: apiPet.species || '',
       breed: apiPet.breed || 'Mixed',
@@ -708,7 +708,7 @@ export class BrowseComponent implements OnInit, OnDestroy {
       location: apiPet.shelter?.shelterAddress || '',
       distance: Math.round((apiPet.distanceKm || 0) * 10) / 10, // Round to 1 decimal place
       imageUrl: apiPet.mainImageFileExtension
-        ? `https://your-s3-bucket.s3.amazonaws.com/pets/${apiPet.petId}/main.${apiPet.mainImageFileExtension}`
+        ? `https://your-s3-bucket.s3.amazonaws.com/pets/${apiPet.petPostgreSqlId}/main.${apiPet.mainImageFileExtension}`
         : 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400',
       shelter: apiPet.shelter?.shelterName || '',
       isSpayedNeutered: false, // Not available in current API response
