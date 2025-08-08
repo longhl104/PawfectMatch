@@ -4,6 +4,7 @@ using Longhl104.ShelterHub.Models;
 using Longhl104.PawfectMatch.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using System.Text.Json;
 using PostgreSqlPet = Longhl104.ShelterHub.Models.PostgreSql.Pet;
 
 namespace Longhl104.ShelterHub.Services;
@@ -2396,10 +2397,10 @@ public class PetService : IPetService
                 {
                     var tokenBytes = Convert.FromBase64String(request.NextToken);
                     var tokenJson = System.Text.Encoding.UTF8.GetString(tokenBytes);
-                    var tokenData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(tokenJson);
-                    if (tokenData != null && tokenData.TryGetValue("offset", out var offsetObj))
+                    var tokenData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(tokenJson);
+                    if (tokenData != null && tokenData.TryGetValue("offset", out var offsetElement))
                     {
-                        startIndex = Convert.ToInt32(offsetObj);
+                        startIndex = offsetElement.GetInt32();
                     }
                 }
                 catch (Exception ex)
