@@ -171,6 +171,11 @@ public class PetSearchResultDto
     public string? MainImageFileExtension { get; set; }
 
     /// <summary>
+    /// Presigned download URL for the main image
+    /// </summary>
+    public string? MainImageDownloadUrl { get; set; }
+
+    /// <summary>
     /// Shelter information
     /// </summary>
     public PetSearchShelterDto? Shelter { get; set; }

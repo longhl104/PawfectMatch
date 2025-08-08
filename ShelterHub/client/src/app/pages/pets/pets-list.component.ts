@@ -209,7 +209,7 @@ export class PetsListComponent implements OnInit, OnDestroy {
   private async loadPetImages() {
     const petIdsAndExtensions = this.allPets()
       .map((pet) => ({
-        petId: pet.petId!,
+        petId: pet.petPostgreSqlId!,
         mainImageFileExtension: pet.mainImageFileExtension,
       }))
       .filter((pet) => pet.mainImageFileExtension);

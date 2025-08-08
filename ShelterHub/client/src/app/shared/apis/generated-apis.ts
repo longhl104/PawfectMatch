@@ -2760,7 +2760,7 @@ export interface IPetBreedDto {
 }
 
 export class PetImageDownloadUrlRequest implements IPetImageDownloadUrlRequest {
-    petId?: string;
+    petId?: number;
     mainImageFileExtension?: string | undefined;
 
     constructor(data?: IPetImageDownloadUrlRequest) {
@@ -2795,7 +2795,7 @@ export class PetImageDownloadUrlRequest implements IPetImageDownloadUrlRequest {
 }
 
 export interface IPetImageDownloadUrlRequest {
-    petId?: string;
+    petId?: number;
     mainImageFileExtension?: string | undefined;
 }
 
@@ -3028,7 +3028,7 @@ export interface IPetSearchResponse {
 }
 
 export class PetSearchResultDto implements IPetSearchResultDto {
-    petId?: string;
+    petPostgreSqlId?: number;
     name?: string | undefined;
     species?: string | undefined;
     breed?: string | undefined;
@@ -3037,6 +3037,7 @@ export class PetSearchResultDto implements IPetSearchResultDto {
     description?: string | undefined;
     adoptionFee?: number | undefined;
     mainImageFileExtension?: string | undefined;
+    mainImageDownloadUrl?: string | undefined;
     shelter?: PetSearchShelterDto;
     distanceKm?: number;
 
@@ -3051,7 +3052,7 @@ export class PetSearchResultDto implements IPetSearchResultDto {
 
     init(_data?: any) {
         if (_data) {
-            this.petId = _data["petId"];
+            this.petPostgreSqlId = _data["petPostgreSqlId"];
             this.name = _data["name"];
             this.species = _data["species"];
             this.breed = _data["breed"];
@@ -3060,6 +3061,7 @@ export class PetSearchResultDto implements IPetSearchResultDto {
             this.description = _data["description"];
             this.adoptionFee = _data["adoptionFee"];
             this.mainImageFileExtension = _data["mainImageFileExtension"];
+            this.mainImageDownloadUrl = _data["mainImageDownloadUrl"];
             this.shelter = _data["shelter"] ? PetSearchShelterDto.fromJS(_data["shelter"]) : <any>undefined;
             this.distanceKm = _data["distanceKm"];
         }
@@ -3074,7 +3076,7 @@ export class PetSearchResultDto implements IPetSearchResultDto {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["petId"] = this.petId;
+        data["petPostgreSqlId"] = this.petPostgreSqlId;
         data["name"] = this.name;
         data["species"] = this.species;
         data["breed"] = this.breed;
@@ -3083,6 +3085,7 @@ export class PetSearchResultDto implements IPetSearchResultDto {
         data["description"] = this.description;
         data["adoptionFee"] = this.adoptionFee;
         data["mainImageFileExtension"] = this.mainImageFileExtension;
+        data["mainImageDownloadUrl"] = this.mainImageDownloadUrl;
         data["shelter"] = this.shelter ? this.shelter.toJSON() : <any>undefined;
         data["distanceKm"] = this.distanceKm;
         return data;
@@ -3090,7 +3093,7 @@ export class PetSearchResultDto implements IPetSearchResultDto {
 }
 
 export interface IPetSearchResultDto {
-    petId?: string;
+    petPostgreSqlId?: number;
     name?: string | undefined;
     species?: string | undefined;
     breed?: string | undefined;
@@ -3099,6 +3102,7 @@ export interface IPetSearchResultDto {
     description?: string | undefined;
     adoptionFee?: number | undefined;
     mainImageFileExtension?: string | undefined;
+    mainImageDownloadUrl?: string | undefined;
     shelter?: PetSearchShelterDto;
     distanceKm?: number;
 }

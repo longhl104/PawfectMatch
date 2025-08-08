@@ -451,7 +451,7 @@ public class PetImageDownloadUrlRequest
     /// <summary>
     /// Pet ID
     /// </summary>
-    public Guid PetId { get; set; }
+    public int PetId { get; set; }
 
     /// <summary>
     /// Main image file extension (e.g., .jpg, .png)
@@ -483,7 +483,7 @@ public class PetImageDownloadUrlsResponse
     /// <summary>
     /// Dictionary of pet IDs to their download presigned URLs
     /// </summary>
-    public Dictionary<Guid, string?> PetImageUrls { get; set; } = new();
+    public Dictionary<int, string?> PetImageUrls { get; set; } = new();
 
     /// <summary>
     /// Error message (if unsuccessful)
@@ -943,6 +943,11 @@ public class PetSearchResultDto
     /// Main image file extension for constructing image URL
     /// </summary>
     public string? MainImageFileExtension { get; set; }
+
+    /// <summary>
+    /// Presigned download URL for the main image
+    /// </summary>
+    public string? MainImageDownloadUrl { get; set; }
 
     /// <summary>
     /// Shelter information

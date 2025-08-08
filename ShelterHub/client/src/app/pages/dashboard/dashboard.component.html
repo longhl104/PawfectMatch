@@ -2,7 +2,7 @@
   <div class="grid">
     <!-- Shelter Information Section -->
     <div class="col-12">
-      <p-card header="Shelter Information" styleClass="h-full">
+      <p-card header="Shelter Information" class="h-full">
         @if (shelterInfo) {
           <div class="grid">
             <div class="col-12 md:col-6">
@@ -87,7 +87,7 @@
 
     <!-- Pet Cards Section -->
     <div class="col-12 lg:col-8">
-      <p-card styleClass="h-full">
+      <p-card class="h-full">
         <ng-template pTemplate="header">
           <div class="flex justify-content-between align-items-center p-4 pb-0">
             <span class="font-semibold text-lg">Current Pets</span>
@@ -122,7 +122,9 @@
               <div class="col-12 md:col-6 xl:col-4">
                 <app-pet-card
                   [pet]="pet"
-                  [imageUrl]="petMainImageUrls.get(pet.petId!)"
+                  [imageUrl]="
+                    petMainImageUrls.get(pet.petPostgreSqlId.toString()!)
+                  "
                   (imageError)="onImageError($event)"
                   (click)="onEditPet(pet)"
                   class="cursor-pointer"
@@ -136,7 +138,7 @@
 
     <!-- New Applications Section -->
     <div class="col-12 lg:col-4">
-      <p-card header="Recent Applications (Coming Soon)" styleClass="h-full">
+      <p-card header="Recent Applications (Coming Soon)" class="h-full">
         @if (isLoading) {
           <div class="flex justify-content-center">
             <i class="pi pi-spinner pi-spin text-2xl"></i>

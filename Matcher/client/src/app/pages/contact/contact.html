@@ -21,7 +21,7 @@
     <div class="grid gap-6 align-items-stretch justify-content-center">
       <!-- Email Card -->
       <div class="col-12 md:col-6 flex justify-content-center">
-        <p-card styleClass="h-full contact-card w-full max-w-30rem">
+        <p-card class="h-full contact-card w-full max-w-30rem">
           <ng-template pTemplate="header">
             <div class="contact-card-header">
               <i class="pi pi-envelope text-4xl text-primary mb-3"></i>
@@ -43,7 +43,7 @@
             <p-button
               label="Send Email"
               icon="pi pi-external-link"
-              styleClass="w-full"
+              class="w-full"
               (onClick)="openEmail()"
             />
           </div>
@@ -52,7 +52,7 @@
 
       <!-- Phone Card -->
       <div class="col-12 md:col-6 flex justify-content-center">
-        <p-card styleClass="h-full contact-card w-full max-w-30rem">
+        <p-card class="h-full contact-card w-full max-w-30rem">
           <ng-template pTemplate="header">
             <div class="contact-card-header">
               <i class="pi pi-phone text-4xl text-primary mb-3"></i>
@@ -74,7 +74,7 @@
             <p-button
               label="Call Now"
               icon="pi pi-phone"
-              styleClass="w-full"
+              class="w-full"
               (onClick)="callPhone()"
             />
           </div>
@@ -83,7 +83,7 @@
 
       <!-- Social Media Section -->
       <div class="col-12">
-        <p-card styleClass="social-media-card">
+        <p-card class="social-media-card">
           <ng-template pTemplate="header">
             <div class="contact-card-header">
               <i class="pi pi-share-alt text-4xl text-primary mb-3"></i>
@@ -103,7 +103,7 @@
                   icon="pi pi-facebook"
                   [rounded]="true"
                   size="large"
-                  styleClass="social-button facebook-btn mb-3"
+                  class="social-button facebook-btn mb-3"
                   (onClick)="openFacebook()"
                   pTooltip="Follow us on Facebook"
                   tooltipPosition="top"
@@ -117,7 +117,7 @@
                   icon="pi pi-instagram"
                   [rounded]="true"
                   size="large"
-                  styleClass="social-button instagram-btn mb-3"
+                  class="social-button instagram-btn mb-3"
                   (onClick)="openInstagram()"
                   pTooltip="Follow us on Instagram"
                   tooltipPosition="top"
@@ -158,7 +158,7 @@
         icon="pi pi-home"
         [outlined]="true"
         routerLink="/"
-        styleClass="back-home-btn"
+        class="back-home-btn"
       />
     </div>
   </div>

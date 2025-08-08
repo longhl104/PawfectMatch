@@ -739,9 +739,7 @@ export class BrowseComponent implements OnInit, OnDestroy {
       adoptionFee: apiPet.adoptionFee || 0,
       location: apiPet.shelter?.shelterAddress || '',
       distance: Math.round((apiPet.distanceKm || 0) * 10) / 10, // Round to 1 decimal place
-      imageUrl: apiPet.mainImageFileExtension
-        ? `https://your-s3-bucket.s3.amazonaws.com/pets/${apiPet.petPostgreSqlId}/main.${apiPet.mainImageFileExtension}`
-        : 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400',
+      imageUrl: apiPet.mainImageDownloadUrl || 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400',
       shelter: apiPet.shelter?.shelterName || '',
       isSpayedNeutered: false, // Not available in current API response
       isGoodWithKids: false, // Not available in current API response

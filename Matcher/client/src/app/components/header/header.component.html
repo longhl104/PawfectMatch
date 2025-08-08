@@ -1,4 +1,4 @@
-<p-toolbar styleClass="border-none shadow-2 px-4 py-3">
+<p-toolbar class="border-none shadow-2 px-4 py-3">
   <ng-template pTemplate="start">
     <div
       class="flex align-items-center gap-3 cursor-pointer"
@@ -62,7 +62,7 @@
       <!-- Mobile menu button -->
       <p-button
         icon="pi pi-bars"
-        styleClass="xl:hidden mobile-menu-btn"
+        class="xl:hidden mobile-menu-btn"
         severity="info"
         [outlined]="true"
         [rounded]="true"
@@ -85,7 +85,7 @@
               </span>
               <p-avatar
                 #avatar
-                styleClass="cursor-pointer"
+                class="cursor-pointer"
                 size="normal"
                 shape="circle"
                 [label]="getUserInitials(user)"
@@ -96,7 +96,7 @@
                 severity="secondary"
                 pTooltip="Logout"
                 tooltipPosition="bottom"
-                styleClass="ml-2"
+                class="ml-2"
                 [text]="true"
                 [rounded]="true"
                 (onClick)="onLogout()"

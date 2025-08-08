@@ -119,7 +119,7 @@
   <!-- Top Paginator -->
   @if (!isLoading && totalRecords > 0) {
     <ng-container
-      *ngTemplateOutlet="paginatorTemplate; context: { styleClass: 'mb-4' }"
+      *ngTemplateOutlet="paginatorTemplate; context: { class: 'mb-4' }"
     ></ng-container>
   }
 
@@ -182,7 +182,7 @@
               <app-pet-card
                 class="cursor-pointer"
                 [pet]="pet"
-                [imageUrl]="petMainImageUrls.get(pet.petId!)"
+                [imageUrl]="petMainImageUrls.get(pet.petPostgreSqlId.toString()!)"
                 [showActions]="true"
                 [showStatusActions]="true"
                 [showWeight]="true"
@@ -203,13 +203,13 @@
   <!-- Bottom Paginator -->
   @if (!isLoading && totalRecords > 0) {
     <ng-container
-      *ngTemplateOutlet="paginatorTemplate; context: { styleClass: 'mt-4' }"
+      *ngTemplateOutlet="paginatorTemplate; context: { class: 'mt-4' }"
     ></ng-container>
   }
 </div>
 
 <!-- Reusable Paginator Template -->
-<ng-template #paginatorTemplate let-styleClass="styleClass">
+<ng-template #paginatorTemplate let-class="class">
   <p-paginator
     [rows]="pageSize"
     [totalRecords]="totalRecords"
@@ -218,7 +218,7 @@
     [showCurrentPageReport]="true"
     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} pets"
     [rowsPerPageOptions]="[12, 24, 36]"
-    [styleClass]="styleClass"
+    [class]="class"
   ></p-paginator>
 </ng-template>
 

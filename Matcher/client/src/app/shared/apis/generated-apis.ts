@@ -735,6 +735,7 @@ export class PetSearchResultDto implements IPetSearchResultDto {
     description?: string | undefined;
     adoptionFee?: number | undefined;
     mainImageFileExtension?: string | undefined;
+    mainImageDownloadUrl?: string | undefined;
     shelter?: PetSearchShelterDto;
     distanceKm?: number;
 
@@ -758,6 +759,7 @@ export class PetSearchResultDto implements IPetSearchResultDto {
             this.description = _data["description"];
             this.adoptionFee = _data["adoptionFee"];
             this.mainImageFileExtension = _data["mainImageFileExtension"];
+            this.mainImageDownloadUrl = _data["mainImageDownloadUrl"];
             this.shelter = _data["shelter"] ? PetSearchShelterDto.fromJS(_data["shelter"]) : <any>undefined;
             this.distanceKm = _data["distanceKm"];
         }
@@ -781,6 +783,7 @@ export class PetSearchResultDto implements IPetSearchResultDto {
         data["description"] = this.description;
         data["adoptionFee"] = this.adoptionFee;
         data["mainImageFileExtension"] = this.mainImageFileExtension;
+        data["mainImageDownloadUrl"] = this.mainImageDownloadUrl;
         data["shelter"] = this.shelter ? this.shelter.toJSON() : <any>undefined;
         data["distanceKm"] = this.distanceKm;
         return data;
@@ -797,6 +800,7 @@ export interface IPetSearchResultDto {
     description?: string | undefined;
     adoptionFee?: number | undefined;
     mainImageFileExtension?: string | undefined;
+    mainImageDownloadUrl?: string | undefined;
     shelter?: PetSearchShelterDto;
     distanceKm?: number;
 }

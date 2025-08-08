@@ -75,14 +75,14 @@ public interface IPetService
     /// <param name="contentType">The content type of the file</param>
     /// <param name="fileSizeBytes">The size of the file in bytes</param>
     /// <returns>Presigned URL for upload</returns>
-    Task<PresignedUrlResponse> GenerateUploadUrl(Guid petId, string fileName, string contentType, long fileSizeBytes);
+    Task<PresignedUrlResponse> GenerateUploadUrl(int petId, string fileName, string contentType, long fileSizeBytes);
 
     /// <summary>
     /// Gets download presigned URLs for main images of multiple pets
     /// </summary>
     /// <param name="petIds">List of pet IDs to get image URLs for</param>
     /// <returns>Dictionary of pet IDs to their download presigned URLs</returns>
-    Task<PetImageDownloadUrlsResponse> GetPetImageDownloadUrls(List<Guid> petIds);
+    Task<PetImageDownloadUrlsResponse> GetPetImageDownloadUrls(List<int> petIds);
 
     /// <summary>
     /// Gets download presigned URLs for main images of multiple pets with their file extensions
@@ -1074,7 +1074,7 @@ public class PetService : IPetService
         return item;
     }
 
-    public async Task<PresignedUrlResponse> GenerateUploadUrl(Guid petId, string fileName, string contentType, long fileSizeBytes)
+    public async Task<PresignedUrlResponse> GenerateUploadUrl(int petId, string fileName, string contentType, long fileSizeBytes)
     {
         try
         {
@@ -1091,11 +1091,11 @@ public class PetService : IPetService
 
             _logger.LogInformation("Generating upload URL for pet {PetId} with extension {Extension}", petId, extension);
 
-            // Get the pet from DynamoDB to get PetPostgreSqlId
-            var dynamoDbPetResponse = await GetPetById(petId);
-            if (!dynamoDbPetResponse.Success || dynamoDbPetResponse.Pet == null)
+            // Get the pet directly from PostgreSQL using the int ID
+            var postgresPet = await _dbContext.Pets.FindAsync(petId);
+            if (postgresPet == null)
             {
-                _logger.LogWarning("Pet not found when generating upload URL: {PetId}", petId);
+                _logger.LogWarning("PostgreSQL pet not found when generating upload URL: {PetId}", petId);
                 return new PresignedUrlResponse
                 {
                     Success = false,
@@ -1103,32 +1103,22 @@ public class PetService : IPetService
                 };
             }
 
-            // Update the pet's MainImageFileExtension in PostgreSQL
-            var postgresPet = await _dbContext.Pets.FindAsync(dynamoDbPetResponse.Pet.PetPostgreSqlId);
-            if (postgresPet == null)
-            {
-                _logger.LogWarning("PostgreSQL pet not found when generating upload URL: {PostgresPetId}", dynamoDbPetResponse.Pet.PetPostgreSqlId);
-                return new PresignedUrlResponse
-                {
-                    Success = false,
-                    ErrorMessage = "Pet not found in database"
-                };
-            }
-
+            // Update the pet's MainImageFileExtension
             postgresPet.MainImageFileExtension = extension;
             await _dbContext.SaveChangesAsync();
 
-            _logger.LogInformation("Updated PostgreSQL pet {PostgresPetId} with main image file extension {Extension}", dynamoDbPetResponse.Pet.PetPostgreSqlId, extension);
+            _logger.LogInformation("Updated PostgreSQL pet {PetId} with main image file extension {Extension}", petId, extension);
 
-            // Get shelter ID using the proper lookup method for cache invalidation
-            var shelterId = await GetShelterIdForPet(dynamoDbPetResponse.Pet);
-            if (shelterId.HasValue)
+            // Get the shelter ID for cache invalidation - we need to look up the DynamoDB shelter ID
+            var shelterDynamoDbId = await GetShelterIdByPostgreSqlId(postgresPet.ShelterId);
+            if (shelterDynamoDbId.HasValue)
             {
-                InvalidatePetCountCache(shelterId.Value);
-                InvalidatePetStatisticsCache(shelterId.Value);
+                InvalidatePetCountCache(shelterDynamoDbId.Value);
+                InvalidatePetStatisticsCache(shelterDynamoDbId.Value);
             }
 
             // Generate a presigned URL for uploading pet images
+            // For S3 key, we'll use the PostgreSQL pet ID directly
             var presignedUrlResponse = await _mediaUploadService.GeneratePresignedUrlAsync(new PresignedUrlRequest
             {
                 BucketName = _bucketName,
@@ -1157,7 +1147,7 @@ public class PetService : IPetService
     /// </summary>
     /// <param name="petIds">List of pet IDs to get image URLs for</param>
     /// <returns>Dictionary of pet IDs to their download presigned URLs</returns>
-    public async Task<PetImageDownloadUrlsResponse> GetPetImageDownloadUrls(List<Guid> petIds)
+    public async Task<PetImageDownloadUrlsResponse> GetPetImageDownloadUrls(List<int> petIds)
     {
         try
         {
@@ -1182,7 +1172,7 @@ public class PetService : IPetService
                 };
             }
 
-            var result = new Dictionary<Guid, string?>();
+            var result = new Dictionary<int, string?>();
 
             // Process each pet ID
             foreach (var petId in petIds)
@@ -1255,7 +1245,7 @@ public class PetService : IPetService
                 };
             }
 
-            var result = new Dictionary<Guid, string?>();
+            var result = new Dictionary<int, string?>();
 
             // Process each pet request
             foreach (var petRequest in request.PetRequests)
@@ -2481,6 +2471,22 @@ public class PetService : IPetService
 
                 var ageInMonths = CalculateAgeInMonths(result.DateOfBirth);
 
+                // Generate presigned URL for main image if extension exists
+                string? mainImageDownloadUrl = null;
+                if (!string.IsNullOrEmpty(result.MainImageFileExtension))
+                {
+                    try
+                    {
+                        var mainImageKey = $"pets/{result.PetId}/main-image{result.MainImageFileExtension}";
+                        mainImageDownloadUrl = await _mediaUploadService.GenerateDownloadPresignedUrlAsync(_bucketName, mainImageKey);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to generate presigned URL for main image of pet {PetId}", result.PetId);
+                        // Continue without the presigned URL
+                    }
+                }
+
                 var searchResult = new PetSearchResultDto
                 {
                     PetPostgreSqlId = result.PetId,
@@ -2492,6 +2498,7 @@ public class PetService : IPetService
                     Description = result.Description,
                     AdoptionFee = result.AdoptionFee,
                     MainImageFileExtension = result.MainImageFileExtension,
+                    MainImageDownloadUrl = mainImageDownloadUrl,
                     DistanceKm = (decimal)result.DistanceKm,
                     Shelter = new PetSearchShelterDto
                     {

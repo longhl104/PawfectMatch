@@ -88,7 +88,7 @@ export class DashboardComponent implements OnInit {
 
       const petIdsAndExtensions = this.pets
         .map((pet) => ({
-          petId: pet.petId!,
+          petId: pet.petPostgreSqlId!,
           mainImageFileExtension: pet.mainImageFileExtension,
         }))
         .filter((pet) => pet.mainImageFileExtension);

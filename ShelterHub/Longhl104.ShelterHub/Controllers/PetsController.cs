@@ -304,7 +304,16 @@ public class PetsController(IPetService petService) : ControllerBase
             return BadRequest(new { error = "Content type is required" });
         }
 
-        var response = await petService.GenerateUploadUrl(petId, fileName, contentType, fileSizeBytes);
+        // First get the pet to find the PostgreSQL pet ID
+        var petResponse = await petService.GetPetById(petId);
+        if (!petResponse.Success || petResponse.Pet == null)
+        {
+            return NotFound(new { error = "Pet not found" });
+        }
+
+        var postgresqlPetId = petResponse.Pet.PetPostgreSqlId;
+
+        var response = await petService.GenerateUploadUrl(postgresqlPetId, fileName, contentType, fileSizeBytes);
 
         if (!response.Success)
         {
