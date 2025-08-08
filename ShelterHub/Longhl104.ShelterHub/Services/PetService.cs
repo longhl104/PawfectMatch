@@ -2328,158 +2328,7 @@ public class PetService : IPetService
             // Validate page size
             var pageSize = Math.Min(Math.Max(request.PageSize, 1), 100);
 
-            // First, get all shelters within the distance radius using PostGIS
-            var userLocation = new NetTopologySuite.Geometries.Point((double)request.Longitude, (double)request.Latitude) { SRID = 4326 };
-            var maxDistanceMeters = (double)request.MaxDistanceKm * 1000;
-
-            var nearbyShelters = await _dbContext.Shelters
-                .Where(s => s.Location != null && s.Location.IsWithinDistance(userLocation, maxDistanceMeters))
-                .Select(s => new
-                {
-                    s.ShelterId,
-                    s.ShelterName,
-                    s.ShelterAddress,
-                    s.ShelterContactNumber,
-                    s.Latitude,
-                    s.Longitude,
-                    Distance = s.Location!.Distance(userLocation)
-                })
-                .ToListAsync();
-
-            if (!nearbyShelters.Any())
-            {
-                _logger.LogInformation("No shelters found within {MaxDistance}km of location ({Latitude}, {Longitude})",
-                    request.MaxDistanceKm, request.Latitude, request.Longitude);
-
-                return new PetSearchResponse
-                {
-                    Success = true,
-                    Pets = [],
-                    TotalCount = 0
-                };
-            }
-
-            _logger.LogInformation("Found {ShelterCount} shelters within {MaxDistance}km",
-                nearbyShelters.Count, request.MaxDistanceKm);
-
-            // Get shelter IDs to look up DynamoDB pets
-            var shelterPostgreSqlIds = nearbyShelters.Select(s => s.ShelterId).ToList();
-
-            // Get DynamoDB shelter IDs for the PostgreSQL shelter IDs
-            var shelterMappings = new Dictionary<int, (Guid ShelterId, decimal DistanceKm, string? ShelterName, string? ShelterAddress, string? ShelterContactNumber, decimal? Latitude, decimal? Longitude)>();
-
-            foreach (var shelter in nearbyShelters)
-            {
-                var dynamoShelter = await GetShelterIdByPostgreSqlId(shelter.ShelterId);
-                if (dynamoShelter.HasValue)
-                {
-                    var distanceKm = (decimal)(shelter.Distance / 1000); // Convert meters to kilometers
-                    shelterMappings[shelter.ShelterId] = (
-                        dynamoShelter.Value,
-                        distanceKm,
-                        shelter.ShelterName,
-                        shelter.ShelterAddress,
-                        shelter.ShelterContactNumber,
-                        shelter.Latitude.HasValue ? (decimal)shelter.Latitude.Value : null,
-                        shelter.Longitude.HasValue ? (decimal)shelter.Longitude.Value : null
-                    );
-                }
-            }
-
-            if (!shelterMappings.Any())
-            {
-                _logger.LogWarning("No DynamoDB shelter mappings found for nearby PostgreSQL shelters");
-                return new PetSearchResponse
-                {
-                    Success = true,
-                    Pets = [],
-                    TotalCount = 0
-                };
-            }
-
-            // Search for pets in PostgreSQL first with filters, then get DynamoDB data
-            var allMatchingPets = new List<PetSearchResultDto>();
-            var shelterPostgreSqlToGuidMapping = shelterMappings.ToDictionary(
-                kvp => kvp.Key, // PostgreSQL ID
-                kvp => kvp.Value // Tuple with Guid and other info
-            );
-
-            // Query PostgreSQL for filtered pets across all nearby shelters
-            var postgresQuery = _dbContext.Pets
-                .Include(p => p.Species)
-                .Include(p => p.Breed)
-                .Where(p => shelterPostgreSqlIds.Contains(p.ShelterId))
-                .Where(p => p.Status == PetStatus.Available);
-
-            // Apply species filter if specified
-            if (request.SpeciesId.HasValue)
-            {
-                postgresQuery = postgresQuery.Where(p => p.SpeciesId == request.SpeciesId.Value);
-            }
-
-            // Apply breed filter if specified
-            if (request.BreedId.HasValue)
-            {
-                postgresQuery = postgresQuery.Where(p => p.BreedId == request.BreedId.Value);
-            }
-
-            var filteredPostgresPets = await postgresQuery.ToListAsync();
-
-            if (!filteredPostgresPets.Any())
-            {
-                _logger.LogInformation("No pets found matching species/breed criteria in nearby shelters");
-                return new PetSearchResponse
-                {
-                    Success = true,
-                    Pets = [],
-                    TotalCount = 0
-                };
-            }
-
-            _logger.LogInformation("Found {PetCount} pets matching criteria in PostgreSQL", filteredPostgresPets.Count);
-
-            // Now process all filtered pets directly from PostgreSQL data
-            foreach (var postgresPet in filteredPostgresPets)
-            {
-                var shelterPostgreSqlId = postgresPet.ShelterId;
-                if (!shelterPostgreSqlToGuidMapping.TryGetValue(shelterPostgreSqlId, out var shelterInfo))
-                {
-                    continue; // Skip if shelter mapping not found
-                }
-
-                var ageInMonths = CalculateAgeInMonths(postgresPet.DateOfBirth);
-
-                var searchResult = new PetSearchResultDto
-                {
-                    PetPostgreSqlId = postgresPet.PetId,
-                    Name = postgresPet.Name,
-                    Species = postgresPet.Species?.Name,
-                    Breed = postgresPet.Breed?.Name,
-                    AgeInMonths = ageInMonths,
-                    Gender = postgresPet.Gender,
-                    Description = postgresPet.Description,
-                    AdoptionFee = postgresPet.AdoptionFee,
-                    MainImageFileExtension = postgresPet.MainImageFileExtension,
-                    DistanceKm = shelterInfo.DistanceKm,
-                    Shelter = new PetSearchShelterDto
-                    {
-                        ShelterId = shelterInfo.ShelterId,
-                        ShelterName = shelterInfo.ShelterName,
-                        ShelterAddress = shelterInfo.ShelterAddress,
-                        ShelterContactNumber = shelterInfo.ShelterContactNumber,
-                        ShelterLatitude = shelterInfo.Latitude,
-                        ShelterLongitude = shelterInfo.Longitude
-                    }
-                };
-
-                allMatchingPets.Add(searchResult);
-            }
-
-            // Sort by distance and apply pagination
-            var sortedPets = allMatchingPets.OrderBy(p => p.DistanceKm).ToList();
-            var totalCount = sortedPets.Count;
-
-            // Handle pagination
+            // Handle pagination token to get offset
             var startIndex = 0;
             if (!string.IsNullOrEmpty(request.NextToken))
             {
@@ -2504,7 +2353,157 @@ public class PetService : IPetService
                 }
             }
 
-            var paginatedPets = sortedPets.Skip(startIndex).Take(pageSize).ToList();
+            // First, get the total count with distance filtering
+            var countSql = @"
+                SELECT COUNT(*) as ""Value""
+                FROM shelter_hub.""pets"" p
+                INNER JOIN shelter_hub.""shelters"" s1 ON p.""ShelterId"" = s1.""ShelterId""
+                WHERE s1.""Location"" IS NOT NULL
+                    AND ST_DistanceSphere(s1.""Location"", ST_SetSRID(ST_MakePoint({0}, {1}), 4326)) <= {2}
+                    AND p.""Status"" = {3}";
+
+            var countParameters = new List<object>
+            {
+                request.Longitude,
+                request.Latitude,
+                request.MaxDistanceKm * 1000, // Convert km to meters
+                (int)PetStatus.Available
+            };
+
+            var countParamIndex = 4;
+
+            // Add species filter if specified
+            if (request.SpeciesId.HasValue)
+            {
+                countSql += $" AND p.\"SpeciesId\" = {{{countParamIndex}}}";
+                countParameters.Add(request.SpeciesId.Value);
+                countParamIndex++;
+            }
+
+            // Add breed filter if specified
+            if (request.BreedId.HasValue)
+            {
+                countSql += $" AND p.\"BreedId\" = {{{countParamIndex}}}";
+                countParameters.Add(request.BreedId.Value);
+            }
+
+            var totalCount = await _dbContext.Database.SqlQueryRaw<int>(countSql, [.. countParameters]).FirstAsync();
+
+            if (totalCount == 0)
+            {
+                _logger.LogInformation("No pets found within {MaxDistance}km of location ({Latitude}, {Longitude})",
+                    request.MaxDistanceKm, request.Latitude, request.Longitude);
+
+                return new PetSearchResponse
+                {
+                    Success = true,
+                    Pets = [],
+                    TotalCount = 0
+                };
+            }
+
+            // Create a raw SQL query that joins pets with shelters and calculates distance at DB level
+            // This allows us to sort by distance and paginate efficiently in the database
+            var sql = @"
+                SELECT p.""PetId"", p.""Name"", p.""Gender"", p.""Description"", p.""AdoptionFee"",
+                        p.""MainImageFileExtension"", p.""DateOfBirth"", p.""ShelterId"",
+                        s.""ShelterName"", s.""ShelterAddress"", s.""ShelterContactNumber"",
+                        s.""Latitude"", s.""Longitude"",
+                        sp.""Name"" as ""SpeciesName"",
+                        b.""Name"" as ""BreedName"",
+                        ST_DistanceSphere(s.""Location"", ST_SetSRID(ST_MakePoint({0}, {1}), 4326)) / 1000.0 as ""DistanceKm""
+                FROM shelter_hub.""pets"" p
+                INNER JOIN shelter_hub.""shelters"" s ON p.""ShelterId"" = s.""ShelterId""
+                LEFT JOIN shelter_hub.""pet_species"" sp ON p.""SpeciesId"" = sp.""SpeciesId""
+                LEFT JOIN shelter_hub.""pet_breeds"" b ON p.""BreedId"" = b.""BreedId""
+                WHERE s.""Location"" IS NOT NULL
+                    AND ST_DistanceSphere(s.""Location"", ST_SetSRID(ST_MakePoint({0}, {1}), 4326)) <= {2}
+                    AND p.""Status"" = {3}";
+
+            var parameters = new List<object>
+            {
+                request.Longitude,
+                request.Latitude,
+                request.MaxDistanceKm * 1000, // Convert km to meters
+                (int)PetStatus.Available
+            };
+
+            var paramIndex = 4;
+
+            // Add species filter if specified
+            if (request.SpeciesId.HasValue)
+            {
+                sql += $" AND p.\"SpeciesId\" = {{{paramIndex}}}";
+                parameters.Add(request.SpeciesId.Value);
+                paramIndex++;
+            }
+
+            // Add breed filter if specified
+            if (request.BreedId.HasValue)
+            {
+                sql += $" AND p.\"BreedId\" = {{{paramIndex}}}";
+                parameters.Add(request.BreedId.Value);
+                paramIndex++;
+            }
+
+            // Add ordering and pagination
+            sql += $@"
+                ORDER BY ""DistanceKm"", p.""PetId""
+                OFFSET {{{paramIndex}}} ROWS
+                FETCH NEXT {{{paramIndex + 1}}} ROWS ONLY";
+
+            parameters.Add(startIndex);
+            parameters.Add(pageSize);
+
+            // Execute the raw SQL query with proper pagination at database level
+            var paginatedResults = await _dbContext.Database
+                .SqlQueryRaw<PetSearchQueryResult>(sql, parameters.ToArray())
+                .ToListAsync();
+
+            _logger.LogInformation("Retrieved {PetCount} pets using database-level pagination (Total: {TotalCount})",
+                paginatedResults.Count, totalCount);
+
+            // Convert query results to DTOs
+            var searchResults = new List<PetSearchResultDto>();
+            foreach (var result in paginatedResults)
+            {
+                // Get the DynamoDB shelter ID for this PostgreSQL shelter
+                var dynamoShelterId = await GetShelterIdByPostgreSqlId(result.ShelterId);
+                if (!dynamoShelterId.HasValue)
+                {
+                    _logger.LogWarning("No DynamoDB mapping found for PostgreSQL shelter ID {ShelterId}", result.ShelterId);
+                    continue; // Skip if shelter mapping not found
+                }
+
+                var ageInMonths = CalculateAgeInMonths(result.DateOfBirth);
+
+                var searchResult = new PetSearchResultDto
+                {
+                    PetPostgreSqlId = result.PetId,
+                    Name = result.Name,
+                    Species = result.SpeciesName,
+                    Breed = result.BreedName,
+                    AgeInMonths = ageInMonths,
+                    Gender = result.Gender,
+                    Description = result.Description,
+                    AdoptionFee = result.AdoptionFee,
+                    MainImageFileExtension = result.MainImageFileExtension,
+                    DistanceKm = (decimal)result.DistanceKm,
+                    Shelter = new PetSearchShelterDto
+                    {
+                        ShelterId = dynamoShelterId.Value,
+                        ShelterName = result.ShelterName,
+                        ShelterAddress = result.ShelterAddress,
+                        ShelterContactNumber = result.ShelterContactNumber,
+                        ShelterLatitude = result.Latitude.HasValue ? (decimal)result.Latitude.Value : null,
+                        ShelterLongitude = result.Longitude.HasValue ? (decimal)result.Longitude.Value : null
+                    }
+                };
+
+                searchResults.Add(searchResult);
+            }
+
+            var paginatedPets = searchResults;
 
             // Generate next token if there are more items
             string? nextToken = null;

@@ -1021,3 +1021,34 @@ public class PetSearchResponse
     /// </summary>
     public string? ErrorMessage { get; set; }
 }
+
+/// <summary>
+/// Query result class for raw SQL pet search query
+/// </summary>
+public class PetSearchQueryResult
+{
+    public int PetId { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Gender { get; set; }
+    public string? Description { get; set; }
+    public decimal? AdoptionFee { get; set; }
+    public string? MainImageFileExtension { get; set; }
+    public DateOnly? DateOfBirth { get; set; }
+    public int ShelterId { get; set; }
+    public string? ShelterName { get; set; }
+    public string? ShelterAddress { get; set; }
+    public string? ShelterContactNumber { get; set; }
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
+    public string? SpeciesName { get; set; }
+    public string? BreedName { get; set; }
+    public double DistanceKm { get; set; }
+}
+
+/// <summary>
+/// Result class for SQL COUNT queries
+/// </summary>
+public class CountResult
+{
+    public int Value { get; set; }
+}
