@@ -2303,6 +2303,66 @@ public class PetService : IPetService
     }
 
     /// <summary>
+    /// Builds the base WHERE clause and parameters for pet location search
+    /// </summary>
+    /// <param name="request">The search request</param>
+    /// <param name="tableAlias">The table alias to use for the shelter table (s or s1)</param>
+    /// <returns>Tuple containing WHERE clause, parameters list, and next parameter index</returns>
+    private static (string whereClause, List<object> parameters, int nextParamIndex) BuildLocationSearchWhereClause(
+        PetSearchRequest request, string tableAlias = "s")
+    {
+        var whereClause = $@"WHERE {tableAlias}.""Location"" IS NOT NULL
+                    AND ST_DistanceSphere({tableAlias}.""Location"", ST_SetSRID(ST_MakePoint({{0}}, {{1}}), 4326)) <= {{2}}
+                    AND p.""Status"" = {{3}}";
+
+        var parameters = new List<object>
+        {
+            request.Longitude,
+            request.Latitude,
+            request.MaxDistanceKm * 1000, // Convert km to meters
+            (int)PetStatus.Available
+        };
+
+        var paramIndex = 4;
+
+        // Add species filter if specified
+        if (request.SpeciesId.HasValue)
+        {
+            whereClause += $" AND p.\"SpeciesId\" = {{{paramIndex}}}";
+            parameters.Add(request.SpeciesId.Value);
+            paramIndex++;
+        }
+
+        // Add breed filter if specified
+        if (request.BreedId.HasValue)
+        {
+            whereClause += $" AND p.\"BreedId\" = {{{paramIndex}}}";
+            parameters.Add(request.BreedId.Value);
+            paramIndex++;
+        }
+
+        return (whereClause, parameters, paramIndex);
+    }
+
+    /// <summary>
+    /// Gets the total count of pets matching the location search criteria
+    /// </summary>
+    /// <param name="request">The search request</param>
+    /// <returns>Total count of matching pets</returns>
+    private async Task<int> GetLocationSearchTotalCount(PetSearchRequest request)
+    {
+        var (whereClause, parameters, _) = BuildLocationSearchWhereClause(request, "s1");
+
+        var countSql = $@"
+                SELECT COUNT(*) as ""Value""
+                FROM shelter_hub.""pets"" p
+                INNER JOIN shelter_hub.""shelters"" s1 ON p.""ShelterId"" = s1.""ShelterId""
+                {whereClause}";
+
+        return await _dbContext.Database.SqlQueryRaw<int>(countSql, [.. parameters]).FirstAsync();
+    }
+
+    /// <summary>
     /// Searches for pets by location distance, species, and optionally breed
     /// </summary>
     /// <param name="request">The search criteria</param>
@@ -2353,41 +2413,8 @@ public class PetService : IPetService
                 }
             }
 
-            // First, get the total count with distance filtering
-            var countSql = @"
-                SELECT COUNT(*) as ""Value""
-                FROM shelter_hub.""pets"" p
-                INNER JOIN shelter_hub.""shelters"" s1 ON p.""ShelterId"" = s1.""ShelterId""
-                WHERE s1.""Location"" IS NOT NULL
-                    AND ST_DistanceSphere(s1.""Location"", ST_SetSRID(ST_MakePoint({0}, {1}), 4326)) <= {2}
-                    AND p.""Status"" = {3}";
-
-            var countParameters = new List<object>
-            {
-                request.Longitude,
-                request.Latitude,
-                request.MaxDistanceKm * 1000, // Convert km to meters
-                (int)PetStatus.Available
-            };
-
-            var countParamIndex = 4;
-
-            // Add species filter if specified
-            if (request.SpeciesId.HasValue)
-            {
-                countSql += $" AND p.\"SpeciesId\" = {{{countParamIndex}}}";
-                countParameters.Add(request.SpeciesId.Value);
-                countParamIndex++;
-            }
-
-            // Add breed filter if specified
-            if (request.BreedId.HasValue)
-            {
-                countSql += $" AND p.\"BreedId\" = {{{countParamIndex}}}";
-                countParameters.Add(request.BreedId.Value);
-            }
-
-            var totalCount = await _dbContext.Database.SqlQueryRaw<int>(countSql, [.. countParameters]).FirstAsync();
+            // First, get the total count using the helper method
+            var totalCount = await GetLocationSearchTotalCount(request);
 
             if (totalCount == 0)
             {
@@ -2402,58 +2429,34 @@ public class PetService : IPetService
                 };
             }
 
+            // Build the WHERE clause and parameters using the helper method
+            var (whereClause, whereParameters, paramIndex) = BuildLocationSearchWhereClause(request);
+
             // Create a raw SQL query that joins pets with shelters and calculates distance at DB level
             // This allows us to sort by distance and paginate efficiently in the database
-            var sql = @"
+            var sql = $@"
                 SELECT p.""PetId"", p.""Name"", p.""Gender"", p.""Description"", p.""AdoptionFee"",
                         p.""MainImageFileExtension"", p.""DateOfBirth"", p.""ShelterId"",
                         s.""ShelterName"", s.""ShelterAddress"", s.""ShelterContactNumber"",
                         s.""Latitude"", s.""Longitude"",
                         sp.""Name"" as ""SpeciesName"",
                         b.""Name"" as ""BreedName"",
-                        ST_DistanceSphere(s.""Location"", ST_SetSRID(ST_MakePoint({0}, {1}), 4326)) / 1000.0 as ""DistanceKm""
+                        ST_DistanceSphere(s.""Location"", ST_SetSRID(ST_MakePoint({{0}}, {{1}}), 4326)) / 1000.0 as ""DistanceKm""
                 FROM shelter_hub.""pets"" p
                 INNER JOIN shelter_hub.""shelters"" s ON p.""ShelterId"" = s.""ShelterId""
                 LEFT JOIN shelter_hub.""pet_species"" sp ON p.""SpeciesId"" = sp.""SpeciesId""
                 LEFT JOIN shelter_hub.""pet_breeds"" b ON p.""BreedId"" = b.""BreedId""
-                WHERE s.""Location"" IS NOT NULL
-                    AND ST_DistanceSphere(s.""Location"", ST_SetSRID(ST_MakePoint({0}, {1}), 4326)) <= {2}
-                    AND p.""Status"" = {3}";
-
-            var parameters = new List<object>
-            {
-                request.Longitude,
-                request.Latitude,
-                request.MaxDistanceKm * 1000, // Convert km to meters
-                (int)PetStatus.Available
-            };
-
-            var paramIndex = 4;
-
-            // Add species filter if specified
-            if (request.SpeciesId.HasValue)
-            {
-                sql += $" AND p.\"SpeciesId\" = {{{paramIndex}}}";
-                parameters.Add(request.SpeciesId.Value);
-                paramIndex++;
-            }
-
-            // Add breed filter if specified
-            if (request.BreedId.HasValue)
-            {
-                sql += $" AND p.\"BreedId\" = {{{paramIndex}}}";
-                parameters.Add(request.BreedId.Value);
-                paramIndex++;
-            }
-
-            // Add ordering and pagination
-            sql += $@"
+                {whereClause}
                 ORDER BY ""DistanceKm"", p.""PetId""
                 OFFSET {{{paramIndex}}} ROWS
                 FETCH NEXT {{{paramIndex + 1}}} ROWS ONLY";
 
-            parameters.Add(startIndex);
-            parameters.Add(pageSize);
+            // Add pagination parameters
+            var parameters = new List<object>(whereParameters)
+            {
+                startIndex,
+                pageSize
+            };
 
             // Execute the raw SQL query with proper pagination at database level
             var paginatedResults = await _dbContext.Database
