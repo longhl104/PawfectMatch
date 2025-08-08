@@ -144,13 +144,13 @@
   @if(!isLoading() && filteredPets().length > 0){
   <div class="flex justify-content-center mb-4">
     <p-paginator
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} pets"
       [rows]="pageSize()"
       [totalRecords]="totalRecords()"
       [first]="currentPage() * pageSize()"
-      (onPageChange)="onPageChange($event)"
       [showCurrentPageReport]="true"
-      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} pets"
       [rowsPerPageOptions]="[12, 24, 36]"
+      (onPageChange)="onPageChange($event)"
     />
   </div>
   }
