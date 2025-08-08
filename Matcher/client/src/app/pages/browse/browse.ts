@@ -470,6 +470,38 @@ export class BrowseComponent implements OnInit, OnDestroy {
     );
   }
 
+  getCurrentLocationAndSearch() {
+    if (!navigator.geolocation) {
+      console.warn('Geolocation is not supported by this browser.');
+      return;
+    }
+
+    this.isLoadingLocation.set(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const coords = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        this.currentLocationCoords.set(coords);
+        await this.reverseGeocode(coords);
+        this.isLoadingLocation.set(false);
+        // Trigger search after getting location
+        this.applyFilters();
+      },
+      (error) => {
+        console.warn('Error getting location:', error);
+        this.isLoadingLocation.set(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000, // 5 minutes
+      },
+    );
+  }
+
   private async reverseGeocode(coords: { lat: number; lng: number }) {
     try {
       if (typeof google === 'undefined') return;
@@ -750,7 +782,6 @@ export class BrowseComponent implements OnInit, OnDestroy {
     let count = 0;
     if (this.selectedSpecies()) count++;
     if (this.selectedBreed()) count++;
-    if (this.searchLocation()) count++;
     if (this.maxDistance() !== 50) count++;
     return count;
   }

@@ -31,20 +31,15 @@
             [class.p-invalid]="isLoadingLocation()"
             autocomplete="off"
           />
-          @if (isLoadingLocation()) {
-          <small class="text-primary">
-            <i class="pi pi-spin pi-spinner mr-1"></i>Getting your location...
-          </small>
-          }
           <div class="mt-2">
             <p-button
               label="Use My Location"
               icon="pi pi-map-marker"
               size="small"
               [text]="true"
-              (onClick)="getCurrentLocation()"
+              (onClick)="getCurrentLocationAndSearch()"
               [loading]="isLoadingLocation()"
-              pTooltip="Use your current location"
+              pTooltip="Use your current location and search for pets"
             />
           </div>
         </div>
@@ -132,21 +127,7 @@
         <div class="flex align-items-center gap-2 flex-wrap">
           <span class="text-sm font-medium text-900">Active filters:</span>
 
-          @if (searchLocation()) {
-          <p-tag
-            value="Location: {{ searchLocation() }}"
-            severity="info"
-            [rounded]="true"
-          >
-            <button
-              class="ml-1 cursor-pointer bg-transparent border-none text-inherit p-0"
-              (click)="searchLocation.set(''); onLocationChange()"
-              aria-label="Remove location filter"
-            >
-              ×
-            </button>
-          </p-tag>
-          } @if (selectedSpecies()) {
+          @if (selectedSpecies()) {
           <p-tag
             [value]="'Type: ' + getSelectedSpeciesName()"
             severity="info"
