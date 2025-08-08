@@ -789,7 +789,12 @@ export class BrowseComponent implements OnInit, OnDestroy {
   onPageChange(event: PaginatorState) {
     this.currentPage.set(event.page ?? 0);
 
-    // If we have location coordinates and this is a new page, search with API
+    // Update page size if provided
+    if (event.rows) {
+      this.pageSize.set(event.rows);
+    }
+
+    // If we have location coordinates, search with API
     const coords = this.currentLocationCoords();
     if (coords) {
       this.searchPetsWithApi();

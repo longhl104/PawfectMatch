@@ -263,7 +263,6 @@
   </div>
 
   <!-- Pagination -->
-  @if (totalRecords() > pageSize()) {
   <div class="flex justify-content-center mt-6">
     <p-paginator
       [rows]="pageSize()"
@@ -275,7 +274,7 @@
       [rowsPerPageOptions]="[12, 24, 36]"
     />
   </div>
-  } }
+  }
 
   <!-- No Results -->
   @if (!isLoading() && filteredPets().length === 0) {
