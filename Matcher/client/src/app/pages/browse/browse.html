@@ -99,16 +99,17 @@
             <i class="pi pi-heart mr-1"></i>Breed
           </label>
           <p-autocomplete
-            [(ngModel)]="selectedBreedObject"
+            class="w-full"
+            optionLabel="label"
+            placeholder="Select or search breed"
             [suggestions]="filteredBreeds()"
+            [dropdown]="true"
+            [disabled]="!selectedSpecies() || isLoadingBreeds()"
+            [showClear]="true"
+            [(ngModel)]="selectedBreedObject"
             (completeMethod)="searchBreeds($event)"
             (onSelect)="onBreedChange()"
             (onClear)="onBreedChange()"
-            optionLabel="label"
-            [dropdown]="true"
-            placeholder="Select or search breed"
-            [disabled]="!selectedSpecies() || isLoadingBreeds()"
-            [showClear]="true"
           />
           @if (isLoadingBreeds()) {
           <small class="text-primary">

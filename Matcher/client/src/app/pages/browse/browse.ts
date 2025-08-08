@@ -791,7 +791,7 @@ export class BrowseComponent implements OnInit, OnDestroy {
 
     // If we have location coordinates and this is a new page, search with API
     const coords = this.currentLocationCoords();
-    if (coords && (event.page ?? 0) > 0) {
+    if (coords) {
       this.searchPetsWithApi();
     }
   }
