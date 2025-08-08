@@ -53,12 +53,11 @@
             Max Distance: {{ maxDistance() }}km
           </label>
           <p-slider
-            [(ngModel)]="maxDistance"
             [min]="5"
             [max]="100"
             [step]="5"
+            [(ngModel)]="maxDistance"
             (onSlideEnd)="onDistanceChange()"
-            styleClass="w-full"
           />
           <div class="flex justify-content-between text-xs text-600 mt-1">
             <span>5km</span>
@@ -119,68 +118,6 @@
           }
         </div>
       </div>
-
-      <!-- Active Filters -->
-      @if (getActiveFiltersCount() > 0) {
-      <p-divider />
-      <div class="active-filters">
-        <div class="flex align-items-center gap-2 flex-wrap">
-          <span class="text-sm font-medium text-900">Active filters:</span>
-
-          @if (selectedSpecies()) {
-          <p-tag
-            [value]="'Type: ' + getSelectedSpeciesName()"
-            severity="info"
-            [rounded]="true"
-          >
-            <button
-              class="ml-1 cursor-pointer bg-transparent border-none text-inherit p-0"
-              (click)="selectedSpecies.set(null); onSpeciesChange()"
-              aria-label="Remove species filter"
-            >
-              ×
-            </button>
-          </p-tag>
-          } @if (selectedBreed()) {
-          <p-tag
-            [value]="'Breed: ' + getSelectedBreedName()"
-            severity="info"
-            [rounded]="true"
-          >
-            <button
-              class="ml-1 cursor-pointer bg-transparent border-none text-inherit p-0"
-              (click)="clearBreedSelection()"
-              aria-label="Remove breed filter"
-            >
-              ×
-            </button>
-          </p-tag>
-          } @if (maxDistance() !== 50) {
-          <p-tag
-            value="Distance: {{ maxDistance() }}km"
-            severity="info"
-            [rounded]="true"
-          >
-            <button
-              class="ml-1 cursor-pointer bg-transparent border-none text-inherit p-0"
-              (click)="maxDistance.set(50); onDistanceChange()"
-              aria-label="Remove distance filter"
-            >
-              ×
-            </button>
-          </p-tag>
-          }
-
-          <p-button
-            label="Clear All"
-            icon="pi pi-times"
-            [text]="true"
-            size="small"
-            (onClick)="clearFilters()"
-          />
-        </div>
-      </div>
-      }
     </div>
   </div>
 
