@@ -345,7 +345,7 @@ public class PetService : IPetService
                 {
                     var lastKeyBytes = Convert.FromBase64String(request.NextToken);
                     var lastKeyJson = System.Text.Encoding.UTF8.GetString(lastKeyBytes);
-                    var lastKey = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, AttributeValue>>(lastKeyJson);
+                    var lastKey = JsonSerializer.Deserialize<Dictionary<string, AttributeValue>>(lastKeyJson);
                     query.ExclusiveStartKey = lastKey;
                 }
                 catch (Exception ex)
@@ -389,7 +389,7 @@ public class PetService : IPetService
             string? nextToken = null;
             if (response.LastEvaluatedKey != null && response.LastEvaluatedKey.Count > 0)
             {
-                var lastKeyJson = System.Text.Json.JsonSerializer.Serialize(response.LastEvaluatedKey);
+                var lastKeyJson = JsonSerializer.Serialize(response.LastEvaluatedKey);
                 var lastKeyBytes = System.Text.Encoding.UTF8.GetBytes(lastKeyJson);
                 nextToken = Convert.ToBase64String(lastKeyBytes);
             }
@@ -2397,7 +2397,7 @@ public class PetService : IPetService
                 {
                     var tokenBytes = Convert.FromBase64String(request.NextToken);
                     var tokenJson = System.Text.Encoding.UTF8.GetString(tokenBytes);
-                    var tokenData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(tokenJson);
+                    var tokenData = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(tokenJson);
                     if (tokenData != null && tokenData.TryGetValue("offset", out var offsetElement))
                     {
                         startIndex = offsetElement.GetInt32();
@@ -2514,7 +2514,7 @@ public class PetService : IPetService
             if (startIndex + pageSize < totalCount)
             {
                 var nextTokenData = new Dictionary<string, object> { ["offset"] = startIndex + pageSize };
-                var nextTokenJson = System.Text.Json.JsonSerializer.Serialize(nextTokenData);
+                var nextTokenJson = JsonSerializer.Serialize(nextTokenData);
                 var nextTokenBytes = System.Text.Encoding.UTF8.GetBytes(nextTokenJson);
                 nextToken = Convert.ToBase64String(nextTokenBytes);
             }
