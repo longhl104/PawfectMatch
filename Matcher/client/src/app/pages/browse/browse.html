@@ -140,6 +140,21 @@
     </div>
   </div>
 
+  <!-- Top Pagination -->
+  @if(!isLoading() && filteredPets().length > 0){
+  <div class="flex justify-content-center mb-4">
+    <p-paginator
+      [rows]="pageSize()"
+      [totalRecords]="totalRecords()"
+      [first]="currentPage() * pageSize()"
+      (onPageChange)="onPageChange($event)"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} pets"
+      [rowsPerPageOptions]="[12, 24, 36]"
+    />
+  </div>
+  }
+
   <!-- Loading State -->
   @if (isLoading()) {
   <div class="grid">
