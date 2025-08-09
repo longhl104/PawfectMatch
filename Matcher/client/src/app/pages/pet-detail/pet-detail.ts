@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject, signal, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+  OnInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -71,17 +77,35 @@ export class PetDetailComponent implements OnInit {
         this.router.navigate(['/browse']);
       }
     }
-  }  onContactShelter() {
+  }
+  onContactShelter() {
     this.showContactDialog.set(true);
   }
 
   onApplyForAdoption() {
     const currentPet = this.pet();
+    console.log('onApplyForAdoption triggered!');
+    console.log('Current pet:', currentPet);
+    console.log('Router available:', !!this.router);
+
     if (currentPet) {
+      // Store pet data in sessionStorage as backup for adoption application
+      sessionStorage.setItem('adoptionPet', JSON.stringify(currentPet));
+
       // Navigate to adoption application form with pet data
-      this.router.navigate(['/adoption-application'], {
-        state: { pet: currentPet }
-      });
+      console.log('Navigating to adoption application for:', currentPet.name);
+      this.router
+        .navigate(['/adoption-application'], {
+          state: { pet: currentPet },
+        })
+        .then(
+          (success) =>
+            console.log('Adoption application navigation success:', success),
+          (error) =>
+            console.error('Adoption application navigation error:', error),
+        );
+    } else {
+      console.error('No pet data available for adoption application');
     }
   }
 
@@ -100,16 +124,27 @@ export class PetDetailComponent implements OnInit {
   onShare() {
     const currentPet = this.pet();
     if (currentPet && navigator.share) {
-      navigator.share({
-        title: `Meet ${currentPet.name}`,
-        text: `Check out this adorable ${currentPet.species} looking for a home!`,
-        url: window.location.href,
-      }).catch(console.error);
+      navigator
+        .share({
+          title: `Meet ${currentPet.name}`,
+          text: `Check out this adorable ${currentPet.species} looking for a home!`,
+          url: window.location.href,
+        })
+        .catch(console.error);
     } else if (currentPet) {
       // Fallback: copy to clipboard
       navigator.clipboard.writeText(window.location.href).then(() => {
         console.log('URL copied to clipboard');
       });
     }
+  }
+
+  // Test method to verify navigation works
+  testAdoptionNavigation() {
+    console.log('Test adoption navigation triggered');
+    this.router.navigate(['/adoption-application']).then(
+      (success) => console.log('Test adoption navigation success:', success),
+      (error) => console.error('Test adoption navigation error:', error),
+    );
   }
 }

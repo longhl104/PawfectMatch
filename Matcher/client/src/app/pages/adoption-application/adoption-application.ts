@@ -104,13 +104,29 @@ export class AdoptionApplicationComponent implements OnInit {
   ];
 
   ngOnInit() {
+    console.log('Adoption application ngOnInit called');
+
     // Get pet data from navigation state
     const navigation = this.router.getCurrentNavigation();
     const petData = navigation?.extras?.state?.['pet'] as Pet;
 
     if (petData) {
+      console.log('Pet data found in navigation state:', petData.name);
       this.pet.set(petData);
     } else {
+      // Try to get from sessionStorage as backup
+      const storedPet = sessionStorage.getItem('adoptionPet') || sessionStorage.getItem('selectedPet');
+      if (storedPet) {
+        try {
+          const parsedPet = JSON.parse(storedPet) as Pet;
+          console.log('Pet data found in sessionStorage:', parsedPet.name);
+          this.pet.set(parsedPet);
+          return;
+        } catch (error) {
+          console.error('Error parsing stored pet data:', error);
+        }
+      }
+
       // Check if we have a pet ID in route params (future enhancement)
       const petId = this.route.snapshot.paramMap.get('petId');
       if (petId) {
@@ -118,6 +134,7 @@ export class AdoptionApplicationComponent implements OnInit {
         console.log('Fetch pet data for ID:', petId);
       } else {
         // No pet data available, redirect to browse
+        console.log('No pet data available, redirecting to browse');
         this.router.navigate(['/browse']);
       }
     }
