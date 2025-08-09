@@ -40,7 +40,7 @@ import {
     CardModule,
     FloatLabelModule,
     CheckboxModule,
-    TextareaModule
+    TextareaModule,
   ],
   templateUrl: './registration.html',
   styleUrl: './registration.scss',
@@ -205,7 +205,9 @@ export class Registration {
           'Registration successful! Please check your email for a verification code.',
         );
 
-        window.location.href = response.redirectUrl;
+        if (response.redirectUrl) {
+          window.location.href = response.redirectUrl;
+        }
       } catch (error) {
         this.errorHandlingService.handleErrorWithComponent(
           error,

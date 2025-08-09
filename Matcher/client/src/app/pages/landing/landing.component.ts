@@ -23,11 +23,6 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { AuthService } from 'shared/services/auth.service';
 import { CustomIconComponent } from '@longhl104/pawfect-match-ng';
 
-// Register GSAP plugins
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger);
-}
-
 @Component({
   selector: 'app-landing',
   standalone: true,
@@ -146,6 +141,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   testimonialsCount = computed(() => this.testimonials().length);
 
   private testimonialInterval: NodeJS.Timeout | null = null;
+  private gsapInitialized = false;
 
   constructor() {
     // Use effect to handle authentication state changes
@@ -156,6 +152,17 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit() {
+    // Initialize GSAP plugins only when component loads and only in browser
+    if (isPlatformBrowser(this.platformId) && !this.gsapInitialized) {
+      try {
+        gsap.registerPlugin(ScrollTrigger);
+        this.gsapInitialized = true;
+        console.log('GSAP plugins initialized for landing page');
+      } catch (error) {
+        console.error('Failed to initialize GSAP plugins:', error);
+      }
+    }
+
     // Check if user is already authenticated and redirect if needed
     this.authService.authStatus$.subscribe((status) => {
       if (status.isAuthenticated) {
@@ -207,6 +214,12 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private initializeAnimations() {
+    // Ensure GSAP is initialized before running animations
+    if (!this.gsapInitialized) {
+      console.warn('GSAP not initialized, skipping animations');
+      return;
+    }
+
     // Hero section animations
     const tl = gsap.timeline();
 
@@ -379,6 +392,11 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private animateCounters() {
+    if (!this.gsapInitialized) {
+      console.warn('GSAP not initialized, skipping counter animations');
+      return;
+    }
+
     this.stats().forEach((stat, index) => {
       const element = document.querySelector(`.stat-number-${index}`);
       if (element) {
@@ -420,6 +438,11 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private setupButtonAnimations() {
+    if (!this.gsapInitialized) {
+      console.warn('GSAP not initialized, skipping button animations');
+      return;
+    }
+
     // CTA button hover animations
     const buttons = document.querySelectorAll('.animated-button');
 
@@ -472,12 +495,14 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
       const currentIndex = this.currentTestimonialIndex();
       this.currentTestimonialIndex.set((currentIndex + 1) % testimonialsLength);
 
-      // Animate testimonial change
-      gsap.fromTo(
-        '.active-testimonial',
-        { opacity: 0, x: 50 },
-        { opacity: 1, x: 0, duration: 0.5, ease: 'power2.out' },
-      );
+      // Animate testimonial change only if GSAP is initialized
+      if (this.gsapInitialized) {
+        gsap.fromTo(
+          '.active-testimonial',
+          { opacity: 0, x: 50 },
+          { opacity: 1, x: 0, duration: 0.5, ease: 'power2.out' },
+        );
+      }
     }
   }
 
@@ -510,26 +535,48 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onImageLoad(event: Event) {
     const img = event.target as HTMLImageElement;
-    // Set initial state and animate to final state for stable animation
-    gsap.fromTo(
-      img,
-      {
-        opacity: 0,
-        scale: 0.8,
-      },
-      {
-        opacity: 1,
-        scale: 1,
-        duration: 1.5,
-        ease: 'power3.out',
-        delay: 0.5, // Small delay to sync with other hero animations
-      },
-    );
+    // Set initial state and animate to final state for stable animation only if GSAP is initialized
+    if (this.gsapInitialized) {
+      gsap.fromTo(
+        img,
+        {
+          opacity: 0,
+          scale: 0.8,
+        },
+        {
+          opacity: 1,
+          scale: 1,
+          duration: 1.5,
+          ease: 'power3.out',
+          delay: 0.5, // Small delay to sync with other hero animations
+        },
+      );
+    } else {
+      // Fallback to simple opacity change if GSAP is not available
+      img.style.opacity = '1';
+    }
   }
 
   ngOnDestroy() {
+    // Clear testimonial interval
     if (this.testimonialInterval) {
       clearInterval(this.testimonialInterval);
+      this.testimonialInterval = null;
+    }
+
+    // Clean up GSAP animations and ScrollTriggers
+    if (this.gsapInitialized && isPlatformBrowser(this.platformId)) {
+      try {
+        // Kill all ScrollTriggers created by this component
+        ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+
+        // Kill any ongoing GSAP animations
+        gsap.killTweensOf('*');
+
+        console.log('GSAP animations cleaned up for landing page');
+      } catch (error) {
+        console.error('Error cleaning up GSAP animations:', error);
+      }
     }
   }
 }

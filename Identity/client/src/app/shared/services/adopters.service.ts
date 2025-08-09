@@ -1,8 +1,12 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
-import { environment } from 'environments/environment';
+import {
+  RegistrationApi,
+  AdopterRegistrationRequest as GeneratedAdopterRequest,
+  IAdopterRegistrationResponse,
+} from '../apis/generated-apis';
 
+// Keep the existing detailed interface, but add compatibility type
 export interface AdopterRegistrationRequest {
   fullName: string;
   email: string;
@@ -23,6 +27,9 @@ export interface AdopterRegistrationRequest {
   };
   bio?: string;
 }
+
+// For the API response, use the generated interface
+export type AdopterRegistrationResponse = IAdopterRegistrationResponse;
 
 export interface AdopterProfile {
   id: string;
@@ -114,9 +121,7 @@ export interface ChangePasswordRequest {
   providedIn: 'root',
 })
 export class AdoptersService {
-  private http = inject(HttpClient);
-
-  private readonly apiUrl = `${environment.apiUrl}`;
+  private registrationApi = inject(RegistrationApi);
 
   private currentAdopterSubject = new BehaviorSubject<AdopterProfile | null>(
     null,
@@ -129,16 +134,12 @@ export class AdoptersService {
   /**
    * Register a new adopter
    */
-  register(request: AdopterRegistrationRequest): Observable<{
-    message: string;
-    userId: string;
-    redirectUrl: string;
-  }> {
-    return this.http.post<{
-      message: string;
-      userId: string;
-      redirectUrl: string;
-    }>(`${this.apiUrl}/registration/adopter`, request);
+  register(
+    request: AdopterRegistrationRequest,
+  ): Observable<AdopterRegistrationResponse> {
+    // Convert the interface to the generated class
+    const registrationRequest = new GeneratedAdopterRequest(request);
+    return this.registrationApi.adopter(registrationRequest);
     // Note: HTTP errors are now handled by the global error interceptor
   }
 }

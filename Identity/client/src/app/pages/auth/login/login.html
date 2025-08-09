@@ -5,14 +5,15 @@
       label="Back to Choice"
       [text]="true"
       (onClick)="goBack()"
-      class="back-btn">
+      styleClass="back-btn"
+    >
     </p-button>
 
     <h1>Welcome Back</h1>
     <p>Sign in to your PawfectMatch account</p>
   </div>
 
-  <p-card class="login-card">
+  <p-card styleClass="login-card">
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
       <!-- Email -->
       <div class="form-group">
@@ -27,12 +28,12 @@
           />
           <label for="email">Email Address *</label>
         </p-floatlabel>
-        @if (isFieldInvalid('email')) {
+        @if (isFieldInvalid("email")) {
           <small class="p-error">
-            @if (loginForm.get('email')?.errors?.['required']) {
+            @if (loginForm.get("email")?.errors?.["required"]) {
               Email is required
             }
-            @if (loginForm.get('email')?.errors?.['email']) {
+            @if (loginForm.get("email")?.errors?.["email"]) {
               Please enter a valid email address
             }
           </small>
@@ -49,13 +50,14 @@
             [feedback]="false"
             autocomplete="current-password"
             [class.ng-invalid]="isFieldInvalid('password')"
-            class="w-full">
+            styleClass="w-full"
+          >
           </p-password>
           <label for="password">Password *</label>
         </p-floatlabel>
-        @if (isFieldInvalid('password')) {
+        @if (isFieldInvalid("password")) {
           <small class="p-error">
-            @if (loginForm.get('password')?.errors?.['required']) {
+            @if (loginForm.get("password")?.errors?.["required"]) {
               Password is required
             }
           </small>
@@ -76,7 +78,8 @@
         [loading]="isSubmitting"
         loadingIcon="pi pi-spinner pi-spin"
         [disabled]="loginForm.invalid || isSubmitting"
-        class="w-full submit-btn">
+        styleClass="w-full submit-btn"
+      >
       </p-button>
 
       <!-- Register Link -->
@@ -100,6 +103,12 @@
 
   <!-- Photo Credit -->
   <div class="photo-credit">
-    Photo by <a href="https://www.pexels.com/@lum3n-44775/" target="_blank" rel="noopener">Lum3n</a>
+    Photo by
+    <a
+      href="https://www.pexels.com/@lum3n-44775/"
+      target="_blank"
+      rel="noopener"
+      >Lum3n</a
+    >
   </div>
 </div>

@@ -2,6 +2,12 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from 'environments/environment';
 import { Observable } from 'rxjs';
+import {
+  AuthApi,
+  LoginRequest as GeneratedLoginRequest,
+  ILoginRequest,
+  ILoginResponse,
+} from '../apis/generated-apis';
 
 export interface VerificationRequest {
   email: string;
@@ -33,22 +39,16 @@ export interface TokenData {
   } | null;
 }
 
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-export interface LoginResponse {
-  success: boolean;
-  message: string;
-  data: TokenData | null;
-}
+// Use the interface types for better compatibility
+export type LoginRequest = ILoginRequest;
+export type LoginResponse = ILoginResponse;
 
 @Injectable({
   providedIn: 'root',
 })
 export class UsersService {
   private http = inject(HttpClient);
+  private authApi = inject(AuthApi);
 
   private readonly authUrl = `${environment.apiUrl}/api/auth`;
 
@@ -56,7 +56,9 @@ export class UsersService {
    * Login user
    */
   login(request: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.authUrl}/login`, request);
+    // Convert the interface to the generated class
+    const loginRequest = new GeneratedLoginRequest(request);
+    return this.authApi.login(loginRequest);
   }
 
   /**
