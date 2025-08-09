@@ -218,3 +218,12 @@
   (visibleChange)="showContactDialog.set($event)"
   (viewPetDetails)="onGoBack()"
 />
+
+<!-- Login Required Dialog -->
+<app-login-required-dialog
+  [visible]="showLoginDialog()"
+  [petName]="pet()?.name || ''"
+  (visibleChange)="onLoginDialogHide()"
+  (loginClicked)="onLoginClicked()"
+  (signUpClicked)="onSignUpClicked()"
+/>

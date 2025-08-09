@@ -14,6 +14,8 @@ import { DividerModule } from 'primeng/divider';
 import { TooltipModule } from 'primeng/tooltip';
 import { Pet } from '../browse/types/pet.interface';
 import { ContactShelterDialogComponent } from '../browse/contact-shelter-dialog/contact-shelter-dialog.component';
+import { LoginRequiredDialogComponent } from './login-required-dialog/login-required-dialog.component';
+import { AuthService } from '../../shared/services/auth.service';
 
 @Component({
   selector: 'app-pet-detail',
@@ -25,6 +27,7 @@ import { ContactShelterDialogComponent } from '../browse/contact-shelter-dialog/
     DividerModule,
     TooltipModule,
     ContactShelterDialogComponent,
+    LoginRequiredDialogComponent,
   ],
   templateUrl: './pet-detail.html',
   styleUrl: './pet-detail.scss',
@@ -33,10 +36,12 @@ import { ContactShelterDialogComponent } from '../browse/contact-shelter-dialog/
 export class PetDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private authService = inject(AuthService);
 
   pet = signal<Pet | null>(null);
   isLoading = signal(false);
   showContactDialog = signal(false);
+  showLoginDialog = signal(false);
 
   ngOnInit() {
     // Get pet ID from route parameter
@@ -87,6 +92,13 @@ export class PetDetailComponent implements OnInit {
     console.log('onApplyForAdoption triggered!');
     console.log('Current pet:', currentPet);
     console.log('Router available:', !!this.router);
+
+    // Check if user is authenticated
+    if (!this.authService.isAuthenticated()) {
+      console.log('User not authenticated, showing login dialog');
+      this.showLoginDialog.set(true);
+      return;
+    }
 
     if (currentPet) {
       // Store pet data in sessionStorage as backup for adoption application
@@ -146,5 +158,20 @@ export class PetDetailComponent implements OnInit {
       (success) => console.log('Test adoption navigation success:', success),
       (error) => console.error('Test adoption navigation error:', error),
     );
+  }
+
+  // Login dialog handlers
+  onLoginClicked() {
+    console.log('Redirecting to login page');
+    this.authService.redirectToLogin();
+  }
+
+  onSignUpClicked() {
+    console.log('Redirecting to sign up page');
+    this.authService.redirectToSignUp();
+  }
+
+  onLoginDialogHide() {
+    this.showLoginDialog.set(false);
   }
 }

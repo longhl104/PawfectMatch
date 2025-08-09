@@ -1,0 +1,56 @@
+.login-dialog-content {
+  padding: 1rem 0;
+}
+
+.dialog-message {
+  text-align: center;
+
+  i {
+    display: block;
+    margin: 0 auto 1rem;
+  }
+
+  h3 {
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    line-height: 1.5;
+    margin-bottom: 1rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.dialog-actions {
+  .action-section {
+    h4 {
+      color: var(--text-color);
+      margin-bottom: 0.5rem;
+    }
+
+    button {
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  :host ::ng-deep .p-dialog {
+    width: 90% !important;
+    margin: 1rem;
+  }
+
+  .login-dialog-content {
+    padding: 0.5rem 0;
+  }
+}
