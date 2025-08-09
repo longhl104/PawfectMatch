@@ -1,0 +1,220 @@
+<div class="pet-detail-container">
+  @if (pet()) {
+  <div class="pet-detail-content max-w-6xl mx-auto p-4">
+    <!-- Header with Back Button -->
+    <div class="header-section mb-4">
+      <p-button
+        icon="pi pi-arrow-left"
+        label="Back to Browse"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="onGoBack()"
+        class="mb-4"
+      />
+    </div>
+
+    <!-- Main Content -->
+    <div class="grid">
+      <!-- Pet Image Section -->
+      <div class="col-12 lg:col-6">
+        <p-card class="image-card h-full">
+          <div class="pet-image-container">
+            <img
+              [src]="pet()!.imageUrl"
+              [alt]="pet()!.name"
+              class="w-full h-auto border-round shadow-2"
+              style="max-height: 500px; object-fit: cover;"
+            />
+
+            <!-- Distance Badge -->
+            <div class="distance-badge">
+              <p-tag
+                value="{{ pet()!.distance }}km away"
+                severity="info"
+                [rounded]="true"
+              />
+            </div>
+
+            <!-- Adoption Fee Badge -->
+            <div class="fee-badge">
+              <p-tag
+                value="${{ pet()!.adoptionFee }}"
+                severity="success"
+                [rounded]="true"
+              />
+            </div>
+          </div>
+        </p-card>
+      </div>
+
+      <!-- Pet Information Section -->
+      <div class="col-12 lg:col-6">
+        <p-card class="info-card h-full">
+          <!-- Pet Name and Basic Info -->
+          <div class="pet-header mb-4">
+            <h1 class="text-4xl font-bold text-900 mb-2">{{ pet()!.name }}</h1>
+            <div class="flex flex-wrap gap-2 mb-3">
+              <p-tag value="{{ pet()!.species }}" severity="info" />
+              <p-tag value="{{ pet()!.breed }}" severity="warning" />
+              <p-tag value="{{ pet()!.age }} years old" />
+              <p-tag value="{{ pet()!.gender }}" severity="secondary" />
+            </div>
+          </div>
+
+          <!-- Pet Attributes -->
+          <div class="pet-attributes mb-4">
+            <h3 class="text-lg font-semibold text-900 mb-2">About {{ pet()!.name }}</h3>
+            <div class="flex gap-2 flex-wrap mb-3">
+              @if (pet()!.isSpayedNeutered) {
+              <p-tag
+                value="Spayed/Neutered"
+                severity="success"
+                [rounded]="true"
+              />
+              }
+              @if (pet()!.isGoodWithKids) {
+              <p-tag
+                value="Good with kids"
+                severity="info"
+                [rounded]="true"
+              />
+              }
+              @if (pet()!.isGoodWithPets) {
+              <p-tag
+                value="Good with pets"
+                severity="warning"
+                [rounded]="true"
+              />
+              }
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="pet-description mb-4">
+            <h3 class="text-lg font-semibold text-900 mb-2">Description</h3>
+            <div
+              class="text-700 line-height-3"
+              [innerHTML]="pet()!.description"
+            ></div>
+          </div>
+
+          <!-- Shelter Information -->
+          <div class="shelter-info mb-4">
+            <h3 class="text-lg font-semibold text-900 mb-2">
+              <i class="pi pi-building mr-2"></i>Shelter Information
+            </h3>
+            <div class="bg-gray-50 p-3 border-round">
+              <h4 class="text-md font-medium text-900 mb-1">{{ pet()!.shelter }}</h4>
+              <p class="text-600 text-sm mb-0">
+                <i class="pi pi-map-marker mr-1"></i>{{ pet()!.location }}
+              </p>
+            </div>
+          </div>
+
+          <p-divider />
+
+          <!-- Action Buttons -->
+          <div class="action-buttons">
+            <div class="grid gap-3">
+              <!-- Primary Action - Apply for Adoption -->
+              <div class="col-12">
+                <p-button
+                  label="Apply for Adoption"
+                  icon="pi pi-heart"
+                  class="w-full"
+                  size="large"
+                  (onClick)="onApplyForAdoption()"
+                />
+              </div>
+
+              <!-- Secondary Actions -->
+              <div class="col-6">
+                <p-button
+                  label="Contact Shelter"
+                  icon="pi pi-phone"
+                  severity="secondary"
+                  [outlined]="true"
+                  class="w-full"
+                  (onClick)="onContactShelter()"
+                />
+              </div>
+              <div class="col-6">
+                <p-button
+                  label="Add to Favorites"
+                  icon="pi pi-star"
+                  severity="secondary"
+                  [outlined]="true"
+                  class="w-full"
+                  (onClick)="onFavorite()"
+                />
+              </div>
+
+              <!-- Additional Actions -->
+              <div class="col-12">
+                <div class="flex gap-2 justify-content-center">
+                  <p-button
+                    icon="pi pi-share-alt"
+                    severity="secondary"
+                    [text]="true"
+                    pTooltip="Share this pet"
+                    (onClick)="onShare()"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </p-card>
+      </div>
+    </div>
+
+    <!-- Additional Information Section -->
+    <div class="additional-info mt-6">
+      <p-card>
+        <div class="grid">
+          <div class="col-12 md:col-4">
+            <div class="text-center p-3">
+              <i class="pi pi-heart text-4xl text-pink-500 mb-2"></i>
+              <h4 class="text-900 mb-1">Loving Home</h4>
+              <p class="text-600 text-sm">
+                {{ pet()!.name }} is looking for a loving forever home
+              </p>
+            </div>
+          </div>
+          <div class="col-12 md:col-4">
+            <div class="text-center p-3">
+              <i class="pi pi-shield text-4xl text-green-500 mb-2"></i>
+              <h4 class="text-900 mb-1">Health Checked</h4>
+              <p class="text-600 text-sm">
+                All pets are health checked before adoption
+              </p>
+            </div>
+          </div>
+          <div class="col-12 md:col-4">
+            <div class="text-center p-3">
+              <i class="pi pi-users text-4xl text-blue-500 mb-2"></i>
+              <h4 class="text-900 mb-1">Support</h4>
+              <p class="text-600 text-sm">
+                Ongoing support from our shelter team
+              </p>
+            </div>
+          </div>
+        </div>
+      </p-card>
+    </div>
+  </div>
+  }
+
+  @if (isLoading()) {
+  <div class="loading-container flex justify-content-center align-items-center" style="height: 400px;">
+    <i class="pi pi-spin pi-spinner text-4xl text-primary"></i>
+  </div>
+  }
+</div>
+
+<!-- Contact Shelter Dialog -->
+<app-contact-shelter-dialog
+  [visible]="showContactDialog"
+  [pet]="pet"
+  (visibleChange)="showContactDialog.set($event)"
+  (viewPetDetails)="onGoBack()"
+/>

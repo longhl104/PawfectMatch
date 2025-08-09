@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -150,6 +151,7 @@ export class BrowseComponent implements OnInit, OnDestroy {
   private googleMapsService = inject(GoogleMapsService);
   private speciesApi = inject(SpeciesApi);
   private petSearchApi = inject(PetSearchApi);
+  private router = inject(Router);
 
   protected readonly Math = Math;
 
@@ -728,7 +730,9 @@ export class BrowseComponent implements OnInit, OnDestroy {
       adoptionFee: apiPet.adoptionFee || 0,
       location: apiPet.shelter?.shelterAddress || '',
       distance: Math.round((apiPet.distanceKm || 0) * 10) / 10, // Round to 1 decimal place
-      imageUrl: apiPet.mainImageDownloadUrl || 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400',
+      imageUrl:
+        apiPet.mainImageDownloadUrl ||
+        'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400',
       shelter: apiPet.shelter?.shelterName || '',
       shelterPhone: apiPet.shelter?.shelterContactNumber || undefined,
       shelterWebsite: undefined, // Not available in current API response
@@ -805,9 +809,37 @@ export class BrowseComponent implements OnInit, OnDestroy {
     return this.filteredPets().slice(startIndex, endIndex);
   }
 
-  onPetClick(pet: Pet) {
-    // TODO: Navigate to pet detail page or show more info
-    console.log('Pet clicked:', pet);
+  onPetClick(pet: Pet, event?: Event) {
+    // Prevent event bubbling if event is provided
+    if (event) {
+      event.stopPropagation();
+    }
+
+    // Add debugging
+    console.log('onPetClick triggered!');
+    console.log('Pet data:', pet);
+    console.log('Router available:', !!this.router);
+
+    // Navigate to pet detail page with pet ID and pass pet data via state
+    console.log(
+      'Navigating to pet detail for:',
+      pet.name,
+      'ID:',
+      pet.petPostgreSqlId,
+    );
+
+    // Store pet data in sessionStorage as backup
+    sessionStorage.setItem('selectedPet', JSON.stringify(pet));
+
+    // Try to navigate and log any errors
+    this.router
+      .navigate(['/pet-detail', pet.petPostgreSqlId], {
+        state: { pet },
+      })
+      .then(
+        (success) => console.log('Navigation success:', success),
+        (error) => console.error('Navigation error:', error),
+      );
   }
 
   onContactShelter(pet: Pet, event: Event) {
@@ -825,5 +857,14 @@ export class BrowseComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     // TODO: Implement favorite functionality
     console.log('Favorite pet:', pet);
+  }
+
+  // Test method to verify navigation works
+  testNavigation() {
+    console.log('Test navigation triggered');
+    this.router.navigate(['/pet-detail', 123]).then(
+      (success) => console.log('Test navigation success:', success),
+      (error) => console.error('Test navigation error:', error),
+    );
   }
 }

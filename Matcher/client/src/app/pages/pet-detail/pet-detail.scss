@@ -1,0 +1,105 @@
+.pet-detail-container {
+  min-height: 100vh;
+  background: var(--surface-ground);
+
+  .pet-detail-content {
+    .image-card {
+      .pet-image-container {
+        position: relative;
+
+        .distance-badge {
+          position: absolute;
+          top: 1rem;
+          right: 1rem;
+          z-index: 1;
+        }
+
+        .fee-badge {
+          position: absolute;
+          top: 1rem;
+          left: 1rem;
+          z-index: 1;
+        }
+      }
+    }
+
+    .info-card {
+      .pet-header {
+        h1 {
+          color: var(--primary-color);
+        }
+      }
+
+      .pet-attributes,
+      .pet-description,
+      .shelter-info {
+        h3 {
+          color: var(--text-color);
+        }
+      }
+
+      .bg-gray-50 {
+        background-color: var(--surface-50);
+      }
+
+      .action-buttons {
+        .p-button {
+          &.w-full {
+            width: 100%;
+          }
+        }
+      }
+    }
+
+    .additional-info {
+      .p-card {
+        background: linear-gradient(135deg, var(--surface-0) 0%, var(--surface-50) 100%);
+
+        .text-center {
+          transition: transform 0.2s ease;
+
+          &:hover {
+            transform: translateY(-2px);
+          }
+        }
+      }
+    }
+  }
+
+  .loading-container {
+    min-height: 50vh;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .pet-detail-container {
+    .pet-detail-content {
+      .grid {
+        .col-12.lg:col-6 {
+          margin-bottom: 1rem;
+        }
+      }
+
+      .action-buttons {
+        .grid {
+          .col-6 {
+            width: 100% !important;
+            flex: 0 0 100% !important;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .pet-detail-container {
+    .additional-info {
+      .p-card {
+        background: linear-gradient(135deg, var(--surface-800) 0%, var(--surface-900) 100%);
+      }
+    }
+  }
+}

@@ -15,6 +15,16 @@ export const routes: Routes = [
       import('./pages/browse/browse').then((m) => m.BrowseComponent),
   },
   {
+    path: 'pet-detail/:petId',
+    loadComponent: () =>
+      import('./pages/pet-detail/pet-detail').then((m) => m.PetDetailComponent),
+  },
+  {
+    path: 'adoption-application',
+    loadComponent: () =>
+      import('./pages/adoption-application/adoption-application').then((m) => m.AdoptionApplicationComponent),
+  },
+  {
     path: 'about',
     loadComponent: () =>
       import('./pages/about/about.component').then((m) => m.AboutComponent),

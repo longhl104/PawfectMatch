@@ -1,0 +1,66 @@
+.adoption-application-container {
+  min-height: 100vh;
+  background: var(--surface-ground);
+
+  .form-section {
+    h3 {
+      color: var(--primary-color);
+    }
+
+    .grid {
+      gap: 1rem;
+    }
+
+    label {
+      color: var(--text-color);
+    }
+
+    input, textarea {
+      &.p-invalid {
+        border-color: var(--red-500);
+      }
+    }
+
+    .p-error {
+      color: var(--red-500);
+      font-size: 0.875rem;
+    }
+  }
+
+  .p-checkbox {
+    .p-checkbox-box {
+      &.p-highlight {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+      }
+    }
+  }
+
+  .p-button {
+    &[disabled] {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .adoption-application-container {
+    .grid {
+      .col-12.md:col-6 {
+        width: 100% !important;
+        flex: 0 0 100% !important;
+      }
+    }
+
+    .flex.justify-content-end {
+      flex-direction: column;
+      gap: 0.5rem;
+
+      .p-button {
+        width: 100%;
+      }
+    }
+  }
+}
