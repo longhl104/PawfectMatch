@@ -173,7 +173,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     if (isPlatformBrowser(this.platformId)) {
-      // Longer delay to ensure DOM is fully ready and Angular components are rendered
+      // Delay to ensure DOM is fully ready and Angular components are rendered
       setTimeout(() => {
         if (this.checkDOMElements()) {
           this.initializeAnimations();
@@ -181,14 +181,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
           this.setupButtonAnimations();
           this.startTestimonialCarousel();
         } else {
-          console.warn('Some DOM elements are not ready, retrying...');
-          // Retry after another delay if elements aren't ready
-          setTimeout(() => {
-            this.initializeAnimations();
-            this.animateCounters();
-            this.setupButtonAnimations();
-            this.startTestimonialCarousel();
-          }, 500);
+          console.warn('Some DOM elements are not ready, animations skipped');
         }
       }, 300);
     }
@@ -568,7 +561,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.gsapInitialized && isPlatformBrowser(this.platformId)) {
       try {
         // Kill all ScrollTriggers created by this component
-        ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+        ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
 
         // Kill any ongoing GSAP animations
         gsap.killTweensOf('*');

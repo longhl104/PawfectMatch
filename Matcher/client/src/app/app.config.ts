@@ -8,10 +8,6 @@ import {
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import {
-  provideClientHydration,
-  withEventReplay,
-} from '@angular/platform-browser';
-import {
   provideHttpClient,
   withFetch,
   withInterceptors,
@@ -27,14 +23,17 @@ import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeuix/themes/aura';
 import { environment } from 'environments/environment';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { API_BASE_URL, SpeciesApi, PetSearchApi } from 'shared/apis/generated-apis';
+import {
+  API_BASE_URL,
+  SpeciesApi,
+  PetSearchApi,
+} from 'shared/apis/generated-apis';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideClientHydration(withEventReplay()),
     provideHttpClient(
       withFetch(),
       withInterceptorsFromDi(),
