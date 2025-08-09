@@ -1,0 +1,26 @@
+.contact-dialog-content {
+  .contact-item {
+    padding: 0.75rem;
+    border: 1px solid var(--surface-border);
+    border-radius: 6px;
+    background: var(--surface-ground);
+
+    .text-900 {
+      word-break: break-all;
+    }
+  }
+
+  .shelter-info {
+    h5 {
+      color: var(--primary-color);
+    }
+  }
+
+  .bg-gray-50 {
+    background-color: var(--surface-50);
+  }
+
+  .border-gray-200 {
+    border-color: var(--surface-200);
+  }
+}

@@ -1,0 +1,131 @@
+<p-dialog
+  header="Contact Shelter"
+  [(visible)]="visible"
+  [modal]="true"
+  [closable]="true"
+  [resizable]="false"
+  [style]="{ width: '450px' }"
+  (onHide)="onHide()"
+>
+  @if (pet()) {
+  <div class="contact-dialog-content">
+    <!-- Pet Info -->
+    <div class="flex align-items-center gap-3 mb-4 p-3 bg-gray-50 border-round">
+      <img
+        [src]="pet()!.imageUrl"
+        [alt]="pet()!.name"
+        class="w-4rem h-4rem object-cover border-round"
+      />
+      <div>
+        <h4 class="text-lg font-semibold text-900 m-0 mb-1">
+          {{ pet()!.name }}
+        </h4>
+        <p class="text-600 text-sm m-0">
+          {{ pet()!.species }} • {{ pet()!.breed }}
+        </p>
+        <p class="text-600 text-sm m-0">
+          <i class="pi pi-map-marker mr-1"></i>
+          {{ pet()!.location }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Shelter Info -->
+    <div class="shelter-info">
+      <h5 class="text-md font-semibold text-900 mb-3">
+        <i class="pi pi-building mr-2"></i>
+        {{ pet()!.shelter }}
+      </h5>
+
+      <div class="flex flex-column gap-3">
+        <!-- Phone Number -->
+        @if (pet()!.shelterPhone) {
+        <div class="contact-item">
+          <div class="text-sm font-medium text-700 mb-1">
+            <i class="pi pi-phone mr-1"></i>Phone Number
+          </div>
+          <div class="flex align-items-center gap-2">
+            <span class="text-900 font-medium">{{ pet()!.shelterPhone }}</span>
+            <p-button
+              icon="pi pi-phone"
+              size="small"
+              [text]="true"
+              severity="success"
+              pTooltip="Call shelter"
+              (onClick)="callShelter(pet()!.shelterPhone!)"
+            />
+          </div>
+        </div>
+        }
+
+        <!-- Website -->
+        @if (pet()!.shelterWebsite) {
+        <div class="contact-item">
+          <div class="text-sm font-medium text-700 mb-1">
+            <i class="pi pi-globe mr-1"></i>Website
+          </div>
+          <div class="flex align-items-center gap-2">
+            <span class="text-900 font-medium">{{ pet()!.shelterWebsite }}</span>
+            <p-button
+              icon="pi pi-external-link"
+              size="small"
+              [text]="true"
+              severity="info"
+              pTooltip="Visit website"
+              (onClick)="visitWebsite(pet()!.shelterWebsite!)"
+            />
+          </div>
+        </div>
+        }
+
+        <!-- Email -->
+        @if (pet()!.shelterEmail) {
+        <div class="contact-item">
+          <div class="text-sm font-medium text-700 mb-1">
+            <i class="pi pi-envelope mr-1"></i>Email
+          </div>
+          <div class="flex align-items-center gap-2">
+            <span class="text-900 font-medium">{{ pet()!.shelterEmail }}</span>
+            <p-button
+              icon="pi pi-envelope"
+              size="small"
+              [text]="true"
+              severity="secondary"
+              pTooltip="Send email"
+              (onClick)="sendEmail(pet()!.shelterEmail!)"
+            />
+          </div>
+        </div>
+        }
+
+        <!-- Fallback message if no contact info -->
+        @if (!pet()!.shelterPhone && !pet()!.shelterWebsite && !pet()!.shelterEmail) {
+        <div class="text-center py-4">
+          <i class="pi pi-info-circle text-4xl text-400 mb-3"></i>
+          <p class="text-600 m-0">
+            Contact information for this shelter is not available at the moment.
+            Please try visiting their location or searching online for their contact details.
+          </p>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex justify-content-end gap-2 mt-4 pt-3 border-top-1 border-gray-200">
+      <p-button
+        label="Close"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="onHide()"
+      />
+      @if (pet()!.shelterPhone || pet()!.shelterWebsite || pet()!.shelterEmail) {
+      <p-button
+        label="View Pet Details"
+        (onClick)="onViewPetDetails()"
+      />
+      }
+    </div>
+  </div>
+  }
+</p-dialog>

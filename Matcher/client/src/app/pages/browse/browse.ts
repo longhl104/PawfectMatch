@@ -33,26 +33,10 @@ import {
 import { GoogleMapsService } from '@longhl104/pawfect-match-ng';
 import { environment } from 'environments/environment';
 import { firstValueFrom } from 'rxjs';
+import { Pet } from './types/pet.interface';
+import { ContactShelterDialogComponent } from './contact-shelter-dialog/contact-shelter-dialog.component';
 
 // Types
-interface Pet {
-  petPostgreSqlId: number;
-  name: string;
-  species: string;
-  breed: string;
-  age: number;
-  gender: string;
-  description: string;
-  adoptionFee: number;
-  location: string;
-  distance: number;
-  imageUrl: string;
-  shelter: string;
-  isSpayedNeutered: boolean;
-  isGoodWithKids: boolean;
-  isGoodWithPets: boolean;
-}
-
 interface DropdownOption {
   label: string;
   value: string | null;
@@ -155,6 +139,7 @@ declare const google: {
     TagModule,
     TooltipModule,
     DividerModule,
+    ContactShelterDialogComponent,
   ],
   templateUrl: './browse.html',
   styleUrl: './browse.scss',
@@ -191,6 +176,10 @@ export class BrowseComponent implements OnInit, OnDestroy {
   // API Data
   apiSpecies = signal<PetSpeciesDto[]>([]);
   apiBreeds = signal<PetBreedDto[]>([]);
+
+  // Dialog state
+  showContactDialog = signal(false);
+  selectedPetForContact = signal<Pet | null>(null);
 
   // Helper methods to get display names
   getSelectedSpeciesName(): string {
@@ -741,6 +730,9 @@ export class BrowseComponent implements OnInit, OnDestroy {
       distance: Math.round((apiPet.distanceKm || 0) * 10) / 10, // Round to 1 decimal place
       imageUrl: apiPet.mainImageDownloadUrl || 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400',
       shelter: apiPet.shelter?.shelterName || '',
+      shelterPhone: apiPet.shelter?.shelterContactNumber || undefined,
+      shelterWebsite: undefined, // Not available in current API response
+      shelterEmail: undefined, // Not available in current API response
       isSpayedNeutered: false, // Not available in current API response
       isGoodWithKids: false, // Not available in current API response
       isGoodWithPets: false, // Not available in current API response
@@ -820,8 +812,13 @@ export class BrowseComponent implements OnInit, OnDestroy {
 
   onContactShelter(pet: Pet, event: Event) {
     event.stopPropagation();
-    // TODO: Implement contact shelter functionality
-    console.log('Contact shelter for pet:', pet);
+    this.selectedPetForContact.set(pet);
+    this.showContactDialog.set(true);
+  }
+
+  closeContactDialog() {
+    this.showContactDialog.set(false);
+    this.selectedPetForContact.set(null);
   }
 
   onFavorite(pet: Pet, event: Event) {

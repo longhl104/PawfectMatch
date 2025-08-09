@@ -327,3 +327,11 @@
   </div>
   }
 </div>
+
+<!-- Contact Shelter Dialog -->
+<app-contact-shelter-dialog
+  [visible]="showContactDialog"
+  [pet]="selectedPetForContact"
+  (visibleChange)="showContactDialog.set($event)"
+  (viewPetDetails)="onPetClick($event)"
+/>
