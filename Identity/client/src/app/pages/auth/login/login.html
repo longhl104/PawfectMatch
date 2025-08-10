@@ -17,7 +17,7 @@
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
       <!-- Email -->
       <div class="form-group">
-        <p-floatlabel>
+        <p-iftalabel>
           <input
             pInputText
             id="email"
@@ -27,7 +27,7 @@
             [class.ng-invalid]="isFieldInvalid('email')"
           />
           <label for="email">Email Address *</label>
-        </p-floatlabel>
+        </p-iftalabel>
         @if (isFieldInvalid("email")) {
           <small class="p-error">
             @if (loginForm.get("email")?.errors?.["required"]) {
@@ -42,7 +42,7 @@
 
       <!-- Password -->
       <div class="form-group">
-        <p-floatlabel>
+        <p-iftalabel>
           <p-password
             id="password"
             formControlName="password"
@@ -54,7 +54,7 @@
           >
           </p-password>
           <label for="password">Password *</label>
-        </p-floatlabel>
+        </p-iftalabel>
         @if (isFieldInvalid("password")) {
           <small class="p-error">
             @if (loginForm.get("password")?.errors?.["required"]) {

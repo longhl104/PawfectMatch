@@ -14,7 +14,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
-import { FloatLabelModule } from 'primeng/floatlabel';
+import { IftaLabelModule } from 'primeng/iftalabel';
 import { CheckboxModule } from 'primeng/checkbox';
 import { TextareaModule } from 'primeng/textarea';
 import {
@@ -38,7 +38,7 @@ import {
     PasswordModule,
     ButtonModule,
     CardModule,
-    FloatLabelModule,
+    IftaLabelModule,
     CheckboxModule,
     TextareaModule,
   ],

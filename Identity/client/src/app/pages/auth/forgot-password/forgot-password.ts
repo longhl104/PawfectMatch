@@ -6,7 +6,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
-import { FloatLabelModule } from 'primeng/floatlabel';
+import { IftaLabelModule } from 'primeng/iftalabel';
 import { MessageModule } from 'primeng/message';
 import { AuthApi, ForgotPasswordRequest, ResetPasswordRequest } from '../../../shared/apis/generated-apis';
 import { firstValueFrom } from 'rxjs';
@@ -28,7 +28,7 @@ interface StepConfig {
     PasswordModule,
     ButtonModule,
     CardModule,
-    FloatLabelModule,
+    IftaLabelModule,
     MessageModule
   ],
   templateUrl: './forgot-password.html',

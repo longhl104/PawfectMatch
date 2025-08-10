@@ -13,7 +13,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
-import { FloatLabelModule } from 'primeng/floatlabel';
+import { IftaLabelModule } from 'primeng/iftalabel';
 import {
   ToastService,
   ErrorHandlingService,
@@ -37,7 +37,7 @@ interface HttpError {
     PasswordModule,
     ButtonModule,
     CardModule,
-    FloatLabelModule
+    IftaLabelModule
   ],
   templateUrl: './login.html',
   styleUrl: './login.scss',

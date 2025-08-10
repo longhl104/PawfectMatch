@@ -13,12 +13,12 @@
     <p>Find your perfect companion and give a pet a loving home</p>
   </div>
 
-  <p-card styleClass="registration-card">
+  <p-card class="registration-card">
     <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()" novalidate>
       <!-- First Name and Last Name -->
       <div class="form-row">
         <div class="form-group">
-          <p-floatlabel>
+          <p-iftalabel>
             <input
               pInputText
               id="firstName"
@@ -26,7 +26,7 @@
               [class.ng-invalid]="isFieldInvalid('firstName')"
             />
             <label for="firstName">First Name *</label>
-          </p-floatlabel>
+          </p-iftalabel>
           @if (isFieldInvalid("firstName")) {
             <small class="p-error">
               @if (registrationForm.get("firstName")?.errors?.["required"]) {
@@ -40,7 +40,7 @@
         </div>
 
         <div class="form-group">
-          <p-floatlabel>
+          <p-iftalabel>
             <input
               pInputText
               id="lastName"
@@ -48,7 +48,7 @@
               [class.ng-invalid]="isFieldInvalid('lastName')"
             />
             <label for="lastName">Last Name *</label>
-          </p-floatlabel>
+          </p-iftalabel>
           @if (isFieldInvalid("lastName")) {
             <small class="p-error">
               @if (registrationForm.get("lastName")?.errors?.["required"]) {
@@ -64,7 +64,7 @@
 
       <!-- Email -->
       <div class="form-group">
-        <p-floatlabel>
+        <p-iftalabel>
           <input
             pInputText
             id="email"
@@ -74,7 +74,7 @@
             [class.ng-invalid]="isFieldInvalid('email')"
           />
           <label for="email">Email Address *</label>
-        </p-floatlabel>
+        </p-iftalabel>
         @if (isFieldInvalid("email")) {
           <small class="p-error">
             @if (registrationForm.get("email")?.errors?.["required"]) {
@@ -89,7 +89,7 @@
 
       <!-- Password -->
       <div class="form-group">
-        <p-floatlabel>
+        <p-iftalabel>
           <p-password
             id="password"
             formControlName="password"
@@ -101,7 +101,7 @@
           >
           </p-password>
           <label for="password">Password *</label>
-        </p-floatlabel>
+        </p-iftalabel>
         @if (isFieldInvalid("password")) {
           <small class="p-error">
             @if (registrationForm.get("password")?.errors?.["required"]) {
@@ -120,7 +120,7 @@
 
       <!-- Confirm Password -->
       <div class="form-group">
-        <p-floatlabel>
+        <p-iftalabel>
           <p-password
             id="confirmPassword"
             formControlName="confirmPassword"
@@ -132,7 +132,7 @@
           >
           </p-password>
           <label for="confirmPassword">Confirm Password *</label>
-        </p-floatlabel>
+        </p-iftalabel>
         @if (
           registrationForm.get("confirmPassword")?.errors?.["required"] ||
           (registrationForm.errors?.["passwordMismatch"] &&
@@ -157,7 +157,7 @@
 
       <!-- Phone Number -->
       <div class="form-group">
-        <p-floatlabel>
+        <p-iftalabel>
           <input
             pInputText
             id="phoneNumber"
@@ -166,7 +166,7 @@
             [class.ng-invalid]="isFieldInvalid('phoneNumber')"
           />
           <label for="phoneNumber">Phone Number (optional)</label>
-        </p-floatlabel>
+        </p-iftalabel>
         @if (isFieldInvalid("phoneNumber")) {
           <small class="p-error">
             @if (registrationForm.get("phoneNumber")?.errors?.["pattern"]) {
@@ -192,7 +192,7 @@
 
       <!-- Bio/Motivation -->
       <div class="form-group">
-        <p-floatlabel>
+        <p-iftalabel>
           <textarea
             pTextarea
             id="bio"
@@ -203,7 +203,7 @@
           >
           </textarea>
           <label for="bio">Brief Bio / Motivation (optional)</label>
-        </p-floatlabel>
+        </p-iftalabel>
         <div class="char-count">
           {{ registrationForm.get("bio")?.value?.length || 0 }}/500 characters
         </div>

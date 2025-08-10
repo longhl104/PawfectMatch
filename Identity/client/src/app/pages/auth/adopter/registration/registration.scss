@@ -141,8 +141,8 @@
     margin-bottom: 0;
   }
 
-  // Float label styling
-  p-floatlabel {
+  // Ifta label styling
+  p-iftalabel {
     width: 100%;
 
     label {
@@ -156,7 +156,6 @@
       width: 100%;
       border: 2px solid var(--color-border-light);
       border-radius: 0.5rem;
-      padding: 0.875rem 1rem;
       font-size: 1rem;
       transition: all 0.2s ease;
       background-color: var(--color-background-primary);
@@ -193,7 +192,6 @@
         width: 100%;
         border: 2px solid var(--color-border-light);
         border-radius: 0.5rem;
-        padding: 0.875rem 1rem;
         font-size: 1rem;
         transition: all 0.2s ease;
 
@@ -247,7 +245,6 @@
   text-align: right;
   margin-top: 0.25rem;
   transition: color 0.2s ease;
-
 }
 
 // Form row for side-by-side fields
@@ -577,8 +574,8 @@ textarea[formControlName="bio"] {
     font-size: 1.75rem;
   }
 
-  .form-group p-floatlabel input,
-  .form-group p-floatlabel textarea {
+  .form-group p-iftalabel input,
+  .form-group p-iftalabel textarea {
     padding: 0.75rem;
     font-size: 0.95rem;
   }

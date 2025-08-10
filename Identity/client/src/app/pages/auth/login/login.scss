@@ -159,7 +159,7 @@
   }
 
   // Float label styling
-  p-floatlabel {
+  p-iftalabel {
     width: 100%;
 
     label {
@@ -492,7 +492,7 @@
 }
 
 // Enhanced hover states for better UX
-.form-group p-floatlabel:hover label {
+.form-group p-iftalabel:hover label {
   color: var(--color-primary-600);
 }
 
@@ -516,7 +516,7 @@
     font-size: 1.75rem;
   }
 
-  .form-group p-floatlabel input {
+  .form-group p-iftalabel input {
     padding: 0.75rem;
     font-size: 0.95rem;
   }

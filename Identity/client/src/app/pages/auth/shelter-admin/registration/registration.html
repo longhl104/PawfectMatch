@@ -17,7 +17,7 @@
     <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()" novalidate>
       <!-- Email -->
       <div class="form-group">
-        <p-floatlabel>
+        <p-iftalabel>
           <input
             pInputText
             id="email"
@@ -27,7 +27,7 @@
             [class.ng-invalid]="isFieldInvalid('email')"
           />
           <label for="email">Email Address *</label>
-        </p-floatlabel>
+        </p-iftalabel>
         @if (isFieldInvalid("email")) {
           <small class="p-error">
             @if (registrationForm.get("email")?.errors?.["required"]) {
@@ -42,7 +42,7 @@
 
       <!-- Password -->
       <div class="form-group">
-        <p-floatlabel>
+        <p-iftalabel>
           <p-password
             id="password"
             formControlName="password"
@@ -54,7 +54,7 @@
           >
           </p-password>
           <label for="password">Password *</label>
-        </p-floatlabel>
+        </p-iftalabel>
         @if (isFieldInvalid("password")) {
           <small class="p-error">
             @if (registrationForm.get("password")?.errors?.["required"]) {
@@ -73,7 +73,7 @@
 
       <!-- Confirm Password -->
       <div class="form-group">
-        <p-floatlabel>
+        <p-iftalabel>
           <p-password
             id="confirmPassword"
             formControlName="confirmPassword"
@@ -85,7 +85,7 @@
           >
           </p-password>
           <label for="confirmPassword">Confirm Password *</label>
-        </p-floatlabel>
+        </p-iftalabel>
         @if (
           registrationForm.get("confirmPassword")?.errors?.["required"] ||
           (registrationForm.errors?.["passwordMismatch"] &&
@@ -109,7 +109,7 @@
 
       <!-- Shelter Name -->
       <div class="form-group">
-        <p-floatlabel>
+        <p-iftalabel>
           <input
             pInputText
             id="shelterName"
@@ -117,7 +117,7 @@
             [class.ng-invalid]="isFieldInvalid('shelterName')"
           />
           <label for="shelterName">Shelter Name *</label>
-        </p-floatlabel>
+        </p-iftalabel>
         @if (isFieldInvalid("shelterName")) {
           <small class="p-error">
             @if (registrationForm.get("shelterName")?.errors?.["required"]) {
@@ -132,7 +132,7 @@
 
       <!-- Shelter Contact Number -->
       <div class="form-group">
-        <p-floatlabel>
+        <p-iftalabel>
           <input
             pInputText
             id="shelterContactNumber"
@@ -141,7 +141,7 @@
             [class.ng-invalid]="isFieldInvalid('shelterContactNumber')"
           />
           <label for="shelterContactNumber">Shelter Contact Number *</label>
-        </p-floatlabel>
+        </p-iftalabel>
         @if (isFieldInvalid("shelterContactNumber")) {
           <small class="p-error">
             @if (
@@ -174,7 +174,7 @@
 
       <!-- Website URL (Optional) -->
       <div class="form-group mt-4">
-        <p-floatlabel>
+        <p-iftalabel>
           <input
             pInputText
             id="shelterWebsiteUrl"
@@ -183,7 +183,7 @@
             [class.ng-invalid]="isFieldInvalid('shelterWebsiteUrl')"
           />
           <label for="shelterWebsiteUrl">Website URL (optional)</label>
-        </p-floatlabel>
+        </p-iftalabel>
         @if (isFieldInvalid("shelterWebsiteUrl")) {
           <small class="p-error">
             @if (
@@ -197,7 +197,7 @@
 
       <!-- ABN (Optional) -->
       <div class="form-group">
-        <p-floatlabel>
+        <p-iftalabel>
           <input
             pInputText
             id="shelterAbn"
@@ -205,7 +205,7 @@
             [class.ng-invalid]="isFieldInvalid('shelterAbn')"
           />
           <label for="shelterAbn">ABN (optional)</label>
-        </p-floatlabel>
+        </p-iftalabel>
         @if (isFieldInvalid("shelterAbn")) {
           <small class="p-error">
             @if (registrationForm.get("shelterAbn")?.errors?.["pattern"]) {
@@ -217,7 +217,7 @@
 
       <!-- Shelter Description (Optional) -->
       <div class="form-group">
-        <p-floatlabel>
+        <p-iftalabel>
           <textarea
             pInputTextarea
             id="shelterDescription"
@@ -226,7 +226,7 @@
             maxlength="1000"
           ></textarea>
           <label for="shelterDescription">Shelter Description (optional)</label>
-        </p-floatlabel>
+        </p-iftalabel>
         <div class="char-count">
           {{
             registrationForm.get("shelterDescription")?.value?.length || 0
