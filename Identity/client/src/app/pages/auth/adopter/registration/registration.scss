@@ -248,13 +248,26 @@
   margin-top: 0.25rem;
   transition: color 0.2s ease;
 
-  &.near-limit {
-    color: var(--color-warning-600);
+}
+
+// Form row for side-by-side fields
+.form-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  .form-group {
+    flex: 1;
+    margin-bottom: 0;
   }
 
-  &.at-limit {
-    color: var(--color-error-600);
-    font-weight: 600;
+  @media (max-width: 576px) {
+    flex-direction: column;
+    gap: 0;
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
   }
 }
 

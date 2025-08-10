@@ -67,7 +67,8 @@ export class Registration {
   private createForm(): FormGroup {
     const form = this.formBuilder.group(
       {
-        fullName: ['', [Validators.required, Validators.minLength(2)]],
+        firstName: ['', [Validators.required, Validators.minLength(2)]],
+        lastName: ['', [Validators.required, Validators.minLength(2)]],
         email: ['', [Validators.required, Validators.email]],
         password: [
           '',
@@ -184,11 +185,12 @@ export class Registration {
       this.isSubmitting = true;
 
       const formData = this.registrationForm.value;
-      const { ...registrationData } = formData;
+      const { firstName, lastName, ...restData } = formData;
 
       // Include the detailed address information
       const finalData: AdopterRegistrationRequest = {
-        ...registrationData,
+        ...restData,
+        fullName: `${firstName} ${lastName}`.trim(),
         address: this.selectedAddress.formattedAddress,
         addressDetails: this.selectedAddress,
       };
