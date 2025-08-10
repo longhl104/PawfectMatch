@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject, signal, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+  OnInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -11,6 +17,7 @@ import { DividerModule } from 'primeng/divider';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { Pet } from '../browse/types/pet.interface';
+import { AuthService } from '../../shared/services/auth.service';
 
 @Component({
   selector: 'app-adoption-application',
@@ -35,6 +42,7 @@ export class AdoptionApplicationComponent implements OnInit {
   private route = inject(ActivatedRoute);
   protected router = inject(Router);
   private messageService = inject(MessageService);
+  private authService = inject(AuthService);
 
   pet = signal<Pet | null>(null);
   isSubmitting = signal(false);
@@ -44,7 +52,10 @@ export class AdoptionApplicationComponent implements OnInit {
     firstName: ['', [Validators.required, Validators.minLength(2)]],
     lastName: ['', [Validators.required, Validators.minLength(2)]],
     email: ['', [Validators.required, Validators.email]],
-    phone: ['', [Validators.required, Validators.pattern(/^[+]?[1-9][\d]{0,15}$/)]],
+    phone: [
+      '',
+      [Validators.required, Validators.pattern(/^[+]?[1-9][\d]{0,15}$/)],
+    ],
     dateOfBirth: ['', Validators.required],
 
     // Address Information
@@ -106,6 +117,9 @@ export class AdoptionApplicationComponent implements OnInit {
   ngOnInit() {
     console.log('Adoption application ngOnInit called');
 
+    // Prefill user information from AuthService
+    this.prefillUserInformation();
+
     // Get pet data from navigation state
     const navigation = this.router.getCurrentNavigation();
     const petData = navigation?.extras?.state?.['pet'] as Pet;
@@ -115,7 +129,9 @@ export class AdoptionApplicationComponent implements OnInit {
       this.pet.set(petData);
     } else {
       // Try to get from sessionStorage as backup
-      const storedPet = sessionStorage.getItem('adoptionPet') || sessionStorage.getItem('selectedPet');
+      const storedPet =
+        sessionStorage.getItem('adoptionPet') ||
+        sessionStorage.getItem('selectedPet');
       if (storedPet) {
         try {
           const parsedPet = JSON.parse(storedPet) as Pet;
@@ -140,6 +156,36 @@ export class AdoptionApplicationComponent implements OnInit {
     }
   }
 
+  private prefillUserInformation() {
+    const currentUser = this.authService.getCurrentUser();
+
+    if (currentUser) {
+      // Split the full name if available
+      const nameParts = currentUser.fullName?.split(' ') || [];
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      // Prefill the form with user data
+      this.applicationForm.patchValue({
+        firstName: firstName,
+        lastName: lastName,
+        email: currentUser.email || '',
+      });
+
+      // Disable the prefilled fields
+      this.applicationForm.get('firstName')?.disable();
+      this.applicationForm.get('lastName')?.disable();
+      this.applicationForm.get('email')?.disable();
+
+      console.log(
+        'User information prefilled and disabled for:',
+        currentUser.fullName,
+      );
+    } else {
+      console.warn('No user information available to prefill');
+    }
+  }
+
   onSubmit() {
     if (this.applicationForm.valid) {
       this.isSubmitting.set(true);
@@ -154,7 +200,7 @@ export class AdoptionApplicationComponent implements OnInit {
           severity: 'success',
           summary: 'Application Submitted',
           detail: `Your adoption application for ${pet?.name} has been submitted successfully. The shelter will contact you within 2-3 business days.`,
-          life: 5000
+          life: 5000,
         });
 
         this.isSubmitting.set(false);
@@ -169,7 +215,7 @@ export class AdoptionApplicationComponent implements OnInit {
         severity: 'error',
         summary: 'Form Invalid',
         detail: 'Please fill in all required fields correctly.',
-        life: 3000
+        life: 3000,
       });
 
       // Mark all fields as touched to show validation errors
@@ -181,7 +227,7 @@ export class AdoptionApplicationComponent implements OnInit {
     const pet = this.pet();
     if (pet) {
       this.router.navigate(['/pet-detail'], {
-        state: { pet }
+        state: { pet },
       });
     } else {
       this.router.navigate(['/browse']);

@@ -4,9 +4,7 @@
     <!-- Header -->
     <div class="text-center mb-6">
       <h1 class="text-4xl font-bold text-900 mb-2">Adoption Application</h1>
-      <p class="text-xl text-600">
-        Apply to adopt {{ pet()!.name }}
-      </p>
+      <p class="text-xl text-600">Apply to adopt {{ pet()!.name }}</p>
     </div>
 
     <!-- Pet Summary -->
@@ -19,7 +17,10 @@
         />
         <div>
           <h3 class="text-xl font-semibold text-900 mb-1">{{ pet()!.name }}</h3>
-          <p class="text-600 mb-1">{{ pet()!.species }} • {{ pet()!.breed }} • {{ pet()!.age }} years old</p>
+          <p class="text-600 mb-1">
+            {{ pet()!.species }} • {{ pet()!.breed }} • {{ pet()!.age }} years
+            old
+          </p>
           <p class="text-600 text-sm mb-0">{{ pet()!.shelter }}</p>
         </div>
       </div>
@@ -30,10 +31,19 @@
       <form [formGroup]="applicationForm" (ngSubmit)="onSubmit()">
         <!-- Personal Information Section -->
         <div class="form-section mb-6">
-          <h3 class="text-lg font-semibold text-900 mb-4">Personal Information</h3>
+          <h3 class="text-lg font-semibold text-900 mb-4">
+            Personal Information
+          </h3>
+          <p class="text-sm text-600 mb-4">
+            <i class="pi pi-info-circle mr-1"></i>
+            This information is pre-filled from your account and cannot be
+            changed here.
+          </p>
           <div class="grid">
             <div class="col-12 md:col-6">
-              <label for="firstName" class="block text-sm font-medium mb-2">First Name *</label>
+              <label for="firstName" class="block text-sm font-medium mb-2"
+                >First Name *</label
+              >
               <input
                 pInputText
                 id="firstName"
@@ -47,7 +57,9 @@
               }
             </div>
             <div class="col-12 md:col-6">
-              <label for="lastName" class="block text-sm font-medium mb-2">Last Name *</label>
+              <label for="lastName" class="block text-sm font-medium mb-2"
+                >Last Name *</label
+              >
               <input
                 pInputText
                 id="lastName"
@@ -61,7 +73,9 @@
               }
             </div>
             <div class="col-12 md:col-6">
-              <label for="email" class="block text-sm font-medium mb-2">Email *</label>
+              <label for="email" class="block text-sm font-medium mb-2"
+                >Email *</label
+              >
               <input
                 pInputText
                 id="email"
@@ -70,13 +84,16 @@
                 placeholder="Enter your email"
                 class="w-full"
                 [class.p-invalid]="isFieldInvalid('email')"
+                readonly
               />
               @if (isFieldInvalid('email')) {
               <small class="p-error">{{ getFieldError('email') }}</small>
               }
             </div>
             <div class="col-12 md:col-6">
-              <label for="phone" class="block text-sm font-medium mb-2">Phone Number *</label>
+              <label for="phone" class="block text-sm font-medium mb-2"
+                >Phone Number *</label
+              >
               <input
                 pInputText
                 id="phone"
@@ -97,7 +114,9 @@
 
         <!-- Why Adopt Section -->
         <div class="form-section mb-6">
-          <h3 class="text-lg font-semibold text-900 mb-4">Why do you want to adopt {{ pet()!.name }}?</h3>
+          <h3 class="text-lg font-semibold text-900 mb-4">
+            Why do you want to adopt {{ pet()!.name }}?
+          </h3>
           <textarea
             pInputText
             formControlName="whyAdopt"
@@ -128,7 +147,9 @@
             </label>
           </div>
           @if (isFieldInvalid('agreeToTerms')) {
-          <small class="p-error block">{{ getFieldError('agreeToTerms') }}</small>
+          <small class="p-error block"
+            >{{ getFieldError('agreeToTerms') }}</small
+          >
           }
 
           <div class="flex align-items-center">
@@ -163,14 +184,13 @@
         </div>
       </form>
     </p-card>
-    }
-
-    @if (!pet()) {
+    } @if (!pet()) {
     <div class="text-center py-8">
       <i class="pi pi-exclamation-triangle text-6xl text-orange-500 mb-4"></i>
       <h3 class="text-2xl font-semibold text-900 mb-3">No Pet Selected</h3>
       <p class="text-600 mb-4">
-        Please select a pet from the browse page to start your adoption application.
+        Please select a pet from the browse page to start your adoption
+        application.
       </p>
       <p-button
         label="Browse Pets"
