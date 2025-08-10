@@ -7,15 +7,12 @@
       color: var(--primary-color);
     }
 
-    .grid {
-      gap: 1rem;
-    }
-
     label {
       color: var(--text-color);
     }
 
-    input, textarea {
+    input,
+    textarea {
       &.p-invalid {
         border-color: var(--red-500);
       }
