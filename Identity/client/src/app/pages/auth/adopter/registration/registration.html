@@ -211,18 +211,20 @@
 
       <!-- Terms and Conditions -->
       <div class="form-group checkbox-group">
-        <p-checkbox
-          formControlName="agreeToTerms"
-          [binary]="true"
-          inputId="agreeToTerms"
-          [class.ng-invalid]="isFieldInvalid('agreeToTerms')"
-        >
-        </p-checkbox>
-        <label for="agreeToTerms" class="ml-2">
-          I agree to the
-          <a href="/terms" target="_blank">Terms and Conditions</a> and
-          <a href="/privacy" target="_blank">Privacy Policy</a> *
-        </label>
+        <div class="checkbox-wrapper">
+          <p-checkbox
+            formControlName="agreeToTerms"
+            [binary]="true"
+            inputId="agreeToTerms"
+            [class.ng-invalid]="isFieldInvalid('agreeToTerms')"
+          >
+          </p-checkbox>
+          <label for="agreeToTerms">
+            I agree to the
+            <a href="/terms" target="_blank">Terms and Conditions</a> and
+            <a href="/privacy" target="_blank">Privacy Policy</a> *
+          </label>
+        </div>
         @if (isFieldInvalid("agreeToTerms")) {
           <small class="p-error">
             @if (registrationForm.get("agreeToTerms")?.errors?.["required"]) {

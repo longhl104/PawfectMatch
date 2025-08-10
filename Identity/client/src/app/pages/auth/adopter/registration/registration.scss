@@ -271,8 +271,8 @@
 // Checkbox group styling
 .checkbox-group {
   display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
+  flex-direction: column;
+  gap: 0.5rem;
   padding: 1rem;
   background-color: var(--color-background-secondary);
   border-radius: 0.5rem;
@@ -282,6 +282,12 @@
   &:hover {
     background-color: var(--color-primary-50);
     border-color: var(--color-primary-200);
+  }
+
+  .checkbox-wrapper {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
   }
 
   p-checkbox {
@@ -334,8 +340,17 @@
   }
 
   .p-error {
-    margin-top: 0.5rem;
-    margin-left: 2rem;
+    display: block;
+    color: var(--color-error-600);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin: 0;
+    line-height: 1.4;
+    animation: slideDown 0.2s ease-out;
+
+    @media (max-width: 768px) {
+      font-size: 0.8rem;
+    }
   }
 }
 
