@@ -51,6 +51,7 @@
                 placeholder="Enter your first name"
                 class="w-full"
                 [class.p-invalid]="isFieldInvalid('firstName')"
+                readonly
               />
               @if (isFieldInvalid('firstName')) {
               <small class="p-error">{{ getFieldError('firstName') }}</small>
@@ -67,6 +68,7 @@
                 placeholder="Enter your last name"
                 class="w-full"
                 [class.p-invalid]="isFieldInvalid('lastName')"
+                readonly
               />
               @if (isFieldInvalid('lastName')) {
               <small class="p-error">{{ getFieldError('lastName') }}</small>
@@ -105,6 +107,265 @@
               />
               @if (isFieldInvalid('phone')) {
               <small class="p-error">{{ getFieldError('phone') }}</small>
+              }
+            </div>
+            <div class="col-12 md:col-6">
+              <label for="dateOfBirth" class="block text-sm font-medium mb-2"
+                >Date of Birth *</label
+              >
+              <input
+                pInputText
+                id="dateOfBirth"
+                type="date"
+                formControlName="dateOfBirth"
+                class="w-full"
+                [class.p-invalid]="isFieldInvalid('dateOfBirth')"
+              />
+              @if (isFieldInvalid('dateOfBirth')) {
+              <small class="p-error">{{ getFieldError('dateOfBirth') }}</small>
+              }
+            </div>
+          </div>
+        </div>
+
+        <p-divider />
+
+        <!-- Address Information Section -->
+        <div class="form-section mb-6">
+          <h3 class="text-lg font-semibold text-900 mb-4">
+            Address Information
+          </h3>
+          <div class="grid">
+            <div class="col-12">
+              <label for="address" class="block text-sm font-medium mb-2"
+                >Street Address *</label
+              >
+              <input
+                pInputText
+                id="address"
+                formControlName="address"
+                placeholder="Enter your street address"
+                class="w-full"
+                [class.p-invalid]="isFieldInvalid('address')"
+              />
+              @if (isFieldInvalid('address')) {
+              <small class="p-error">{{ getFieldError('address') }}</small>
+              }
+            </div>
+            <div class="col-12 md:col-4">
+              <label for="city" class="block text-sm font-medium mb-2"
+                >City *</label
+              >
+              <input
+                pInputText
+                id="city"
+                formControlName="city"
+                placeholder="Enter your city"
+                class="w-full"
+                [class.p-invalid]="isFieldInvalid('city')"
+              />
+              @if (isFieldInvalid('city')) {
+              <small class="p-error">{{ getFieldError('city') }}</small>
+              }
+            </div>
+            <div class="col-12 md:col-4">
+              <label for="state" class="block text-sm font-medium mb-2"
+                >State *</label
+              >
+              <input
+                pInputText
+                id="state"
+                formControlName="state"
+                placeholder="Enter your state"
+                class="w-full"
+                [class.p-invalid]="isFieldInvalid('state')"
+              />
+              @if (isFieldInvalid('state')) {
+              <small class="p-error">{{ getFieldError('state') }}</small>
+              }
+            </div>
+            <div class="col-12 md:col-4">
+              <label for="postcode" class="block text-sm font-medium mb-2"
+                >Postcode *</label
+              >
+              <input
+                pInputText
+                id="postcode"
+                formControlName="postcode"
+                placeholder="Enter your postcode"
+                class="w-full"
+                [class.p-invalid]="isFieldInvalid('postcode')"
+              />
+              @if (isFieldInvalid('postcode')) {
+              <small class="p-error">{{ getFieldError('postcode') }}</small>
+              }
+            </div>
+          </div>
+        </div>
+
+        <p-divider />
+
+        <!-- Housing Information Section -->
+        <div class="form-section mb-6">
+          <h3 class="text-lg font-semibold text-900 mb-4">
+            Housing Information
+          </h3>
+          <div class="grid">
+            <div class="col-12 md:col-6">
+              <label for="housingType" class="block text-sm font-medium mb-2"
+                >Housing Type *</label
+              >
+              <p-select
+                id="housingType"
+                formControlName="housingType"
+                [options]="housingOptions"
+                placeholder="Select housing type"
+                optionLabel="label"
+                optionValue="value"
+                class="w-full"
+                [class.p-invalid]="isFieldInvalid('housingType')"
+              />
+              @if (isFieldInvalid('housingType')) {
+              <small class="p-error">{{ getFieldError('housingType') }}</small>
+              }
+            </div>
+            <div class="col-12 md:col-6">
+              <label for="yardType" class="block text-sm font-medium mb-2"
+                >Yard Type</label
+              >
+              <p-select
+                id="yardType"
+                formControlName="yardType"
+                [options]="yardOptions"
+                placeholder="Select yard type"
+                optionLabel="label"
+                optionValue="value"
+                class="w-full"
+                [class.p-invalid]="isFieldInvalid('yardType')"
+              />
+              @if (isFieldInvalid('yardType')) {
+              <small class="p-error">{{ getFieldError('yardType') }}</small>
+              }
+            </div>
+            <div class="col-12">
+              <div class="flex gap-4">
+                <div class="flex align-items-center">
+                  <p-checkbox
+                    formControlName="isOwner"
+                    [binary]="true"
+                    inputId="isOwner"
+                    class="mr-2"
+                  />
+                  <label for="isOwner" class="text-sm">I own my home</label>
+                </div>
+                <div class="flex align-items-center">
+                  <p-checkbox
+                    formControlName="hasYard"
+                    [binary]="true"
+                    inputId="hasYard"
+                    class="mr-2"
+                  />
+                  <label for="hasYard" class="text-sm">I have a yard</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p-divider />
+
+        <!-- Pet Experience Section -->
+        <div class="form-section mb-6">
+          <h3 class="text-lg font-semibold text-900 mb-4">
+            Pet Experience & Lifestyle
+          </h3>
+          <div class="grid">
+            <div class="col-12 md:col-6">
+              <label for="previousPets" class="block text-sm font-medium mb-2"
+                >Previous Pet Experience</label
+              >
+              <textarea
+                pInputText
+                id="previousPets"
+                formControlName="previousPets"
+                rows="3"
+                placeholder="Tell us about any previous pets you've owned"
+                class="w-full"
+                [class.p-invalid]="isFieldInvalid('previousPets')"
+              ></textarea>
+              @if (isFieldInvalid('previousPets')) {
+              <small class="p-error">{{ getFieldError('previousPets') }}</small>
+              }
+            </div>
+            <div class="col-12 md:col-6">
+              <label for="currentPets" class="block text-sm font-medium mb-2"
+                >Current Pets</label
+              >
+              <textarea
+                pInputText
+                id="currentPets"
+                formControlName="currentPets"
+                rows="3"
+                placeholder="Tell us about any current pets (breed, age, temperament)"
+                class="w-full"
+                [class.p-invalid]="isFieldInvalid('currentPets')"
+              ></textarea>
+              @if (isFieldInvalid('currentPets')) {
+              <small class="p-error">{{ getFieldError('currentPets') }}</small>
+              }
+            </div>
+            <div class="col-12 md:col-6">
+              <label for="hoursAlone" class="block text-sm font-medium mb-2"
+                >Hours Pet Will Be Alone Daily *</label
+              >
+              <p-select
+                id="hoursAlone"
+                formControlName="hoursAlone"
+                [options]="hoursAloneOptions"
+                placeholder="Select hours alone"
+                optionLabel="label"
+                optionValue="value"
+                class="w-full"
+                [class.p-invalid]="isFieldInvalid('hoursAlone')"
+              />
+              @if (isFieldInvalid('hoursAlone')) {
+              <small class="p-error">{{ getFieldError('hoursAlone') }}</small>
+              }
+            </div>
+            <div class="col-12 md:col-6">
+              <label for="activityLevel" class="block text-sm font-medium mb-2"
+                >Activity Level *</label
+              >
+              <p-select
+                id="activityLevel"
+                formControlName="activityLevel"
+                [options]="activityLevelOptions"
+                placeholder="Select your activity level"
+                optionLabel="label"
+                optionValue="value"
+                class="w-full"
+                [class.p-invalid]="isFieldInvalid('activityLevel')"
+              />
+              @if (isFieldInvalid('activityLevel')) {
+              <small class="p-error"
+                >{{ getFieldError('activityLevel') }}</small
+              >
+              }
+            </div>
+            <div class="col-12">
+              <label for="vetReference" class="block text-sm font-medium mb-2"
+                >Veterinarian Reference</label
+              >
+              <input
+                pInputText
+                id="vetReference"
+                formControlName="vetReference"
+                placeholder="Name and contact of your veterinarian (if applicable)"
+                class="w-full"
+                [class.p-invalid]="isFieldInvalid('vetReference')"
+              />
+              @if (isFieldInvalid('vetReference')) {
+              <small class="p-error">{{ getFieldError('vetReference') }}</small>
               }
             </div>
           </div>
