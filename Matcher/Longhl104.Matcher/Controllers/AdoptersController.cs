@@ -2,6 +2,7 @@ using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Longhl104.Matcher.Models;
 
 namespace Longhl104.Matcher.Controllers;
 
@@ -24,9 +25,10 @@ public class AdoptersController(
             return BadRequest("Request cannot be null");
         }
 
-        if (string.IsNullOrWhiteSpace(request.UserId) || string.IsNullOrWhiteSpace(request.FullName))
+        if (string.IsNullOrWhiteSpace(request.UserId) ||
+            (string.IsNullOrWhiteSpace(request.FirstName) && string.IsNullOrWhiteSpace(request.LastName)))
         {
-            return BadRequest("UserId and FullName are required");
+            return BadRequest("UserId and at least FirstName or LastName are required");
         }
 
         // Create the adopter in DynamoDB
@@ -36,18 +38,13 @@ public class AdoptersController(
             Item = new Dictionary<string, AttributeValue>
             {
                 { "UserId", new AttributeValue { S = request.UserId } },
-                { "FullName", new AttributeValue { S = request.FullName } },
+                { "FirstName", new AttributeValue { S = request.FirstName?.Trim() ?? string.Empty } },
+                { "LastName", new AttributeValue { S = request.LastName?.Trim() ?? string.Empty } }
             }
         };
 
         await dynamoDbClient.PutItemAsync(putItemRequest);
         return Ok();
     }
-}
-
-public class CreateAdopterRequest
-{
-    public required string UserId { get; set; }
-    public required string FullName { get; set; }
 }
 

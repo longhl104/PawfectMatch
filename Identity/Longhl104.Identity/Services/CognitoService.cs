@@ -296,7 +296,9 @@ public class CognitoService : ICognitoService
         {
             new() { Name = "email", Value = request.Email },
             new() { Name = "custom:user_type", Value = "adopter" },
-            new() { Name = "email_verified", Value = "true" } // Assuming email is verified at registration
+            new() { Name = "email_verified", Value = "true" }, // Assuming email is verified at registration
+            new() { Name = "given_name", Value = request.FirstName ?? string.Empty },
+            new() { Name = "family_name", Value = request.LastName ?? string.Empty }
         };
 
         if (!string.IsNullOrWhiteSpace(request.PhoneNumber))

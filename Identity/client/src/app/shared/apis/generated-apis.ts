@@ -373,6 +373,8 @@ export class RegistrationApi {
 }
 
 export class AdopterRegistrationRequest implements IAdopterRegistrationRequest {
+    firstName?: string | undefined;
+    lastName?: string | undefined;
     fullName?: string | undefined;
     email?: string | undefined;
     password?: string | undefined;
@@ -391,6 +393,8 @@ export class AdopterRegistrationRequest implements IAdopterRegistrationRequest {
 
     init(_data?: any) {
         if (_data) {
+            this.firstName = _data["firstName"];
+            this.lastName = _data["lastName"];
             this.fullName = _data["fullName"];
             this.email = _data["email"];
             this.password = _data["password"];
@@ -409,6 +413,8 @@ export class AdopterRegistrationRequest implements IAdopterRegistrationRequest {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
+        data["firstName"] = this.firstName;
+        data["lastName"] = this.lastName;
         data["fullName"] = this.fullName;
         data["email"] = this.email;
         data["password"] = this.password;
@@ -420,6 +426,8 @@ export class AdopterRegistrationRequest implements IAdopterRegistrationRequest {
 }
 
 export interface IAdopterRegistrationRequest {
+    firstName?: string | undefined;
+    lastName?: string | undefined;
     fullName?: string | undefined;
     email?: string | undefined;
     password?: string | undefined;

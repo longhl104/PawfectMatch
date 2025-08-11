@@ -6,9 +6,10 @@ import {
   IAdopterRegistrationResponse,
 } from '../apis/generated-apis';
 
-// Keep the existing detailed interface, but add compatibility type
+// Keep the existing detailed interface, but use firstName and lastName instead of fullName
 export interface AdopterRegistrationRequest {
-  fullName: string;
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
   phoneNumber?: string;
@@ -22,8 +23,8 @@ export interface AdopterRegistrationRequest {
     postcode: string;
     country: string;
     formattedAddress: string;
-    latitude: number;
-    longitude: number;
+    latitude?: number;
+    longitude?: number;
   };
   bio?: string;
 }
@@ -33,7 +34,8 @@ export type AdopterRegistrationResponse = IAdopterRegistrationResponse;
 
 export interface AdopterProfile {
   id: string;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phoneNumber?: string;
   address: string;
@@ -101,7 +103,8 @@ export interface AdopterLoginResponse {
 }
 
 export interface UpdateAdopterProfileRequest {
-  fullName?: string;
+  firstName?: string;
+  lastName?: string;
   phoneNumber?: string;
   address?: string;
   addressDetails?: AdopterProfile['addressDetails'];

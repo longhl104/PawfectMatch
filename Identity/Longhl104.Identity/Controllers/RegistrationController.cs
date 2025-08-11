@@ -76,7 +76,7 @@ public partial class RegistrationController(
                 var loginUrl = EnvironmentUrlHelper.BuildServiceUrl("matcher", "https://localhost:4201");
                 var emailSent = await _emailService.SendWelcomeEmailAsync(
                     registrationRequest.Email,
-                    registrationRequest.FullName,
+                    $"{registrationRequest.FirstName} {registrationRequest.LastName}".Trim(),
                     loginUrl
                 );
 
@@ -156,7 +156,8 @@ public partial class RegistrationController(
         var response = await _matcherHttpClient.PostAsJsonAsync("adopters", new
         {
             UserId = userId,
-            request.FullName
+            request.FirstName,
+            request.LastName
         });
 
         if (!response.IsSuccessStatusCode)

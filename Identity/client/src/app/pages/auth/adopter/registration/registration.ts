@@ -185,12 +185,15 @@ export class Registration {
       this.isSubmitting = true;
 
       const formData = this.registrationForm.value;
-      const { firstName, lastName, ...restData } = formData;
 
       // Include the detailed address information
       const finalData: AdopterRegistrationRequest = {
-        ...restData,
-        fullName: `${firstName} ${lastName}`.trim(),
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+        phoneNumber: formData.phoneNumber,
+        bio: formData.bio,
         address: this.selectedAddress.formattedAddress,
         addressDetails: this.selectedAddress,
       };

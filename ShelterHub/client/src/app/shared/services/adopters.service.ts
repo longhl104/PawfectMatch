@@ -4,7 +4,8 @@ import { Observable, BehaviorSubject } from 'rxjs';
 import { environment } from 'environments/environment';
 
 export interface AdopterRegistrationRequest {
-  fullName: string;
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
   phoneNumber?: string;
@@ -18,8 +19,8 @@ export interface AdopterRegistrationRequest {
     postcode: string;
     country: string;
     formattedAddress: string;
-    latitude: number;
-    longitude: number;
+    latitude?: number;
+    longitude?: number;
   };
   bio?: string;
 }
