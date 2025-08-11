@@ -160,10 +160,9 @@ export class AdoptionApplicationComponent implements OnInit {
     const currentUser = this.authService.getCurrentUser();
 
     if (currentUser) {
-      // Split the full name if available
-      const nameParts = currentUser.fullName?.split(' ') || [];
-      const firstName = nameParts[0] || '';
-      const lastName = nameParts.slice(1).join(' ') || '';
+      // Use firstName and lastName directly from the user
+      const firstName = currentUser.firstName || '';
+      const lastName = currentUser.lastName || '';
 
       // Prefill the form with user data
       this.applicationForm.patchValue({
@@ -179,7 +178,7 @@ export class AdoptionApplicationComponent implements OnInit {
 
       console.log(
         'User information prefilled and disabled for:',
-        currentUser.fullName,
+        `${firstName} ${lastName}`.trim(),
       );
     } else {
       console.warn('No user information available to prefill');

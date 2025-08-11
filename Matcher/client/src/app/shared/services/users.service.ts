@@ -32,7 +32,8 @@ export interface LoginResponse {
   user: {
     id: string;
     email: string;
-    fullName: string;
+    firstName: string;
+    lastName: string;
     userType: 'adopter' | 'shelter';
     verified: boolean;
   };

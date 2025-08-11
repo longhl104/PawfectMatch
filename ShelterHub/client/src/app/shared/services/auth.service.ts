@@ -6,7 +6,8 @@ import { environment } from '../../../environments/environment';
 export interface UserProfile {
   userId: string;
   email: string;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   userType: 'adopter' | 'shelter';
   verified: boolean;
 }

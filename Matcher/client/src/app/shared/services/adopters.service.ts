@@ -27,7 +27,8 @@ export interface AdopterRegistrationRequest {
 
 export interface AdopterProfile {
   id: string;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phoneNumber?: string;
   address: string;
@@ -95,7 +96,8 @@ export interface AdopterLoginResponse {
 }
 
 export interface UpdateAdopterProfileRequest {
-  fullName?: string;
+  firstName?: string;
+  lastName?: string;
   phoneNumber?: string;
   address?: string;
   addressDetails?: AdopterProfile['addressDetails'];

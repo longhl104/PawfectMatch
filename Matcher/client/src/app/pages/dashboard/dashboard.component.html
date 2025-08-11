@@ -1,7 +1,7 @@
 <div class="dashboard-container">
   <div class="welcome-section">
     @if (currentUser$ | async; as user) {
-      <h1>Welcome, {{ user.fullName }}!</h1>
+      <h1>Welcome, {{ user.firstName }} {{ user.lastName }}!</h1>
       <p>You are successfully logged in to your PawfectMatch dashboard.</p>
     } @else {
       <h1>Welcome to PawfectMatch Dashboard</h1>

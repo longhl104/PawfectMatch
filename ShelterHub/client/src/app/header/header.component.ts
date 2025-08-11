@@ -95,7 +95,8 @@ export class HeaderComponent implements OnInit {
 
   getUserDisplayName(user: UserProfile | undefined): string {
     if (!user) return 'User';
-    return user.fullName || user.email || 'User';
+    const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+    return fullName || user.email || 'User';
   }
 
   getUserInitials(user: UserProfile | undefined): string {
