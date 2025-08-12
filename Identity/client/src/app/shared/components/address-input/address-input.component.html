@@ -21,24 +21,24 @@
     </p-iftalabel>
 
     @if (showHelperText() && !isGoogleMapsLoading) {
-      <small class="help-text">
+      <div class="help-text">
         Start typing your address and select from the suggestions
-      </small>
+      </div>
     }
 
     @if (showHelperText() && isGoogleMapsLoading) {
-      <small class="help-text">Loading address suggestions...</small>
+      <div class="help-text">Loading address suggestions...</div>
     }
 
     @if (addressControl.invalid && addressControl.touched) {
-      <small class="p-error">
+      <div class="error-message">
         @if (addressControl.hasError("required")) {
           {{ getErrorMessage("required") }}
         }
         @if (addressControl.hasError("invalidAddress")) {
           {{ getErrorMessage("invalidAddress") }}
         }
-      </small>
+      </div>
     }
   </div>
 </div>
