@@ -164,18 +164,21 @@
       <div class="form-group">
         <label class="field-label">Phone Number (optional)</label>
         <div class="phone-input-group">
-          <p-select
+          <p-autocomplete
             formControlName="countryCode"
-            [options]="countryCodes"
-            optionLabel="label"
-            optionValue="value"
+            [suggestions]="filteredCountryCodes"
+            (completeMethod)="filterCountryCodes($event)"
+            (onSelect)="onCountrySelect($event)"
+            [dropdown]="true"
+            [minLength]="0"
             placeholder="Select country"
+            field="label"
             class="country-code-select"
           >
-            <ng-template #selectedItem let-selectedOption>
-              {{ selectedOption?.value || '+1' }}
+            <ng-template pTemplate="item" let-option>
+              {{ option.label }}
             </ng-template>
-          </p-select>
+          </p-autocomplete>
           <input
             pInputText
             id="phoneNumber"

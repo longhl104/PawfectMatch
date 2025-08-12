@@ -7,6 +7,7 @@ import {
   ReactiveFormsModule,
   AbstractControl,
   ValidationErrors,
+  ValidatorFn,
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -17,7 +18,11 @@ import { CardModule } from 'primeng/card';
 import { IftaLabelModule } from 'primeng/iftalabel';
 import { CheckboxModule } from 'primeng/checkbox';
 import { TextareaModule } from 'primeng/textarea';
-import { SelectModule } from 'primeng/select';
+import {
+  AutoCompleteModule,
+  AutoCompleteCompleteEvent,
+  AutoCompleteSelectEvent,
+} from 'primeng/autocomplete';
 import {
   ToastService,
   ErrorHandlingService,
@@ -27,7 +32,10 @@ import {
   AdopterRegistrationRequest,
   AdoptersService,
 } from 'shared/services/adopters.service';
-import { COUNTRY_CODES, CountryCode } from '../../../../shared/data/country-codes';
+import {
+  COUNTRY_CODES,
+  CountryCode,
+} from '../../../../shared/data/country-codes';
 import { PhoneNumberService } from '../../../../shared/services/phone-number.service';
 
 @Component({
@@ -44,7 +52,7 @@ import { PhoneNumberService } from '../../../../shared/services/phone-number.ser
     IftaLabelModule,
     CheckboxModule,
     TextareaModule,
-    SelectModule,
+    AutoCompleteModule,
   ],
   templateUrl: './registration.html',
   styleUrl: './registration.scss',
@@ -62,6 +70,7 @@ export class Registration {
 
   // Country codes for phone numbers
   countryCodes: CountryCode[] = COUNTRY_CODES;
+  filteredCountryCodes: CountryCode[] = [];
 
   constructor() {
     this.registrationForm = this.createForm();
@@ -87,7 +96,7 @@ export class Registration {
         ],
         confirmPassword: ['', [Validators.required]],
         countryCode: ['+1', []], // Default to US
-        phoneNumber: ['', [this.phoneNumberValidator]],
+  phoneNumber: ['', []],
         address: ['', [Validators.required]],
         bio: [''],
         agreeToTerms: [false, [Validators.requiredTrue]],
@@ -109,7 +118,10 @@ export class Registration {
       confirmPasswordControl?.updateValueAndValidity({ emitEvent: false });
     });
 
-    // Re-validate phone number when country code changes
+  // Apply phone number validator after form is created (avoids early undefined context)
+  form.get('phoneNumber')?.setValidators(this.createPhoneNumberValidator());
+
+  // Re-validate phone number when country code changes
     form.get('countryCode')?.valueChanges.subscribe(() => {
       const phoneNumberControl = form.get('phoneNumber');
       if (phoneNumberControl?.value) {
@@ -118,6 +130,30 @@ export class Registration {
     });
 
     return form;
+  }
+
+  // AutoComplete filter for country codes
+  filterCountryCodes(event: AutoCompleteCompleteEvent): void {
+    const query = (event?.query ?? '').toLowerCase();
+    if (!query) {
+      this.filteredCountryCodes = this.countryCodes;
+      return;
+    }
+
+    this.filteredCountryCodes = this.countryCodes.filter(
+      (cc) =>
+        cc.label.toLowerCase().includes(query) ||
+        cc.value.toLowerCase().includes(query),
+    );
+  }
+
+  // Ensure the form control stores just the calling code string (e.g., "+1")
+  onCountrySelect(event: AutoCompleteSelectEvent): void {
+    const selected = event?.value as CountryCode | string;
+    const code = typeof selected === 'string' ? selected : selected?.value;
+    if (code) {
+      this.registrationForm.get('countryCode')?.setValue(code);
+    }
   }
 
   // Custom validator for strong password
@@ -139,24 +175,31 @@ export class Registration {
   }
 
   // Custom validator for phone numbers using google-libphonenumber
-  private phoneNumberValidator(
-    control: AbstractControl,
-  ): ValidationErrors | null {
-    const value = control.value;
-    if (!value) return null; // Optional field
+  private createPhoneNumberValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = control.value;
+      if (!value) return null; // Optional field
 
-    // Get the current country code to determine the region
-    const countryCode = this.registrationForm?.get('countryCode')?.value || '+1';
-    const countryCodeEntry = this.countryCodes.find(cc => cc.value === countryCode);
+      // Get country code from sibling control safely
+      const parent = control.parent as FormGroup | null;
+      const countryCode = parent?.get('countryCode')?.value || '+1';
 
-    if (!countryCodeEntry) {
-      return { pattern: true };
-    }
+      const countryCodeEntry = this.countryCodes.find(
+        (cc) => cc.value === countryCode,
+      );
 
-    // Validate using google-libphonenumber
-    const isValid = PhoneNumberService.validatePhoneNumber(value, countryCodeEntry.regionCode);
+      if (!countryCodeEntry) {
+        return { pattern: true };
+      }
 
-    return isValid ? null : { pattern: true };
+      // Validate using google-libphonenumber
+      const isValid = PhoneNumberService.validatePhoneNumber(
+        value,
+        countryCodeEntry.regionCode,
+      );
+
+      return isValid ? null : { pattern: true };
+    };
   }
 
   // Custom validator for confirm password field
@@ -197,14 +240,17 @@ export class Registration {
     if (!phoneNumber) return '';
 
     // Get the region code for proper formatting
-    const countryCodeEntry = this.countryCodes.find(cc => cc.value === countryCode);
+    const countryCodeEntry = this.countryCodes.find(
+      (cc) => cc.value === countryCode,
+    );
     if (!countryCodeEntry) {
       return `${countryCode}${phoneNumber}`;
     }
 
     // Use google-libphonenumber to format the complete number
     const completeNumber = `${countryCode}${phoneNumber}`;
-    const validationResult = PhoneNumberService.parseAndValidatePhoneNumber(completeNumber);
+    const validationResult =
+      PhoneNumberService.parseAndValidatePhoneNumber(completeNumber);
 
     return validationResult.isValid && validationResult.formattedNumber
       ? validationResult.formattedNumber
