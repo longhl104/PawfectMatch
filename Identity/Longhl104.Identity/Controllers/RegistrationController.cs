@@ -22,8 +22,6 @@ public partial class RegistrationController(
 {
     [System.Text.RegularExpressions.GeneratedRegex(@"^\d{11}$")]
     private static partial System.Text.RegularExpressions.Regex AbnRegex();
-    [System.Text.RegularExpressions.GeneratedRegex(@"^(\+61|0)[2-9][0-9]{8}$")]
-    private static partial System.Text.RegularExpressions.Regex AustralianPhoneNumberRegex();
 
     private readonly HttpClient _matcherHttpClient = _internalHttpClientFactory.CreateClient(PawfectMatchServices.Matcher);
     private readonly HttpClient _shelterHubHttpClient = _internalHttpClientFactory.CreateClient(PawfectMatchServices.ShelterHub);
@@ -346,13 +344,7 @@ public partial class RegistrationController(
         if (request.Password.Length < 8)
             return "Password must be at least 8 characters long";
 
-        // Validate Australian phone number format if provided
-        if (!string.IsNullOrWhiteSpace(request.ShelterContactNumber))
-        {
-            var phoneRegex = AustralianPhoneNumberRegex();
-            if (!phoneRegex.IsMatch(request.ShelterContactNumber))
-                return "Invalid Australian phone number format";
-        }
+        // Phone number format: allow any format (validated on client side for international formats)
 
         // Validate URL format if provided
         if (!string.IsNullOrWhiteSpace(request.ShelterWebsiteUrl))

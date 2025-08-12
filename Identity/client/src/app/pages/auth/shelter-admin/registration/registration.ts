@@ -82,7 +82,7 @@ export class ShelterAdminRegistration {
         shelterName: ['', [Validators.required, Validators.minLength(2)]],
         shelterContactNumber: [
           '',
-          [Validators.required, this.australianPhoneValidator],
+          [Validators.required],
         ],
         shelterAddress: ['', [Validators.required]],
         shelterWebsiteUrl: ['', [this.urlValidator]],
@@ -126,16 +126,6 @@ export class ShelterAdminRegistration {
       hasUpperCase && hasLowerCase && hasNumeric && hasSpecialChar;
 
     return passwordValid ? null : { pattern: true };
-  }
-
-  // Custom validator for Australian phone numbers
-  private australianPhoneValidator(
-    control: AbstractControl,
-  ): ValidationErrors | null {
-    if (!control.value) return null;
-
-    const phoneRegex = /^(\+61|0)[2-9][0-9]{8}$/;
-    return phoneRegex.test(control.value) ? null : { pattern: true };
   }
 
   // Custom validator for URL

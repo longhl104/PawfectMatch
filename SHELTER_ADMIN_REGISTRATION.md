@@ -7,28 +7,31 @@ This implementation adds a complete shelter admin registration system to Pawfect
 ### Backend (Identity API)
 
 1. **New Registration Endpoint**: `/api/registration/shelter-admin`
+
    - Added `ShelterAdminRegistrationRequest` model with required and optional fields
    - Added `ShelterAdminRegistrationResponse` model
    - Validation for all required fields
    - Cognito user creation with `shelter_admin` user type
    - DynamoDB storage for shelter admin profiles
 
-2. **Database Storage**: 
+2. **Database Storage**:
    - Creates shelter admin profiles in `pawfect-match-shelter-admins-{environment}` DynamoDB table
    - Stores all registration data with proper type classification
 
 ### Frontend (Identity Client)
 
 1. **New Service**: `ShelterAdminService`
+
    - Handles shelter admin registration API calls
    - Type-safe interfaces for request/response
 
 2. **New Registration Page**: `/auth/shelter-admin/register`
+
    - Complete form with all required and optional fields
    - Form validation matching backend requirements
    - Consistent UI/UX with existing adopter registration
    - Password strength validation
-   - Australian phone number validation
+   - International phone number validation (client-side)
    - URL validation for website
    - ABN validation (11 digits)
 
@@ -42,7 +45,7 @@ This implementation adds a complete shelter admin registration system to Pawfect
 - ✅ Email address (required)
 - ✅ Password + confirm password (with strong password validation)
 - ✅ Shelter name (required)
-- ✅ Shelter contact number (required, Australian phone format)
+- ✅ Shelter contact number (required, international format)
 - ✅ Shelter address (required)
 
 ## Optional Fields Implemented:

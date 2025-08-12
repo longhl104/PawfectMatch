@@ -304,8 +304,7 @@ public class CognitoService : ICognitoService
         if (!string.IsNullOrWhiteSpace(request.PhoneNumber))
         {
             userAttributes.Add(new AttributeType { Name = "phone_number_verified", Value = "true" });
-            var australianPhoneNumber = request.PhoneNumber.StartsWith("+61") ? request.PhoneNumber : $"+61{request.PhoneNumber.TrimStart('0')}";
-            userAttributes.Add(new AttributeType { Name = "phone_number", Value = australianPhoneNumber });
+            userAttributes.Add(new AttributeType { Name = "phone_number", Value = request.PhoneNumber });
         }
 
         var adminCreateUserRequest = new AdminCreateUserRequest
