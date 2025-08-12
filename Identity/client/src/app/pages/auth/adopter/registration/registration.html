@@ -171,7 +171,11 @@
             optionValue="value"
             placeholder="Select country"
             class="country-code-select"
-          ></p-select>
+          >
+            <ng-template #selectedItem let-selectedOption>
+              {{ selectedOption?.value || '+1' }}
+            </ng-template>
+          </p-select>
           <input
             pInputText
             id="phoneNumber"
