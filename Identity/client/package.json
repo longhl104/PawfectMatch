@@ -29,6 +29,7 @@
     "@longhl104/pawfect-match-ng": "^0.2.0",
     "@primeuix/themes": "^1.2.3",
     "express": "^5.1.0",
+    "google-libphonenumber": "^3.2.42",
     "primeflex": "^4.0.0",
     "primeicons": "^7.0.0",
     "primeng": "^20.0.1",
