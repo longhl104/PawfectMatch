@@ -28,6 +28,7 @@ import {
   AdoptersService,
 } from 'shared/services/adopters.service';
 import { COUNTRY_CODES, CountryCode } from '../../../../shared/data/country-codes';
+import { PhoneNumberService } from '../../../../shared/services/phone-number.service';
 
 @Component({
   selector: 'app-registration',
@@ -108,6 +109,14 @@ export class Registration {
       confirmPasswordControl?.updateValueAndValidity({ emitEvent: false });
     });
 
+    // Re-validate phone number when country code changes
+    form.get('countryCode')?.valueChanges.subscribe(() => {
+      const phoneNumberControl = form.get('phoneNumber');
+      if (phoneNumberControl?.value) {
+        phoneNumberControl.updateValueAndValidity({ emitEvent: false });
+      }
+    });
+
     return form;
   }
 
@@ -129,18 +138,23 @@ export class Registration {
     return passwordValid ? null : { pattern: true };
   }
 
-  // Custom validator for phone numbers (without country code)
+  // Custom validator for phone numbers using google-libphonenumber
   private phoneNumberValidator(
     control: AbstractControl,
   ): ValidationErrors | null {
     const value = control.value;
     if (!value) return null; // Optional field
 
-    // Remove all non-digit characters
-    const cleanedValue = value.replace(/[^\d]/g, '');
+    // Get the current country code to determine the region
+    const countryCode = this.registrationForm?.get('countryCode')?.value || '+1';
+    const countryCodeEntry = this.countryCodes.find(cc => cc.value === countryCode);
 
-    // Phone number should be between 6 and 15 digits (without country code)
-    const isValid = cleanedValue.length >= 6 && cleanedValue.length <= 15;
+    if (!countryCodeEntry) {
+      return { pattern: true };
+    }
+
+    // Validate using google-libphonenumber
+    const isValid = PhoneNumberService.validatePhoneNumber(value, countryCodeEntry.regionCode);
 
     return isValid ? null : { pattern: true };
   }
@@ -182,7 +196,19 @@ export class Registration {
 
     if (!phoneNumber) return '';
 
-    return `${countryCode}${phoneNumber}`;
+    // Get the region code for proper formatting
+    const countryCodeEntry = this.countryCodes.find(cc => cc.value === countryCode);
+    if (!countryCodeEntry) {
+      return `${countryCode}${phoneNumber}`;
+    }
+
+    // Use google-libphonenumber to format the complete number
+    const completeNumber = `${countryCode}${phoneNumber}`;
+    const validationResult = PhoneNumberService.parseAndValidatePhoneNumber(completeNumber);
+
+    return validationResult.isValid && validationResult.formattedNumber
+      ? validationResult.formattedNumber
+      : completeNumber;
   }
 
   async onSubmit(): Promise<void> {
