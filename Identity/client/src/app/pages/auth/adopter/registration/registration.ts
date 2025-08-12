@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 
 import {
   FormBuilder,
@@ -37,6 +37,8 @@ import {
   CountryCode,
 } from '../../../../shared/data/country-codes';
 import { PhoneNumberService } from '../../../../shared/services/phone-number.service';
+import { AppGoogleMapsService } from '../../../../shared/services/app-google-maps.service';
+import { environment } from 'environments/environment';
 
 @Component({
   selector: 'app-registration',
@@ -57,12 +59,13 @@ import { PhoneNumberService } from '../../../../shared/services/phone-number.ser
   templateUrl: './registration.html',
   styleUrl: './registration.scss',
 })
-export class Registration {
+export class Registration implements OnInit {
   private formBuilder = inject(FormBuilder);
   private router = inject(Router);
   private adoptersService = inject(AdoptersService);
   private toastService = inject(ToastService);
   private errorHandlingService = inject(ErrorHandlingService);
+  private appGoogleMaps = inject(AppGoogleMapsService);
 
   registrationForm: FormGroup;
   isSubmitting = false;
@@ -76,11 +79,58 @@ export class Registration {
     this.registrationForm = this.createForm();
   }
 
+  ngOnInit(): void {
+    this.tryEnhanceCountryCodeWithGeolocation();
+  }
+
   onAddressSelected(addressDetails: AddressDetails | null): void {
     this.selectedAddress = addressDetails;
   }
 
+  // Try to improve default country using browser geolocation + Google Maps Geocoder (if loaded)
+  private async tryEnhanceCountryCodeWithGeolocation(): Promise<void> {
+    try {
+      if (
+        typeof navigator !== 'undefined' &&
+        typeof window !== 'undefined' &&
+        'geolocation' in navigator
+      ) {
+        await this.appGoogleMaps.ensureLoaded(environment.googleMapsApiKey);
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            this.appGoogleMaps.reverseGeocodeCountry(lat, lng).then((region: string | null) => {
+              if (!region) return;
+              const codeNum =
+                PhoneNumberService.getCountryCodeForRegion(region);
+              const codeStr = codeNum ? `+${codeNum}` : null;
+              if (
+                codeStr &&
+                this.countryCodes.some((cc) => cc.value === codeStr) &&
+                this.registrationForm.get('countryCode')?.value !== codeStr
+              ) {
+                this.registrationForm.get('countryCode')?.setValue(codeStr);
+                const phoneCtrl = this.registrationForm.get('phoneNumber');
+                if (phoneCtrl?.value) {
+                  phoneCtrl.updateValueAndValidity({ emitEvent: false });
+                }
+              }
+            });
+          },
+          () => {
+            // ignore errors, fallback remains
+          },
+          { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 },
+        );
+      }
+    } catch {
+      // ignore; fallback remains
+    }
+  }
+
   private createForm(): FormGroup {
+    const defaultCountryCode = this.getDefaultCountryCodeFromLocale() ?? '+1';
     const form = this.formBuilder.group(
       {
         firstName: ['', [Validators.required, Validators.minLength(2)]],
@@ -95,8 +145,8 @@ export class Registration {
           ],
         ],
         confirmPassword: ['', [Validators.required]],
-        countryCode: ['+1', []], // Default to US
-  phoneNumber: ['', []],
+        countryCode: [defaultCountryCode, []], // Default based on locale (fallback +1)
+        phoneNumber: ['', []],
         address: ['', [Validators.required]],
         bio: [''],
         agreeToTerms: [false, [Validators.requiredTrue]],
@@ -118,10 +168,10 @@ export class Registration {
       confirmPasswordControl?.updateValueAndValidity({ emitEvent: false });
     });
 
-  // Apply phone number validator after form is created (avoids early undefined context)
-  form.get('phoneNumber')?.setValidators(this.createPhoneNumberValidator());
+    // Apply phone number validator after form is created (avoids early undefined context)
+    form.get('phoneNumber')?.setValidators(this.createPhoneNumberValidator());
 
-  // Re-validate phone number when country code changes
+    // Re-validate phone number when country code changes
     form.get('countryCode')?.valueChanges.subscribe(() => {
       const phoneNumberControl = form.get('phoneNumber');
       if (phoneNumberControl?.value) {
@@ -130,6 +180,45 @@ export class Registration {
     });
 
     return form;
+  }
+
+  // Determine default calling code from user's locale/region
+  private getDefaultCountryCodeFromLocale(): string | null {
+    const region = this.getDefaultRegionFromLocale();
+    if (!region) return null;
+    const codeNum = PhoneNumberService.getCountryCodeForRegion(region);
+    const codeStr = codeNum ? `+${codeNum}` : null;
+    // Ensure the code exists in our list
+    return codeStr && this.countryCodes.some((cc) => cc.value === codeStr)
+      ? codeStr
+      : null;
+  }
+
+  // Best-effort region detection from browser locale
+  private getDefaultRegionFromLocale(): string | null {
+    try {
+      const lang =
+        (typeof navigator !== 'undefined' &&
+          ((navigator as Navigator & { languages?: string[] }).languages?.[0] ||
+            navigator.language)) ||
+        '';
+
+      const locale =
+        lang ||
+        (typeof Intl !== 'undefined'
+          ? Intl.DateTimeFormat().resolvedOptions().locale
+          : '');
+
+      if (locale) {
+        const parts = locale.split(/[-_]/);
+        const maybeRegion = parts.length > 1 ? parts[parts.length - 1] : '';
+        if (maybeRegion && maybeRegion.length === 2)
+          return maybeRegion.toUpperCase();
+      }
+    } catch {
+      // ignore and fallback
+    }
+    return null;
   }
 
   // AutoComplete filter for country codes
