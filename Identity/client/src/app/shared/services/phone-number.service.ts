@@ -16,7 +16,9 @@ export class PhoneNumberService {
     try {
       const parsedNumber = this.phoneUtil.parse(phoneNumber, regionCode);
       // 1 corresponds to PhoneNumberFormat.E164
-      return this.phoneUtil.format(parsedNumber, 1);
+      const formatted = this.phoneUtil.format(parsedNumber, 1);
+      // Ensure no spaces in the final output
+      return formatted.replace(/\s+/g, '');
     } catch {
       return phoneNumber;
     }
@@ -39,10 +41,11 @@ export class PhoneNumberService {
       const isValid = this.phoneUtil.isValidNumber(parsedNumber);
 
       if (isValid) {
+        const formatted = this.phoneUtil.format(parsedNumber, 1);
         return {
           isValid: true,
           // 1 corresponds to PhoneNumberFormat.E164
-          formattedNumber: this.phoneUtil.format(parsedNumber, 1),
+          formattedNumber: formatted.replace(/\s+/g, ''),
           regionCode:
             this.phoneUtil.getRegionCodeForNumber(parsedNumber) || undefined,
         };
