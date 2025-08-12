@@ -17,6 +17,7 @@ import { CardModule } from 'primeng/card';
 import { IftaLabelModule } from 'primeng/iftalabel';
 import { CheckboxModule } from 'primeng/checkbox';
 import { TextareaModule } from 'primeng/textarea';
+import { SelectModule } from 'primeng/select';
 import {
   ToastService,
   ErrorHandlingService,
@@ -41,6 +42,7 @@ import {
     IftaLabelModule,
     CheckboxModule,
     TextareaModule,
+    SelectModule,
   ],
   templateUrl: './registration.html',
   styleUrl: './registration.scss',
@@ -55,6 +57,30 @@ export class Registration {
   registrationForm: FormGroup;
   isSubmitting = false;
   selectedAddress: AddressDetails | null = null;
+
+  // Country codes for phone numbers
+  countryCodes = [
+    { label: '+1 (US/CA)', value: '+1', code: 'US' },
+    { label: '+44 (UK)', value: '+44', code: 'GB' },
+    { label: '+61 (AU)', value: '+61', code: 'AU' },
+    { label: '+33 (FR)', value: '+33', code: 'FR' },
+    { label: '+49 (DE)', value: '+49', code: 'DE' },
+    { label: '+81 (JP)', value: '+81', code: 'JP' },
+    { label: '+86 (CN)', value: '+86', code: 'CN' },
+    { label: '+91 (IN)', value: '+91', code: 'IN' },
+    { label: '+55 (BR)', value: '+55', code: 'BR' },
+    { label: '+7 (RU)', value: '+7', code: 'RU' },
+    { label: '+39 (IT)', value: '+39', code: 'IT' },
+    { label: '+34 (ES)', value: '+34', code: 'ES' },
+    { label: '+31 (NL)', value: '+31', code: 'NL' },
+    { label: '+41 (CH)', value: '+41', code: 'CH' },
+    { label: '+46 (SE)', value: '+46', code: 'SE' },
+    { label: '+47 (NO)', value: '+47', code: 'NO' },
+    { label: '+45 (DK)', value: '+45', code: 'DK' },
+    { label: '+358 (FI)', value: '+358', code: 'FI' },
+    { label: '+43 (AT)', value: '+43', code: 'AT' },
+    { label: '+32 (BE)', value: '+32', code: 'BE' },
+  ];
 
   constructor() {
     this.registrationForm = this.createForm();
@@ -79,7 +105,8 @@ export class Registration {
           ],
         ],
         confirmPassword: ['', [Validators.required]],
-        phoneNumber: ['', [this.australianPhoneValidator]],
+        countryCode: ['+1', []], // Default to US
+        phoneNumber: ['', [this.phoneNumberValidator]],
         address: ['', [Validators.required]],
         bio: [''],
         agreeToTerms: [false, [Validators.requiredTrue]],
@@ -122,23 +149,18 @@ export class Registration {
     return passwordValid ? null : { pattern: true };
   }
 
-  // Custom validator for Australian phone numbers
-  private australianPhoneValidator(
+  // Custom validator for phone numbers (without country code)
+  private phoneNumberValidator(
     control: AbstractControl,
   ): ValidationErrors | null {
     const value = control.value;
     if (!value) return null; // Optional field
 
-    // Australian phone number patterns
-    const mobilePattern = /^04\d{8}$/; // Mobile: 04XXXXXXXX
-    const landlinePattern = /^0[2-8]\d{8}$/; // Landline: 0XXXXXXXXX
-    const formattedPattern = /^04\d{2}\s\d{3}\s\d{3}$/; // Formatted: 04XX XXX XXX
+    // Remove all non-digit characters
+    const cleanedValue = value.replace(/[^\d]/g, '');
 
-    const cleanedValue = value.replace(/\s/g, '');
-    const isValid =
-      mobilePattern.test(cleanedValue) ||
-      landlinePattern.test(cleanedValue) ||
-      formattedPattern.test(value);
+    // Phone number should be between 6 and 15 digits (without country code)
+    const isValid = cleanedValue.length >= 6 && cleanedValue.length <= 15;
 
     return isValid ? null : { pattern: true };
   }
@@ -174,6 +196,15 @@ export class Registration {
     return !!(field && field.invalid && (field.dirty || field.touched));
   }
 
+  getCompletePhoneNumber(): string {
+    const countryCode = this.registrationForm.get('countryCode')?.value || '';
+    const phoneNumber = this.registrationForm.get('phoneNumber')?.value || '';
+
+    if (!phoneNumber) return '';
+
+    return `${countryCode}${phoneNumber}`;
+  }
+
   async onSubmit(): Promise<void> {
     // Add additional validation for address
     const addressControl = this.registrationForm.get('address');
@@ -192,7 +223,7 @@ export class Registration {
         lastName: formData.lastName,
         email: formData.email,
         password: formData.password,
-        phoneNumber: formData.phoneNumber,
+        phoneNumber: this.getCompletePhoneNumber(),
         bio: formData.bio,
         address: this.selectedAddress.formattedAddress,
         addressDetails: this.selectedAddress,
