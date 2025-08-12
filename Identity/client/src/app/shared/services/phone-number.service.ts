@@ -12,6 +12,40 @@ export class PhoneNumberService {
     }
   }
 
+  static validatePhoneNumberWithDetails(phoneNumber: string, regionCode: string): {
+    isValid: boolean;
+    errorMessage?: string;
+  } {
+    try {
+      const parsedNumber = this.phoneUtil.parse(phoneNumber, regionCode);
+      const isValid = this.phoneUtil.isValidNumber(parsedNumber);
+
+      if (isValid) {
+        return { isValid: true };
+      }
+
+      // Check specific validation types
+      const isPossible = this.phoneUtil.isPossibleNumber(parsedNumber);
+      if (!isPossible) {
+        return {
+          isValid: false,
+          errorMessage: 'Phone number has incorrect length or format'
+        };
+      }
+
+      return {
+        isValid: false,
+        errorMessage: 'Phone number format is not valid for this country'
+      };
+    } catch {
+      // Parse error usually means invalid format
+      return {
+        isValid: false,
+        errorMessage: 'Invalid phone number format'
+      };
+    }
+  }
+
   static formatPhoneNumber(phoneNumber: string, regionCode: string): string {
     try {
       const parsedNumber = this.phoneUtil.parse(phoneNumber, regionCode);

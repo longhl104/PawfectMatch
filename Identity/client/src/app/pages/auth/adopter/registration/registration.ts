@@ -100,23 +100,25 @@ export class Registration implements OnInit {
           (pos) => {
             const lat = pos.coords.latitude;
             const lng = pos.coords.longitude;
-            this.appGoogleMaps.reverseGeocodeCountry(lat, lng).then((region: string | null) => {
-              if (!region) return;
-              const codeNum =
-                PhoneNumberService.getCountryCodeForRegion(region);
-              const codeStr = codeNum ? `+${codeNum}` : null;
-              if (
-                codeStr &&
-                this.countryCodes.some((cc) => cc.value === codeStr) &&
-                this.registrationForm.get('countryCode')?.value !== codeStr
-              ) {
-                this.registrationForm.get('countryCode')?.setValue(codeStr);
-                const phoneCtrl = this.registrationForm.get('phoneNumber');
-                if (phoneCtrl?.value) {
-                  phoneCtrl.updateValueAndValidity({ emitEvent: false });
+            this.appGoogleMaps
+              .reverseGeocodeCountry(lat, lng)
+              .then((region: string | null) => {
+                if (!region) return;
+                const codeNum =
+                  PhoneNumberService.getCountryCodeForRegion(region);
+                const codeStr = codeNum ? `+${codeNum}` : null;
+                if (
+                  codeStr &&
+                  this.countryCodes.some((cc) => cc.value === codeStr) &&
+                  this.registrationForm.get('countryCode')?.value !== codeStr
+                ) {
+                  this.registrationForm.get('countryCode')?.setValue(codeStr);
+                  const phoneCtrl = this.registrationForm.get('phoneNumber');
+                  if (phoneCtrl?.value) {
+                    phoneCtrl.updateValueAndValidity({ emitEvent: false });
+                  }
                 }
-              }
-            });
+              });
           },
           () => {
             // ignore errors, fallback remains
@@ -278,16 +280,27 @@ export class Registration implements OnInit {
       );
 
       if (!countryCodeEntry) {
-        return { pattern: true };
+        return {
+          pattern: true,
+          phoneError: 'Please select a valid country code',
+        };
       }
 
-      // Validate using google-libphonenumber
-      const isValid = PhoneNumberService.validatePhoneNumber(
-        value,
-        countryCodeEntry.regionCode,
-      );
+      // Validate using google-libphonenumber with detailed error messages
+      const validationResult =
+        PhoneNumberService.validatePhoneNumberWithDetails(
+          value,
+          countryCodeEntry.regionCode,
+        );
 
-      return isValid ? null : { pattern: true };
+      if (!validationResult.isValid) {
+        return {
+          pattern: true,
+          phoneError: validationResult.errorMessage || 'Invalid phone number',
+        };
+      }
+
+      return null;
     };
   }
 
@@ -344,6 +357,31 @@ export class Registration implements OnInit {
     return validationResult.isValid && validationResult.formattedNumber
       ? validationResult.formattedNumber
       : completeNumber;
+  }
+
+  getPhoneNumberPlaceholder(): string {
+    const countryCode = this.registrationForm.get('countryCode')?.value || '+1';
+    const countryCodeEntry = this.countryCodes.find(
+      (cc) => cc.value === countryCode,
+    );
+
+    if (!countryCodeEntry) return 'Enter phone number';
+
+    // Provide region-specific placeholder examples
+    const examples: Record<string, string> = {
+      US: '555-123-4567',
+      CA: '555-123-4567',
+      AU: '412 345 678',
+      GB: '7700 900123',
+      DE: '151 12345678',
+      FR: '6 12 34 56 78',
+      IN: '98765 43210',
+      CN: '138 0013 8000',
+      JP: '90-1234-5678',
+      BR: '11 91234-5678',
+    };
+
+    return examples[countryCodeEntry.regionCode] || 'Enter phone number';
   }
 
   async onSubmit(): Promise<void> {

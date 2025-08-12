@@ -184,15 +184,19 @@
             id="phoneNumber"
             type="tel"
             formControlName="phoneNumber"
-            placeholder="Enter phone number"
+            [placeholder]="getPhoneNumberPlaceholder()"
             class="w-full"
             [class.ng-invalid]="isFieldInvalid('phoneNumber')"
           />
         </div>
         @if (isFieldInvalid("phoneNumber")) {
           <small class="p-error">
-            @if (registrationForm.get("phoneNumber")?.errors?.["pattern"]) {
-              Please enter a valid phone number (6-15 digits)
+            @if (registrationForm.get("phoneNumber")?.errors?.["phoneError"]) {
+              {{ registrationForm.get("phoneNumber")?.errors?.["phoneError"] }}
+            } @else if (
+              registrationForm.get("phoneNumber")?.errors?.["pattern"]
+            ) {
+              Please enter a valid phone number for the selected country
             }
           </small>
         }
