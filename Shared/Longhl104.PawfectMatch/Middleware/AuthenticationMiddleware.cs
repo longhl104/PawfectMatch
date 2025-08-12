@@ -105,7 +105,11 @@ public class AuthenticationMiddleware(
                 new("UserType", authResult.User.UserType)
             };
 
-            if (!string.IsNullOrEmpty(authResult.User.FullName))
+            if (!string.IsNullOrEmpty(authResult.User.FirstName) && !string.IsNullOrEmpty(authResult.User.LastName))
+            {
+                claims.Add(new Claim(ClaimTypes.Name, $"{authResult.User.FirstName} {authResult.User.LastName}"));
+            }
+            else if (!string.IsNullOrEmpty(authResult.User.FullName))
             {
                 claims.Add(new Claim(ClaimTypes.Name, authResult.User.FullName));
             }

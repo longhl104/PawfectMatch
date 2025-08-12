@@ -293,15 +293,9 @@ public partial class RegistrationController(
 
     private static string ValidateRegistrationRequest(AdopterRegistrationRequest request)
     {
-        // Handle both full name and first/last name approaches
-        if (string.IsNullOrWhiteSpace(request.FullName))
-        {
-            if (string.IsNullOrWhiteSpace(request.FirstName) || string.IsNullOrWhiteSpace(request.LastName))
-                return "Full name or both first and last names are required";
-
-            // Populate FullName from FirstName and LastName
-            request.FullName = $"{request.FirstName.Trim()} {request.LastName.Trim()}";
-        }
+        // Validate first and last names are provided
+        if (string.IsNullOrWhiteSpace(request.FirstName) || string.IsNullOrWhiteSpace(request.LastName))
+            return "Both first and last names are required";
 
         if (string.IsNullOrWhiteSpace(request.Email))
             return "Email is required";

@@ -1,7 +1,6 @@
 using Longhl104.Identity.Models;
 using Longhl104.Identity.Services;
 using Microsoft.AspNetCore.Mvc;
-using Longhl104.PawfectMatch.Utils;
 
 namespace Longhl104.Identity.Controllers;
 

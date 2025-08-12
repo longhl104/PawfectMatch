@@ -227,7 +227,8 @@ public class CognitoService : ICognitoService
                 Email = email,
                 CreatedAt = getUserResponse.UserCreateDate.Value,
                 LastLoginAt = DateTime.UtcNow,
-                FullName = getUserResponse.UserAttributes.FirstOrDefault(attr => attr.Name == "given_name")?.Value ?? string.Empty
+                FirstName = getUserResponse.UserAttributes.FirstOrDefault(attr => attr.Name == "given_name")?.Value ?? string.Empty,
+                LastName = getUserResponse.UserAttributes.FirstOrDefault(attr => attr.Name == "family_name")?.Value ?? string.Empty
             };
 
             // Extract user attributes
