@@ -15,6 +15,10 @@ import {
 import {
   ControlValueAccessor,
   NG_VALUE_ACCESSOR,
+  NG_VALIDATORS,
+  Validator,
+  AbstractControl,
+  ValidationErrors,
   FormControl,
   ReactiveFormsModule,
 } from '@angular/forms';
@@ -25,6 +29,7 @@ import {
   ErrorHandlingService,
 } from '@longhl104/pawfect-match-ng';
 import { environment } from 'environments/environment';
+import { CommonModule } from '@angular/common';
 
 declare const google: any;
 
@@ -44,7 +49,12 @@ export interface AddressDetails {
 @Component({
   selector: 'app-address-input',
   standalone: true,
-  imports: [ReactiveFormsModule, InputTextModule, IftaLabelModule],
+  imports: [
+    ReactiveFormsModule,
+    InputTextModule,
+    IftaLabelModule,
+    CommonModule,
+  ],
   templateUrl: './address-input.component.html',
   styleUrl: './address-input.component.scss',
   providers: [
@@ -53,9 +63,16 @@ export interface AddressDetails {
       useExisting: forwardRef(() => AddressInputComponent),
       multi: true,
     },
+    {
+      provide: NG_VALIDATORS,
+      useExisting: forwardRef(() => AddressInputComponent),
+      multi: true,
+    },
   ],
 })
-export class AddressInputComponent implements ControlValueAccessor, OnDestroy {
+export class AddressInputComponent
+  implements ControlValueAccessor, Validator, OnDestroy
+{
   private ngZone = inject(NgZone);
   private googleMapsService = inject(GoogleMapsService);
   private errorHandlingService = inject(ErrorHandlingService);
@@ -84,6 +101,7 @@ export class AddressInputComponent implements ControlValueAccessor, OnDestroy {
 
   private autocomplete: any;
   private eventListeners: (() => void)[] = [];
+  private onValidatorChange?: () => void;
 
   // ControlValueAccessor implementation
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -121,10 +139,7 @@ export class AddressInputComponent implements ControlValueAccessor, OnDestroy {
       }
     });
 
-    // Subscribe to control value changes
-    this.addressControl.valueChanges.subscribe((value) => {
-      this.onChange(value || '');
-    });
+    // Do not emit value on typing; only emit on Google selection
   }
 
   ngOnDestroy(): void {
@@ -165,6 +180,9 @@ export class AddressInputComponent implements ControlValueAccessor, OnDestroy {
         this.addressControl.setValue(place.formatted_address);
         this.setValidationError(null);
         this.addressSelected.emit(this.selectedAddress);
+        // Emit value only when a place is selected from Google
+        this.onChange(place.formatted_address || '');
+        this.onValidatorChange?.();
       });
     });
 
@@ -181,6 +199,7 @@ export class AddressInputComponent implements ControlValueAccessor, OnDestroy {
             this.selectedAddress.formattedAddress !== currentValue)
         ) {
           this.setValidationError({ invalidAddress: true });
+          this.onValidatorChange?.();
         }
 
         // If field is empty, only show required error if field is required
@@ -192,6 +211,7 @@ export class AddressInputComponent implements ControlValueAccessor, OnDestroy {
           } else {
             this.setValidationError(null);
           }
+          this.onValidatorChange?.();
         }
       });
     };
@@ -200,6 +220,7 @@ export class AddressInputComponent implements ControlValueAccessor, OnDestroy {
     const blurListener = () => {
       this.ngZone.run(() => {
         this.onTouched();
+        this.addressControl.markAsTouched();
         const currentValue = this.addressControl.value;
 
         if (
@@ -208,6 +229,7 @@ export class AddressInputComponent implements ControlValueAccessor, OnDestroy {
             this.selectedAddress.formattedAddress !== currentValue)
         ) {
           this.setValidationError({ invalidAddress: true });
+          this.onValidatorChange?.();
         }
       });
     };
@@ -275,7 +297,40 @@ export class AddressInputComponent implements ControlValueAccessor, OnDestroy {
   }
 
   private setValidationError(errors: Record<string, any> | null) {
+    // Update internal control error state to reflect validity
+    if (errors && Object.keys(errors).length > 0) {
+      const mergedErrors = { ...(this.addressControl.errors || {}), ...errors };
+      this.addressControl.setErrors(mergedErrors);
+    } else {
+      this.addressControl.setErrors(null);
+    }
+
+    // Emit for parent listeners (if any)
     this.validationChange.emit(errors);
+    // Notify Angular forms to re-run validation on host control
+    this.onValidatorChange?.();
+  }
+
+  // Validator implementation
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  validate(_control: AbstractControl): ValidationErrors | null {
+    // Validate against the internal input value so typing without selecting stays invalid
+    const value =
+      (this.addressControl.value as string | null | undefined) ?? '';
+    if (this.required() && (!value || value.trim() === '')) {
+      return { required: true };
+    }
+    if (
+      value &&
+      (!this.selectedAddress || this.selectedAddress.formattedAddress !== value)
+    ) {
+      return { invalidAddress: true };
+    }
+    return null;
+  }
+
+  registerOnValidatorChange(fn: () => void): void {
+    this.onValidatorChange = fn;
   }
 
   private updateDisabledState(): void {
