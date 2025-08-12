@@ -104,12 +104,9 @@ export class HeaderComponent {
   }
 
   getUserInitials(user: UserProfile | undefined): string {
-    const name = this.getUserDisplayName(user);
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .substring(0, 2);
+    if (!user) return 'U';
+    const firstName = user.firstName || '';
+    const lastName = user.lastName || '';
+    return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase() || 'U';
   }
 }
