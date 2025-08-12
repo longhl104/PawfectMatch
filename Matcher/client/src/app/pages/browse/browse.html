@@ -83,11 +83,6 @@
             [(ngModel)]="selectedSpecies"
             (onChange)="onSpeciesChange()"
           />
-          @if (isLoadingSpecies()) {
-          <small class="text-primary">
-            <i class="pi pi-spin pi-spinner mr-1"></i>Loading pet types...
-          </small>
-          }
         </div>
 
         <!-- Breed Filter -->
@@ -111,11 +106,6 @@
             (onSelect)="onBreedChange()"
             (onClear)="onBreedChange()"
           />
-          @if (isLoadingBreeds()) {
-          <small class="text-primary">
-            <i class="pi pi-spin pi-spinner mr-1"></i>Loading breeds...
-          </small>
-          }
         </div>
       </div>
     </div>
