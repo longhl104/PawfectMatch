@@ -1,24 +1,28 @@
 # 🐾 PawfectMatch
 
-**A comprehensive pet adoption platform connecting shelters with loving families**
+> A comprehensive pet adoption platform connecting shelters with loving families
 
-PawfectMatch is a modern, scalable pet adoption ecosystem built with Angular, .NET, and AWS infrastructure. The platform facilitates intelligent pet-adopter matching while providing comprehensive tools for shelter management and adopter engagement.
+PawfectMatch is a modern, scalable pet adoption ecosystem built with Angular, .NET, and AWS infrastructure. The platform uses the Gale-Shapley stable matching algorithm to create optimal pet-adopter pairings while providing comprehensive tools for shelter management and adopter engagement.
 
 ## ✨ Features
 
 ### 🏠 **For Pet Adopters**
-- **Smart Matching Algorithm**: AI-powered pet recommendations based on lifestyle and preferences
+
+- **Pet Discovery & Browsing**: Browse and search for adoptable pets with detailed profiles
 - **Interactive Pet Profiles**: Comprehensive pet information with photos and personality traits
 - **Application Management**: Streamlined adoption application process
 - **Real-time Notifications**: Updates on application status and new pet arrivals
 
 ### 🏢 **For Shelter Administrators**
+
 - **Comprehensive Shelter Hub**: Complete shelter management dashboard
 - **Pet Profile Management**: Easy pet listing with detailed information and media
 - **Application Processing**: Review and manage adoption applications
+- **Stable Matching Algorithm**: Gale-Shapley algorithm for optimal pet-adopter pairing
 - **Analytics & Reporting**: Insights into adoption success rates and trends
 
 ### 🔐 **Secure Identity Management**
+
 - **Multi-tenant Authentication**: Separate login flows for adopters and shelter staff
 - **JWT-based Security**: Secure, stateless authentication with refresh tokens
 - **Role-based Access Control**: Different permissions for adopters and shelter administrators
@@ -27,15 +31,15 @@ PawfectMatch is a modern, scalable pet adoption ecosystem built with Angular, .N
 
 PawfectMatch follows a microservices architecture with clear separation of concerns:
 
-```
-┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
-│   Identity      │  │     Matcher     │  │   ShelterHub    │
-│   Service       │  │    Service      │  │    Service      │
-│                 │  │                 │  │                 │
-│ • Authentication│  │ • Pet Matching  │  │ • Shelter Mgmt  │
-│ • User Profiles │  │ • Applications  │  │ • Pet Profiles  │
-│ • JWT Tokens    │  │ • Notifications │  │ • Admin Tools   │
-└─────────────────┘  └─────────────────┘  └─────────────────┘
+```txt
+┌─────────────────┐  ┌─────────────────┐  ┌──────────────────┐
+│   Identity      │  │     Matcher     │  │   ShelterHub     │
+│   Service       │  │    Service      │  │    Service       │
+│                 │  │                 │  │                  │
+│ • Authentication│  │ • Pet Browsing  │  │ • Shelter Mgmt   │
+│ • User Profiles │  │ • Applications  │  │ • Pet Profiles   │
+│ • JWT Tokens    │  │ • Notifications │  │ • Stable Matching│
+└─────────────────┘  └─────────────────┘  └──────────────────┘
         │                      │                      │
         └──────────────────────┼──────────────────────┘
                                │
@@ -89,6 +93,7 @@ cdk deploy --all
 ### 3. Backend Services
 
 #### Identity Service
+
 ```bash
 cd Identity/Longhl104.Identity
 dotnet restore
@@ -96,6 +101,7 @@ dotnet run
 ```
 
 #### Matcher Service
+
 ```bash
 cd Matcher/Longhl104.Matcher
 dotnet restore
@@ -103,6 +109,7 @@ dotnet run
 ```
 
 #### ShelterHub Service
+
 ```bash
 cd ShelterHub/Longhl104.ShelterHub
 dotnet restore
@@ -112,6 +119,7 @@ dotnet run
 ### 4. Frontend Applications
 
 #### Adopter Web App (Matcher Client)
+
 ```bash
 cd Matcher/client
 npm install
@@ -120,6 +128,7 @@ npm start
 ```
 
 #### Shelter Admin App (ShelterHub Client)
+
 ```bash
 cd ShelterHub/client
 npm install
@@ -128,6 +137,7 @@ npm start
 ```
 
 #### Identity Management App
+
 ```bash
 cd Identity/client
 npm install
@@ -137,19 +147,19 @@ npm start
 
 ## 📁 Project Structure
 
-```
+```txt
 PawfectMatch/
 ├── 🏗️ cdk/                          # AWS CDK Infrastructure
-│   ├── lib/                         # CDK Stack Definitions  
+│   ├── lib/                         # CDK Stack Definitions
 │   └── bin/                         # CDK App Entry Point
 ├── 🔐 Identity/                     # Authentication Service
 │   ├── client/                      # Angular Identity App
 │   ├── Lambdas/                     # AWS Lambda Functions
 │   └── Longhl104.Identity/          # .NET Identity API
-├── 🎯 Matcher/                      # Pet Matching Service
+├── 🎯 Matcher/                      # Pet Discovery & Application Service
 │   ├── client/                      # Angular Adopter App
 │   └── Longhl104.Matcher/           # .NET Matcher API
-├── 🏢 ShelterHub/                   # Shelter Management Service
+├── 🏢 ShelterHub/                   # Shelter Management Service (Gale-Shapley Algorithm)
 │   ├── client/                      # Angular Shelter Admin App
 │   └── Longhl104.ShelterHub/        # .NET ShelterHub API
 ├── 📦 Shared/                       # Shared Libraries & Components
@@ -162,11 +172,13 @@ PawfectMatch/
 ## 🌐 Live Applications
 
 ### Production Environment
+
 - **Adopter Portal**: [adopter.pawfectmatchnow.com](https://adopter.pawfectmatchnow.com)
 - **Shelter Hub**: [shelter.pawfectmatchnow.com](https://shelter.pawfectmatchnow.com)
 - **Identity Service**: [id.pawfectmatchnow.com](https://id.pawfectmatchnow.com)
 
 ### Development Environment
+
 - **Adopter Portal**: [adopter.development.pawfectmatchnow.com](https://adopter.development.pawfectmatchnow.com)
 - **Shelter Hub**: [shelter.development.pawfectmatchnow.com](https://shelter.development.pawfectmatchnow.com)
 - **Identity Service**: [id.development.pawfectmatchnow.com](https://id.development.pawfectmatchnow.com)
@@ -174,6 +186,7 @@ PawfectMatch/
 ## 🛠️ Technology Stack
 
 ### Frontend
+
 - **Angular 20**: Modern web framework with standalone components
 - **TypeScript**: Type-safe JavaScript development
 - **PrimeNG**: UI component library
@@ -181,6 +194,7 @@ PawfectMatch/
 - **RxJS**: Reactive programming with Observables
 
 ### Backend
+
 - **.NET 8**: High-performance web APIs
 - **Entity Framework Core**: Object-relational mapping
 - **AWS SDK**: Cloud service integration
@@ -188,6 +202,7 @@ PawfectMatch/
 - **Swagger/OpenAPI**: API documentation
 
 ### Cloud Infrastructure
+
 - **AWS ECS Fargate**: Serverless containerized hosting
 - **AWS Cognito**: User authentication and management
 - **DynamoDB**: NoSQL database for high performance
@@ -196,6 +211,7 @@ PawfectMatch/
 - **CloudFront**: Global content delivery network
 
 ### Development Tools
+
 - **AWS CDK**: Infrastructure as Code in TypeScript
 - **Docker**: Containerization for consistent environments
 - **GitHub Actions**: CI/CD pipelines
@@ -224,7 +240,7 @@ npm publish
 cd Matcher/client
 npm test
 
-# Backend tests  
+# Backend tests
 cd Matcher/Longhl104.Matcher
 dotnet test
 ```
@@ -248,7 +264,7 @@ export CDK_DEFAULT_REGION=ap-southeast-2
 Each service provides comprehensive API documentation:
 
 - **Identity API**: `/swagger` endpoint on Identity service
-- **Matcher API**: `/swagger` endpoint on Matcher service  
+- **Matcher API**: `/swagger` endpoint on Matcher service
 - **ShelterHub API**: `/swagger` endpoint on ShelterHub service
 
 ## 🔐 Security Features
@@ -331,7 +347,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Issues**: [GitHub Issues](https://github.com/longhl104/PawfectMatch/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/longhl104/PawfectMatch/discussions)
-- **Email**: support@pawfectmatchnow.com
+- **Email**: <support@pawfectmatchnow.com>
 
 ## 🙏 Acknowledgments
 
@@ -343,6 +359,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Made with ❤️ for pets and the families who love them**
+> Made with ❤️ for pets and the families who love them
 
-*PawfectMatch - Where every pet finds their perfect home* 🏡🐕🐱
+_PawfectMatch - Where every pet finds their perfect home_ 🏡🐕🐱
