@@ -120,40 +120,39 @@ export class AdoptionApplicationComponent implements OnInit {
     // Prefill user information from AuthService
     this.prefillUserInformation();
 
-    // Get pet data from navigation state
-    const navigation = this.router.getCurrentNavigation();
-    const petData = navigation?.extras?.state?.['pet'] as Pet;
+    // Get petId from query parameters
+    const petId = this.route.snapshot.queryParamMap.get('petId');
 
-    if (petData) {
-      console.log('Pet data found in navigation state:', petData.name);
-      this.pet.set(petData);
+    if (petId) {
+      console.log('Pet ID found in query parameters:', petId);
+      // TODO: Fetch pet data from API using petId
+      // For now, we'll use a placeholder until the API is implemented
+      this.fetchPetById(petId);
     } else {
-      // Try to get from sessionStorage as backup
-      const storedPet =
-        sessionStorage.getItem('adoptionPet') ||
-        sessionStorage.getItem('selectedPet');
-      if (storedPet) {
-        try {
-          const parsedPet = JSON.parse(storedPet) as Pet;
-          console.log('Pet data found in sessionStorage:', parsedPet.name);
-          this.pet.set(parsedPet);
-          return;
-        } catch (error) {
-          console.error('Error parsing stored pet data:', error);
-        }
-      }
-
-      // Check if we have a pet ID in route params (future enhancement)
-      const petId = this.route.snapshot.paramMap.get('petId');
-      if (petId) {
-        // TODO: Fetch pet data from API using petId
-        console.log('Fetch pet data for ID:', petId);
-      } else {
-        // No pet data available, redirect to browse
-        console.log('No pet data available, redirecting to browse');
-        this.router.navigate(['/browse']);
-      }
+      // No petId parameter, redirect to browse
+      console.log('No petId parameter found, redirecting to browse');
+      this.router.navigate(['/browse']);
     }
+  }
+
+  private fetchPetById(petId: string) {
+    // TODO: Replace this with actual API call to fetch pet data
+    // For now, we'll create a placeholder pet or redirect to browse
+    console.log('TODO: Fetch pet data from API for petId:', petId);
+
+    // Placeholder implementation - in real app, this would be an HTTP call
+    // For now, redirect to browse since we don't have the API endpoint yet
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Pet Loading',
+      detail: 'Loading pet information...',
+      life: 2000,
+    });
+
+    // Redirect to browse for now until API is implemented
+    setTimeout(() => {
+      this.router.navigate(['/browse']);
+    }, 2000);
   }
 
   private prefillUserInformation() {
@@ -223,11 +222,9 @@ export class AdoptionApplicationComponent implements OnInit {
   }
 
   onCancel() {
-    const pet = this.pet();
-    if (pet) {
-      this.router.navigate(['/pet-detail'], {
-        state: { pet },
-      });
+    const petId = this.route.snapshot.queryParamMap.get('petId');
+    if (petId) {
+      this.router.navigate(['/pet-detail', petId]);
     } else {
       this.router.navigate(['/browse']);
     }

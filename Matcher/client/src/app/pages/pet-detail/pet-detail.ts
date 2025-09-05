@@ -55,21 +55,6 @@ export class PetDetailComponent implements OnInit {
       // We have pet data from navigation state
       this.pet.set(petData);
     } else {
-      // Try to get from sessionStorage as backup
-      const storedPet = sessionStorage.getItem('selectedPet');
-      if (storedPet) {
-        try {
-          const parsedPet = JSON.parse(storedPet) as Pet;
-          // Verify this is the correct pet by checking the ID
-          if (parsedPet.petPostgreSqlId.toString() === petId) {
-            this.pet.set(parsedPet);
-            return;
-          }
-        } catch (error) {
-          console.error('Error parsing stored pet data:', error);
-        }
-      }
-
       // If we get here, we don't have valid pet data
       if (petId) {
         // In a real app, you'd fetch this from an API using the pet ID
@@ -101,14 +86,11 @@ export class PetDetailComponent implements OnInit {
     }
 
     if (currentPet) {
-      // Store pet data in sessionStorage as backup for adoption application
-      sessionStorage.setItem('adoptionPet', JSON.stringify(currentPet));
-
-      // Navigate to adoption application form with pet data
+      // Navigate to adoption application form with pet ID as URL parameter
       console.log('Navigating to adoption application for:', currentPet.name);
       this.router
         .navigate(['/adoption-application'], {
-          state: { pet: currentPet },
+          queryParams: { petId: currentPet.petPostgreSqlId },
         })
         .then(
           (success) =>
