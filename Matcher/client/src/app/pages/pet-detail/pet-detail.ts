@@ -86,12 +86,10 @@ export class PetDetailComponent implements OnInit {
     }
 
     if (currentPet) {
-      // Navigate to adoption application form with pet ID as URL parameter
+      // Navigate to adoption application form with pet ID as route parameter
       console.log('Navigating to adoption application for:', currentPet.name);
       this.router
-        .navigate(['/adoption-application'], {
-          queryParams: { petId: currentPet.petPostgreSqlId },
-        })
+        .navigate(['/adoption-application', currentPet.petPostgreSqlId])
         .then(
           (success) =>
             console.log('Adoption application navigation success:', success),

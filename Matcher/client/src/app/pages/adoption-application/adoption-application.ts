@@ -120,11 +120,11 @@ export class AdoptionApplicationComponent implements OnInit {
     // Prefill user information from AuthService
     this.prefillUserInformation();
 
-    // Get petId from query parameters
-    const petId = this.route.snapshot.queryParamMap.get('petId');
+    // Get petId from route parameters
+    const petId = this.route.snapshot.paramMap.get('petId');
 
     if (petId) {
-      console.log('Pet ID found in query parameters:', petId);
+      console.log('Pet ID found in route parameters:', petId);
       // TODO: Fetch pet data from API using petId
       // For now, we'll use a placeholder until the API is implemented
       this.fetchPetById(petId);
@@ -222,7 +222,7 @@ export class AdoptionApplicationComponent implements OnInit {
   }
 
   onCancel() {
-    const petId = this.route.snapshot.queryParamMap.get('petId');
+    const petId = this.route.snapshot.paramMap.get('petId');
     if (petId) {
       this.router.navigate(['/pet-detail', petId]);
     } else {
