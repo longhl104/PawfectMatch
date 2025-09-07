@@ -120,39 +120,40 @@ export class AdoptionApplicationComponent implements OnInit {
     // Prefill user information from AuthService
     this.prefillUserInformation();
 
-    // Get petId from route parameters
-    const petId = this.route.snapshot.paramMap.get('petId');
+    // Get pet data from navigation state
+    const navigation = this.router.getCurrentNavigation();
+    const petData = navigation?.extras?.state?.['pet'] as Pet;
 
-    if (petId) {
-      console.log('Pet ID found in route parameters:', petId);
-      // TODO: Fetch pet data from API using petId
-      // For now, we'll use a placeholder until the API is implemented
-      this.fetchPetById(petId);
+    if (petData) {
+      console.log('Pet data found in navigation state:', petData.name);
+      this.pet.set(petData);
     } else {
-      // No petId parameter, redirect to browse
-      console.log('No petId parameter found, redirecting to browse');
-      this.router.navigate(['/browse']);
+      // Try to get from sessionStorage as backup
+      const storedPet =
+        sessionStorage.getItem('adoptionPet') ||
+        sessionStorage.getItem('selectedPet');
+      if (storedPet) {
+        try {
+          const parsedPet = JSON.parse(storedPet) as Pet;
+          console.log('Pet data found in sessionStorage:', parsedPet.name);
+          this.pet.set(parsedPet);
+          return;
+        } catch (error) {
+          console.error('Error parsing stored pet data:', error);
+        }
+      }
+
+      // Check if we have a pet ID in route params (future enhancement)
+      const petId = this.route.snapshot.paramMap.get('petId');
+      if (petId) {
+        // TODO: Fetch pet data from API using petId
+        console.log('Fetch pet data for ID:', petId);
+      } else {
+        // No pet data available, redirect to browse
+        console.log('No pet data available, redirecting to browse');
+        this.router.navigate(['/browse']);
+      }
     }
-  }
-
-  private fetchPetById(petId: string) {
-    // TODO: Replace this with actual API call to fetch pet data
-    // For now, we'll create a placeholder pet or redirect to browse
-    console.log('TODO: Fetch pet data from API for petId:', petId);
-
-    // Placeholder implementation - in real app, this would be an HTTP call
-    // For now, redirect to browse since we don't have the API endpoint yet
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Pet Loading',
-      detail: 'Loading pet information...',
-      life: 2000,
-    });
-
-    // Redirect to browse for now until API is implemented
-    setTimeout(() => {
-      this.router.navigate(['/browse']);
-    }, 2000);
   }
 
   private prefillUserInformation() {
@@ -222,9 +223,11 @@ export class AdoptionApplicationComponent implements OnInit {
   }
 
   onCancel() {
-    const petId = this.route.snapshot.paramMap.get('petId');
-    if (petId) {
-      this.router.navigate(['/pet-detail', petId]);
+    const pet = this.pet();
+    if (pet) {
+      this.router.navigate(['/pet-detail'], {
+        state: { pet },
+      });
     } else {
       this.router.navigate(['/browse']);
     }
@@ -232,17 +235,31 @@ export class AdoptionApplicationComponent implements OnInit {
 
   isFieldInvalid(fieldName: string): boolean {
     const field = this.applicationForm.get(fieldName);
-    return !!(field && field.invalid && (field.dirty || field.touched));
+    return Boolean(field && field.invalid && (field.dirty || field.touched));
   }
 
   getFieldError(fieldName: string): string {
     const field = this.applicationForm.get(fieldName);
     if (field?.errors) {
-      if (field.errors['required']) return `${fieldName} is required`;
-      if (field.errors['email']) return 'Please enter a valid email address';
-      if (field.errors['minlength']) return `${fieldName} is too short`;
-      if (field.errors['pattern']) return 'Please enter a valid phone number';
-      if (field.errors['requiredTrue']) return 'You must agree to the terms';
+      if (field.errors['required']) {
+        return `${fieldName} is required`;
+      }
+
+      if (field.errors['email']) {
+        return 'Please enter a valid email address';
+      }
+
+      if (field.errors['minlength']) {
+        return `${fieldName} is too short`;
+      }
+
+      if (field.errors['pattern']) {
+        return 'Please enter a valid phone number';
+      }
+
+      if (field.errors['requiredTrue']) {
+        return 'You must agree to the terms';
+      }
     }
     return '';
   }

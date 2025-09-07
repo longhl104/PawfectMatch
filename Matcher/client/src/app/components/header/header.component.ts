@@ -98,13 +98,19 @@ export class HeaderComponent {
   }
 
   getUserDisplayName(user: UserProfile | undefined): string {
-    if (!user) return 'User';
+    if (!user) {
+      return 'User';
+    }
+
     const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
     return fullName || user.email || 'User';
   }
 
   getUserInitials(user: UserProfile | undefined): string {
-    if (!user) return 'U';
+    if (!user) {
+      return 'U';
+    }
+
     const firstName = user.firstName || '';
     const lastName = user.lastName || '';
     return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase() || 'U';

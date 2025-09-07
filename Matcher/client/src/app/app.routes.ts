@@ -20,7 +20,7 @@ export const routes: Routes = [
       import('./pages/pet-detail/pet-detail').then((m) => m.PetDetailComponent),
   },
   {
-    path: 'adoption-application/:petId',
+    path: 'adoption-application',
     loadComponent: () =>
       import('./pages/adoption-application/adoption-application').then((m) => m.AdoptionApplicationComponent),
   },

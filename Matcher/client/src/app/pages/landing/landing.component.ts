@@ -378,8 +378,8 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
       });
     } else {
       console.warn('Floating CTA or Primary CTA elements not found:', {
-        floatingCta: !!floatingCta,
-        primaryCta: !!primaryCta,
+        floatingCta: Boolean(floatingCta),
+        primaryCta: Boolean(primaryCta),
       });
     }
   }
