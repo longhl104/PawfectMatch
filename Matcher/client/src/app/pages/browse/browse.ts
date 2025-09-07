@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -152,6 +152,7 @@ export class BrowseComponent implements OnInit, OnDestroy {
   private speciesApi = inject(SpeciesApi);
   private petSearchApi = inject(PetSearchApi);
   private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
 
   protected readonly Math = Math;
 
@@ -224,10 +225,127 @@ export class BrowseComponent implements OnInit, OnDestroy {
   ]);
 
   ngOnInit() {
-    this.loadSpecies();
     this.initializeData();
-    this.getCurrentLocation();
+
+    // Load species first, then URL parameters, then decide on location
+    this.loadSpecies().then(async () => {
+      await this.loadUrlParameters();
+
+      // Only get current location if no coordinates were loaded from URL
+      const coords = this.currentLocationCoords();
+      if (!coords) {
+        this.getCurrentLocation();
+      } else {
+        // If coordinates were loaded from URL, trigger search after a small delay
+        // to ensure all data is loaded
+        setTimeout(() => {
+          console.log('Triggering search with URL coordinates:', coords);
+          this.applyFilters();
+        }, 100);
+      }
+    });
+
     this.initializeGoogleMapsAndAutocomplete();
+  }
+
+  private async loadUrlParameters() {
+    const params = this.activatedRoute.snapshot.queryParams;
+    console.log('Loading URL parameters:', params);
+
+    if (params['location']) {
+      this.searchLocation.set(params['location']);
+      console.log('Set location from URL:', params['location']);
+    }
+
+    // Load coordinates from URL if available
+    if (params['lat'] && params['lng']) {
+      const lat = parseFloat(params['lat']);
+      const lng = parseFloat(params['lng']);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        this.currentLocationCoords.set({ lat, lng });
+        console.log('Set coordinates from URL:', { lat, lng });
+      }
+    }
+
+    if (params['species']) {
+      this.selectedSpecies.set(params['species']);
+
+      // Load breeds for the selected species if needed
+      const speciesId = parseInt(params['species'], 10);
+      if (!isNaN(speciesId)) {
+        await this.loadBreeds(speciesId);
+      }
+    }
+
+    if (params['breed']) {
+      this.selectedBreed.set(params['breed']);
+      // Also set the breed object for the autocomplete
+      const breedObject = this.breeds().find(
+        (b) => b.value === params['breed'],
+      );
+      if (breedObject) {
+        this.selectedBreedObject = breedObject;
+      }
+    }
+
+    if (params['distance']) {
+      const distance = parseInt(params['distance'], 10);
+      if (!isNaN(distance) && distance > 0) {
+        this.maxDistance.set(distance);
+      }
+    }
+
+    if (params['page']) {
+      const page = parseInt(params['page'], 10);
+      if (!isNaN(page) && page >= 0) {
+        this.currentPage.set(page);
+      }
+    }
+  }
+
+  private updateUrlParameters() {
+    const params: Record<string, string> = {};
+
+    const location = this.searchLocation();
+    if (location) {
+      params['location'] = location;
+    }
+
+    // Include coordinates if available
+    const coords = this.currentLocationCoords();
+    if (coords) {
+      params['lat'] = coords.lat.toString();
+      params['lng'] = coords.lng.toString();
+    }
+
+    const species = this.selectedSpecies();
+    if (species && species !== 'null') {
+      params['species'] = species;
+    }
+
+    const breed = this.selectedBreed();
+    if (breed && breed !== 'null') {
+      params['breed'] = breed;
+    }
+
+    const distance = this.maxDistance();
+    if (distance !== 50) {
+      // Only include if different from default
+      params['distance'] = distance.toString();
+    }
+
+    const page = this.currentPage();
+    if (page > 0) {
+      // Only include if not first page
+      params['page'] = page.toString();
+    }
+
+    // Update URL without navigation
+    this.router.navigate([], {
+      relativeTo: this.activatedRoute,
+      queryParams: params,
+      queryParamsHandling: 'replace',
+    });
   }
 
   private async initializeGoogleMapsAndAutocomplete() {
@@ -405,6 +523,7 @@ export class BrowseComponent implements OnInit, OnDestroy {
               });
             }
 
+            this.updateUrlParameters();
             this.applyFilters();
           });
         },
@@ -415,8 +534,21 @@ export class BrowseComponent implements OnInit, OnDestroy {
         clearButton.addEventListener('click', () => {
           this.searchLocation.set('');
           this.currentLocationCoords.set(null);
+          this.updateUrlParameters();
           this.applyFilters();
         });
+      }
+
+      // Populate the autocomplete field with location from URL if available
+      const locationFromUrl = this.searchLocation();
+      if (locationFromUrl) {
+        // Use setTimeout to ensure the autocomplete element is fully initialized
+        setTimeout(() => {
+          const inputElement = this.getAutoCompleteInputElement();
+          if (inputElement) {
+            inputElement.value = locationFromUrl;
+          }
+        }, 100);
       }
     }
   }
@@ -541,6 +673,7 @@ export class BrowseComponent implements OnInit, OnDestroy {
   onLocationChange() {
     // This method is now handled by Google Places Autocomplete
     // We can keep it for manual input validation if needed
+    this.updateUrlParameters();
     this.applyFilters();
   }
 
@@ -564,6 +697,7 @@ export class BrowseComponent implements OnInit, OnDestroy {
       this.filteredBreeds.set(defaultBreeds);
     }
 
+    this.updateUrlParameters();
     this.applyFilters();
   }
 
@@ -606,6 +740,7 @@ export class BrowseComponent implements OnInit, OnDestroy {
     } else {
       this.selectedBreed.set(null);
     }
+    this.updateUrlParameters();
     this.applyFilters();
   }
 
@@ -613,6 +748,7 @@ export class BrowseComponent implements OnInit, OnDestroy {
     console.log('clearBreedSelection called');
     this.selectedBreed.set(null);
     this.selectedBreedObject = null;
+    this.updateUrlParameters();
     this.applyFilters();
   }
 
@@ -635,15 +771,21 @@ export class BrowseComponent implements OnInit, OnDestroy {
   }
 
   onDistanceChange() {
+    this.updateUrlParameters();
     this.applyFilters();
   }
 
   private applyFilters() {
+    console.log('applyFilters called');
     // Always use the real API if we have location coordinates
     const coords = this.currentLocationCoords();
+    console.log('Current coordinates in applyFilters:', coords);
+
     if (coords) {
+      console.log('Coordinates found, calling searchPetsWithApi');
       this.searchPetsWithApi();
     } else {
+      console.log('No coordinates, clearing results');
       // No location provided - clear results and show message to user
       this.filteredPets.set([]);
       this.pets.set([]);
@@ -653,9 +795,16 @@ export class BrowseComponent implements OnInit, OnDestroy {
 
   private async searchPetsWithApi() {
     const coords = this.currentLocationCoords();
-    if (!coords) return;
+    console.log('searchPetsWithApi called with coords:', coords);
+
+    if (!coords) {
+      console.log('No coordinates available, returning early');
+      return;
+    }
 
     this.isLoading.set(true);
+    console.log('Starting pet search with API...');
+
     try {
       const request = new PetSearchRequest({
         latitude: coords.lat,
@@ -668,16 +817,18 @@ export class BrowseComponent implements OnInit, OnDestroy {
       // Add species filter if selected
       const speciesId = this.selectedSpecies();
       if (speciesId && speciesId !== 'null') {
-        request.speciesId = parseInt(speciesId);
+        request.speciesId = parseInt(speciesId, 10);
       }
 
       // Add breed filter if selected
       const breedId = this.selectedBreed();
       if (breedId && breedId !== 'null') {
-        request.breedId = parseInt(breedId);
+        request.breedId = parseInt(breedId, 10);
       }
 
+      console.log('Making API request with:', request);
       const response = await firstValueFrom(this.petSearchApi.search(request));
+      console.log('API response received:', response);
 
       if (response.success && response.pets) {
         const pets = this.convertApiPetsToPetInterface(response.pets);
@@ -770,6 +921,9 @@ export class BrowseComponent implements OnInit, OnDestroy {
     const defaultBreeds = [{ label: 'All Breeds', value: null }];
     this.breeds.set(defaultBreeds);
     this.filteredBreeds.set(defaultBreeds);
+
+    // Clear URL parameters
+    this.updateUrlParameters();
   }
 
   getActiveFiltersCount(): number {
@@ -787,6 +941,9 @@ export class BrowseComponent implements OnInit, OnDestroy {
     if (event.rows) {
       this.pageSize.set(event.rows);
     }
+
+    // Update URL parameters for pagination
+    this.updateUrlParameters();
 
     // If we have location coordinates, search with API
     const coords = this.currentLocationCoords();
